@@ -39,6 +39,15 @@ Tables: `reps`, `plans`, `plan_tiers`, `deals`, `commission_runs`, `commission_r
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 
+## Design System
+
+- **Theme**: Almond-inspired — teal primary (#0D9488 territory), clean white/light-gray sidebar (light mode), deep navy sidebar (dark mode)
+- **Dark/light toggle**: Moon/Sun button in sidebar bottom-right; preference stored in `localStorage` as `ck-theme`; `.dark` class toggled on `<html>`
+- **Theme provider**: `artifacts/commission-kit/src/hooks/use-theme.tsx` — `ThemeProvider` wraps the app, `useTheme()` hook exposes `{ theme, toggle }`
+- **Radius**: `--radius: 0.75rem` (12px base), components use `rounded-xl` and `rounded-lg` throughout
+- **Sidebar groups**: MAIN (Dashboard, Reps, Plans) and OPERATIONS (Deals, Runs) with uppercase section labels
+- **Canvas mockup**: `artifacts/mockup-sandbox/src/components/mockups/commission-variants/AlmondStyle.tsx` — standalone design reference
+
 ## Important Notes
 
 - The orval config does NOT generate separate TypeScript types (`schemas` option removed) to avoid naming conflicts with Zod exports. `lib/api-zod/src/index.ts` only exports from `./generated/api`.

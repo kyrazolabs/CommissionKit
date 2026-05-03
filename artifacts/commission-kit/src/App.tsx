@@ -11,6 +11,7 @@ import { DealsPage } from "@/pages/deals";
 import { RunsPage } from "@/pages/runs";
 import { RunDetailsPage } from "@/pages/run-details";
 import { RepPortal } from "@/pages/rep-portal";
+import { ThemeProvider } from "@/hooks/use-theme";
 
 const queryClient = new QueryClient();
 
@@ -19,7 +20,7 @@ function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar />
       <div className="flex-1 overflow-y-auto">
-        <main className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 max-w-7xl">
+        <main className="mx-auto py-8 px-6 lg:px-10 max-w-6xl">
           {children}
         </main>
       </div>
@@ -46,14 +47,16 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
-        </WouterRouter>
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <Router />
+          </WouterRouter>
+          <Toaster />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 
