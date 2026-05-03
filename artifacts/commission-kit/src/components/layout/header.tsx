@@ -5,7 +5,7 @@ export function Header() {
   const { theme, toggle } = useTheme();
 
   return (
-    <header className="flex h-14 shrink-0 items-center bg-header border-b border-header-border px-5 z-10">
+    <header className="flex h-14 shrink-0 items-center bg-header px-5 z-10">
       {/* Logo — width matches sidebar */}
       <div className="flex w-[220px] shrink-0 items-center gap-2">
         <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
