@@ -17,10 +17,10 @@ const queryClient = new QueryClient();
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-screen overflow-hidden bg-sidebar">
       <Sidebar />
-      <div className="flex-1 overflow-y-auto">
-        <div className="m-3 rounded-2xl border border-border bg-card min-h-[calc(100%-1.5rem)] shadow-sm">
+      <div className="flex-1 overflow-y-auto p-3">
+        <div className="rounded-2xl border border-sidebar-border/40 bg-card min-h-[calc(100%-0px)] shadow-lg">
           <main className="mx-auto py-8 px-6 lg:px-10 max-w-6xl">
             {children}
           </main>

@@ -101,9 +101,9 @@ export function AlmondStyle() {
           </div>
         </aside>
 
-        {/* Main content */}
-        <main style={{ flex: 1, overflowY: "auto", padding: "12px", background: "#F3F5F9" }}>
-        <div style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 18, minHeight: "100%", padding: "32px 40px" }}>
+        {/* Main content — dark chrome matches sidebar, body card is the focal surface */}
+        <main style={{ flex: 1, overflowY: "auto", padding: "12px", background: "#1c2038" }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 18, minHeight: "calc(100%)", padding: "32px 40px", boxShadow: "0 4px 24px rgba(0,0,0,0.18)" }}>
           {/* Breadcrumb */}
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
             <span style={{ fontSize: 12, color: TEAL, fontWeight: 600 }}>Overview</span>
