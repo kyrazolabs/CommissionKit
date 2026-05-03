@@ -20,9 +20,11 @@ function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar />
       <div className="flex-1 overflow-y-auto">
-        <main className="mx-auto py-8 px-6 lg:px-10 max-w-6xl">
-          {children}
-        </main>
+        <div className="m-3 rounded-2xl border border-border bg-card min-h-[calc(100%-1.5rem)] shadow-sm">
+          <main className="mx-auto py-8 px-6 lg:px-10 max-w-6xl">
+            {children}
+          </main>
+        </div>
       </div>
     </div>
   );

@@ -102,7 +102,8 @@ export function AlmondStyle() {
         </aside>
 
         {/* Main content */}
-        <main style={{ flex: 1, overflowY: "auto", padding: "36px 48px", background: "#FFFFFF" }}>
+        <main style={{ flex: 1, overflowY: "auto", padding: "12px", background: "#F3F5F9" }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 18, minHeight: "100%", padding: "32px 40px" }}>
           {/* Breadcrumb */}
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
             <span style={{ fontSize: 12, color: TEAL, fontWeight: 600 }}>Overview</span>
@@ -213,6 +214,7 @@ export function AlmondStyle() {
               </div>
             </div>
           </div>
+        </div>
         </main>
       </div>
     </div>
