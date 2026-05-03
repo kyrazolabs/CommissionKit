@@ -27,7 +27,7 @@ function Layout({ children }: { children: React.ReactNode }) {
         <Sidebar />
 
         {/* Main content — #FAFAFA chrome, white rounded card */}
-        <div className="flex-1 overflow-y-auto" style={{ background: "hsl(var(--sidebar))", padding: "0 4px 4px 0" }}>
+        <div className="flex-1 overflow-y-auto" style={{ background: "hsl(var(--sidebar))", padding: "0 4px 2px 2px" }}>
           <div className="bg-card rounded-[18px] border border-card-border min-h-full shadow-xs">
             <main className="mx-auto py-8 px-8 lg:px-10 max-w-6xl">
               {children}
