@@ -2,51 +2,13 @@ import { formatCurrency, formatNumber } from "@/lib/format";
 import { useGetDashboardSummary, getGetDashboardSummaryQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
-  DollarSign, Users, Briefcase, Activity, CalendarDays, ArrowUpRight, TrendingUp
+  DollarSign, Users, Briefcase, Activity, CalendarDays,
+  ArrowUpRight, TrendingUp, Zap, Play
 } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
-import { cn } from "@/lib/utils";
-
-const statCards = [
-  {
-    key: "totalCommission" as const,
-    label: "Total Commissions",
-    sub: "Calculated this period",
-    icon: DollarSign,
-    color: "bg-indigo-500/10 text-indigo-600 dark:bg-indigo-400/15 dark:text-indigo-400",
-  },
-  {
-    key: "totalRevenue" as const,
-    label: "Total Revenue",
-    sub: "Closed won deals",
-    icon: TrendingUp,
-    color: "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/15 dark:text-emerald-400",
-  },
-  {
-    key: "totalDeals" as const,
-    label: "Deals Closed",
-    sub: "This period",
-    icon: Briefcase,
-    color: "bg-amber-500/10 text-amber-600 dark:bg-amber-400/15 dark:text-amber-400",
-    isCount: true,
-  },
-  {
-    key: "totalReps" as const,
-    label: "Active Reps",
-    sub: "With deals this period",
-    icon: Users,
-    color: "bg-sky-500/10 text-sky-600 dark:bg-sky-400/15 dark:text-sky-400",
-    isCount: true,
-  },
-];
-
-const rankColors = [
-  "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
-  "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
-  "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400",
-];
+import { Button } from "@/components/ui/button";
 
 export function Dashboard() {
   const currentPeriod = format(new Date(), "yyyy-MM");
@@ -67,126 +29,180 @@ export function Dashboard() {
     );
   }
 
+  const statCards = [
+    { label: "Total Commissions", value: formatCurrency(summary.totalCommission), delta: "Calculated this period", icon: DollarSign },
+    { label: "Pipeline Revenue",  value: formatCurrency(summary.totalRevenue),    delta: "Closed won deals",       icon: TrendingUp },
+    { label: "Deals Closed",      value: formatNumber(summary.totalDeals),        delta: "This period",            icon: Briefcase },
+    { label: "Active Reps",       value: formatNumber(summary.totalReps),         delta: `of ${formatNumber(summary.totalReps)} total`, icon: Users },
+  ];
+
   return (
     <div className="space-y-7">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Overview</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">
-            Performance summary for {format(new Date(currentPeriod + "-01"), "MMMM yyyy")}
-          </p>
-        </div>
+      {/* Page header */}
+      <div>
+        <p className="text-[12px] font-semibold text-primary mb-1">Overview</p>
+        <h1 className="text-[28px] font-bold tracking-tight text-foreground leading-tight">Dashboard</h1>
+        <p className="text-[14px] text-muted-foreground mt-1 leading-relaxed">
+          Commission performance for{" "}
+          <strong className="text-foreground/80">
+            {format(new Date(currentPeriod + "-01"), "MMMM yyyy")}
+          </strong>{" "}
+          — all plans and reps included.
+        </p>
       </div>
 
-      {/* Stat cards */}
+      {/* Stat cards — 4 columns, all teal icon badges */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        {statCards.map(({ key, label, sub, icon: Icon, color, isCount }) => (
-          <Card key={key}>
-            <CardContent className="pt-5">
-              <div className="flex items-start justify-between mb-3">
-                <p className="text-[13px] font-medium text-muted-foreground">{label}</p>
-                <div className={cn("p-2 rounded-lg", color)}>
-                  <Icon className="h-4 w-4" />
-                </div>
+        {statCards.map(({ label, value, delta, icon: Icon }) => (
+          <div
+            key={label}
+            className="bg-card border border-card-border rounded-2xl px-[22px] py-5"
+            style={{ boxShadow: "var(--shadow-card)" }}
+          >
+            <div className="flex items-center justify-between mb-3.5">
+              <span className="text-[12px] font-medium text-muted-foreground">{label}</span>
+              <div className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-secondary">
+                <Icon className="h-3.5 w-3.5 text-primary" />
               </div>
-              <div className="text-[28px] font-bold tracking-tight text-foreground leading-none">
-                {isCount
-                  ? formatNumber(summary[key] as number)
-                  : formatCurrency(summary[key] as number)}
-              </div>
-              <p className="text-[12px] text-muted-foreground mt-1.5">{sub}</p>
-            </CardContent>
-          </Card>
+            </div>
+            <div className="text-[26px] font-bold tracking-tight text-foreground leading-none">{value}</div>
+            <p className="text-[12px] text-primary font-medium mt-1.5">{delta}</p>
+          </div>
         ))}
       </div>
 
-      {/* Lower grid */}
-      <div className="grid gap-5 lg:grid-cols-7">
-        {/* Top earners */}
-        <Card className="lg:col-span-4">
-          <CardHeader>
-            <CardTitle>Top Earners</CardTitle>
-            <CardDescription>Highest commissions this period</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {summary.repEarnings.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-6">No deals closed yet.</p>
-            ) : (
-              <div className="space-y-1">
-                {summary.repEarnings.map((rep, i) => (
-                  <div
-                    key={rep.repId}
-                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-muted/40 transition-colors group"
-                  >
-                    <div
-                      className={cn(
-                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold",
-                        i < 3 ? rankColors[i] : "bg-muted text-muted-foreground"
-                      )}
-                    >
-                      {i + 1}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <Link
-                        href={`/reps/${rep.repId}`}
-                        className="text-[14px] font-semibold text-foreground hover:text-primary transition-colors block truncate"
-                      >
-                        {rep.repName}
-                      </Link>
-                      <p className="text-[12px] text-muted-foreground">
-                        {rep.totalDeals} {rep.totalDeals === 1 ? "deal" : "deals"} · {formatCurrency(rep.totalRevenue)} rev
-                      </p>
-                    </div>
-                    <div className="font-bold text-[15px] text-emerald-600 dark:text-emerald-400 shrink-0">
-                      {formatCurrency(rep.totalCommission)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      {/* Lower grid: earners table (3fr) + right column (2fr) */}
+      <div className="grid gap-5" style={{ gridTemplateColumns: "3fr 2fr" }}>
 
-        {/* Recent runs */}
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle>Recent Runs</CardTitle>
-            <CardDescription>Latest commission calculations</CardDescription>
-          </CardHeader>
-          <CardContent>
+        {/* Top Earners — table style */}
+        <div className="bg-card border border-card-border rounded-2xl overflow-hidden" style={{ boxShadow: "var(--shadow-card)" }}>
+          <div className="flex items-center justify-between px-[22px] py-[18px] border-b border-border">
+            <div>
+              <p className="text-[14.5px] font-bold text-foreground">Top Earners</p>
+              <p className="text-[12px] text-muted-foreground mt-0.5">Ranked by commission earned</p>
+            </div>
+            <Link href="/reps" className="flex items-center gap-1 text-[12px] font-semibold text-primary hover:opacity-80 transition-opacity">
+              View all <ArrowUpRight className="h-3 w-3" />
+            </Link>
+          </div>
+
+          {summary.repEarnings.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">No deals closed yet.</p>
+          ) : (
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-muted/60">
+                  {["Rep", "Plan", "Deals", "Revenue", "Commission"].map((h) => (
+                    <th key={h} className="px-4 py-2.5 text-left text-[11.5px] font-semibold uppercase tracking-[0.03em] text-muted-foreground">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {summary.repEarnings.map((rep, i) => (
+                  <tr key={rep.repId} className="border-t border-muted/60 hover:bg-muted/30 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10.5px] font-bold"
+                          style={{
+                            background: i === 0 ? "hsl(var(--primary))" : "hsl(var(--muted))",
+                            color: i === 0 ? "#fff" : "hsl(var(--muted-foreground))",
+                          }}
+                        >
+                          {rep.repName.split(" ").map((n: string) => n[0]).join("")}
+                        </div>
+                        <div>
+                          <Link
+                            href={`/reps/${rep.repId}`}
+                            className="text-[13.5px] font-semibold text-foreground hover:text-primary transition-colors"
+                          >
+                            {rep.repName}
+                          </Link>
+                          {i === 0 && (
+                            <span className="ml-1.5 text-[10px] font-semibold text-primary bg-secondary border border-primary/20 rounded px-1.5 py-px">
+                              Top
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-[12.5px] text-muted-foreground">—</td>
+                    <td className="px-4 py-3 text-[13px] font-medium text-foreground">{rep.totalDeals}</td>
+                    <td className="px-4 py-3 text-[13px] font-medium text-foreground">
+                      ${(rep.totalRevenue / 1000).toFixed(0)}K
+                    </td>
+                    <td className="px-4 py-3 text-[13.5px] font-bold text-primary">
+                      {formatCurrency(rep.totalCommission)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* Right column */}
+        <div className="flex flex-col gap-4">
+          {/* Quick action */}
+          <div
+            className="rounded-2xl border px-[22px] py-5"
+            style={{
+              background: "hsl(var(--secondary))",
+              borderColor: "hsl(var(--primary) / 0.2)",
+              boxShadow: "var(--shadow-card)",
+            }}
+          >
+            <div className="flex items-center gap-2 mb-2.5">
+              <Zap className="h-4 w-4 text-primary" />
+              <p className="text-[14px] font-bold text-foreground">Run Calculation</p>
+            </div>
+            <p className="text-[12.5px] text-muted-foreground leading-relaxed mb-4">
+              Trigger a commission run for the current period across all active reps and plans.
+            </p>
+            <Link href="/runs">
+              <Button className="w-full rounded-xl text-[13px] font-semibold">
+                Run {format(new Date(currentPeriod + "-01"), "MMM yyyy")}
+              </Button>
+            </Link>
+          </div>
+
+          {/* Recent Runs */}
+          <div
+            className="flex-1 bg-card border border-card-border rounded-2xl px-[22px] py-[18px]"
+            style={{ boxShadow: "var(--shadow-card)" }}
+          >
+            <p className="text-[14.5px] font-bold text-foreground mb-0.5">Recent Runs</p>
+            <p className="text-[12px] text-muted-foreground mb-4">Previous calculation jobs</p>
+
             {summary.recentRuns.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-6">No runs yet.</p>
+              <p className="text-sm text-muted-foreground text-center py-4">No runs yet.</p>
             ) : (
-              <div className="space-y-1">
+              <div className="space-y-0">
                 {summary.recentRuns.map((run) => (
-                  <div
-                    key={run.id}
-                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-muted/40 transition-colors"
-                  >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                      <CalendarDays className="h-4 w-4" />
+                  <div key={run.id} className="flex items-center gap-3 py-3 border-b border-muted/60 last:border-0">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-muted">
+                      <Play className="h-3.5 w-3.5 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-semibold text-foreground leading-tight">
-                        Period: {run.period}
-                      </p>
-                      <p className="text-[12px] text-muted-foreground">
+                      <p className="text-[13px] font-semibold text-foreground">{run.period}</p>
+                      <p className="text-[11.5px] text-muted-foreground">
                         {format(new Date(run.createdAt), "MMM d, h:mm a")}
                       </p>
                     </div>
                     <Link
                       href={`/runs/${run.id}`}
-                      className="flex items-center gap-1 text-[13px] font-medium text-primary hover:text-primary/80 transition-colors shrink-0"
+                      className="flex items-center gap-0.5 text-[11px] font-semibold text-primary bg-secondary border border-primary/20 rounded-md px-2 py-0.5 hover:opacity-80 transition-opacity"
                     >
-                      View <ArrowUpRight className="h-3.5 w-3.5" />
+                      Completed
                     </Link>
                   </div>
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -196,60 +212,36 @@ function DashboardSkeleton() {
   return (
     <div className="space-y-7">
       <div className="space-y-2">
+        <Skeleton className="h-3 w-16" />
         <Skeleton className="h-8 w-40" />
-        <Skeleton className="h-4 w-64" />
+        <Skeleton className="h-4 w-72" />
       </div>
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[...Array(4)].map((_, i) => (
-          <Card key={i}>
-            <CardContent className="pt-5">
-              <div className="flex items-start justify-between mb-3">
-                <Skeleton className="h-4 w-28" />
-                <Skeleton className="h-8 w-8 rounded-lg" />
-              </div>
-              <Skeleton className="h-8 w-24 mb-1.5" />
-              <Skeleton className="h-3 w-20" />
-            </CardContent>
-          </Card>
+          <div key={i} className="bg-card border border-card-border rounded-2xl px-[22px] py-5">
+            <div className="flex items-start justify-between mb-3.5">
+              <Skeleton className="h-3.5 w-28" />
+              <Skeleton className="h-7 w-7 rounded-[10px]" />
+            </div>
+            <Skeleton className="h-7 w-24 mb-1.5" />
+            <Skeleton className="h-3 w-20" />
+          </div>
         ))}
       </div>
-      <div className="grid gap-5 lg:grid-cols-7">
-        <Card className="lg:col-span-4">
-          <CardHeader>
-            <Skeleton className="h-5 w-28 mb-1" />
-            <Skeleton className="h-4 w-44" />
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex items-center gap-3 px-3 py-2.5">
-                <Skeleton className="h-7 w-7 rounded-full" />
-                <div className="flex-1 space-y-1">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-3 w-24" />
-                </div>
-                <Skeleton className="h-5 w-16" />
-              </div>
-            ))}
+      <div className="grid gap-5" style={{ gridTemplateColumns: "3fr 2fr" }}>
+        <Card><CardHeader><Skeleton className="h-5 w-28" /><Skeleton className="h-4 w-44" /></CardHeader>
+          <CardContent className="space-y-3">
+            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
           </CardContent>
         </Card>
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <Skeleton className="h-5 w-32 mb-1" />
-            <Skeleton className="h-4 w-40" />
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="flex items-center gap-3 px-3 py-2.5">
-                <Skeleton className="h-8 w-8 rounded-lg" />
-                <div className="flex-1 space-y-1">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-3 w-32" />
-                </div>
-                <Skeleton className="h-4 w-10" />
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <div className="flex flex-col gap-4">
+          <Skeleton className="h-40 w-full rounded-2xl" />
+          <Card className="flex-1"><CardHeader><Skeleton className="h-5 w-28" /></CardHeader>
+            <CardContent className="space-y-3">
+              {[...Array(2)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

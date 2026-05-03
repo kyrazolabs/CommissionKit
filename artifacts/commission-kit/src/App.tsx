@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
+import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Dashboard } from "@/pages/dashboard";
 import { RepsPage } from "@/pages/reps";
@@ -17,13 +18,21 @@ const queryClient = new QueryClient();
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen overflow-hidden bg-sidebar">
-      <Sidebar />
-      <div className="flex-1 overflow-y-auto pt-0 pl-0 pr-1 pb-1">
-        <div className="rounded-2xl border border-border bg-card min-h-[calc(100%-0px)] shadow-xs">
-          <main className="mx-auto py-8 px-6 lg:px-10 max-w-6xl">
-            {children}
-          </main>
+    <div className="flex h-screen flex-col overflow-hidden bg-sidebar">
+      {/* Top header — full width */}
+      <Header />
+
+      {/* Body row: sidebar + content */}
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar />
+
+        {/* Main content — #FAFAFA chrome, white rounded card */}
+        <div className="flex-1 overflow-y-auto" style={{ background: "hsl(var(--sidebar))", padding: "0 4px 4px 0" }}>
+          <div className="bg-card rounded-[18px] border border-card-border min-h-full shadow-xs">
+            <main className="mx-auto py-8 px-8 lg:px-10 max-w-6xl">
+              {children}
+            </main>
+          </div>
         </div>
       </div>
     </div>
