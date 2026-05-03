@@ -49,8 +49,8 @@ export function AlmondStyle() {
   return (
     <div className="flex flex-col min-h-screen" style={{ fontFamily: "'Inter', sans-serif", background: "#FFFFFF", color: "#111827" }}>
       {/* Top nav */}
-      <header style={{ height: 56, borderBottom: "1px solid #E5E7EB", display: "flex", alignItems: "center", padding: "0 20px 0 0", background: "#FFFFFF", flexShrink: 0, zIndex: 10 }}>
-        <div style={{ width: 220, flexShrink: 0, display: "flex", alignItems: "center", gap: 8, padding: "0 20px", borderRight: "1px solid #E5E7EB", height: "100%" }}>
+      <header style={{ height: 56, display: "flex", alignItems: "center", padding: "0 20px 0 0", background: "#FAFAFA", flexShrink: 0, zIndex: 10 }}>
+        <div style={{ width: 220, flexShrink: 0, display: "flex", alignItems: "center", gap: 8, padding: "0 20px", height: "100%" }}>
           <div style={{ width: 24, height: 24, background: TEAL, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <BarChart2 size={13} color="#fff" />
           </div>
@@ -72,13 +72,13 @@ export function AlmondStyle() {
 
       <div style={{ display: "flex", flex: 1 }}>
         {/* Sidebar */}
-        <aside style={{ width: 220, flexShrink: 0, borderRight: "1px solid #E5E7EB", background: "#FAFAFA", display: "flex", flexDirection: "column", padding: "16px 12px" }}>
+        <aside style={{ width: 220, flexShrink: 0, borderRight: "1px solid #E5E7EB", background: "#FAFAFA", display: "flex", flexDirection: "column", padding: "16px 12px", paddingTop: 20 }}>
           {navGroups.map((group) => (
             <div key={group.label} style={{ marginBottom: 24 }}>
               <div style={{ fontSize: 11, fontWeight: 600, color: "#9CA3AF", letterSpacing: "0.05em", textTransform: "uppercase", padding: "0 8px", marginBottom: 6 }}>{group.label}</div>
               {group.items.map(({ icon: Icon, label, active }) => (
                 <div key={label} style={{
-                  display: "flex", alignItems: "center", gap: 9, padding: "7px 10px", borderRadius: 7,
+                  display: "flex", alignItems: "center", gap: 9, padding: "7px 10px", borderRadius: 10,
                   background: active ? TEAL_LIGHT : "transparent",
                   color: active ? TEAL : "#4B5563",
                   fontWeight: active ? 600 : 400,
@@ -93,7 +93,7 @@ export function AlmondStyle() {
           ))}
 
           <div style={{ marginTop: "auto" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 7, background: "#F3F4F6", cursor: "pointer" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 10, background: "#F3F4F6", cursor: "pointer" }}>
               <Search size={13} style={{ color: "#9CA3AF" }} />
               <span style={{ fontSize: 12.5, color: "#9CA3AF" }}>Search...</span>
               <span style={{ marginLeft: "auto", fontSize: 10.5, color: "#D1D5DB", background: "#E5E7EB", borderRadius: 4, padding: "2px 5px" }}>⌘K</span>
@@ -122,10 +122,10 @@ export function AlmondStyle() {
               { label: "Deals Closed", value: "8", delta: "+2 vs Apr", icon: Briefcase },
               { label: "Active Reps", value: "5", delta: "of 5 total", icon: Users },
             ].map(({ label, value, delta, icon: Icon }) => (
-              <div key={label} style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 10, padding: "20px 22px" }}>
+              <div key={label} style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 16, padding: "20px 22px" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                   <span style={{ fontSize: 12, color: "#6B7280", fontWeight: 500 }}>{label}</span>
-                  <div style={{ width: 28, height: 28, background: TEAL_LIGHT, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <div style={{ width: 28, height: 28, background: TEAL_LIGHT, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <Icon size={14} style={{ color: TEAL }} />
                   </div>
                 </div>
@@ -138,7 +138,7 @@ export function AlmondStyle() {
           {/* Bottom grid */}
           <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr", gap: 20 }}>
             {/* Top Earners table */}
-            <div style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 10, overflow: "hidden" }}>
+            <div style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 16, overflow: "hidden" }}>
               <div style={{ padding: "18px 22px", borderBottom: "1px solid #F3F4F6", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div>
                   <div style={{ fontSize: 14.5, fontWeight: 700, color: "#111827" }}>Top Earners</div>
@@ -183,24 +183,24 @@ export function AlmondStyle() {
             {/* Right column */}
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {/* Quick Action */}
-              <div style={{ background: TEAL_LIGHT, border: `1px solid ${TEAL_MEDIUM}`, borderRadius: 10, padding: "20px 22px" }}>
+              <div style={{ background: TEAL_LIGHT, border: `1px solid ${TEAL_MEDIUM}`, borderRadius: 16, padding: "20px 22px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
                   <Zap size={16} style={{ color: TEAL }} />
                   <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>Run Calculation</div>
                 </div>
                 <p style={{ fontSize: 12.5, color: "#6B7280", lineHeight: 1.6, marginBottom: 16 }}>Trigger a commission run for the current period across all active reps and plans.</p>
-                <button style={{ width: "100%", padding: "10px", borderRadius: 8, background: TEAL, color: "#fff", fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer" }}>
+                <button style={{ width: "100%", padding: "10px", borderRadius: 12, background: TEAL, color: "#fff", fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer" }}>
                   Run May 2026
                 </button>
               </div>
 
               {/* Recent Runs */}
-              <div style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 10, padding: "18px 22px", flex: 1 }}>
+              <div style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 16, padding: "18px 22px", flex: 1 }}>
                 <div style={{ fontSize: 14.5, fontWeight: 700, color: "#111827", marginBottom: 4 }}>Recent Runs</div>
                 <div style={{ fontSize: 12, color: "#9CA3AF", marginBottom: 16 }}>Previous calculation jobs</div>
                 {runs.map((r) => (
                   <div key={r.period} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderBottom: "1px solid #F3F4F6" }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 8, background: "#F3F4F6", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 10, background: "#F3F4F6", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <Play size={13} style={{ color: TEAL }} />
                     </div>
                     <div style={{ flex: 1 }}>
