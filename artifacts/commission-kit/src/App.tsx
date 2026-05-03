@@ -19,7 +19,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen overflow-hidden bg-sidebar">
       <Sidebar />
-      <div className="flex-1 overflow-y-auto p-3">
+      <div className="flex-1 overflow-y-auto pt-0 pl-0 pr-1 pb-1">
         <div className="rounded-2xl border border-border bg-card min-h-[calc(100%-0px)] shadow-xs">
           <main className="mx-auto py-8 px-6 lg:px-10 max-w-6xl">
             {children}
