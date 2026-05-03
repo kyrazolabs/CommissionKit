@@ -21,13 +21,12 @@ function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen flex-col overflow-hidden bg-sidebar">
       {/* Top header — full width */}
       <Header />
-
       {/* Body row: sidebar + content */}
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
 
         {/* Main content — #FAFAFA chrome, white rounded card */}
-        <div className="flex-1 overflow-y-auto" style={{ background: "hsl(var(--sidebar))", padding: "0 4px 4px 0" }}>
+        <div className="flex-1 overflow-y-auto pr-[8px] pb-[8px]" style={{ background: "hsl(var(--sidebar))", padding: "0 4px 4px 0" }}>
           <div className="bg-card rounded-[18px] border border-card-border min-h-full shadow-xs">
             <main className="mx-auto py-8 px-8 lg:px-10 max-w-6xl">
               {children}
