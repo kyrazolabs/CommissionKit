@@ -3,20 +3,30 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: CommissionKit API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: reps
+    description: Sales rep management
+  - name: plans
+    description: Commission plan management
+  - name: deals
+    description: Deal management and CSV import
+  - name: runs
+    description: Commission calculation runs
+  - name: dashboard
+    description: Summary and analytics
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +34,345 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ── Reps ──────────────────────────────────────────────────────────────────
+  /reps:
+    get:
+      operationId: listReps
+      tags: [reps]
+      summary: List all sales reps
+      responses:
+        "200":
+          description: List of reps
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Rep"
+    post:
+      operationId: createRep
+      tags: [reps]
+      summary: Create a sales rep
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRepBody"
+      responses:
+        "201":
+          description: Created rep
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Rep"
+
+  /reps/{id}:
+    get:
+      operationId: getRep
+      tags: [reps]
+      summary: Get a rep by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Rep
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Rep"
+    put:
+      operationId: updateRep
+      tags: [reps]
+      summary: Update a rep
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRepBody"
+      responses:
+        "200":
+          description: Updated rep
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Rep"
+    delete:
+      operationId: deleteRep
+      tags: [reps]
+      summary: Delete a rep
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Plans ─────────────────────────────────────────────────────────────────
+  /plans:
+    get:
+      operationId: listPlans
+      tags: [plans]
+      summary: List all commission plans
+      responses:
+        "200":
+          description: List of plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Plan"
+    post:
+      operationId: createPlan
+      tags: [plans]
+      summary: Create a commission plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlanBody"
+      responses:
+        "201":
+          description: Created plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plan"
+
+  /plans/{id}:
+    get:
+      operationId: getPlan
+      tags: [plans]
+      summary: Get a plan by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plan"
+    put:
+      operationId: updatePlan
+      tags: [plans]
+      summary: Update a commission plan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlanBody"
+      responses:
+        "200":
+          description: Updated plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plan"
+    delete:
+      operationId: deletePlan
+      tags: [plans]
+      summary: Delete a plan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Deals ─────────────────────────────────────────────────────────────────
+  /deals:
+    get:
+      operationId: listDeals
+      tags: [deals]
+      summary: List deals
+      parameters:
+        - name: repId
+          in: query
+          schema:
+            type: integer
+        - name: period
+          in: query
+          description: "Filter by period (YYYY-MM)"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of deals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Deal"
+    post:
+      operationId: createDeal
+      tags: [deals]
+      summary: Create a single deal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDealBody"
+      responses:
+        "201":
+          description: Created deal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deal"
+
+  /deals/import:
+    post:
+      operationId: importDeals
+      tags: [deals]
+      summary: Bulk import deals from parsed CSV rows
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImportDealsBody"
+      responses:
+        "200":
+          description: Import result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportDealsResult"
+
+  /deals/{id}:
+    delete:
+      operationId: deleteDeal
+      tags: [deals]
+      summary: Delete a deal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Commission Runs ────────────────────────────────────────────────────────
+  /runs:
+    get:
+      operationId: listRuns
+      tags: [runs]
+      summary: List commission runs
+      responses:
+        "200":
+          description: List of runs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CommissionRun"
+    post:
+      operationId: createRun
+      tags: [runs]
+      summary: Trigger a commission calculation run
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRunBody"
+      responses:
+        "201":
+          description: Run with results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommissionRunWithResults"
+
+  /runs/{id}:
+    get:
+      operationId: getRun
+      tags: [runs]
+      summary: Get a run with its results
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Run with results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommissionRunWithResults"
+
+  # ── Dashboard ──────────────────────────────────────────────────────────────
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Team-wide commission summary for current period
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/rep-summary/{repId}:
+    get:
+      operationId: getRepSummary
+      tags: [dashboard]
+      summary: Summary for a single rep including deal-by-deal breakdown
+      parameters:
+        - name: repId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Rep summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RepSummary"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +380,369 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    # ── Rep ──────────────────────────────────────────────────────────────────
+    Rep:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+        planId:
+          type: integer
+          nullable: true
+        planName:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required: [id, name, email, role, planId, planName, createdAt]
+
+    CreateRepBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+        planId:
+          type: integer
+          nullable: true
+      required: [name, email, role]
+
+    # ── Plan ─────────────────────────────────────────────────────────────────
+    PlanTier:
+      type: object
+      properties:
+        id:
+          type: integer
+        fromAmount:
+          type: number
+        toAmount:
+          type: number
+          nullable: true
+        rate:
+          type: number
+          description: "Commission rate as a decimal (e.g. 0.05 = 5%)"
+      required: [id, fromAmount, toAmount, rate]
+
+    Plan:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [flat, tiered, accelerator]
+        flatRate:
+          type: number
+          nullable: true
+          description: "Used when type=flat"
+        acceleratorThreshold:
+          type: number
+          nullable: true
+          description: "Deal value at which accelerator kicks in"
+        acceleratorRate:
+          type: number
+          nullable: true
+          description: "Rate applied above the accelerator threshold"
+        clawbackDays:
+          type: integer
+          nullable: true
+          description: "Number of days before commission is clawed back if deal cancels"
+        tiers:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlanTier"
+        createdAt:
+          type: string
+      required: [id, name, type, flatRate, acceleratorThreshold, acceleratorRate, clawbackDays, tiers, createdAt]
+
+    CreatePlanTier:
+      type: object
+      properties:
+        fromAmount:
+          type: number
+        toAmount:
+          type: number
+          nullable: true
+        rate:
+          type: number
+      required: [fromAmount, rate]
+
+    CreatePlanBody:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [flat, tiered, accelerator]
+        flatRate:
+          type: number
+          nullable: true
+        acceleratorThreshold:
+          type: number
+          nullable: true
+        acceleratorRate:
+          type: number
+          nullable: true
+        clawbackDays:
+          type: integer
+          nullable: true
+        tiers:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreatePlanTier"
+      required: [name, type]
+
+    # ── Deal ─────────────────────────────────────────────────────────────────
+    Deal:
+      type: object
+      properties:
+        id:
+          type: integer
+        repId:
+          type: integer
+        repName:
+          type: string
+        name:
+          type: string
+        amount:
+          type: number
+        closeDate:
+          type: string
+        period:
+          type: string
+          description: "YYYY-MM"
+        stage:
+          type: string
+          enum: [closed_won, closed_lost, pending]
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required: [id, repId, repName, name, amount, closeDate, period, stage, notes, createdAt]
+
+    CreateDealBody:
+      type: object
+      properties:
+        repId:
+          type: integer
+        name:
+          type: string
+        amount:
+          type: number
+        closeDate:
+          type: string
+        period:
+          type: string
+        stage:
+          type: string
+          enum: [closed_won, closed_lost, pending]
+        notes:
+          type: string
+          nullable: true
+      required: [repId, name, amount, closeDate, period, stage]
+
+    ImportDealsBody:
+      type: object
+      properties:
+        period:
+          type: string
+          description: "YYYY-MM period for these deals"
+        deals:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreateDealBody"
+      required: [period, deals]
+
+    ImportDealsResult:
+      type: object
+      properties:
+        imported:
+          type: integer
+        skipped:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: string
+      required: [imported, skipped, errors]
+
+    # ── Commission Run ────────────────────────────────────────────────────────
+    CommissionResult:
+      type: object
+      properties:
+        id:
+          type: integer
+        repId:
+          type: integer
+        repName:
+          type: string
+        dealId:
+          type: integer
+        dealName:
+          type: string
+        dealAmount:
+          type: number
+        rateApplied:
+          type: number
+        commissionAmount:
+          type: number
+        calculationNote:
+          type: string
+      required: [id, repId, repName, dealId, dealName, dealAmount, rateApplied, commissionAmount, calculationNote]
+
+    CommissionRun:
+      type: object
+      properties:
+        id:
+          type: integer
+        period:
+          type: string
+        totalCommission:
+          type: number
+        totalDeals:
+          type: integer
+        repsCount:
+          type: integer
+        createdAt:
+          type: string
+      required: [id, period, totalCommission, totalDeals, repsCount, createdAt]
+
+    CommissionRunWithResults:
+      type: object
+      properties:
+        id:
+          type: integer
+        period:
+          type: string
+        totalCommission:
+          type: number
+        totalDeals:
+          type: integer
+        repsCount:
+          type: integer
+        createdAt:
+          type: string
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommissionResult"
+      required: [id, period, totalCommission, totalDeals, repsCount, createdAt, results]
+
+    CreateRunBody:
+      type: object
+      properties:
+        period:
+          type: string
+          description: "YYYY-MM period to calculate"
+      required: [period]
+
+    # ── Dashboard ─────────────────────────────────────────────────────────────
+    RepEarning:
+      type: object
+      properties:
+        repId:
+          type: integer
+        repName:
+          type: string
+        totalCommission:
+          type: number
+        totalDeals:
+          type: integer
+        totalRevenue:
+          type: number
+      required: [repId, repName, totalCommission, totalDeals, totalRevenue]
+
+    DashboardSummary:
+      type: object
+      properties:
+        period:
+          type: string
+        totalCommission:
+          type: number
+        totalRevenue:
+          type: number
+        totalDeals:
+          type: integer
+        totalReps:
+          type: integer
+        repEarnings:
+          type: array
+          items:
+            $ref: "#/components/schemas/RepEarning"
+        recentRuns:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommissionRun"
+      required: [period, totalCommission, totalRevenue, totalDeals, totalReps, repEarnings, recentRuns]
+
+    RepDealResult:
+      type: object
+      properties:
+        dealId:
+          type: integer
+        dealName:
+          type: string
+        dealAmount:
+          type: number
+        closeDate:
+          type: string
+        rateApplied:
+          type: number
+        commissionAmount:
+          type: number
+        calculationNote:
+          type: string
+      required: [dealId, dealName, dealAmount, closeDate, rateApplied, commissionAmount, calculationNote]
+
+    RepSummary:
+      type: object
+      properties:
+        repId:
+          type: integer
+        repName:
+          type: string
+        email:
+          type: string
+        planName:
+          type: string
+          nullable: true
+        period:
+          type: string
+        totalCommission:
+          type: number
+        totalRevenue:
+          type: number
+        totalDeals:
+          type: integer
+        dealBreakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/RepDealResult"
+        monthlyHistory:
+          type: array
+          items:
+            type: object
+            properties:
+              period:
+                type: string
+              totalCommission:
+                type: number
+              totalDeals:
+                type: integer
+            required: [period, totalCommission, totalDeals]
+      required: [repId, repName, email, planName, period, totalCommission, totalRevenue, totalDeals, dealBreakdown, monthlyHistory]
