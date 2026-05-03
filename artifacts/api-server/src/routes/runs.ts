@@ -2,7 +2,7 @@ import { Router } from "express";
 import { db, commissionRunsTable, commissionResultsTable, dealsTable, repsTable, plansTable, planTiersTable } from "@workspace/db";
 import { eq, and, desc } from "drizzle-orm";
 import { CreateRunBody, GetRunParams } from "@workspace/api-zod";
-import { requireAuth, type AuthenticatedRequest } from "../middleware/auth";
+import { requireWorkspaceMember, type AuthenticatedRequest } from "../middleware/auth";
 
 const router = Router();
 
@@ -95,11 +95,11 @@ async function formatRun(run: typeof commissionRunsTable.$inferSelect) {
   };
 }
 
-router.get("/runs", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const userId = req.userId!;
+router.get("/runs", ...requireWorkspaceMember("member"), async (req: AuthenticatedRequest, res): Promise<void> => {
+  const workspaceId = req.workspaceId!;
   const runs = await db.select().from(commissionRunsTable)
-    .where(eq(commissionRunsTable.userId, userId))
-    .orderBy(commissionRunsTable.createdAt);
+    .where(eq(commissionRunsTable.workspaceId, workspaceId))
+    .orderBy(desc(commissionRunsTable.createdAt));
   res.json(
     runs.map((r) => ({
       id: r.id,
@@ -112,19 +112,18 @@ router.get("/runs", requireAuth, async (req: AuthenticatedRequest, res): Promise
   );
 });
 
-router.post("/runs", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const userId = req.userId!;
+router.post("/runs", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
+  const workspaceId = req.workspaceId!;
   const body = CreateRunBody.parse(req.body);
   const { period } = body;
 
-  // Only compute over this user's own data
   const deals = await db
     .select()
     .from(dealsTable)
-    .where(and(eq(dealsTable.userId, userId), eq(dealsTable.period, period), eq(dealsTable.stage, "closed_won")));
+    .where(and(eq(dealsTable.workspaceId, workspaceId), eq(dealsTable.period, period), eq(dealsTable.stage, "closed_won")));
 
-  const reps = await db.select().from(repsTable).where(eq(repsTable.userId, userId));
-  const plans = await db.select().from(plansTable).where(eq(plansTable.userId, userId));
+  const reps = await db.select().from(repsTable).where(eq(repsTable.workspaceId, workspaceId));
+  const plans = await db.select().from(plansTable).where(eq(plansTable.workspaceId, workspaceId));
   const tiers = await db.select().from(planTiersTable).orderBy(planTiersTable.fromAmount);
 
   const planMap = new Map(plans.map((p) => [p.id, p]));
@@ -138,7 +137,7 @@ router.post("/runs", requireAuth, async (req: AuthenticatedRequest, res): Promis
 
   const [run] = await db
     .insert(commissionRunsTable)
-    .values({ userId, period, totalCommission: "0", totalDeals: 0, repsCount: 0 })
+    .values({ workspaceId, period, totalCommission: "0", totalDeals: 0, repsCount: 0 })
     .returning();
 
   let totalCommission = 0;
@@ -191,11 +190,11 @@ router.post("/runs", requireAuth, async (req: AuthenticatedRequest, res): Promis
   res.status(201).json(result);
 });
 
-router.get("/runs/:id", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const userId = req.userId!;
+router.get("/runs/:id", ...requireWorkspaceMember("member"), async (req: AuthenticatedRequest, res): Promise<void> => {
+  const workspaceId = req.workspaceId!;
   const { id } = GetRunParams.parse(req.params);
   const [run] = await db.select().from(commissionRunsTable)
-    .where(and(eq(commissionRunsTable.id, id), eq(commissionRunsTable.userId, userId)));
+    .where(and(eq(commissionRunsTable.id, id), eq(commissionRunsTable.workspaceId, workspaceId)));
   if (!run) {
     res.status(404).json({ error: "Run not found" });
     return;

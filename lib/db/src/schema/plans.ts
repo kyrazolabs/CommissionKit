@@ -4,9 +4,9 @@ import { z } from "zod/v4";
 
 export const plansTable = pgTable("plans", {
   id: serial("id").primaryKey(),
-  userId: text("user_id").notNull().default(""),
+  workspaceId: integer("workspace_id").notNull(),
   name: text("name").notNull(),
-  type: text("type").notNull(), // flat | tiered | accelerator
+  type: text("type").notNull(),
   flatRate: numeric("flat_rate", { precision: 10, scale: 4 }),
   acceleratorThreshold: numeric("accelerator_threshold", { precision: 12, scale: 2 }),
   acceleratorRate: numeric("accelerator_rate", { precision: 10, scale: 4 }),

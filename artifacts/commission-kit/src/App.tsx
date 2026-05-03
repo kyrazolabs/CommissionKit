@@ -1,4 +1,4 @@
-import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
+import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,6 +17,8 @@ import { BillingPage } from "@/pages/billing";
 import { LoginPage } from "@/pages/login";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { WorkspaceProvider, useWorkspace } from "@/hooks/use-workspace";
+import { useState } from "react";
 
 const queryClient = new QueryClient();
 
@@ -38,13 +40,29 @@ function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ProtectedRouter() {
-  const { session, loading } = useAuth();
+function CreateWorkspaceScreen() {
+  const { createWorkspace } = useWorkspace();
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
+  const [creating, setCreating] = useState(false);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-sidebar">
-        <div className="flex flex-col items-center gap-3">
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    setCreating(true);
+    setError("");
+    try {
+      await createWorkspace(name.trim());
+    } catch {
+      setError("Failed to create workspace. Please try again.");
+      setCreating(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-sidebar px-4">
+      <div className="bg-card border border-card-border rounded-2xl shadow-sm w-full max-w-sm p-8">
+        <div className="flex justify-center mb-6">
           <svg width="40" height="40" viewBox="0 0 56 56" fill="none">
             <rect width="56" height="56" rx="14" fill="#111827" />
             <line x1="16" y1="40" x2="40" y2="16" stroke="#0D9488" strokeWidth="3.5" strokeLinecap="round" />
@@ -52,15 +70,59 @@ function ProtectedRouter() {
             <circle cx="36" cy="36" r="7" fill="none" stroke="#0D9488" strokeWidth="3" />
             <circle cx="36" cy="36" r="2.5" fill="#0D9488" />
           </svg>
-          <p className="text-sm text-muted-foreground animate-pulse">Loading…</p>
         </div>
+        <h1 className="text-[18px] font-bold text-foreground text-center mb-1">Create your workspace</h1>
+        <p className="text-[13px] text-muted-foreground text-center mb-6">
+          A workspace holds your team's reps, plans, and deals.
+        </p>
+        <form onSubmit={handleCreate} className="space-y-4">
+          <input
+            type="text"
+            placeholder="e.g. Acme Sales"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+            autoFocus
+          />
+          {error && <p className="text-[12px] text-destructive">{error}</p>}
+          <button
+            type="submit"
+            disabled={!name.trim() || creating}
+            className="w-full rounded-lg bg-primary text-primary-foreground px-4 py-2.5 text-[14px] font-semibold hover:bg-primary/90 disabled:opacity-50 transition-colors"
+          >
+            {creating ? "Creating…" : "Create workspace"}
+          </button>
+        </form>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
-  if (!session) {
-    return <LoginPage />;
-  }
+function AppLoader() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-sidebar">
+      <div className="flex flex-col items-center gap-3">
+        <svg width="40" height="40" viewBox="0 0 56 56" fill="none">
+          <rect width="56" height="56" rx="14" fill="#111827" />
+          <line x1="16" y1="40" x2="40" y2="16" stroke="#0D9488" strokeWidth="3.5" strokeLinecap="round" />
+          <circle cx="20" cy="20" r="5" fill="#0D9488" />
+          <circle cx="36" cy="36" r="7" fill="none" stroke="#0D9488" strokeWidth="3" />
+          <circle cx="36" cy="36" r="2.5" fill="#0D9488" />
+        </svg>
+        <p className="text-sm text-muted-foreground animate-pulse">Loading…</p>
+      </div>
+    </div>
+  );
+}
+
+function ProtectedRouter() {
+  const { session, loading: authLoading } = useAuth();
+  const { activeWorkspace, loading: wsLoading } = useWorkspace();
+
+  if (authLoading) return <AppLoader />;
+  if (!session) return <LoginPage />;
+  if (wsLoading) return <AppLoader />;
+  if (!activeWorkspace) return <CreateWorkspaceScreen />;
 
   return (
     <Layout>
@@ -84,14 +146,16 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-              <ProtectedRouter />
-            </WouterRouter>
-            <Toaster />
-          </TooltipProvider>
-        </QueryClientProvider>
+        <WorkspaceProvider>
+          <QueryClientProvider client={queryClient}>
+            <TooltipProvider>
+              <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+                <ProtectedRouter />
+              </WouterRouter>
+              <Toaster />
+            </TooltipProvider>
+          </QueryClientProvider>
+        </WorkspaceProvider>
       </AuthProvider>
     </ThemeProvider>
   );

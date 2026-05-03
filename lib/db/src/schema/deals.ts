@@ -4,13 +4,13 @@ import { z } from "zod/v4";
 
 export const dealsTable = pgTable("deals", {
   id: serial("id").primaryKey(),
-  userId: text("user_id").notNull().default(""),
+  workspaceId: integer("workspace_id").notNull(),
   repId: integer("rep_id").notNull(),
   name: text("name").notNull(),
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
   closeDate: text("close_date").notNull(),
-  period: text("period").notNull(), // YYYY-MM
-  stage: text("stage").notNull().default("closed_won"), // closed_won | closed_lost | pending
+  period: text("period").notNull(),
+  stage: text("stage").notNull().default("closed_won"),
   notes: text("notes"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });

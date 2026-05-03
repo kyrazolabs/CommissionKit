@@ -1,10 +1,13 @@
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Users, FileText, Briefcase, PlayCircle,
-  Search, Settings, CreditCard, LogOut
+  Settings, CreditCard, LogOut, ChevronsUpDown, Check, Plus,
+  Building2, Shield, Crown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
+import { useWorkspace, type Workspace } from "@/hooks/use-workspace";
+import { useState, useRef, useEffect } from "react";
 
 const navGroups = [
   {
@@ -31,6 +34,152 @@ const navGroups = [
   },
 ];
 
+const ROLE_ICONS = {
+  owner: Crown,
+  admin: Shield,
+  member: Users,
+};
+
+function RoleBadge({ role }: { role: Workspace["role"] }) {
+  return (
+    <span
+      className={cn(
+        "ml-auto text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full",
+        role === "owner" && "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+        role === "admin" && "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+        role === "member" && "bg-muted text-muted-foreground",
+      )}
+    >
+      {role}
+    </span>
+  );
+}
+
+function WorkspaceSwitcher() {
+  const { workspaces, activeWorkspace, setActiveWorkspace, createWorkspace } = useWorkspace();
+  const [open, setOpen] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [creating, setCreating] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+        setShowCreate(false);
+        setNewName("");
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName.trim() || creating) return;
+    setCreating(true);
+    try {
+      await createWorkspace(newName.trim());
+      setShowCreate(false);
+      setNewName("");
+      setOpen(false);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  if (!activeWorkspace) return null;
+
+  const initial = activeWorkspace.name.slice(0, 1).toUpperCase();
+
+  return (
+    <div ref={ref} className="relative px-3 pt-3 pb-2 border-b border-border">
+      <button
+        onClick={() => { setOpen((o) => !o); setShowCreate(false); }}
+        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[10px] hover:bg-muted text-left transition-colors group"
+      >
+        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground text-[11px] font-bold shrink-0">
+          {initial}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[13px] font-semibold text-foreground truncate leading-none">{activeWorkspace.name}</p>
+          <p className="text-[10px] text-muted-foreground capitalize mt-0.5">{activeWorkspace.role}</p>
+        </div>
+        <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
+      </button>
+
+      {open && (
+        <div className="absolute left-3 right-3 top-full mt-1 z-50 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+          {!showCreate ? (
+            <>
+              <div className="px-2 pt-2 pb-1">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1.5 pb-1">
+                  Workspaces
+                </p>
+                <div className="space-y-0.5">
+                  {workspaces.map((ws) => (
+                    <button
+                      key={ws.id}
+                      onClick={() => { setActiveWorkspace(ws); setOpen(false); }}
+                      className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-muted text-left transition-colors"
+                    >
+                      <div className="flex h-5 w-5 items-center justify-center rounded bg-primary/10 text-primary text-[10px] font-bold shrink-0">
+                        {ws.name.slice(0, 1).toUpperCase()}
+                      </div>
+                      <span className="flex-1 text-[13px] text-foreground truncate">{ws.name}</span>
+                      {activeWorkspace.id === ws.id && (
+                        <Check className="h-3.5 w-3.5 text-primary shrink-0" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="border-t border-border p-2">
+                <button
+                  onClick={() => setShowCreate(true)}
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-muted text-left transition-colors"
+                >
+                  <Plus className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-[12.5px] text-muted-foreground">New workspace</span>
+                </button>
+              </div>
+            </>
+          ) : (
+            <form onSubmit={handleCreate} className="p-3 space-y-2">
+              <p className="text-[11px] font-semibold text-foreground">New workspace</p>
+              <input
+                autoFocus
+                type="text"
+                placeholder="Workspace name"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                className="w-full rounded-lg border border-border bg-background px-2.5 py-1.5 text-[12.5px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => { setShowCreate(false); setNewName(""); }}
+                  className="flex-1 rounded-lg border border-border px-2 py-1.5 text-[12px] text-muted-foreground hover:bg-muted transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={!newName.trim() || creating}
+                  className="flex-1 rounded-lg bg-primary text-primary-foreground px-2 py-1.5 text-[12px] font-semibold hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                >
+                  {creating ? "…" : "Create"}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Sidebar() {
   const [location] = useLocation();
   const { user, signOut } = useAuth();
@@ -42,8 +191,11 @@ export function Sidebar() {
   return (
     <div className="flex h-full w-[220px] shrink-0 flex-col bg-sidebar">
 
+      {/* Workspace switcher */}
+      <WorkspaceSwitcher />
+
       {/* Nav groups */}
-      <div className="flex-1 overflow-y-auto px-3 pt-5 space-y-6">
+      <div className="flex-1 overflow-y-auto px-3 pt-4 space-y-6">
         {navGroups.map((group) => (
           <div key={group.label}>
             <p className="px-2 mb-1.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-sidebar-muted-foreground select-none">

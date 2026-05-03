@@ -7,7 +7,7 @@ import {
   ListDealsQueryParams,
   DeleteDealParams,
 } from "@workspace/api-zod";
-import { requireAuth, type AuthenticatedRequest } from "../middleware/auth";
+import { requireWorkspaceMember, type AuthenticatedRequest } from "../middleware/auth";
 
 const router = Router();
 
@@ -26,10 +26,10 @@ function formatDeal(deal: typeof dealsTable.$inferSelect, repName: string) {
   };
 }
 
-router.get("/deals", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const userId = req.userId!;
+router.get("/deals", ...requireWorkspaceMember("member"), async (req: AuthenticatedRequest, res): Promise<void> => {
+  const workspaceId = req.workspaceId!;
   const query = ListDealsQueryParams.parse(req.query);
-  const conditions: ReturnType<typeof eq>[] = [eq(dealsTable.userId, userId)];
+  const conditions: ReturnType<typeof eq>[] = [eq(dealsTable.workspaceId, workspaceId)];
 
   if (query.repId !== undefined) conditions.push(eq(dealsTable.repId, query.repId));
   if (query.period !== undefined) conditions.push(eq(dealsTable.period, query.period));
@@ -40,20 +40,20 @@ router.get("/deals", requireAuth, async (req: AuthenticatedRequest, res): Promis
       repName: repsTable.name,
     })
     .from(dealsTable)
-    .leftJoin(repsTable, and(eq(dealsTable.repId, repsTable.id), eq(repsTable.userId, userId)))
+    .leftJoin(repsTable, and(eq(dealsTable.repId, repsTable.id), eq(repsTable.workspaceId, workspaceId)))
     .where(and(...conditions))
     .orderBy(dealsTable.closeDate);
 
   res.json(deals.map((d) => formatDeal(d.deal, d.repName ?? "Unknown")));
 });
 
-router.post("/deals", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const userId = req.userId!;
+router.post("/deals", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
+  const workspaceId = req.workspaceId!;
   const body = CreateDealBody.parse(req.body);
   const [deal] = await db
     .insert(dealsTable)
     .values({
-      userId,
+      workspaceId,
       repId: body.repId,
       name: body.name,
       amount: body.amount.toString(),
@@ -65,12 +65,12 @@ router.post("/deals", requireAuth, async (req: AuthenticatedRequest, res): Promi
     .returning();
 
   const [rep] = await db.select({ name: repsTable.name }).from(repsTable)
-    .where(and(eq(repsTable.id, deal.repId), eq(repsTable.userId, userId)));
+    .where(and(eq(repsTable.id, deal.repId), eq(repsTable.workspaceId, workspaceId)));
   res.status(201).json(formatDeal(deal, rep?.name ?? "Unknown"));
 });
 
-router.post("/deals/import", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const userId = req.userId!;
+router.post("/deals/import", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
+  const workspaceId = req.workspaceId!;
   const body = ImportDealsBody.parse(req.body);
   const errors: string[] = [];
   let imported = 0;
@@ -79,14 +79,14 @@ router.post("/deals/import", requireAuth, async (req: AuthenticatedRequest, res)
   for (const d of body.deals) {
     try {
       const [rep] = await db.select({ id: repsTable.id }).from(repsTable)
-        .where(and(eq(repsTable.id, d.repId), eq(repsTable.userId, userId)));
+        .where(and(eq(repsTable.id, d.repId), eq(repsTable.workspaceId, workspaceId)));
       if (!rep) {
         errors.push(`Deal "${d.name}": rep ID ${d.repId} not found`);
         skipped++;
         continue;
       }
       await db.insert(dealsTable).values({
-        userId,
+        workspaceId,
         repId: d.repId,
         name: d.name,
         amount: d.amount.toString(),
@@ -105,10 +105,10 @@ router.post("/deals/import", requireAuth, async (req: AuthenticatedRequest, res)
   res.json({ imported, skipped, errors });
 });
 
-router.delete("/deals/:id", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const userId = req.userId!;
+router.delete("/deals/:id", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
+  const workspaceId = req.workspaceId!;
   const { id } = DeleteDealParams.parse(req.params);
-  await db.delete(dealsTable).where(and(eq(dealsTable.id, id), eq(dealsTable.userId, userId)));
+  await db.delete(dealsTable).where(and(eq(dealsTable.id, id), eq(dealsTable.workspaceId, workspaceId)));
   res.status(204).send();
 });
 

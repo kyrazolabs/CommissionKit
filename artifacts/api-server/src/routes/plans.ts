@@ -8,15 +8,17 @@ import {
   UpdatePlanParams,
   DeletePlanParams,
 } from "@workspace/api-zod";
-import { requireAuth, type AuthenticatedRequest } from "../middleware/auth";
+import { requireWorkspaceMember, type AuthenticatedRequest } from "../middleware/auth";
 
 const router = Router();
 
-async function getPlanWithTiers(id: number, userId: string) {
+async function getPlanWithTiers(id: number, workspaceId: number) {
   const [plan] = await db.select().from(plansTable)
-    .where(and(eq(plansTable.id, id), eq(plansTable.userId, userId)));
+    .where(and(eq(plansTable.id, id), eq(plansTable.workspaceId, workspaceId)));
   if (!plan) return null;
-  const tiers = await db.select().from(planTiersTable).where(eq(planTiersTable.planId, id)).orderBy(planTiersTable.fromAmount);
+  const tiers = await db.select().from(planTiersTable)
+    .where(eq(planTiersTable.planId, id))
+    .orderBy(planTiersTable.fromAmount);
   return {
     ...plan,
     flatRate: plan.flatRate !== null ? Number(plan.flatRate) : null,
@@ -32,20 +34,22 @@ async function getPlanWithTiers(id: number, userId: string) {
   };
 }
 
-router.get("/plans", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const userId = req.userId!;
-  const plans = await db.select().from(plansTable).where(eq(plansTable.userId, userId)).orderBy(plansTable.name);
-  const withTiers = await Promise.all(plans.map((p) => getPlanWithTiers(p.id, userId)));
+router.get("/plans", ...requireWorkspaceMember("member"), async (req: AuthenticatedRequest, res): Promise<void> => {
+  const workspaceId = req.workspaceId!;
+  const plans = await db.select().from(plansTable)
+    .where(eq(plansTable.workspaceId, workspaceId))
+    .orderBy(plansTable.name);
+  const withTiers = await Promise.all(plans.map((p) => getPlanWithTiers(p.id, workspaceId)));
   res.json(withTiers.filter(Boolean));
 });
 
-router.post("/plans", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const userId = req.userId!;
+router.post("/plans", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
+  const workspaceId = req.workspaceId!;
   const body = CreatePlanBody.parse(req.body);
   const [plan] = await db
     .insert(plansTable)
     .values({
-      userId,
+      workspaceId,
       name: body.name,
       type: body.type,
       flatRate: body.flatRate?.toString() ?? null,
@@ -66,14 +70,14 @@ router.post("/plans", requireAuth, async (req: AuthenticatedRequest, res): Promi
     );
   }
 
-  const result = await getPlanWithTiers(plan.id, userId);
+  const result = await getPlanWithTiers(plan.id, workspaceId);
   res.status(201).json(result);
 });
 
-router.get("/plans/:id", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const userId = req.userId!;
+router.get("/plans/:id", ...requireWorkspaceMember("member"), async (req: AuthenticatedRequest, res): Promise<void> => {
+  const workspaceId = req.workspaceId!;
   const { id } = GetPlanParams.parse(req.params);
-  const plan = await getPlanWithTiers(id, userId);
+  const plan = await getPlanWithTiers(id, workspaceId);
   if (!plan) {
     res.status(404).json({ error: "Plan not found" });
     return;
@@ -81,8 +85,8 @@ router.get("/plans/:id", requireAuth, async (req: AuthenticatedRequest, res): Pr
   res.json(plan);
 });
 
-router.put("/plans/:id", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const userId = req.userId!;
+router.put("/plans/:id", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
+  const workspaceId = req.workspaceId!;
   const { id } = UpdatePlanParams.parse(req.params);
   const body = UpdatePlanBody.parse(req.body);
 
@@ -96,7 +100,7 @@ router.put("/plans/:id", requireAuth, async (req: AuthenticatedRequest, res): Pr
       acceleratorRate: body.acceleratorRate?.toString() ?? null,
       clawbackDays: body.clawbackDays ?? null,
     })
-    .where(and(eq(plansTable.id, id), eq(plansTable.userId, userId)));
+    .where(and(eq(plansTable.id, id), eq(plansTable.workspaceId, workspaceId)));
 
   if (body.tiers !== undefined) {
     await db.delete(planTiersTable).where(eq(planTiersTable.planId, id));
@@ -112,7 +116,7 @@ router.put("/plans/:id", requireAuth, async (req: AuthenticatedRequest, res): Pr
     }
   }
 
-  const result = await getPlanWithTiers(id, userId);
+  const result = await getPlanWithTiers(id, workspaceId);
   if (!result) {
     res.status(404).json({ error: "Plan not found" });
     return;
@@ -120,17 +124,17 @@ router.put("/plans/:id", requireAuth, async (req: AuthenticatedRequest, res): Pr
   res.json(result);
 });
 
-router.delete("/plans/:id", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const userId = req.userId!;
+router.delete("/plans/:id", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
+  const workspaceId = req.workspaceId!;
   const { id } = DeletePlanParams.parse(req.params);
   const [existing] = await db.select({ id: plansTable.id }).from(plansTable)
-    .where(and(eq(plansTable.id, id), eq(plansTable.userId, userId)));
+    .where(and(eq(plansTable.id, id), eq(plansTable.workspaceId, workspaceId)));
   if (!existing) {
     res.status(404).json({ error: "Plan not found" });
     return;
   }
   await db.delete(planTiersTable).where(eq(planTiersTable.planId, id));
-  await db.delete(plansTable).where(and(eq(plansTable.id, id), eq(plansTable.userId, userId)));
+  await db.delete(plansTable).where(and(eq(plansTable.id, id), eq(plansTable.workspaceId, workspaceId)));
   res.status(204).send();
 });
 

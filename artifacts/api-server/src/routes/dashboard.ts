@@ -2,7 +2,7 @@ import { Router } from "express";
 import { db, commissionRunsTable, commissionResultsTable, dealsTable, repsTable, plansTable } from "@workspace/db";
 import { eq, and, desc } from "drizzle-orm";
 import { GetRepSummaryParams } from "@workspace/api-zod";
-import { requireAuth, type AuthenticatedRequest } from "../middleware/auth";
+import { requireWorkspaceMember, type AuthenticatedRequest } from "../middleware/auth";
 
 const router = Router();
 
@@ -11,24 +11,24 @@ function currentPeriod() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
-router.get("/dashboard/summary", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const userId = req.userId!;
+router.get("/dashboard/summary", ...requireWorkspaceMember("member"), async (req: AuthenticatedRequest, res): Promise<void> => {
+  const workspaceId = req.workspaceId!;
   const period = currentPeriod();
 
-  const allReps = await db.select({ id: repsTable.id }).from(repsTable).where(eq(repsTable.userId, userId));
+  const allReps = await db.select({ id: repsTable.id }).from(repsTable).where(eq(repsTable.workspaceId, workspaceId));
   const totalReps = allReps.length;
 
   const runs = await db
     .select()
     .from(commissionRunsTable)
-    .where(and(eq(commissionRunsTable.userId, userId), eq(commissionRunsTable.period, period)))
+    .where(and(eq(commissionRunsTable.workspaceId, workspaceId), eq(commissionRunsTable.period, period)))
     .orderBy(desc(commissionRunsTable.createdAt))
     .limit(1);
 
   const recentRuns = await db
     .select()
     .from(commissionRunsTable)
-    .where(eq(commissionRunsTable.userId, userId))
+    .where(eq(commissionRunsTable.workspaceId, workspaceId))
     .orderBy(desc(commissionRunsTable.createdAt))
     .limit(5);
 
@@ -86,15 +86,15 @@ router.get("/dashboard/summary", requireAuth, async (req: AuthenticatedRequest, 
   });
 });
 
-router.get("/dashboard/rep-summary/:repId", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const userId = req.userId!;
+router.get("/dashboard/rep-summary/:repId", ...requireWorkspaceMember("member"), async (req: AuthenticatedRequest, res): Promise<void> => {
+  const workspaceId = req.workspaceId!;
   const { repId } = GetRepSummaryParams.parse(req.params);
   const period = (req.query.period as string | undefined) || currentPeriod();
 
   const [rep] = await db
     .select({ id: repsTable.id, name: repsTable.name, email: repsTable.email, planId: repsTable.planId })
     .from(repsTable)
-    .where(and(eq(repsTable.id, repId), eq(repsTable.userId, userId)));
+    .where(and(eq(repsTable.id, repId), eq(repsTable.workspaceId, workspaceId)));
 
   if (!rep) {
     res.status(404).json({ error: "Rep not found" });
@@ -104,14 +104,14 @@ router.get("/dashboard/rep-summary/:repId", requireAuth, async (req: Authenticat
   let planName: string | null = null;
   if (rep.planId) {
     const [plan] = await db.select({ name: plansTable.name }).from(plansTable)
-      .where(and(eq(plansTable.id, rep.planId), eq(plansTable.userId, userId)));
+      .where(and(eq(plansTable.id, rep.planId), eq(plansTable.workspaceId, workspaceId)));
     planName = plan?.name ?? null;
   }
 
   const latestRun = await db
     .select()
     .from(commissionRunsTable)
-    .where(and(eq(commissionRunsTable.userId, userId), eq(commissionRunsTable.period, period)))
+    .where(and(eq(commissionRunsTable.workspaceId, workspaceId), eq(commissionRunsTable.period, period)))
     .orderBy(desc(commissionRunsTable.createdAt))
     .limit(1);
 
@@ -162,7 +162,7 @@ router.get("/dashboard/rep-summary/:repId", requireAuth, async (req: Authenticat
   const allRuns = await db
     .select()
     .from(commissionRunsTable)
-    .where(eq(commissionRunsTable.userId, userId))
+    .where(eq(commissionRunsTable.workspaceId, workspaceId))
     .orderBy(desc(commissionRunsTable.createdAt))
     .limit(12);
 
