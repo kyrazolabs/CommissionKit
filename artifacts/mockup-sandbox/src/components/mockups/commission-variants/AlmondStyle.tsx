@@ -69,7 +69,6 @@ export function AlmondStyle() {
           </div>
         </div>
       </header>
-
       <div style={{ display: "flex", flex: 1 }}>
         {/* Sidebar */}
         <aside style={{ width: 220, flexShrink: 0, background: "#FAFAFA", display: "flex", flexDirection: "column", padding: "16px 12px", paddingTop: 20 }}>
@@ -102,7 +101,9 @@ export function AlmondStyle() {
         </aside>
 
         {/* Main content — light chrome matches sidebar, body card floats above it */}
-        <main style={{ flex: 1, overflowY: "auto", padding: "12px", background: "#FAFAFA" }}>
+        <main
+          style={{ flex: 1, overflowY: "auto", padding: "12px", background: "#FAFAFA" }}
+          className="pl-[0px] pr-[0px] pt-[0px] pb-[0px]">
         <div style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 18, minHeight: "calc(100%)", padding: "32px 40px", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
           {/* Breadcrumb */}
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
