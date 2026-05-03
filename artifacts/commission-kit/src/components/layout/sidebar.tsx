@@ -29,7 +29,7 @@ export function Sidebar() {
   const { theme, toggle } = useTheme();
 
   return (
-    <div className="flex h-full w-60 flex-col bg-sidebar shrink-0">
+    <div className="flex h-full w-60 flex-col bg-sidebar shrink-0 border-r-0" style={{ borderRight: "none" }}>
 
       {/* Logo */}
       <div className="flex h-[58px] items-center gap-3 px-5 border-b border-sidebar-border">

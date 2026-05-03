@@ -72,7 +72,7 @@ export function AlmondStyle() {
 
       <div style={{ display: "flex", flex: 1 }}>
         {/* Sidebar */}
-        <aside style={{ width: 220, flexShrink: 0, borderRight: "1px solid #E5E7EB", background: "#FAFAFA", display: "flex", flexDirection: "column", padding: "16px 12px", paddingTop: 20 }}>
+        <aside style={{ width: 220, flexShrink: 0, background: "#FAFAFA", display: "flex", flexDirection: "column", padding: "16px 12px", paddingTop: 20 }}>
           {navGroups.map((group) => (
             <div key={group.label} style={{ marginBottom: 24 }}>
               <div style={{ fontSize: 11, fontWeight: 600, color: "#9CA3AF", letterSpacing: "0.05em", textTransform: "uppercase", padding: "0 8px", marginBottom: 6 }}>{group.label}</div>
@@ -103,7 +103,7 @@ export function AlmondStyle() {
 
         {/* Main content — light chrome matches sidebar, body card floats above it */}
         <main style={{ flex: 1, overflowY: "auto", padding: "12px", background: "#FAFAFA" }}>
-        <div style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 18, minHeight: "calc(100%)", padding: "32px 40px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 18, minHeight: "calc(100%)", padding: "32px 40px", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
           {/* Breadcrumb */}
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
             <span style={{ fontSize: 12, color: TEAL, fontWeight: 600 }}>Overview</span>
