@@ -103,7 +103,7 @@ export function AlmondStyle() {
         {/* Main content — light chrome matches sidebar, body card floats above it */}
         <main
           style={{ flex: 1, overflowY: "auto", padding: "12px", background: "#FAFAFA" }}
-          className="pl-[0px] pr-[0px] pt-[0px] pb-[0px]">
+          className="pl-[2px] pr-[2px] pt-[2px] pb-[2px]">
         <div style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 18, minHeight: "calc(100%)", padding: "32px 40px", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
           {/* Breadcrumb */}
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
