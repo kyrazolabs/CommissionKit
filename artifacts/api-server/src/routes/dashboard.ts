@@ -85,7 +85,7 @@ router.get("/dashboard/summary", async (req, res): Promise<void> => {
 
 router.get("/dashboard/rep-summary/:repId", async (req, res): Promise<void> => {
   const { repId } = GetRepSummaryParams.parse(req.params);
-  const period = currentPeriod();
+  const period = (req.query.period as string | undefined) || currentPeriod();
 
   const [rep] = await db
     .select({ id: repsTable.id, name: repsTable.name, email: repsTable.email, planId: repsTable.planId })

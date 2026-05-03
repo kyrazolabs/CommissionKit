@@ -365,6 +365,12 @@ paths:
           required: true
           schema:
             type: integer
+        - name: period
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Filter by period (YYYY-MM). Defaults to current period."
       responses:
         "200":
           description: Rep summary

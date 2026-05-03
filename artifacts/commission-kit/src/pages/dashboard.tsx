@@ -13,8 +13,7 @@ import { Button } from "@/components/ui/button";
 export function Dashboard() {
   const currentPeriod = format(new Date(), "yyyy-MM");
   const { data: summary, isLoading } = useGetDashboardSummary(
-    { period: currentPeriod },
-    { query: { queryKey: getGetDashboardSummaryQueryKey({ period: currentPeriod }) } }
+    { query: { queryKey: getGetDashboardSummaryQueryKey() } }
   );
 
   if (isLoading) return <DashboardSkeleton />;

@@ -12,6 +12,7 @@ import { DealsPage } from "@/pages/deals";
 import { RunsPage } from "@/pages/runs";
 import { RunDetailsPage } from "@/pages/run-details";
 import { RepPortal } from "@/pages/rep-portal";
+import { SettingsPage } from "@/pages/settings";
 import { ThemeProvider } from "@/hooks/use-theme";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,7 @@ function Router() {
         <Route path="/runs" component={RunsPage} />
         <Route path="/runs/:id" component={RunDetailsPage} />
         <Route path="/reps/:id" component={RepPortal} />
+        <Route path="/settings" component={SettingsPage} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

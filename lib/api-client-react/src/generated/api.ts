@@ -25,6 +25,7 @@ import type {
   CreateRunBody,
   DashboardSummary,
   Deal,
+  GetRepSummaryParams,
   HealthStatus,
   ImportDealsBody,
   ImportDealsResult,
@@ -1570,22 +1571,44 @@ export function useGetDashboardSummary<
 /**
  * @summary Summary for a single rep including deal-by-deal breakdown
  */
-export const getGetRepSummaryUrl = (repId: number) => {
-  return `/api/dashboard/rep-summary/${repId}`;
+export const getGetRepSummaryUrl = (
+  repId: number,
+  params?: GetRepSummaryParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/dashboard/rep-summary/${repId}?${stringifiedParams}`
+    : `/api/dashboard/rep-summary/${repId}`;
 };
 
 export const getRepSummary = async (
   repId: number,
+  params?: GetRepSummaryParams,
   options?: RequestInit,
 ): Promise<RepSummary> => {
-  return customFetch<RepSummary>(getGetRepSummaryUrl(repId), {
+  return customFetch<RepSummary>(getGetRepSummaryUrl(repId, params), {
     ...options,
     method: "GET",
   });
 };
 
-export const getGetRepSummaryQueryKey = (repId: number) => {
-  return [`/api/dashboard/rep-summary/${repId}`] as const;
+export const getGetRepSummaryQueryKey = (
+  repId: number,
+  params?: GetRepSummaryParams,
+) => {
+  return [
+    `/api/dashboard/rep-summary/${repId}`,
+    ...(params ? [params] : []),
+  ] as const;
 };
 
 export const getGetRepSummaryQueryOptions = <
@@ -1593,6 +1616,7 @@ export const getGetRepSummaryQueryOptions = <
   TError = ErrorType<unknown>,
 >(
   repId: number,
+  params?: GetRepSummaryParams,
   options?: {
     query?: UseQueryOptions<
       Awaited<ReturnType<typeof getRepSummary>>,
@@ -1604,11 +1628,12 @@ export const getGetRepSummaryQueryOptions = <
 ) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetRepSummaryQueryKey(repId);
+  const queryKey =
+    queryOptions?.queryKey ?? getGetRepSummaryQueryKey(repId, params);
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getRepSummary>>> = ({
     signal,
-  }) => getRepSummary(repId, { signal, ...requestOptions });
+  }) => getRepSummary(repId, params, { signal, ...requestOptions });
 
   return {
     queryKey,
@@ -1636,6 +1661,7 @@ export function useGetRepSummary<
   TError = ErrorType<unknown>,
 >(
   repId: number,
+  params?: GetRepSummaryParams,
   options?: {
     query?: UseQueryOptions<
       Awaited<ReturnType<typeof getRepSummary>>,
@@ -1645,7 +1671,7 @@ export function useGetRepSummary<
     request?: SecondParameter<typeof customFetch>;
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getGetRepSummaryQueryOptions(repId, options);
+  const queryOptions = getGetRepSummaryQueryOptions(repId, params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

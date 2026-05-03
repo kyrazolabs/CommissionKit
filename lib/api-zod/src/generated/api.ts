@@ -398,6 +398,13 @@ export const GetRepSummaryParams = zod.object({
   repId: zod.coerce.number(),
 });
 
+export const GetRepSummaryQueryParams = zod.object({
+  period: zod.coerce
+    .string()
+    .optional()
+    .describe("Filter by period (YYYY-MM). Defaults to current period."),
+});
+
 export const GetRepSummaryResponse = zod.object({
   repId: zod.number(),
   repName: zod.string(),

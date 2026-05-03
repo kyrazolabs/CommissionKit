@@ -226,3 +226,10 @@ export type ListDealsParams = {
    */
   period?: string;
 };
+
+export type GetRepSummaryParams = {
+  /**
+   * Filter by period (YYYY-MM). Defaults to current period.
+   */
+  period?: string;
+};

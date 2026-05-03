@@ -1,21 +1,21 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { 
-  useListReps, getListRepsQueryKey, 
-  useCreateRep, 
-  useUpdateRep, 
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  useListReps, getListRepsQueryKey,
+  useCreateRep,
+  useUpdateRep,
   useDeleteRep,
   useListPlans, getListPlansQueryKey
 } from "@workspace/api-client-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, MoreHorizontal, Edit, Trash, ChevronRight } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Edit, Trash, ChevronRight, Users } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,8 +27,8 @@ export function RepsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  const filteredReps = reps?.filter(rep => 
-    rep.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredReps = reps?.filter(rep =>
+    rep.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     rep.email.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
@@ -36,40 +36,39 @@ export function RepsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Sales Representatives</h1>
-          <p className="text-muted-foreground">Manage your sales team and their commission plans.</p>
+          <p className="text-[12px] font-semibold text-primary mb-1">Team</p>
+          <h1 className="text-[28px] font-bold tracking-tight text-foreground leading-tight">Sales Representatives</h1>
+          <p className="text-[14px] text-muted-foreground mt-1">Manage your sales team and their commission plans.</p>
         </div>
         <RepFormDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} plans={plans || []} />
       </div>
 
       <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center space-x-2">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search reps..."
-                className="pl-8"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
+        <div className="px-5 pt-4 pb-3 border-b border-border">
+          <div className="relative max-w-sm">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search reps..."
+              className="pl-8"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
-        </CardHeader>
-        <CardContent>
+        </div>
+        <CardContent className="p-0">
           {isLoading ? (
-            <div className="space-y-2">
+            <div className="p-5 space-y-2">
               <Skeleton className="h-10 w-full" />
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
             </div>
           ) : filteredReps.length === 0 ? (
-            <div className="text-center py-10">
+            <div className="text-center py-10 px-5">
               <div className="bg-muted w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Users className="h-6 w-6 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-medium">No reps found</h3>
+              <h3 className="text-base font-semibold">No reps found</h3>
               <p className="text-sm text-muted-foreground mt-1 mb-4">
                 {searchTerm ? "Try adjusting your search query." : "Add your first sales representative to get started."}
               </p>
@@ -95,22 +94,29 @@ export function RepsPage() {
                 {filteredReps.map((rep) => (
                   <TableRow key={rep.id}>
                     <TableCell>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{rep.name}</span>
-                        <span className="text-sm text-muted-foreground">{rep.email}</span>
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-primary text-[11px] font-bold">
+                          {rep.name.split(" ").map(n => n[0]).join("")}
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{rep.name}</p>
+                          <p className="text-xs text-muted-foreground">{rep.email}</p>
+                        </div>
                       </div>
                     </TableCell>
-                    <TableCell>{rep.role}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{rep.role}</TableCell>
                     <TableCell>
                       {rep.planName ? (
-                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground">
+                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-secondary text-secondary-foreground border-primary/20">
                           {rep.planName}
                         </span>
                       ) : (
-                        <span className="text-sm text-muted-foreground italic">No plan assigned</span>
+                        <span className="text-sm text-muted-foreground italic">No plan</span>
                       )}
                     </TableCell>
-                    <TableCell>{format(new Date(rep.createdAt), "MMM d, yyyy")}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {format(new Date(rep.createdAt), "MMM d, yyyy")}
+                    </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -143,8 +149,6 @@ export function RepsPage() {
   );
 }
 
-import { Users } from "lucide-react";
-
 function RepFormDialog({ open, onOpenChange, plans, initialData }: any) {
   const isEditing = !!initialData;
   const [name, setName] = useState(initialData?.name || "");
@@ -160,9 +164,7 @@ function RepFormDialog({ open, onOpenChange, plans, initialData }: any) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const data = {
-      name,
-      email,
-      role,
+      name, email, role,
       planId: planId === "none" ? null : parseInt(planId, 10)
     };
 
@@ -178,12 +180,9 @@ function RepFormDialog({ open, onOpenChange, plans, initialData }: any) {
       createMutation.mutate({ data }, {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListRepsQueryKey() });
-          toast({ title: "Rep created", description: "The new sales rep has been successfully added." });
+          toast({ title: "Rep created", description: "The new sales rep has been added." });
           onOpenChange(false);
-          setName("");
-          setEmail("");
-          setRole("Account Executive");
-          setPlanId("none");
+          setName(""); setEmail(""); setRole("Account Executive"); setPlanId("none");
         }
       });
     }
@@ -195,10 +194,7 @@ function RepFormDialog({ open, onOpenChange, plans, initialData }: any) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!isEditing && (
         <DialogTrigger asChild>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Rep
-          </Button>
+          <Button><Plus className="mr-2 h-4 w-4" />Add Rep</Button>
         </DialogTrigger>
       )}
       <DialogContent className="sm:max-w-[425px]">
@@ -223,11 +219,9 @@ function RepFormDialog({ open, onOpenChange, plans, initialData }: any) {
               <Input id="role" value={role} onChange={e => setRole(e.target.value)} required />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="plan">Commission Plan</Label>
+              <Label>Commission Plan</Label>
               <Select value={planId} onValueChange={setPlanId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a plan" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Select a plan" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">No plan assigned</SelectItem>
                   {plans.map((p: any) => (
@@ -252,8 +246,7 @@ function RepEditAction({ rep, plans }: { rep: any, plans: any[] }) {
   return (
     <>
       <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setOpen(true); }}>
-        <Edit className="mr-2 h-4 w-4" />
-        Edit Details
+        <Edit className="mr-2 h-4 w-4" />Edit Details
       </DropdownMenuItem>
       <RepFormDialog open={open} onOpenChange={setOpen} plans={plans} initialData={rep} />
     </>
@@ -278,16 +271,18 @@ function RepDeleteAction({ rep }: { rep: any }) {
 
   return (
     <>
-      <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive" onSelect={(e) => { e.preventDefault(); setOpen(true); }}>
-        <Trash className="mr-2 h-4 w-4" />
-        Delete Rep
+      <DropdownMenuItem
+        className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+        onSelect={(e) => { e.preventDefault(); setOpen(true); }}
+      >
+        <Trash className="mr-2 h-4 w-4" />Delete Rep
       </DropdownMenuItem>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Are you absolutely sure?</DialogTitle>
             <DialogDescription>
-              This will permanently delete the representative <strong>{rep.name}</strong>. Their historical deals and commissions will be retained, but they will no longer appear in the active roster.
+              This will permanently delete <strong>{rep.name}</strong>. Their historical deals and commissions will be retained, but they will no longer appear in the active roster.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
