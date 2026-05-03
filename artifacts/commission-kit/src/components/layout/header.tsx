@@ -1,8 +1,15 @@
-import { Bell, ChevronRight, Sun, Moon } from "lucide-react";
+import { Bell, Sun, Moon } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
+import { useAuth } from "@/hooks/use-auth";
 
 export function Header() {
   const { theme, toggle } = useTheme();
+  const { user } = useAuth();
+
+  const initials = user?.email
+    ? user.email.slice(0, 2).toUpperCase()
+    : "??";
+  const displayName = user?.email ?? "";
 
   return (
     <header className="flex h-14 shrink-0 items-center bg-header px-5 z-10">
@@ -43,13 +50,16 @@ export function Header() {
         {/* Divider */}
         <div className="h-6 w-px bg-border" />
 
-        {/* User */}
-        <div className="flex items-center gap-2 cursor-pointer rounded-lg px-2 py-1.5 hover:bg-muted transition-colors">
+        {/* User avatar */}
+        <div className="flex items-center gap-2 rounded-lg px-2 py-1.5">
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
-            JS
+            {initials}
           </div>
-          <span className="text-[13px] font-medium text-foreground">Jane Smith</span>
-          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+          {displayName && (
+            <span className="text-[13px] font-medium text-foreground max-w-[160px] truncate">
+              {displayName}
+            </span>
+          )}
         </div>
       </div>
     </header>

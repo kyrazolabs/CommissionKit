@@ -1,9 +1,10 @@
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Users, FileText, Briefcase, PlayCircle,
-  Search, Settings
+  Search, Settings, CreditCard, LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
 
 const navGroups = [
   {
@@ -22,8 +23,9 @@ const navGroups = [
     ],
   },
   {
-    label: "Settings",
+    label: "Account",
     items: [
+      { name: "Billing",  href: "/billing",  icon: CreditCard },
       { name: "Settings", href: "/settings", icon: Settings },
     ],
   },
@@ -31,6 +33,11 @@ const navGroups = [
 
 export function Sidebar() {
   const [location] = useLocation();
+  const { user, signOut } = useAuth();
+
+  const initials = user?.email
+    ? user.email.slice(0, 2).toUpperCase()
+    : "??";
 
   return (
     <div className="flex h-full w-[220px] shrink-0 flex-col bg-sidebar">
@@ -75,12 +82,22 @@ export function Sidebar() {
         ))}
       </div>
 
-      {/* Search at bottom */}
-      <div className="px-3 pb-4 pt-3">
-        <button className="w-full flex items-center gap-2 rounded-[10px] px-2.5 py-2 bg-muted cursor-pointer hover:bg-muted/80 transition-colors">
-          <Search className="h-[13px] w-[13px] text-sidebar-muted-foreground shrink-0" />
-          <span className="flex-1 text-left text-[12.5px] text-sidebar-muted-foreground">Search...</span>
-          <kbd className="text-[10.5px] text-muted-foreground bg-border rounded px-1.5 py-0.5 font-mono">⌘K</kbd>
+      {/* Bottom: user info + sign out */}
+      <div className="px-3 pb-4 pt-2 space-y-2 border-t border-border mt-2">
+        {user && (
+          <div className="flex items-center gap-2.5 px-2 py-2">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+              {initials}
+            </div>
+            <span className="flex-1 text-[12px] text-muted-foreground truncate">{user.email}</span>
+          </div>
+        )}
+        <button
+          onClick={signOut}
+          className="w-full flex items-center gap-2.5 rounded-[10px] px-2.5 py-[7px] text-[13.5px] text-sidebar-foreground border border-transparent hover:bg-destructive/10 hover:text-destructive transition-colors"
+        >
+          <LogOut className="h-[15px] w-[15px] shrink-0 opacity-70" />
+          Sign out
         </button>
       </div>
     </div>

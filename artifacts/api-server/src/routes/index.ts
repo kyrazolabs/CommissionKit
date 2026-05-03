@@ -5,6 +5,7 @@ import plansRouter from "./plans";
 import dealsRouter from "./deals";
 import runsRouter from "./runs";
 import dashboardRouter from "./dashboard";
+import billingRouter from "./billing";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use(plansRouter);
 router.use(dealsRouter);
 router.use(runsRouter);
 router.use(dashboardRouter);
+router.use("/billing", billingRouter);
 
 export default router;
