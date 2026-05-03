@@ -11,15 +11,15 @@ const navGroups = [
     label: "Main",
     items: [
       { name: "Dashboard", href: "/", icon: LayoutDashboard },
-      { name: "Reps", href: "/reps", icon: Users },
-      { name: "Plans", href: "/plans", icon: FileText },
+      { name: "Reps",      href: "/reps", icon: Users },
+      { name: "Plans",     href: "/plans", icon: FileText },
     ],
   },
   {
     label: "Operations",
     items: [
       { name: "Deals", href: "/deals", icon: Briefcase },
-      { name: "Runs", href: "/runs", icon: PlayCircle },
+      { name: "Runs",  href: "/runs",  icon: PlayCircle },
     ],
   },
 ];
@@ -29,23 +29,26 @@ export function Sidebar() {
   const { theme, toggle } = useTheme();
 
   return (
-    <div className="flex h-full w-60 flex-col bg-sidebar border-r border-sidebar-border">
-      {/* Logo — no bottom border, blends with sidebar */}
-      <div className="flex h-14 items-center px-4 gap-2">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-          <BarChart2 className="h-4 w-4" />
+    <div className="flex h-full w-56 flex-col bg-sidebar border-r border-sidebar-border">
+
+      {/* Logo */}
+      <div className="flex h-14 items-center gap-2.5 px-4">
+        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
+          <BarChart2 className="h-3.5 w-3.5" />
         </div>
-        <span className="font-semibold tracking-tight text-sidebar-foreground text-sm">CommissionKit</span>
+        <span className="text-[13.5px] font-semibold tracking-tight text-sidebar-foreground">
+          CommissionKit
+        </span>
       </div>
 
       {/* Nav */}
-      <div className="flex-1 overflow-y-auto px-3 pt-2">
+      <div className="flex-1 overflow-y-auto px-2 pt-1">
         {navGroups.map((group) => (
-          <div key={group.label} className="mb-5">
-            <p className="px-2 mb-1 text-[10.5px] font-semibold uppercase tracking-widest text-sidebar-foreground/40">
+          <div key={group.label} className="mb-4">
+            <p className="px-2 mb-1 text-[10px] font-semibold uppercase tracking-[0.06em] text-sidebar-foreground/30 select-none">
               {group.label}
             </p>
-            <nav className="space-y-0.5">
+            <nav className="space-y-px">
               {group.items.map((item) => {
                 const isActive =
                   location === item.href ||
@@ -55,20 +58,19 @@ export function Sidebar() {
                     key={item.name}
                     href={item.href}
                     className={cn(
-                      "group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm font-medium transition-colors",
+                      "group flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors",
                       isActive
-                        ? "bg-sidebar-accent text-sidebar-accent-foreground border border-sidebar-accent-border"
-                        : "text-sidebar-foreground/60 hover:bg-sidebar-foreground/5 hover:text-sidebar-foreground border border-transparent"
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground/55 hover:bg-sidebar-foreground/5 hover:text-sidebar-foreground"
                     )}
                   >
                     <item.icon
                       className={cn(
-                        "h-4 w-4 flex-shrink-0 transition-colors",
+                        "h-3.5 w-3.5 flex-shrink-0",
                         isActive
                           ? "text-sidebar-primary"
-                          : "text-sidebar-foreground/35 group-hover:text-sidebar-foreground/60"
+                          : "text-sidebar-foreground/30 group-hover:text-sidebar-foreground/55"
                       )}
-                      aria-hidden="true"
                     />
                     {item.name}
                   </Link>
@@ -79,30 +81,32 @@ export function Sidebar() {
         ))}
       </div>
 
-      {/* Bottom: search + theme toggle + user */}
-      <div className="px-3 pb-4 space-y-3 border-t border-sidebar-border pt-3">
+      {/* Bottom */}
+      <div className="px-2 pb-3 pt-2 border-t border-sidebar-border space-y-2">
         {/* Search */}
-        <div className="flex items-center gap-2 px-2.5 py-2 rounded-xl bg-sidebar-foreground/5 cursor-pointer hover:bg-sidebar-foreground/8 transition-colors">
-          <Search className="h-3.5 w-3.5 text-sidebar-foreground/40" />
-          <span className="text-xs text-sidebar-foreground/40 flex-1">Search...</span>
-          <span className="text-[10px] text-sidebar-foreground/25 bg-sidebar-foreground/8 rounded px-1.5 py-0.5">⌘K</span>
+        <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-sidebar-foreground/5 cursor-pointer hover:bg-sidebar-foreground/8 transition-colors">
+          <Search className="h-3 w-3 text-sidebar-foreground/30 flex-shrink-0" />
+          <span className="text-[12px] text-sidebar-foreground/35 flex-1">Search...</span>
+          <kbd className="text-[9px] text-sidebar-foreground/25 bg-sidebar-foreground/8 rounded px-1 py-0.5 font-mono">⌘K</kbd>
         </div>
 
-        {/* User + theme toggle */}
-        <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-full bg-primary/15 flex items-center justify-center text-primary text-xs font-bold border border-primary/20 flex-shrink-0">
+        {/* User row */}
+        <div className="flex items-center gap-2">
+          <div className="h-7 w-7 rounded-full bg-primary/20 flex items-center justify-center text-primary text-[10px] font-bold border border-primary/25 flex-shrink-0">
             JS
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-sidebar-foreground truncate">Jane Smith</p>
-            <p className="text-[10.5px] text-sidebar-foreground/45 truncate">RevOps Manager</p>
+            <p className="text-[12px] font-semibold text-sidebar-foreground truncate leading-tight">Jane Smith</p>
+            <p className="text-[10.5px] text-sidebar-foreground/40 truncate leading-tight">RevOps Manager</p>
           </div>
           <button
             onClick={toggle}
-            className="h-7 w-7 flex items-center justify-center rounded-lg text-sidebar-foreground/40 hover:text-sidebar-foreground hover:bg-sidebar-foreground/8 transition-colors flex-shrink-0"
-            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            className="h-6 w-6 flex items-center justify-center rounded-md text-sidebar-foreground/35 hover:text-sidebar-foreground hover:bg-sidebar-foreground/8 transition-colors flex-shrink-0"
+            title={theme === "dark" ? "Light mode" : "Dark mode"}
           >
-            {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+            {theme === "dark"
+              ? <Sun className="h-3 w-3" />
+              : <Moon className="h-3 w-3" />}
           </button>
         </div>
       </div>

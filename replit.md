@@ -41,12 +41,16 @@ Tables: `reps`, `plans`, `plan_tiers`, `deals`, `commission_runs`, `commission_r
 
 ## Design System
 
-- **Theme**: Almond-inspired — teal primary (#0D9488 territory), clean white/light-gray sidebar (light mode), deep navy sidebar (dark mode)
-- **Dark/light toggle**: Moon/Sun button in sidebar bottom-right; preference stored in `localStorage` as `ck-theme`; `.dark` class toggled on `<html>`
-- **Theme provider**: `artifacts/commission-kit/src/hooks/use-theme.tsx` — `ThemeProvider` wraps the app, `useTheme()` hook exposes `{ theme, toggle }`
-- **Radius**: `--radius: 0.75rem` (12px base), components use `rounded-xl` and `rounded-lg` throughout
-- **Sidebar groups**: MAIN (Dashboard, Reps, Plans) and OPERATIONS (Deals, Runs) with uppercase section labels
-- **Canvas mockup**: `artifacts/mockup-sandbox/src/components/mockups/commission-variants/AlmondStyle.tsx` — standalone design reference
+- **Design spec**: Linear.app — generated via `npx getdesign@latest add linear.app` → `artifacts/commission-kit/DESIGN.md`
+- **Canvas**: `#010102` near-pure black (dark mode); white `#ffffff` (light mode)
+- **Primary accent**: Linear lavender-blue `#5e6ad2` — used on brand mark, active nav, CTAs, commission values, focus rings; replaces old teal
+- **Surface ladder** (dark): canvas `#010102` → surface-1 `#0f1011` (cards) → surface-2 `#141516` (popover) — hierarchy via surface lift, no shadows
+- **Hairline borders**: `#23252a` (dark) / `#e5e7eb` (light) — 1px, never heavier
+- **Typography**: Inter 400/500/600/700 with aggressive negative letter-spacing on headings (`-0.03em`)
+- **Radius**: `--radius: 0.75rem` (12px = `rounded-lg` for cards; `rounded-md` ~10px for buttons)
+- **Dark/light toggle**: Moon/Sun in sidebar bottom-right; defaults to system preference, stored in `localStorage("ck-theme")`
+- **Theme provider**: `artifacts/commission-kit/src/hooks/use-theme.tsx`
+- **Sidebar groups**: MAIN (Dashboard, Reps, Plans) and OPERATIONS (Deals, Runs)
 
 ## Important Notes
 

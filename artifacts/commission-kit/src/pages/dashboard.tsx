@@ -102,7 +102,7 @@ export function Dashboard() {
                         {rep.totalDeals} deals ({formatCurrency(rep.totalRevenue)} rev)
                       </p>
                     </div>
-                    <div className="ml-auto font-medium text-emerald-600 dark:text-emerald-500">
+                    <div className="ml-auto font-medium text-primary">
                       {formatCurrency(rep.totalCommission)}
                     </div>
                   </div>

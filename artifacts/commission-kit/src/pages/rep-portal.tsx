@@ -165,7 +165,7 @@ export function RepPortal() {
                     </TableCell>
                     <TableCell className="text-right">{formatCurrency(deal.dealAmount)}</TableCell>
                     <TableCell className="text-right font-medium">{formatPercent(deal.rateApplied)}</TableCell>
-                    <TableCell className="text-right font-bold text-emerald-600 dark:text-emerald-500">
+                    <TableCell className="text-right font-bold text-primary">
                       {formatCurrency(deal.commissionAmount)}
                     </TableCell>
                   </TableRow>

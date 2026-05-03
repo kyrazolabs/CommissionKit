@@ -66,81 +66,84 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* LIGHT MODE */
+/* ─── LIGHT MODE ─────────────────────────────────────────────────────────── */
+/* Linear "inverse" palette — white canvas, lavender accent stays the same  */
 :root {
-  --button-outline: rgba(0,0,0, .10);
-  --badge-outline: rgba(0,0,0, .05);
+  --button-outline: rgba(0,0,0,.12);
+  --badge-outline: rgba(0,0,0,.06);
   --opaque-button-border-intensity: -8;
-  --elevate-1: rgba(0,0,0, .03);
-  --elevate-2: rgba(0,0,0, .08);
+  --elevate-1: rgba(0,0,0,.03);
+  --elevate-2: rgba(0,0,0,.07);
 
-  /* Backgrounds / foregrounds */
-  --background: 0 0% 100%;
-  --foreground: 215 28% 12%;
-  --border: 214 20% 90%;
-  --input: 214 20% 90%;
-  --ring: 174 72% 38%;
+  /* Canvas → white; surfaces → off-white steps */
+  --background:   0 0% 100%;          /* #ffffff  inverse-canvas  */
+  --foreground:   0 0% 2%;            /* ~#050505  inverse-ink     */
+  --border:       220 13% 91%;        /* #e5e7eb — hairline equivalent */
+  --input:        220 13% 91%;
+  --ring:         234 58% 60%;        /* #5e6ad2  primary lavender  */
 
-  /* Cards */
-  --card: 0 0% 100%;
-  --card-foreground: 215 28% 12%;
-  --card-border: 214 20% 90%;
+  /* Cards — slight off-white lift */
+  --card:         0 0% 98%;           /* #f9f9f9  inverse-surface-1 */
+  --card-foreground: 0 0% 2%;
+  --card-border:  220 13% 91%;
 
   /* Popovers */
-  --popover: 0 0% 100%;
-  --popover-foreground: 215 28% 12%;
-  --popover-border: 214 20% 90%;
+  --popover:      0 0% 100%;
+  --popover-foreground: 0 0% 2%;
+  --popover-border: 220 13% 91%;
 
-  /* Primary — Teal */
-  --primary: 174 72% 35%;
+  /* Primary — Linear lavender, slightly deeper for light bg contrast */
+  --primary:      234 58% 55%;        /* ~#5260c9  */
   --primary-foreground: 0 0% 100%;
 
   /* Secondary */
-  --secondary: 174 50% 95%;
-  --secondary-foreground: 174 40% 20%;
+  --secondary:    234 30% 95%;        /* very pale lavender */
+  --secondary-foreground: 234 30% 30%;
 
   /* Muted */
-  --muted: 210 20% 96%;
-  --muted-foreground: 215 16% 47%;
+  --muted:        220 14% 96%;
+  --muted-foreground: 220 9% 46%;     /* ink-subtle equivalent */
 
   /* Accent */
-  --accent: 174 50% 95%;
-  --accent-foreground: 174 40% 20%;
+  --accent:       234 30% 95%;
+  --accent-foreground: 234 40% 30%;
 
   /* Destructive */
-  --destructive: 0 84% 60%;
+  --destructive:  0 84% 60%;
   --destructive-foreground: 0 0% 100%;
 
-  /* Sidebar */
-  --sidebar: 0 0% 98%;
-  --sidebar-foreground: 215 28% 12%;
-  --sidebar-border: 214 20% 90%;
-  --sidebar-primary: 174 72% 35%;
+  /* Sidebar — inverse-surface-1 (#f5f6f6) */
+  --sidebar:      220 5% 96%;
+  --sidebar-foreground: 0 0% 8%;
+  --sidebar-border: 220 13% 91%;
+  --sidebar-primary: 234 58% 55%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 174 50% 94%;
-  --sidebar-accent-foreground: 174 50% 22%;
-  --sidebar-ring: 174 72% 35%;
+  --sidebar-accent: 234 30% 93%;
+  --sidebar-accent-foreground: 234 50% 35%;
+  --sidebar-ring: 234 58% 55%;
 
-  /* Charts */
-  --chart-1: 174 72% 35%;
-  --chart-2: 12 76% 61%;
-  --chart-3: 197 37% 24%;
-  --chart-4: 43 74% 52%;
-  --chart-5: 27 87% 57%;
+  /* Charts — Linear palette */
+  --chart-1: 234 58% 60%;   /* lavender */
+  --chart-2: 137 59% 40%;   /* semantic-success green */
+  --chart-3: 234 24% 58%;   /* brand-secure muted lavender */
+  --chart-4: 43  74% 52%;
+  --chart-5: 27  87% 57%;
 
-  --app-font-sans: 'Inter', sans-serif;
+  --app-font-sans: 'Inter', -apple-system, 'SF Pro Display', system-ui, sans-serif;
   --app-font-serif: Georgia, serif;
-  --app-font-mono: Menlo, monospace;
-  --radius: 0.75rem;
+  --app-font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
-  --shadow-2xs: 0 1px 2px 0 rgba(0,0,0,0.04);
-  --shadow-xs: 0 1px 3px 0 rgba(0,0,0,0.05);
-  --shadow-sm: 0 1px 3px 0 rgba(0,0,0,0.06), 0 1px 2px -1px rgba(0,0,0,0.04);
-  --shadow: 0 1px 6px 0 rgba(0,0,0,0.07), 0 1px 4px -1px rgba(0,0,0,0.04);
-  --shadow-md: 0 4px 8px -2px rgba(0,0,0,0.08), 0 2px 4px -2px rgba(0,0,0,0.05);
-  --shadow-lg: 0 8px 16px -4px rgba(0,0,0,0.10), 0 4px 8px -4px rgba(0,0,0,0.06);
-  --shadow-xl: 0 16px 24px -6px rgba(0,0,0,0.12);
-  --shadow-2xl: 0 24px 40px -8px rgba(0,0,0,0.16);
+  /* radius: md=8px buttons, lg=12px cards, xl=16px panels */
+  --radius: 0.75rem; /* 12px = rounded-lg → cards */
+
+  --shadow-2xs: 0 1px 2px 0 rgba(0,0,0,.04);
+  --shadow-xs:  0 1px 3px 0 rgba(0,0,0,.06);
+  --shadow-sm:  0 1px 3px 0 rgba(0,0,0,.07), 0 1px 2px -1px rgba(0,0,0,.04);
+  --shadow:     0 2px 6px 0 rgba(0,0,0,.08), 0 1px 3px -1px rgba(0,0,0,.05);
+  --shadow-md:  0 4px 10px -2px rgba(0,0,0,.10);
+  --shadow-lg:  0 8px 18px -4px rgba(0,0,0,.12);
+  --shadow-xl:  0 16px 28px -6px rgba(0,0,0,.14);
+  --shadow-2xl: 0 24px 44px -8px rgba(0,0,0,.18);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 
@@ -160,68 +163,76 @@
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
 
-/* DARK MODE */
+/* ─── DARK MODE — Linear.app palette ─────────────────────────────────────── */
 .dark {
-  --button-outline: rgba(255,255,255, .10);
-  --badge-outline: rgba(255,255,255, .05);
+  --button-outline: rgba(255,255,255,.12);
+  --badge-outline:  rgba(255,255,255,.06);
   --opaque-button-border-intensity: 9;
-  --elevate-1: rgba(255,255,255, .04);
-  --elevate-2: rgba(255,255,255, .09);
+  --elevate-1: rgba(255,255,255,.04);
+  --elevate-2: rgba(255,255,255,.08);
 
-  --background: 222 47% 8%;
-  --foreground: 210 35% 93%;
-  --border: 220 25% 18%;
-  --input: 220 25% 18%;
-  --ring: 174 72% 48%;
+  /* Canvas: #010102 — near-pure black with faint blue tint */
+  --background:   240 33% 0.6%;       /* #010102 */
+  --foreground:   180 9%  97%;        /* #f7f8f8  ink */
+  --border:       225 8%  15%;        /* #23252a  hairline */
+  --input:        225 8%  15%;
+  --ring:         234 58% 60%;        /* #5e6ad2  primary lavender */
 
-  --card: 222 47% 11%;
-  --card-foreground: 210 35% 93%;
-  --card-border: 220 25% 18%;
+  /* Cards — surface-1: #0f1011 */
+  --card:         240 4%  6%;         /* #0f1011 */
+  --card-foreground: 180 9% 97%;
+  --card-border:  225 8%  15%;        /* #23252a */
 
-  --popover: 222 47% 11%;
-  --popover-foreground: 210 35% 93%;
-  --popover-border: 220 25% 18%;
+  /* Popovers — surface-2: #141516 */
+  --popover:      240 4%  9%;         /* #141516 */
+  --popover-foreground: 180 9% 97%;
+  --popover-border: 240 5% 21%;       /* #34343a hairline-strong */
 
-  /* Primary — Teal (slightly brighter in dark) */
-  --primary: 174 72% 44%;
+  /* Primary — Linear lavender: #5e6ad2 */
+  --primary:      234 58% 60%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 220 25% 18%;
-  --secondary-foreground: 210 35% 93%;
+  /* Secondary — surface-1 panel */
+  --secondary:    240 4%  6%;
+  --secondary-foreground: 180 9% 97%;
 
-  --muted: 220 25% 16%;
-  --muted-foreground: 215 20% 58%;
+  /* Muted — surface-2 */
+  --muted:        240 4%  9%;
+  --muted-foreground: 223 7% 57%;     /* #8a8f98  ink-subtle */
 
-  --accent: 174 40% 14%;
-  --accent-foreground: 174 60% 80%;
+  /* Accent — subtle lavender tint on dark */
+  --accent:       234 30% 14%;
+  --accent-foreground: 234 80% 82%;
 
-  --destructive: 0 62% 40%;
-  --destructive-foreground: 210 35% 93%;
+  /* Destructive */
+  --destructive:  0 62% 40%;
+  --destructive-foreground: 0 0% 100%;
 
-  /* Sidebar — slightly darker than content */
-  --sidebar: 222 47% 5%;
-  --sidebar-foreground: 210 35% 90%;
-  --sidebar-border: 220 25% 15%;
-  --sidebar-primary: 174 72% 44%;
+  /* Sidebar — slightly darker than canvas (surface below canvas) */
+  --sidebar:      240 20% 3%;         /* ~#060608 */
+  --sidebar-foreground: 180 9% 90%;
+  --sidebar-border: 225 8% 12%;
+  --sidebar-primary: 234 58% 60%;     /* #5e6ad2 */
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 174 35% 14%;
-  --sidebar-accent-foreground: 174 60% 75%;
-  --sidebar-ring: 174 72% 44%;
+  --sidebar-accent: 234 30% 14%;      /* subtle lavender */
+  --sidebar-accent-foreground: 234 80% 80%;
+  --sidebar-ring: 234 58% 60%;
 
-  --chart-1: 174 72% 48%;
-  --chart-2: 12 76% 65%;
-  --chart-3: 197 37% 44%;
-  --chart-4: 43 74% 60%;
-  --chart-5: 27 87% 65%;
+  /* Charts */
+  --chart-1: 234 58% 65%;
+  --chart-2: 137 59% 48%;
+  --chart-3: 234 24% 62%;
+  --chart-4: 43  74% 60%;
+  --chart-5: 27  87% 65%;
 
-  --shadow-2xs: 0 1px 2px 0 rgba(0,0,0,0.25);
-  --shadow-xs: 0 1px 3px 0 rgba(0,0,0,0.30);
-  --shadow-sm: 0 1px 3px 0 rgba(0,0,0,0.35), 0 1px 2px -1px rgba(0,0,0,0.25);
-  --shadow: 0 1px 6px 0 rgba(0,0,0,0.40), 0 1px 4px -1px rgba(0,0,0,0.25);
-  --shadow-md: 0 4px 8px -2px rgba(0,0,0,0.45), 0 2px 4px -2px rgba(0,0,0,0.30);
-  --shadow-lg: 0 8px 16px -4px rgba(0,0,0,0.50), 0 4px 8px -4px rgba(0,0,0,0.35);
-  --shadow-xl: 0 16px 24px -6px rgba(0,0,0,0.55);
-  --shadow-2xl: 0 24px 40px -8px rgba(0,0,0,0.60);
+  --shadow-2xs: 0 1px 2px 0 rgba(0,0,0,.40);
+  --shadow-xs:  0 1px 3px 0 rgba(0,0,0,.50);
+  --shadow-sm:  0 1px 3px 0 rgba(0,0,0,.55), 0 1px 2px -1px rgba(0,0,0,.35);
+  --shadow:     0 2px 6px 0 rgba(0,0,0,.60), 0 1px 3px -1px rgba(0,0,0,.40);
+  --shadow-md:  0 4px 10px -2px rgba(0,0,0,.65);
+  --shadow-lg:  0 8px 18px -4px rgba(0,0,0,.70);
+  --shadow-xl:  0 16px 28px -6px rgba(0,0,0,.75);
+  --shadow-2xl: 0 24px 44px -8px rgba(0,0,0,.80);
 }
 
 @layer base {
@@ -231,6 +242,11 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    letter-spacing: -0.01em;
+  }
+
+  h1, h2, h3 {
+    letter-spacing: -0.03em;
   }
 }
 

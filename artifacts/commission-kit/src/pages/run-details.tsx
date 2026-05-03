@@ -56,7 +56,7 @@ export function RunDetailsPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Payout</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-500">
+            <div className="text-3xl font-bold text-primary">
               {formatCurrency(runData.totalCommission)}
             </div>
           </CardContent>
@@ -103,7 +103,7 @@ export function RunDetailsPage() {
                   <TableCell>{result.dealName}</TableCell>
                   <TableCell className="text-right">{formatCurrency(result.dealAmount)}</TableCell>
                   <TableCell className="text-right">{formatPercent(result.rateApplied)}</TableCell>
-                  <TableCell className="text-right font-bold text-emerald-600 dark:text-emerald-500">
+                  <TableCell className="text-right font-bold text-primary">
                     {formatCurrency(result.commissionAmount)}
                   </TableCell>
                   <TableCell>

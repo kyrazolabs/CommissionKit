@@ -124,13 +124,13 @@ export function DealsPage() {
                   <TableRow key={deal.id}>
                     <TableCell className="font-medium">{deal.name}</TableCell>
                     <TableCell>{deal.repName}</TableCell>
-                    <TableCell className="font-medium text-emerald-600 dark:text-emerald-500">
+                    <TableCell className="font-medium text-primary">
                       {formatCurrency(deal.amount)}
                     </TableCell>
                     <TableCell>{format(new Date(deal.closeDate), "MMM d, yyyy")}</TableCell>
                     <TableCell>
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
-                        deal.stage === 'closed_won' ? 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/30' : 
+                        deal.stage === 'closed_won' ? 'bg-primary/10 text-primary border-primary/20' : 
                         deal.stage === 'closed_lost' ? 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/30' :
                         'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800/30'
                       }`}>
@@ -330,7 +330,7 @@ john@example.com,Globex Expansion,25000,2023-09-20,closed_won`;
                       <TableRow key={i}>
                         <TableCell>
                           {row.repNameFound ? (
-                            <span className="text-emerald-600 dark:text-emerald-500">Found</span>
+                            <span className="text-primary">Found</span>
                           ) : (
                             <span className="text-destructive font-medium" title={row.originalRepQuery}>Missing</span>
                           )}

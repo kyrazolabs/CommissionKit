@@ -80,7 +80,7 @@ export function RunsPage() {
                     </TableCell>
                     <TableCell className="text-right">{formatNumber(run.repsCount)}</TableCell>
                     <TableCell className="text-right">{formatNumber(run.totalDeals)}</TableCell>
-                    <TableCell className="text-right font-bold text-emerald-600 dark:text-emerald-500">
+                    <TableCell className="text-right font-bold text-primary">
                       {formatCurrency(run.totalCommission)}
                     </TableCell>
                     <TableCell className="text-right">
