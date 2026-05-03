@@ -6,12 +6,12 @@ CommissionKit is a commission tracking tool for small B2B sales teams (5-30 reps
 
 ## Stack
 
-- **Monorepo tool**: pnpm workspaces
+- **Monorepo tool**: Bun workspaces
 - **Node.js version**: 24
-- **Package manager**: pnpm
+- **Package manager**: Bun
 - **TypeScript version**: 5.9
-- **Frontend**: React + Vite (artifacts/commission-kit) — at previewPath "/"
-- **API framework**: Express 5 (artifacts/api-server) — at previewPath "/api"
+- **Frontend**: React + Vite (artifacts/web) — at previewPath "/"
+- **API framework**: Express 5 (artifacts/api) — at previewPath "/api"
 - **Database**: PostgreSQL + Drizzle ORM
 - **Validation**: Zod (`zod/v4`), `drizzle-zod`
 - **API codegen**: Orval (from OpenAPI spec)
@@ -34,14 +34,13 @@ Tables: `reps`, `plans`, `plan_tiers`, `deals`, `commission_runs`, `commission_r
 
 ## Key Commands
 
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
+- `bun run typecheck` — full typecheck across all packages
+- `bun run build` — typecheck + build all packages
+- `bun run --filter @workspace/api-spec codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
+- `bun run --filter @workspace/db push` — push DB schema changes (dev only)
 
 ## Design System
 
-- **Design spec**: Linear.app — generated via `npx getdesign@latest add linear.app` → `artifacts/commission-kit/DESIGN.md`
 - **Canvas**: `#010102` near-pure black (dark mode); white `#ffffff` (light mode)
 - **Primary accent**: Linear lavender-blue `#5e6ad2` — used on brand mark, active nav, CTAs, commission values, focus rings; replaces old teal
 - **Surface ladder** (dark): canvas `#010102` → surface-1 `#0f1011` (cards) → surface-2 `#141516` (popover) — hierarchy via surface lift, no shadows
@@ -49,7 +48,7 @@ Tables: `reps`, `plans`, `plan_tiers`, `deals`, `commission_runs`, `commission_r
 - **Typography**: Inter 400/500/600/700 with aggressive negative letter-spacing on headings (`-0.03em`)
 - **Radius**: `--radius: 0.75rem` (12px = `rounded-lg` for cards; `rounded-md` ~10px for buttons)
 - **Dark/light toggle**: Moon/Sun in sidebar bottom-right; defaults to system preference, stored in `localStorage("ck-theme")`
-- **Theme provider**: `artifacts/commission-kit/src/hooks/use-theme.tsx`
+- **Theme provider**: `artifacts/web/src/hooks/use-theme.tsx`
 - **Sidebar groups**: MAIN (Dashboard, Reps, Plans) and OPERATIONS (Deals, Runs)
 
 ## Important Notes
@@ -57,4 +56,4 @@ Tables: `reps`, `plans`, `plan_tiers`, `deals`, `commission_runs`, `commission_r
 - The orval config does NOT generate separate TypeScript types (`schemas` option removed) to avoid naming conflicts with Zod exports. `lib/api-zod/src/index.ts` only exports from `./generated/api`.
 - After running codegen, manually verify `lib/api-zod/src/index.ts` only has `export * from "./generated/api"` — orval may regenerate it with stale exports.
 
-See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
+See `package.json` workspaces for workspace structure, TypeScript setup, and package details.
