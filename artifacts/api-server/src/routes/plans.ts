@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, plansTable, planTiersTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import {
   CreatePlanBody,
   UpdatePlanBody,
@@ -8,11 +8,13 @@ import {
   UpdatePlanParams,
   DeletePlanParams,
 } from "@workspace/api-zod";
+import { requireAuth, type AuthenticatedRequest } from "../middleware/auth";
 
 const router = Router();
 
-async function getPlanWithTiers(id: number) {
-  const [plan] = await db.select().from(plansTable).where(eq(plansTable.id, id));
+async function getPlanWithTiers(id: number, userId: string) {
+  const [plan] = await db.select().from(plansTable)
+    .where(and(eq(plansTable.id, id), eq(plansTable.userId, userId)));
   if (!plan) return null;
   const tiers = await db.select().from(planTiersTable).where(eq(planTiersTable.planId, id)).orderBy(planTiersTable.fromAmount);
   return {
@@ -30,17 +32,20 @@ async function getPlanWithTiers(id: number) {
   };
 }
 
-router.get("/plans", async (req, res): Promise<void> => {
-  const plans = await db.select().from(plansTable).orderBy(plansTable.name);
-  const withTiers = await Promise.all(plans.map((p) => getPlanWithTiers(p.id)));
+router.get("/plans", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
+  const userId = req.userId!;
+  const plans = await db.select().from(plansTable).where(eq(plansTable.userId, userId)).orderBy(plansTable.name);
+  const withTiers = await Promise.all(plans.map((p) => getPlanWithTiers(p.id, userId)));
   res.json(withTiers.filter(Boolean));
 });
 
-router.post("/plans", async (req, res): Promise<void> => {
+router.post("/plans", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
+  const userId = req.userId!;
   const body = CreatePlanBody.parse(req.body);
   const [plan] = await db
     .insert(plansTable)
     .values({
+      userId,
       name: body.name,
       type: body.type,
       flatRate: body.flatRate?.toString() ?? null,
@@ -61,13 +66,14 @@ router.post("/plans", async (req, res): Promise<void> => {
     );
   }
 
-  const result = await getPlanWithTiers(plan.id);
+  const result = await getPlanWithTiers(plan.id, userId);
   res.status(201).json(result);
 });
 
-router.get("/plans/:id", async (req, res): Promise<void> => {
+router.get("/plans/:id", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
+  const userId = req.userId!;
   const { id } = GetPlanParams.parse(req.params);
-  const plan = await getPlanWithTiers(id);
+  const plan = await getPlanWithTiers(id, userId);
   if (!plan) {
     res.status(404).json({ error: "Plan not found" });
     return;
@@ -75,7 +81,8 @@ router.get("/plans/:id", async (req, res): Promise<void> => {
   res.json(plan);
 });
 
-router.put("/plans/:id", async (req, res): Promise<void> => {
+router.put("/plans/:id", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
+  const userId = req.userId!;
   const { id } = UpdatePlanParams.parse(req.params);
   const body = UpdatePlanBody.parse(req.body);
 
@@ -89,7 +96,7 @@ router.put("/plans/:id", async (req, res): Promise<void> => {
       acceleratorRate: body.acceleratorRate?.toString() ?? null,
       clawbackDays: body.clawbackDays ?? null,
     })
-    .where(eq(plansTable.id, id));
+    .where(and(eq(plansTable.id, id), eq(plansTable.userId, userId)));
 
   if (body.tiers !== undefined) {
     await db.delete(planTiersTable).where(eq(planTiersTable.planId, id));
@@ -105,7 +112,7 @@ router.put("/plans/:id", async (req, res): Promise<void> => {
     }
   }
 
-  const result = await getPlanWithTiers(id);
+  const result = await getPlanWithTiers(id, userId);
   if (!result) {
     res.status(404).json({ error: "Plan not found" });
     return;
@@ -113,10 +120,17 @@ router.put("/plans/:id", async (req, res): Promise<void> => {
   res.json(result);
 });
 
-router.delete("/plans/:id", async (req, res): Promise<void> => {
+router.delete("/plans/:id", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
+  const userId = req.userId!;
   const { id } = DeletePlanParams.parse(req.params);
+  const [existing] = await db.select({ id: plansTable.id }).from(plansTable)
+    .where(and(eq(plansTable.id, id), eq(plansTable.userId, userId)));
+  if (!existing) {
+    res.status(404).json({ error: "Plan not found" });
+    return;
+  }
   await db.delete(planTiersTable).where(eq(planTiersTable.planId, id));
-  await db.delete(plansTable).where(eq(plansTable.id, id));
+  await db.delete(plansTable).where(and(eq(plansTable.id, id), eq(plansTable.userId, userId)));
   res.status(204).send();
 });
 

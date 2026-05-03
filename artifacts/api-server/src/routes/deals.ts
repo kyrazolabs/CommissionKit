@@ -7,6 +7,7 @@ import {
   ListDealsQueryParams,
   DeleteDealParams,
 } from "@workspace/api-zod";
+import { requireAuth, type AuthenticatedRequest } from "../middleware/auth";
 
 const router = Router();
 
@@ -25,9 +26,10 @@ function formatDeal(deal: typeof dealsTable.$inferSelect, repName: string) {
   };
 }
 
-router.get("/deals", async (req, res): Promise<void> => {
+router.get("/deals", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
+  const userId = req.userId!;
   const query = ListDealsQueryParams.parse(req.query);
-  const conditions = [];
+  const conditions: ReturnType<typeof eq>[] = [eq(dealsTable.userId, userId)];
 
   if (query.repId !== undefined) conditions.push(eq(dealsTable.repId, query.repId));
   if (query.period !== undefined) conditions.push(eq(dealsTable.period, query.period));
@@ -38,18 +40,20 @@ router.get("/deals", async (req, res): Promise<void> => {
       repName: repsTable.name,
     })
     .from(dealsTable)
-    .leftJoin(repsTable, eq(dealsTable.repId, repsTable.id))
-    .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .leftJoin(repsTable, and(eq(dealsTable.repId, repsTable.id), eq(repsTable.userId, userId)))
+    .where(and(...conditions))
     .orderBy(dealsTable.closeDate);
 
   res.json(deals.map((d) => formatDeal(d.deal, d.repName ?? "Unknown")));
 });
 
-router.post("/deals", async (req, res): Promise<void> => {
+router.post("/deals", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
+  const userId = req.userId!;
   const body = CreateDealBody.parse(req.body);
   const [deal] = await db
     .insert(dealsTable)
     .values({
+      userId,
       repId: body.repId,
       name: body.name,
       amount: body.amount.toString(),
@@ -60,11 +64,13 @@ router.post("/deals", async (req, res): Promise<void> => {
     })
     .returning();
 
-  const [rep] = await db.select({ name: repsTable.name }).from(repsTable).where(eq(repsTable.id, deal.repId));
+  const [rep] = await db.select({ name: repsTable.name }).from(repsTable)
+    .where(and(eq(repsTable.id, deal.repId), eq(repsTable.userId, userId)));
   res.status(201).json(formatDeal(deal, rep?.name ?? "Unknown"));
 });
 
-router.post("/deals/import", async (req, res): Promise<void> => {
+router.post("/deals/import", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
+  const userId = req.userId!;
   const body = ImportDealsBody.parse(req.body);
   const errors: string[] = [];
   let imported = 0;
@@ -72,13 +78,15 @@ router.post("/deals/import", async (req, res): Promise<void> => {
 
   for (const d of body.deals) {
     try {
-      const [rep] = await db.select({ id: repsTable.id }).from(repsTable).where(eq(repsTable.id, d.repId));
+      const [rep] = await db.select({ id: repsTable.id }).from(repsTable)
+        .where(and(eq(repsTable.id, d.repId), eq(repsTable.userId, userId)));
       if (!rep) {
         errors.push(`Deal "${d.name}": rep ID ${d.repId} not found`);
         skipped++;
         continue;
       }
       await db.insert(dealsTable).values({
+        userId,
         repId: d.repId,
         name: d.name,
         amount: d.amount.toString(),
@@ -97,9 +105,10 @@ router.post("/deals/import", async (req, res): Promise<void> => {
   res.json({ imported, skipped, errors });
 });
 
-router.delete("/deals/:id", async (req, res): Promise<void> => {
+router.delete("/deals/:id", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
+  const userId = req.userId!;
   const { id } = DeleteDealParams.parse(req.params);
-  await db.delete(dealsTable).where(eq(dealsTable.id, id));
+  await db.delete(dealsTable).where(and(eq(dealsTable.id, id), eq(dealsTable.userId, userId)));
   res.status(204).send();
 });
 

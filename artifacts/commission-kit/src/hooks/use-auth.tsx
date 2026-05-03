@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { setAuthTokenGetter } from "@workspace/api-client-react";
 
 interface AuthContextValue {
   session: Session | null;
@@ -33,8 +34,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  // Keep the customFetch auth token in sync with the current session.
+  // Every generated API hook uses customFetch, so this ensures the
+  // Authorization: Bearer <token> header is sent on every request.
+  useEffect(() => {
+    setAuthTokenGetter(async () => {
+      const { data } = await supabase.auth.getSession();
+      return data.session?.access_token ?? null;
+    });
+    return () => setAuthTokenGetter(null);
+  }, []);
+
   const signOut = async () => {
     await supabase.auth.signOut();
+    setAuthTokenGetter(null);
   };
 
   return (

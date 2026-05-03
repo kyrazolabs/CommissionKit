@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 
 export const plansTable = pgTable("plans", {
   id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().default(""),
   name: text("name").notNull(),
   type: text("type").notNull(), // flat | tiered | accelerator
   flatRate: numeric("flat_rate", { precision: 10, scale: 4 }),

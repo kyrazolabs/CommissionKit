@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 
 export const commissionRunsTable = pgTable("commission_runs", {
   id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().default(""),
   period: text("period").notNull(), // YYYY-MM
   totalCommission: numeric("total_commission", { precision: 12, scale: 2 }).notNull().default("0"),
   totalDeals: integer("total_deals").notNull().default(0),

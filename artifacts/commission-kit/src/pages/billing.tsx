@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Zap, Building2, Loader2 } from "lucide-react";
+import { Check, Zap, Building2, Infinity as InfinityIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -24,6 +24,8 @@ const plans = [
     ],
     priceId: "price_starter",
     highlighted: false,
+    badge: null,
+    mode: "subscription" as const,
   },
   {
     id: "growth",
@@ -42,6 +44,28 @@ const plans = [
     ],
     priceId: "price_growth",
     highlighted: true,
+    badge: "Most Popular",
+    mode: "subscription" as const,
+  },
+  {
+    id: "lifetime",
+    name: "Lifetime",
+    price: "$499",
+    period: "one-time",
+    description: "Pay once, use forever. All Growth features included.",
+    icon: InfinityIcon,
+    features: [
+      "Unlimited sales reps",
+      "All Growth plan features",
+      "Future feature updates included",
+      "Priority support — forever",
+      "White-label ready",
+      "API access",
+    ],
+    priceId: "price_lifetime",
+    highlighted: false,
+    badge: "Best Value",
+    mode: "payment" as const,
   },
 ];
 
@@ -50,7 +74,7 @@ export function BillingPage() {
   const { session } = useAuth();
   const { toast } = useToast();
 
-  const handleCheckout = async (priceId: string, planId: string) => {
+  const handleCheckout = async (priceId: string, planId: string, mode: "subscription" | "payment") => {
     if (!session) {
       toast({ title: "Not signed in", description: "Please sign in first.", variant: "destructive" });
       return;
@@ -63,7 +87,7 @@ export function BillingPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ priceId }),
+        body: JSON.stringify({ priceId, mode }),
       });
       if (!res.ok) throw new Error(await res.text());
       const { url } = await res.json();
@@ -80,11 +104,11 @@ export function BillingPage() {
         <p className="text-[12px] font-semibold text-primary mb-1">Account</p>
         <h1 className="text-[28px] font-bold tracking-tight text-foreground leading-tight">Billing & Plans</h1>
         <p className="text-[14px] text-muted-foreground mt-1">
-          Choose the plan that fits your team. Upgrade or downgrade at any time.
+          Choose the plan that fits your team. Upgrade, downgrade, or go lifetime at any time.
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 max-w-3xl">
+      <div className="grid gap-6 md:grid-cols-3 max-w-4xl">
         {plans.map((plan) => {
           const Icon = plan.icon;
           return (
@@ -93,16 +117,22 @@ export function BillingPage() {
               className={plan.highlighted ? "border-primary shadow-md ring-1 ring-primary" : ""}
             >
               <CardHeader className="pb-3">
-                {plan.highlighted && (
+                {plan.badge && (
                   <div className="mb-2">
-                    <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
-                      Most Popular
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                      plan.id === "lifetime"
+                        ? "bg-amber-50 text-amber-700 border border-amber-200"
+                        : "bg-primary/10 text-primary"
+                    }`}>
+                      {plan.badge}
                     </span>
                   </div>
                 )}
                 <div className="flex items-center gap-2.5 mb-1">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                    <Icon className="h-4 w-4 text-primary" />
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                    plan.id === "lifetime" ? "bg-amber-50" : "bg-primary/10"
+                  }`}>
+                    <Icon className={`h-4 w-4 ${plan.id === "lifetime" ? "text-amber-600" : "text-primary"}`} />
                   </div>
                   <CardTitle className="text-lg">{plan.name}</CardTitle>
                 </div>
@@ -116,7 +146,7 @@ export function BillingPage() {
                 <ul className="space-y-2">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-center gap-2 text-sm text-foreground">
-                      <Check className="h-4 w-4 text-primary shrink-0" />
+                      <Check className={`h-4 w-4 shrink-0 ${plan.id === "lifetime" ? "text-amber-600" : "text-primary"}`} />
                       {f}
                     </li>
                   ))}
@@ -124,13 +154,15 @@ export function BillingPage() {
               </CardContent>
               <CardFooter>
                 <Button
-                  className="w-full"
-                  variant={plan.highlighted ? "default" : "outline"}
-                  onClick={() => handleCheckout(plan.priceId, plan.id)}
+                  className={`w-full ${plan.id === "lifetime" ? "bg-amber-600 hover:bg-amber-700 text-white" : ""}`}
+                  variant={plan.highlighted ? "default" : plan.id === "lifetime" ? "default" : "outline"}
+                  onClick={() => handleCheckout(plan.priceId, plan.id, plan.mode)}
                   disabled={loadingPlan !== null}
                 >
                   {loadingPlan === plan.id ? (
                     <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Redirecting…</>
+                  ) : plan.id === "lifetime" ? (
+                    "Get Lifetime Access"
                   ) : (
                     `Get ${plan.name}`
                   )}
@@ -142,7 +174,7 @@ export function BillingPage() {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Payments are processed securely by Stripe. You can cancel at any time from your account settings.
+        Payments are processed securely by Stripe. Subscriptions can be cancelled at any time from your account settings.
       </p>
     </div>
   );

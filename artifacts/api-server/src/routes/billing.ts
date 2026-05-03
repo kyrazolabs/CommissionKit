@@ -12,7 +12,7 @@ const stripe = new Stripe(stripeSecretKey, { apiVersion: "2026-04-22.dahlia" });
 const DOMAIN = process.env["REPLIT_DOMAINS"]?.split(",")[0];
 
 router.post("/checkout", requireAuth, async (req: AuthenticatedRequest, res) => {
-  const { priceId } = req.body as { priceId?: string };
+  const { priceId, mode } = req.body as { priceId?: string; mode?: string };
 
   if (!priceId) {
     res.status(400).json({ error: "priceId is required" });
@@ -24,9 +24,12 @@ router.post("/checkout", requireAuth, async (req: AuthenticatedRequest, res) => 
     return;
   }
 
+  const checkoutMode: "subscription" | "payment" =
+    mode === "payment" ? "payment" : "subscription";
+
   try {
     const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
+      mode: checkoutMode,
       line_items: [{ price: priceId, quantity: 1 }],
       customer_email: req.userEmail,
       metadata: { userId: req.userId ?? "" },

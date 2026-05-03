@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { db, commissionRunsTable, commissionResultsTable, dealsTable, repsTable, plansTable } from "@workspace/db";
-import { eq, desc } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { GetRepSummaryParams } from "@workspace/api-zod";
+import { requireAuth, type AuthenticatedRequest } from "../middleware/auth";
 
 const router = Router();
 
@@ -10,22 +11,24 @@ function currentPeriod() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
-router.get("/dashboard/summary", async (req, res): Promise<void> => {
+router.get("/dashboard/summary", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
+  const userId = req.userId!;
   const period = currentPeriod();
 
-  const allReps = await db.select({ id: repsTable.id }).from(repsTable);
+  const allReps = await db.select({ id: repsTable.id }).from(repsTable).where(eq(repsTable.userId, userId));
   const totalReps = allReps.length;
 
   const runs = await db
     .select()
     .from(commissionRunsTable)
-    .where(eq(commissionRunsTable.period, period))
+    .where(and(eq(commissionRunsTable.userId, userId), eq(commissionRunsTable.period, period)))
     .orderBy(desc(commissionRunsTable.createdAt))
     .limit(1);
 
   const recentRuns = await db
     .select()
     .from(commissionRunsTable)
+    .where(eq(commissionRunsTable.userId, userId))
     .orderBy(desc(commissionRunsTable.createdAt))
     .limit(5);
 
@@ -83,14 +86,15 @@ router.get("/dashboard/summary", async (req, res): Promise<void> => {
   });
 });
 
-router.get("/dashboard/rep-summary/:repId", async (req, res): Promise<void> => {
+router.get("/dashboard/rep-summary/:repId", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
+  const userId = req.userId!;
   const { repId } = GetRepSummaryParams.parse(req.params);
   const period = (req.query.period as string | undefined) || currentPeriod();
 
   const [rep] = await db
     .select({ id: repsTable.id, name: repsTable.name, email: repsTable.email, planId: repsTable.planId })
     .from(repsTable)
-    .where(eq(repsTable.id, repId));
+    .where(and(eq(repsTable.id, repId), eq(repsTable.userId, userId)));
 
   if (!rep) {
     res.status(404).json({ error: "Rep not found" });
@@ -99,21 +103,22 @@ router.get("/dashboard/rep-summary/:repId", async (req, res): Promise<void> => {
 
   let planName: string | null = null;
   if (rep.planId) {
-    const [plan] = await db.select({ name: plansTable.name }).from(plansTable).where(eq(plansTable.id, rep.planId));
+    const [plan] = await db.select({ name: plansTable.name }).from(plansTable)
+      .where(and(eq(plansTable.id, rep.planId), eq(plansTable.userId, userId)));
     planName = plan?.name ?? null;
   }
 
   const latestRun = await db
     .select()
     .from(commissionRunsTable)
-    .where(eq(commissionRunsTable.period, period))
+    .where(and(eq(commissionRunsTable.userId, userId), eq(commissionRunsTable.period, period)))
     .orderBy(desc(commissionRunsTable.createdAt))
     .limit(1);
 
   let totalCommission = 0;
   let totalRevenue = 0;
   let totalDeals = 0;
-  let dealBreakdown: {
+  const dealBreakdown: {
     dealId: number;
     dealName: string;
     dealAmount: number;
@@ -157,25 +162,12 @@ router.get("/dashboard/rep-summary/:repId", async (req, res): Promise<void> => {
   const allRuns = await db
     .select()
     .from(commissionRunsTable)
+    .where(eq(commissionRunsTable.userId, userId))
     .orderBy(desc(commissionRunsTable.createdAt))
     .limit(12);
 
   const monthlyHistory = await Promise.all(
     allRuns.map(async (run) => {
-      const results = await db
-        .select({ commissionAmount: commissionResultsTable.commissionAmount })
-        .from(commissionResultsTable)
-        .where(eq(commissionResultsTable.runId, run.id));
-
-      const repResults = (
-        await db
-          .select({ commissionAmount: commissionResultsTable.commissionAmount })
-          .from(commissionResultsTable)
-          .where(eq(commissionResultsTable.runId, run.id))
-      ).filter((_, i) => {
-        return true;
-      });
-
       const fullResults = await db
         .select()
         .from(commissionResultsTable)
