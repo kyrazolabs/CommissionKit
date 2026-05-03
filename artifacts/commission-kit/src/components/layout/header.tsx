@@ -1,4 +1,4 @@
-import { Bell, ChevronRight, TrendingUp, Sun, Moon } from "lucide-react";
+import { Bell, ChevronRight, Sun, Moon } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 
 export function Header() {
@@ -7,12 +7,16 @@ export function Header() {
   return (
     <header className="flex h-14 shrink-0 items-center bg-header px-5 z-10">
       {/* Logo — width matches sidebar */}
-      <div className="flex w-[220px] shrink-0 items-center gap-2">
-        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-          <TrendingUp className="h-3.5 w-3.5" />
-        </div>
+      <div className="flex w-[220px] shrink-0 items-center gap-2.5">
+        <svg width="28" height="28" viewBox="0 0 56 56" fill="none" className="shrink-0">
+          <rect width="56" height="56" rx="14" fill="#111827" />
+          <line x1="16" y1="40" x2="40" y2="16" stroke="#0D9488" strokeWidth="3.5" strokeLinecap="round" />
+          <circle cx="20" cy="20" r="5" fill="#0D9488" />
+          <circle cx="36" cy="36" r="7" fill="none" stroke="#0D9488" strokeWidth="3" />
+          <circle cx="36" cy="36" r="2.5" fill="#0D9488" />
+        </svg>
         <span className="text-[14.5px] font-bold tracking-tight text-foreground">
-          CommissionKit
+          Commission<span className="text-primary">Kit</span>
         </span>
       </div>
 
