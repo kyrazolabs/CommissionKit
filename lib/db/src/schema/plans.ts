@@ -1,31 +1,59 @@
-import { pgTable, serial, text, numeric, integer, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod/v4";
+import mongoose, { Schema, model, Types } from "mongoose";
+import { z } from "zod";
 
-export const plansTable = pgTable("plans", {
-  id: serial("id").primaryKey(),
-  workspaceId: integer("workspace_id").notNull(),
-  name: text("name").notNull(),
-  type: text("type").notNull(),
-  flatRate: numeric("flat_rate", { precision: 10, scale: 4 }),
-  acceleratorThreshold: numeric("accelerator_threshold", { precision: 12, scale: 2 }),
-  acceleratorRate: numeric("accelerator_rate", { precision: 10, scale: 4 }),
-  clawbackDays: integer("clawback_days"),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+const PlanSchema = new Schema({
+  workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
+  name: { type: String, required: true },
+  type: { type: String, required: true },
+  flatRate: { type: Number },
+  acceleratorThreshold: { type: Number },
+  acceleratorRate: { type: Number },
+  clawbackDays: { type: Number },
+}, { timestamps: { createdAt: true, updatedAt: false } });
+
+const PlanTierSchema = new Schema({
+  planId: { type: Schema.Types.ObjectId, ref: "Plan", required: true },
+  fromAmount: { type: Number, required: true },
+  toAmount: { type: Number },
+  rate: { type: Number, required: true },
 });
 
-export const planTiersTable = pgTable("plan_tiers", {
-  id: serial("id").primaryKey(),
-  planId: integer("plan_id").notNull(),
-  fromAmount: numeric("from_amount", { precision: 12, scale: 2 }).notNull(),
-  toAmount: numeric("to_amount", { precision: 12, scale: 2 }),
-  rate: numeric("rate", { precision: 10, scale: 4 }).notNull(),
+export const Plan = model("Plan", PlanSchema);
+export const PlanTier = model("PlanTier", PlanTierSchema);
+
+export type Plan = mongoose.Document & {
+  _id: Types.ObjectId;
+  workspaceId: Types.ObjectId;
+  name: string;
+  type: string;
+  flatRate?: number;
+  acceleratorThreshold?: number;
+  acceleratorRate?: number;
+  clawbackDays?: number;
+  createdAt: Date;
+};
+
+export type PlanTier = mongoose.Document & {
+  _id: Types.ObjectId;
+  planId: Types.ObjectId;
+  fromAmount: number;
+  toAmount?: number;
+  rate: number;
+};
+
+export const insertPlanSchema = z.object({
+  workspaceId: z.string(),
+  name: z.string(),
+  type: z.string(),
+  flatRate: z.number().optional(),
+  acceleratorThreshold: z.number().optional(),
+  acceleratorRate: z.number().optional(),
+  clawbackDays: z.number().optional(),
 });
 
-export const insertPlanSchema = createInsertSchema(plansTable).omit({ id: true, createdAt: true });
-export type InsertPlan = z.infer<typeof insertPlanSchema>;
-export type Plan = typeof plansTable.$inferSelect;
-
-export const insertPlanTierSchema = createInsertSchema(planTiersTable).omit({ id: true });
-export type InsertPlanTier = z.infer<typeof insertPlanTierSchema>;
-export type PlanTier = typeof planTiersTable.$inferSelect;
+export const insertPlanTierSchema = z.object({
+  planId: z.string(),
+  fromAmount: z.number(),
+  toAmount: z.number().optional(),
+  rate: z.number(),
+});

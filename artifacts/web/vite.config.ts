@@ -44,8 +44,6 @@ export default defineConfig(({ mode }) => {
     envDir,
     base: basePath,
     define: {
-      "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(supabaseUrl),
-      "import.meta.env.VITE_SUPABASE_ANON_KEY": JSON.stringify(supabaseAnonKey),
       "import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY": JSON.stringify(
         stripePublishableKey,
       ),
@@ -56,7 +54,7 @@ export default defineConfig(({ mode }) => {
       "@": path.resolve(import.meta.dirname, "src"),
       "@assets": path.resolve(import.meta.dirname, "..", "..", "attached_assets"),
     },
-    dedupe: ["react", "react-dom"],
+    dedupe: ["react", "react-dom", "zod"],
   },
   root: path.resolve(import.meta.dirname),
   build: {

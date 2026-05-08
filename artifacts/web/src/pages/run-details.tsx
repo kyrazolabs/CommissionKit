@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 
 export function RunDetailsPage() {
   const params = useParams();
-  const id = parseInt(params.id || "0", 10);
+  const id = params.id || "";
 
   const { data: run, isLoading } = useGetRun(id, { 
     query: { enabled: !!id, queryKey: getGetRunQueryKey(id) } 
@@ -31,7 +31,7 @@ export function RunDetailsPage() {
     );
   }
 
-  if (!run) return <div>Run not found</div>;
+  if (!run || (run as any).error) return <div>Run not found</div>;
 
   // Type cast because Orval schema handles full payload differently
   const runData = run as any;

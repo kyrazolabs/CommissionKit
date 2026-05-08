@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Trash, UploadCloud, FileDown, Briefcase } from "lucide-react";
+import { HelpTooltip } from "@/components/help-tooltip";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/format";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,26 +21,28 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import Papa from "papaparse";
+import { useRole } from "@/hooks/use-role";
 
 export function DealsPage() {
   const [period, setPeriod] = useState<string>(format(new Date(), "yyyy-MM"));
   const [repId, setRepId] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
 
+  const { can } = useRole();
   const { data: reps } = useListReps({ query: { queryKey: getListRepsQueryKey() } });
   
   const queryParams: any = { period };
-  if (repId !== "all") queryParams.repId = parseInt(repId, 10);
+  if (repId !== "all") queryParams.repId = repId;
   
   const { data: deals, isLoading } = useListDeals(
     queryParams,
     { query: { queryKey: getListDealsQueryKey(queryParams) } }
   );
 
-  const filteredDeals = deals?.filter(deal => 
+  const filteredDeals = Array.isArray(deals) ? deals.filter(deal => 
     deal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     deal.repName.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  ) : [];
 
   return (
     <div className="space-y-6">
@@ -49,7 +52,7 @@ export function DealsPage() {
           <p className="text-muted-foreground">Manage revenue events for commission calculation.</p>
         </div>
         <div className="flex gap-2">
-          <ImportDealsDialog period={period} />
+          {can("admin") && <ImportDealsDialog period={period} />}
         </div>
       </div>
 
@@ -74,7 +77,7 @@ export function DealsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Reps</SelectItem>
-                  {reps?.map(rep => (
+                  {Array.isArray(reps) && reps.map(rep => (
                     <SelectItem key={rep.id} value={rep.id.toString()}>{rep.name}</SelectItem>
                   ))}
                 </SelectContent>
@@ -111,7 +114,12 @@ export function DealsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Deal Name</TableHead>
+                  <TableHead>
+                    <div className="flex items-center gap-1.5">
+                      Deal Name
+                      <HelpTooltip content="The unique identifier for this revenue event." />
+                    </div>
+                  </TableHead>
                   <TableHead>Rep</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Close Date</TableHead>
@@ -138,7 +146,7 @@ export function DealsPage() {
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
-                      <DealDeleteAction deal={deal} queryParams={queryParams} />
+                      {can("admin") && <DealDeleteAction deal={deal} queryParams={queryParams} />}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -205,9 +213,11 @@ function ImportDealsDialog({ period }: { period: string }) {
 
   // Simple mapping - assuming CSV has: Rep Email, Deal Name, Amount, Close Date, Stage
   const handleParse = () => {
+    setParseError("");
     Papa.parse(csvText, {
       header: true,
       skipEmptyLines: true,
+      transformHeader: (header) => header.trim(),
       complete: (results) => {
         if (results.errors.length > 0) {
           setParseError(results.errors[0].message);
@@ -216,26 +226,37 @@ function ImportDealsDialog({ period }: { period: string }) {
         }
         
         const mapped = results.data.map((row: any) => {
-          const repEmail = row['Rep Email'] || row['email'] || row['Rep'];
-          const rep = reps?.find(r => r.email.toLowerCase() === repEmail?.toLowerCase() || r.name.toLowerCase() === repEmail?.toLowerCase());
+          // Normalize keys to handle variations
+          const repEmail = (row['Rep Email'] || row['email'] || row['Rep'] || '').trim();
+          const dealName = (row['Deal Name'] || row['Name'] || row['Deal'] || '').trim();
+          const amountStr = (row['Amount'] || row['Price'] || '0').toString().replace(/[^0-9.-]+/g, "");
+          const closeDateStr = (row['Close Date'] || row['Date'] || '').trim();
+          const stageRaw = (row['Stage'] || 'closed_won').toString().trim().toLowerCase().replace(' ', '_');
+          const notes = (row['Notes'] || row['Description'] || '').trim();
+
+          const rep = reps?.find(r => 
+            r.email.toLowerCase() === repEmail.toLowerCase() || 
+            r.name.toLowerCase() === repEmail.toLowerCase()
+          );
           
-          let stage = (row['Stage'] || 'closed_won').toLowerCase().replace(' ', '_');
-          if (!['closed_won', 'closed_lost', 'pending'].includes(stage)) stage = 'closed_won';
+          let stage: 'closed_won' | 'closed_lost' | 'pending' = 'closed_won';
+          if (stageRaw.includes('lost')) stage = 'closed_lost';
+          else if (stageRaw.includes('pending') || stageRaw.includes('open')) stage = 'pending';
           
           return {
-            repId: rep?.id || 0,
+            repId: rep?.id || "",
             repNameFound: !!rep,
-            originalRepQuery: repEmail,
-            name: row['Deal Name'] || row['Name'] || row['Deal'] || 'Unknown Deal',
-            amount: parseFloat((row['Amount'] || '0').replace(/[^0-9.-]+/g,"")),
-            closeDate: row['Close Date'] || row['Date'] || new Date().toISOString().split('T')[0],
+            repEmail,
+            name: dealName || 'Unknown Deal',
+            amount: parseFloat(amountStr) || 0,
+            closeDate: closeDateStr || new Date().toISOString().split('T')[0],
             period: period,
-            stage: stage as any,
+            stage,
+            notes: notes || null
           };
         });
         
         setParsedData(mapped);
-        setParseError("");
       }
     });
   };
@@ -244,7 +265,9 @@ function ImportDealsDialog({ period }: { period: string }) {
     if (!parsedData) return;
     
     // Filter out rows where rep wasn't found
-    const validDeals = parsedData.filter(d => d.repNameFound).map(({ repNameFound, originalRepQuery, ...deal }) => deal);
+    const validDeals = parsedData
+      .filter(d => d.repNameFound)
+      .map(({ repNameFound, repEmail, ...deal }) => deal);
     
     if (validDeals.length === 0) {
       toast({ title: "Import failed", description: "No valid deals to import. Check rep emails.", variant: "destructive" });
@@ -265,9 +288,11 @@ function ImportDealsDialog({ period }: { period: string }) {
     });
   };
 
-  const templateCsv = `Rep Email,Deal Name,Amount,Close Date,Stage
-jane@example.com,Acme Corp Q3,50000,2023-09-15,closed_won
-john@example.com,Globex Expansion,25000,2023-09-20,closed_won`;
+  const templateCsv = `
+Rep Email,Deal Name,Amount,Close Date,Stage,Notes
+jane@example.com,Acme Corp Q3,50000,2023-09-15,closed_won,Enterprise deal
+john@example.com,Globex Expansion,25000,2023-09-20,closed_won,SMB expansion
+`;
 
   return (
     <Dialog open={open} onOpenChange={(val) => {
@@ -283,8 +308,9 @@ john@example.com,Globex Expansion,25000,2023-09-20,closed_won`;
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Import Deals</DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="flex items-center gap-1.5">
             Import deals for the period <strong>{period}</strong>. 
+            <HelpTooltip content="Ensure your CSV headers match the required format: Rep Email, Deal Name, Amount, Close Date, Stage." />
           </DialogDescription>
         </DialogHeader>
         
@@ -329,16 +355,17 @@ john@example.com,Globex Expansion,25000,2023-09-20,closed_won`;
                     {parsedData.map((row, i) => (
                       <TableRow key={i}>
                         <TableCell>
-                          {row.repNameFound ? (
-                            <span className="text-primary">Found</span>
-                          ) : (
-                            <span className="text-destructive font-medium" title={row.originalRepQuery}>Missing</span>
-                          )}
+                          <div className="flex flex-col">
+                            <span className={row.repNameFound ? "text-primary font-medium" : "text-destructive font-medium"}>
+                              {row.repNameFound ? "Found" : "Missing Rep"}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground truncate max-w-[120px]">{row.repEmail}</span>
+                          </div>
                         </TableCell>
                         <TableCell className="max-w-[150px] truncate">{row.name}</TableCell>
                         <TableCell>{formatCurrency(row.amount)}</TableCell>
                         <TableCell>
-                          {row.repNameFound ? "Valid" : "Will skip"}
+                          <span className="capitalize text-xs">{row.stage.replace('_', ' ')}</span>
                         </TableCell>
                       </TableRow>
                     ))}

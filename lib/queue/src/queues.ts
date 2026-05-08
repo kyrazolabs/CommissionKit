@@ -1,0 +1,61 @@
+import { Queue, type QueueOptions } from "bullmq";
+import { getRedisClient } from "./connection.js";
+import {
+  MAIL_HIGH_QUEUE,
+  MAIL_LOW_QUEUE,
+  MAIL_MEDIUM_QUEUE,
+  MAIL_SEND_QUEUE,
+} from "./constants.js";
+import type { MailSendPayload } from "./schemas.js";
+
+/** Shared BullMQ queue options — exponential back-off, 10 retries */
+function buildOptions(overrides?: Partial<QueueOptions>): QueueOptions {
+  return {
+    connection: getRedisClient(),
+    prefix: "ck",
+    defaultJobOptions: {
+      attempts: 10,
+      backoff: {
+        type: "exponential",
+        delay: 5_000, // 5s → 10s → 20s → …
+      },
+      removeOnComplete: { count: 1_000 }, // keep last 1k completed jobs
+      removeOnFail: { count: 5_000 },     // keep last 5k failed jobs for DLQ
+    },
+    ...overrides,
+  };
+}
+
+// ─── Routing queues ───────────────────────────────────────────────────────────
+// These receive jobs from producers and fan them out to the SMTP execution queue.
+
+/** Critical emails: invitations, password resets, magic links. 3 retries, fast. */
+export const mailHighQueue = new Queue<MailSendPayload>(
+  MAIL_HIGH_QUEUE,
+  buildOptions({ defaultJobOptions: { attempts: 3, backoff: { type: "exponential", delay: 2_000 } } }),
+);
+
+/** Standard notifications: commission run reports, workspace alerts. */
+export const mailMediumQueue = new Queue<MailSendPayload>(
+  MAIL_MEDIUM_QUEUE,
+  buildOptions({ defaultJobOptions: { attempts: 5, backoff: { type: "exponential", delay: 5_000 } } }),
+);
+
+/** Low-urgency: weekly summaries, digest reports. */
+export const mailLowQueue = new Queue<MailSendPayload>(
+  MAIL_LOW_QUEUE,
+  buildOptions({ defaultJobOptions: { attempts: 3, backoff: { type: "fixed", delay: 30_000 } } }),
+);
+
+/** SMTP execution queue — routed to by the priority workers. Concurrency-limited. */
+export const mailSendQueue = new Queue<MailSendPayload>(
+  MAIL_SEND_QUEUE,
+  buildOptions(),
+);
+
+/** Helper map from priority to routing queue */
+export const PRIORITY_QUEUE_MAP = {
+  high:   mailHighQueue,
+  medium: mailMediumQueue,
+  low:    mailLowQueue,
+} as const;

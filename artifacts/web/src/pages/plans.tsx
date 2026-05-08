@@ -12,12 +12,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Plus, Edit, Trash, FileText, Layers, Zap, Trash2 } from "lucide-react";
 import { formatCurrency, formatPercent } from "@/lib/format";
+import { HelpTooltip } from "@/components/help-tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { useRole } from "@/hooks/use-role";
 
 export function PlansPage() {
   const { data: plans, isLoading } = useListPlans({ query: { queryKey: getListPlansQueryKey() } });
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const { can } = useRole();
 
   return (
     <div className="space-y-6">
@@ -26,10 +29,12 @@ export function PlansPage() {
           <h1 className="text-3xl font-bold tracking-tight">Commission Plans</h1>
           <p className="text-muted-foreground">Design and manage compensation structures.</p>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Plan
-        </Button>
+        {can("admin") && (
+          <Button onClick={() => setIsCreateOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Plan
+          </Button>
+        )}
       </div>
 
       <PlanFormDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
@@ -43,7 +48,7 @@ export function PlansPage() {
             </Card>
           ))}
         </div>
-      ) : plans?.length === 0 ? (
+      ) : (!Array.isArray(plans) || plans.length === 0) ? (
         <div className="text-center py-16 bg-muted/30 rounded-xl border border-dashed">
           <div className="bg-muted w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
             <FileText className="h-6 w-6 text-muted-foreground" />
@@ -59,7 +64,7 @@ export function PlansPage() {
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {plans?.map((plan) => (
+          {plans.map((plan) => (
             <PlanCard key={plan.id} plan={plan} />
           ))}
         </div>
@@ -73,6 +78,7 @@ function PlanCard({ plan }: { plan: any }) {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { can } = useRole();
   const deleteMutation = useDeletePlan();
 
   const handleDelete = () => {
@@ -102,7 +108,14 @@ function PlanCard({ plan }: { plan: any }) {
             <div className="p-2 bg-muted rounded-md">{getPlanIcon()}</div>
             <div>
               <CardTitle className="text-lg">{plan.name}</CardTitle>
-              <CardDescription className="capitalize">{plan.type} Plan</CardDescription>
+              <div className="flex items-center gap-1.5">
+                <CardDescription className="capitalize">{plan.type} Plan</CardDescription>
+                <HelpTooltip content={
+                  plan.type === "flat" ? "Standard percentage earned on every deal amount." :
+                  plan.type === "tiered" ? "Progressive rates that increase as volume reaches specific milestones." :
+                  "Higher incentive rate applied only after passing a specific revenue threshold."
+                } />
+              </div>
             </div>
           </div>
         </div>
@@ -136,7 +149,7 @@ function PlanCard({ plan }: { plan: any }) {
             <div className="space-y-2">
               <span className="text-sm font-medium text-muted-foreground block mb-2">Tiers Structure</span>
               <div className="space-y-1">
-                {plan.tiers.map((tier: any, i: number) => (
+                {plan.tiers?.map((tier: any, i: number) => (
                   <div key={tier.id || i} className="flex justify-between items-center text-sm p-2 bg-muted/30 rounded border border-border/50">
                     <span className="text-muted-foreground">
                       {formatCurrency(tier.fromAmount)} {tier.toAmount ? `- ${formatCurrency(tier.toAmount)}` : '+'}
@@ -149,21 +162,24 @@ function PlanCard({ plan }: { plan: any }) {
           )}
 
           {plan.clawbackDays && (
-            <div className="text-xs text-muted-foreground pt-2 flex items-center">
-              <span className="w-2 h-2 rounded-full bg-destructive mr-2"></span>
-              {plan.clawbackDays} day clawback period
+            <div className="text-xs text-muted-foreground pt-2 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-destructive"></span>
+              <span>{plan.clawbackDays} day clawback period</span>
+              <HelpTooltip content="If a deal is reversed or cancelled within this period, the commission will be deducted from the rep." />
             </div>
           )}
         </div>
       </CardContent>
-      <CardFooter className="border-t bg-muted/20 pt-4 flex justify-between">
-        <Button variant="outline" size="sm" onClick={() => setIsEditOpen(true)}>
-          <Edit className="h-4 w-4 mr-2" /> Edit
-        </Button>
-        <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => setIsDeleteOpen(true)}>
-          <Trash className="h-4 w-4" />
-        </Button>
-      </CardFooter>
+      {can("admin") && (
+        <CardFooter className="border-t bg-muted/20 pt-4 flex justify-between">
+          <Button variant="outline" size="sm" onClick={() => setIsEditOpen(true)}>
+            <Edit className="h-4 w-4 mr-2" /> Edit
+          </Button>
+          <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => setIsDeleteOpen(true)}>
+            <Trash className="h-4 w-4" />
+          </Button>
+        </CardFooter>
+      )}
 
       <PlanFormDialog open={isEditOpen} onOpenChange={setIsEditOpen} initialData={plan} />
 

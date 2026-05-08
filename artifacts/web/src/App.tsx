@@ -13,6 +13,7 @@ import { RunsPage } from "@/pages/runs";
 import { RunDetailsPage } from "@/pages/run-details";
 import { RepPortal } from "@/pages/rep-portal";
 import { SettingsPage } from "@/pages/settings";
+import { TeamPage } from "@/pages/team";
 import { BillingPage } from "@/pages/billing";
 import { LoginPage } from "@/pages/login";
 import { ThemeProvider } from "@/hooks/use-theme";
@@ -28,7 +29,7 @@ function Layout({ children }: { children: React.ReactNode }) {
       <Header />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
-        <div className="flex-1 overflow-y-auto pr-[8px] pb-[8px]" style={{ background: "hsl(var(--sidebar))", padding: "0 4px 4px 0" }}>
+        <div className="flex-1 overflow-y-auto pr-3 pb-3" style={{ background: "hsl(var(--sidebar))" }}>
           <div className="bg-card rounded-[18px] border border-card-border min-h-full shadow-xs">
             <main className="mx-auto py-8 px-8 lg:px-10 max-w-6xl">
               {children}
@@ -134,6 +135,7 @@ function ProtectedRouter() {
         <Route path="/runs" component={RunsPage} />
         <Route path="/runs/:id" component={RunDetailsPage} />
         <Route path="/reps/:id" component={RepPortal} />
+        <Route path="/team" component={TeamPage} />
         <Route path="/settings" component={SettingsPage} />
         <Route path="/billing" component={BillingPage} />
         <Route component={NotFound} />

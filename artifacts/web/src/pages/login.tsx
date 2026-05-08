@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 export function LoginPage() {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -19,18 +20,27 @@ export function LoginPage() {
 
     try {
       if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await authClient.signIn.email({ 
+          email, 
+          password,
+          callbackURL: "/",
+        });
         if (error) throw error;
       } else {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { error } = await authClient.signUp.email({ 
+          email, 
+          password,
+          name: name || email.split("@")[0],
+          callbackURL: "/",
+        });
         if (error) throw error;
         toast({
-          title: "Check your email",
-          description: "We sent you a confirmation link. Please verify your email before signing in.",
+          title: "Account created",
+          description: "Your account has been created successfully.",
         });
-        setMode("login");
       }
     } catch (err: any) {
+      console.error("Auth error:", err);
       toast({
         title: "Authentication error",
         description: err.message ?? "Something went wrong.",
@@ -72,6 +82,19 @@ export function LoginPage() {
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
+              {mode === "signup" && (
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="John Doe"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required={mode === "signup"}
+                  />
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -94,7 +117,7 @@ export function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoComplete={mode === "login" ? "current-password" : "new-password"}
-                  minLength={6}
+                  minLength={8}
                 />
               </div>
             </CardContent>

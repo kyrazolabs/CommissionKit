@@ -1,11 +1,10 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import type { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabase";
-import { setAuthTokenGetter, setWorkspaceId } from "@workspace/api-client-react";
+import { authClient, useSession } from "@/lib/auth-client";
+import { setAuthTokenGetter, setWorkspaceId, setBaseUrl } from "@workspace/api-client-react";
 
 interface AuthContextValue {
-  session: Session | null;
-  user: User | null;
+  session: any | null;
+  user: any | null;
   loading: boolean;
   signOut: () => Promise<void>;
 }
@@ -18,32 +17,24 @@ const AuthContext = createContext<AuthContextValue>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: session, isPending: loading } = useSession();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
-    });
+    // Set the base URL for the generated API client
+    setBaseUrl(import.meta.env.VITE_API_URL || "http://localhost:8088");
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s);
-    });
-
-    return () => listener.subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
+    // Better Auth handles sessions via cookies, but we might still need 
+    // to pass tokens if the API client expects them. 
+    // For now, we'll keep the token getter logic if needed, 
+    // but Better Auth usually doesn't need explicit token passing for same-origin.
     setAuthTokenGetter(async () => {
-      const { data } = await supabase.auth.getSession();
-      return data.session?.access_token ?? null;
+      return null; // Better Auth uses cookies
     });
     return () => setAuthTokenGetter(null);
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await authClient.signOut();
     setAuthTokenGetter(null);
     setWorkspaceId(null);
   };

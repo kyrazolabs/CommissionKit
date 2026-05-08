@@ -20,17 +20,19 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { useRole } from "@/hooks/use-role";
 
 export function RepsPage() {
   const { data: reps, isLoading } = useListReps({ query: { queryKey: getListRepsQueryKey() } });
   const { data: plans } = useListPlans({ query: { queryKey: getListPlansQueryKey() } });
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const { can } = useRole();
 
-  const filteredReps = reps?.filter(rep =>
+  const filteredReps = Array.isArray(reps) ? reps.filter(rep =>
     rep.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     rep.email.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  ) : [];
 
   return (
     <div className="space-y-6">
@@ -40,7 +42,7 @@ export function RepsPage() {
           <h1 className="text-[28px] font-bold tracking-tight text-foreground leading-tight">Sales Representatives</h1>
           <p className="text-[14px] text-muted-foreground mt-1">Manage your sales team and their commission plans.</p>
         </div>
-        <RepFormDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} plans={plans || []} />
+        {can("admin") && <RepFormDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} plans={plans || []} />}
       </div>
 
       <Card>
@@ -133,8 +135,8 @@ export function RepsPage() {
                               View Portal
                             </Link>
                           </DropdownMenuItem>
-                          <RepEditAction rep={rep} plans={plans || []} />
-                          <RepDeleteAction rep={rep} />
+                          {can("admin") && <RepEditAction rep={rep} plans={plans || []} />}
+                          {can("admin") && <RepDeleteAction rep={rep} />}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -165,7 +167,7 @@ function RepFormDialog({ open, onOpenChange, plans, initialData }: any) {
     e.preventDefault();
     const data = {
       name, email, role,
-      planId: planId === "none" ? null : parseInt(planId, 10)
+      planId: planId === "none" ? null : planId
     };
 
     if (isEditing) {
@@ -224,7 +226,7 @@ function RepFormDialog({ open, onOpenChange, plans, initialData }: any) {
                 <SelectTrigger><SelectValue placeholder="Select a plan" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">No plan assigned</SelectItem>
-                  {plans.map((p: any) => (
+                  {Array.isArray(plans) && plans.map((p: any) => (
                     <SelectItem key={p.id} value={p.id.toString()}>{p.name} ({p.type})</SelectItem>
                   ))}
                 </SelectContent>

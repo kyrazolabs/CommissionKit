@@ -1,0 +1,26 @@
+{
+  "name": "@workspace/queue",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./connection": "./src/connection.ts",
+    "./constants": "./src/constants.ts",
+    "./queues": "./src/queues.ts",
+    "./mailer": "./src/mailer.ts",
+    "./worker": "./src/worker.ts",
+    "./enqueue": "./src/enqueue.ts"
+  },
+  "dependencies": {
+    "bullmq": "^5.54.2",
+    "ioredis": "^5.6.1",
+    "nodemailer": "^7.0.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.3",
+    "@types/nodemailer": "^6.4.17",
+    "typescript": "~5.9.2"
+  }
+}

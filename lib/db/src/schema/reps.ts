@@ -1,17 +1,30 @@
-import { pgTable, serial, text, integer, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod/v4";
+import mongoose, { Schema, model, Types } from "mongoose";
+import { z } from "zod";
 
-export const repsTable = pgTable("reps", {
-  id: serial("id").primaryKey(),
-  workspaceId: integer("workspace_id").notNull(),
-  name: text("name").notNull(),
-  email: text("email").notNull(),
-  role: text("role").notNull().default("Sales Rep"),
-  planId: integer("plan_id"),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+const RepSchema = new Schema({
+  workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  role: { type: String, required: true, default: "Sales Rep" },
+  planId: { type: Schema.Types.ObjectId, ref: "Plan" },
+}, { timestamps: { createdAt: true, updatedAt: false } });
+
+export const Rep = model("Rep", RepSchema);
+
+export type Rep = mongoose.Document & {
+  _id: Types.ObjectId;
+  workspaceId: Types.ObjectId;
+  name: string;
+  email: string;
+  role: string;
+  planId?: Types.ObjectId;
+  createdAt: Date;
+};
+
+export const insertRepSchema = z.object({
+  workspaceId: z.string(),
+  name: z.string(),
+  email: z.string(),
+  role: z.string().default("Sales Rep"),
+  planId: z.string().optional(),
 });
-
-export const insertRepSchema = createInsertSchema(repsTable).omit({ id: true, createdAt: true });
-export type InsertRep = z.infer<typeof insertRepSchema>;
-export type Rep = typeof repsTable.$inferSelect;

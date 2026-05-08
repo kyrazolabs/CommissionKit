@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { db, dealsTable, repsTable } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
+import { Deal, Rep } from "@workspace/db";
+import { Types } from "mongoose";
 import {
   CreateDealBody,
   ImportDealsBody,
@@ -11,13 +11,13 @@ import { requireWorkspaceMember, type AuthenticatedRequest } from "../middleware
 
 const router = Router();
 
-function formatDeal(deal: typeof dealsTable.$inferSelect, repName: string) {
+function formatDeal(deal: any, repName: string) {
   return {
-    id: deal.id,
+    id: deal._id,
     repId: deal.repId,
     repName,
     name: deal.name,
-    amount: Number(deal.amount),
+    amount: deal.amount,
     closeDate: deal.closeDate,
     period: deal.period,
     stage: deal.stage,
@@ -29,43 +29,31 @@ function formatDeal(deal: typeof dealsTable.$inferSelect, repName: string) {
 router.get("/deals", ...requireWorkspaceMember("member"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.workspaceId!;
   const query = ListDealsQueryParams.parse(req.query);
-  const conditions: ReturnType<typeof eq>[] = [eq(dealsTable.workspaceId, workspaceId)];
+  const conditions: any = { workspaceId: new Types.ObjectId(workspaceId) };
 
-  if (query.repId !== undefined) conditions.push(eq(dealsTable.repId, query.repId));
-  if (query.period !== undefined) conditions.push(eq(dealsTable.period, query.period));
+  if (query.repId !== undefined) conditions.repId = new Types.ObjectId(query.repId);
+  if (query.period !== undefined) conditions.period = query.period;
 
-  const deals = await db
-    .select({
-      deal: dealsTable,
-      repName: repsTable.name,
-    })
-    .from(dealsTable)
-    .leftJoin(repsTable, and(eq(dealsTable.repId, repsTable.id), eq(repsTable.workspaceId, workspaceId)))
-    .where(and(...conditions))
-    .orderBy(dealsTable.closeDate);
+  const deals = await Deal.find(conditions).populate('repId').sort({ closeDate: 1 });
 
-  res.json(deals.map((d) => formatDeal(d.deal, d.repName ?? "Unknown")));
+  res.json(deals.map((d) => formatDeal(d, d.repId ? (d.repId as any).name ?? "Unknown" : "Unknown")));
 });
 
 router.post("/deals", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.workspaceId!;
   const body = CreateDealBody.parse(req.body);
-  const [deal] = await db
-    .insert(dealsTable)
-    .values({
-      workspaceId,
-      repId: body.repId,
-      name: body.name,
-      amount: body.amount.toString(),
-      closeDate: body.closeDate,
-      period: body.period,
-      stage: body.stage,
-      notes: body.notes ?? null,
-    })
-    .returning();
+  const deal = await Deal.create({
+    workspaceId: new Types.ObjectId(workspaceId),
+    repId: new Types.ObjectId(body.repId),
+    name: body.name,
+    amount: body.amount,
+    closeDate: body.closeDate,
+    period: body.period,
+    stage: body.stage,
+    notes: body.notes ?? null,
+  });
 
-  const [rep] = await db.select({ name: repsTable.name }).from(repsTable)
-    .where(and(eq(repsTable.id, deal.repId), eq(repsTable.workspaceId, workspaceId)));
+  const rep = await Rep.findById(body.repId);
   res.status(201).json(formatDeal(deal, rep?.name ?? "Unknown"));
 });
 
@@ -78,18 +66,17 @@ router.post("/deals/import", ...requireWorkspaceMember("admin"), async (req: Aut
 
   for (const d of body.deals) {
     try {
-      const [rep] = await db.select({ id: repsTable.id }).from(repsTable)
-        .where(and(eq(repsTable.id, d.repId), eq(repsTable.workspaceId, workspaceId)));
+      const rep = await Rep.findOne({ _id: d.repId, workspaceId: new Types.ObjectId(workspaceId) });
       if (!rep) {
         errors.push(`Deal "${d.name}": rep ID ${d.repId} not found`);
         skipped++;
         continue;
       }
-      await db.insert(dealsTable).values({
-        workspaceId,
-        repId: d.repId,
+      await Deal.create({
+        workspaceId: new Types.ObjectId(workspaceId),
+        repId: new Types.ObjectId(d.repId),
         name: d.name,
-        amount: d.amount.toString(),
+        amount: d.amount,
         closeDate: d.closeDate,
         period: body.period,
         stage: d.stage,
@@ -108,7 +95,7 @@ router.post("/deals/import", ...requireWorkspaceMember("admin"), async (req: Aut
 router.delete("/deals/:id", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.workspaceId!;
   const { id } = DeleteDealParams.parse(req.params);
-  await db.delete(dealsTable).where(and(eq(dealsTable.id, id), eq(dealsTable.workspaceId, workspaceId)));
+  await Deal.deleteOne({ _id: new Types.ObjectId(id), workspaceId: new Types.ObjectId(workspaceId) });
   res.status(204).send();
 });
 

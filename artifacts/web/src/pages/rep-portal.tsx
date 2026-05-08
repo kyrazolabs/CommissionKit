@@ -13,7 +13,7 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTo
 
 export function RepPortal() {
   const params = useParams();
-  const id = parseInt(params.id || "0", 10);
+  const id = params.id || "";
   const [period, setPeriod] = useState<string>(format(new Date(), "yyyy-MM"));
 
   const { data: summary, isLoading } = useGetRepSummary(
@@ -23,7 +23,7 @@ export function RepPortal() {
   );
 
   if (isLoading) return <RepPortalSkeleton />;
-  if (!summary) return <div>Rep not found</div>;
+  if (!summary || (summary as any).error) return <div>Rep not found</div>;
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">

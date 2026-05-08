@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 const BASE_URL = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const plans = [
@@ -81,12 +82,12 @@ export function BillingPage() {
     }
     setLoadingPlan(planId);
     try {
-      const res = await fetch(`${BASE_URL}/api/billing/checkout`, {
+      const res = await fetch(`${API_URL}/api/billing/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
         },
+        credentials: "include",
         body: JSON.stringify({ priceId, mode }),
       });
       if (!res.ok) throw new Error(await res.text());

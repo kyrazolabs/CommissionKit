@@ -1,21 +1,53 @@
-import { pgTable, serial, text, integer, timestamp } from "drizzle-orm/pg-core";
+import mongoose, { Schema, model, Types } from "mongoose";
+import { z } from "zod";
 
-export const workspacesTable = pgTable("workspaces", {
-  id: serial("id").primaryKey(),
-  slug: text("slug").notNull().unique(),
-  name: text("name").notNull(),
-  ownerId: text("owner_id").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+const WorkspaceSchema = new Schema({
+  slug: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
+  ownerId: { type: String, required: true },
+  // Workspace-level settings
+  currency: { type: String, default: "USD" },
+  fiscalYearStart: { type: String, default: "January" }, // month name
+}, { timestamps: { createdAt: true, updatedAt: false } });
+
+const WorkspaceMemberSchema = new Schema({
+  workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
+  userId: { type: String },
+  email: { type: String, required: true },
+  role: { type: String, required: true, default: "member" },
+}, { timestamps: { createdAt: true, updatedAt: false } });
+
+export const Workspace = model("Workspace", WorkspaceSchema);
+export const WorkspaceMember = model("WorkspaceMember", WorkspaceMemberSchema);
+
+export type Workspace = mongoose.Document & {
+  _id: Types.ObjectId;
+  slug: string;
+  name: string;
+  ownerId: string;
+  currency: string;
+  fiscalYearStart: string;
+  createdAt: Date;
+};
+
+export type WorkspaceMember = mongoose.Document & {
+  _id: Types.ObjectId;
+  workspaceId: Types.ObjectId;
+  userId?: string;
+  email: string;
+  role: string;
+  createdAt: Date;
+};
+
+export const insertWorkspaceSchema = z.object({
+  slug: z.string(),
+  name: z.string(),
+  ownerId: z.string(),
 });
 
-export const workspaceMembersTable = pgTable("workspace_members", {
-  id: serial("id").primaryKey(),
-  workspaceId: integer("workspace_id").notNull(),
-  userId: text("user_id"),
-  email: text("email").notNull(),
-  role: text("role").notNull().default("member"),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+export const insertWorkspaceMemberSchema = z.object({
+  workspaceId: z.string(),
+  userId: z.string().optional(),
+  email: z.string(),
+  role: z.string().default("member"),
 });
-
-export type Workspace = typeof workspacesTable.$inferSelect;
-export type WorkspaceMember = typeof workspaceMembersTable.$inferSelect;

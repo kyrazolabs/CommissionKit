@@ -28,6 +28,7 @@ const navGroups = [
   {
     label: "Account",
     items: [
+      { name: "Team",     href: "/team",     icon: Users },
       { name: "Billing",  href: "/billing",  icon: CreditCard },
       { name: "Settings", href: "/settings", icon: Settings },
     ],
@@ -104,7 +105,13 @@ function WorkspaceSwitcher() {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[13px] font-semibold text-foreground truncate leading-none">{activeWorkspace.name}</p>
-          <p className="text-[10px] text-muted-foreground capitalize mt-0.5">{activeWorkspace.role}</p>
+          <div className="flex items-center gap-1 mt-0.5">
+            {(() => {
+              const RoleIcon = ROLE_ICONS[activeWorkspace.role] ?? Users;
+              return <RoleIcon className="h-2.5 w-2.5 text-muted-foreground" />;
+            })()}
+            <p className="text-[10px] text-muted-foreground capitalize">{activeWorkspace.role}</p>
+          </div>
         </div>
         <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
       </button>

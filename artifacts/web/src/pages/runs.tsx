@@ -12,13 +12,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PlayCircle, ArrowRight, CalendarDays, Clock, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { formatCurrency, formatNumber } from "@/lib/format";
+import { HelpTooltip } from "@/components/help-tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { useRole } from "@/hooks/use-role";
 
 export function RunsPage() {
   const { data: runs, isLoading } = useListRuns({ query: { queryKey: getListRunsQueryKey() } });
+  const { can } = useRole();
 
   return (
     <div className="space-y-6">
@@ -27,7 +30,7 @@ export function RunsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Calculation Runs</h1>
           <p className="text-muted-foreground">Execute and audit commission calculations.</p>
         </div>
-        <RunCalculationDialog />
+        {can("admin") && <RunCalculationDialog />}
       </div>
 
       <Card>
@@ -42,7 +45,7 @@ export function RunsPage() {
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
             </div>
-          ) : runs?.length === 0 ? (
+          ) : (!Array.isArray(runs) || runs.length === 0) ? (
             <div className="text-center py-12">
               <div className="bg-muted w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
                 <PlayCircle className="h-6 w-6 text-muted-foreground" />
@@ -66,7 +69,7 @@ export function RunsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {runs?.map((run) => (
+                {runs.map((run) => (
                   <TableRow key={run.id}>
                     <TableCell className="font-mono text-xs text-muted-foreground">
                       #{run.id.toString().padStart(4, '0')}
@@ -132,8 +135,9 @@ function RunCalculationDialog() {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Trigger Commission Calculation</DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="flex items-center gap-1.5">
             This will process all pending and closed won deals for the specified period and calculate rep commissions.
+            <HelpTooltip content="Calculating a run takes a 'snapshot' of current deals and plans. If you add deals later, you'll need to run it again to update totals." />
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">

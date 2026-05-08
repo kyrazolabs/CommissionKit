@@ -1,7 +1,9 @@
 import { Router } from "express";
-import { db, workspacesTable, workspaceMembersTable } from "@workspace/db";
-import { eq, and, isNull } from "drizzle-orm";
+import { Workspace, WorkspaceMember } from "@workspace/db";
+import { Types } from "mongoose";
 import { requireAuth, type AuthenticatedRequest } from "../middleware/auth";
+import { sendHighPriorityEmail } from "@workspace/queue";
+import { invitationTemplate } from "@workspace/email-templates";
 
 const router = Router();
 
@@ -15,17 +17,11 @@ function slugify(name: string): string {
     .slice(0, 50);
 }
 
-async function getMembership(workspaceId: number, userId: string) {
-  const [m] = await db
-    .select()
-    .from(workspaceMembersTable)
-    .where(
-      and(
-        eq(workspaceMembersTable.workspaceId, workspaceId),
-        eq(workspaceMembersTable.userId, userId)
-      )
-    );
-  return m ?? null;
+async function getMembership(workspaceId: string, userId: string) {
+  return await WorkspaceMember.findOne({
+    workspaceId: new Types.ObjectId(workspaceId),
+    userId,
+  });
 }
 
 router.get("/workspaces", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
@@ -34,34 +30,21 @@ router.get("/workspaces", requireAuth, async (req: AuthenticatedRequest, res): P
 
   // Auto-accept pending invites for this email
   if (userEmail) {
-    await db
-      .update(workspaceMembersTable)
-      .set({ userId })
-      .where(
-        and(isNull(workspaceMembersTable.userId), eq(workspaceMembersTable.email, userEmail))
-      );
+    await WorkspaceMember.updateMany(
+      { userId: null, email: userEmail },
+      { userId }
+    );
   }
 
-  const memberships = await db
-    .select({
-      id: workspacesTable.id,
-      slug: workspacesTable.slug,
-      name: workspacesTable.name,
-      createdAt: workspacesTable.createdAt,
-      role: workspaceMembersTable.role,
-    })
-    .from(workspaceMembersTable)
-    .innerJoin(workspacesTable, eq(workspaceMembersTable.workspaceId, workspacesTable.id))
-    .where(eq(workspaceMembersTable.userId, userId))
-    .orderBy(workspacesTable.name);
+  const memberships = await WorkspaceMember.find({ userId }).populate("workspaceId").sort({ "workspaceId.name": 1 });
 
   res.json(
     memberships.map((m) => ({
-      id: m.id,
-      slug: m.slug,
-      name: m.name,
+      id: (m.workspaceId as any)._id,
+      slug: (m.workspaceId as any).slug,
+      name: (m.workspaceId as any).name,
       role: m.role,
-      createdAt: m.createdAt.toISOString(),
+      createdAt: (m.workspaceId as any).createdAt.toISOString(),
     }))
   );
 });
@@ -79,28 +62,22 @@ router.post("/workspaces", requireAuth, async (req: AuthenticatedRequest, res): 
 
   let slug = baseSlug;
   for (let i = 1; ; i++) {
-    const [existing] = await db
-      .select({ id: workspacesTable.id })
-      .from(workspacesTable)
-      .where(eq(workspacesTable.slug, slug));
+    const existing = await Workspace.findOne({ slug });
     if (!existing) break;
     slug = `${baseSlug}-${i}`;
   }
 
-  const [workspace] = await db
-    .insert(workspacesTable)
-    .values({ slug, name: name.trim(), ownerId: userId })
-    .returning();
+  const workspace = await Workspace.create({ slug, name: name.trim(), ownerId: userId });
 
-  await db.insert(workspaceMembersTable).values({
-    workspaceId: workspace.id,
+  await WorkspaceMember.create({
+    workspaceId: workspace._id,
     userId,
     email: userEmail,
     role: "owner",
   });
 
   res.status(201).json({
-    id: workspace.id,
+    id: workspace._id,
     slug: workspace.slug,
     name: workspace.name,
     role: "owner",
@@ -109,27 +86,23 @@ router.post("/workspaces", requireAuth, async (req: AuthenticatedRequest, res): 
 });
 
 router.get("/workspaces/:id", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = parseInt(req.params.id, 10);
+  const workspaceId = req.params.id;
   const membership = await getMembership(workspaceId, req.userId!);
   if (!membership) { res.status(403).json({ error: "Not a member of this workspace" }); return; }
 
-  const [workspace] = await db.select().from(workspacesTable).where(eq(workspacesTable.id, workspaceId));
+  const workspace = await Workspace.findById(workspaceId);
   if (!workspace) { res.status(404).json({ error: "Workspace not found" }); return; }
 
-  const members = await db
-    .select()
-    .from(workspaceMembersTable)
-    .where(eq(workspaceMembersTable.workspaceId, workspaceId))
-    .orderBy(workspaceMembersTable.createdAt);
+  const members = await WorkspaceMember.find({ workspaceId: new Types.ObjectId(workspaceId) }).sort({ createdAt: 1 });
 
   res.json({
-    id: workspace.id,
+    id: workspace._id,
     slug: workspace.slug,
     name: workspace.name,
     role: membership.role,
     createdAt: workspace.createdAt.toISOString(),
     members: members.map((m) => ({
-      id: m.id,
+      id: m._id,
       userId: m.userId,
       email: m.email,
       role: m.role,
@@ -140,7 +113,7 @@ router.get("/workspaces/:id", requireAuth, async (req: AuthenticatedRequest, res
 });
 
 router.put("/workspaces/:id", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = parseInt(req.params.id, 10);
+  const workspaceId = req.params.id;
   const membership = await getMembership(workspaceId, req.userId!);
   if (!membership || !ADMIN_ROLES.includes(membership.role)) {
     res.status(403).json({ error: "Requires admin role or higher" }); return;
@@ -149,41 +122,37 @@ router.put("/workspaces/:id", requireAuth, async (req: AuthenticatedRequest, res
   const { name } = req.body as { name?: string };
   if (!name?.trim()) { res.status(400).json({ error: "Name is required" }); return; }
 
-  const [updated] = await db
-    .update(workspacesTable)
-    .set({ name: name.trim() })
-    .where(eq(workspacesTable.id, workspaceId))
-    .returning();
+  const updated = await Workspace.findByIdAndUpdate(
+    workspaceId,
+    { name: name.trim() },
+    { new: true }
+  );
 
-  res.json({ id: updated.id, slug: updated.slug, name: updated.name, role: membership.role });
+  res.json({ id: updated!._id, slug: updated!.slug, name: updated!.name, role: membership.role });
 });
 
 router.delete("/workspaces/:id", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = parseInt(req.params.id, 10);
+  const workspaceId = req.params.id;
   const membership = await getMembership(workspaceId, req.userId!);
   if (membership?.role !== "owner") {
     res.status(403).json({ error: "Only the owner can delete a workspace" }); return;
   }
 
-  await db.delete(workspaceMembersTable).where(eq(workspaceMembersTable.workspaceId, workspaceId));
-  await db.delete(workspacesTable).where(eq(workspacesTable.id, workspaceId));
+  await WorkspaceMember.deleteMany({ workspaceId: new Types.ObjectId(workspaceId) });
+  await Workspace.findByIdAndDelete(workspaceId);
   res.status(204).send();
 });
 
 router.get("/workspaces/:id/members", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = parseInt(req.params.id, 10);
+  const workspaceId = req.params.id;
   const membership = await getMembership(workspaceId, req.userId!);
   if (!membership) { res.status(403).json({ error: "Not a member" }); return; }
 
-  const members = await db
-    .select()
-    .from(workspaceMembersTable)
-    .where(eq(workspaceMembersTable.workspaceId, workspaceId))
-    .orderBy(workspaceMembersTable.createdAt);
+  const members = await WorkspaceMember.find({ workspaceId: new Types.ObjectId(workspaceId) }).sort({ createdAt: 1 });
 
   res.json(
     members.map((m) => ({
-      id: m.id,
+      id: m._id,
       userId: m.userId,
       email: m.email,
       role: m.role,
@@ -194,7 +163,7 @@ router.get("/workspaces/:id/members", requireAuth, async (req: AuthenticatedRequ
 });
 
 router.post("/workspaces/:id/members/invite", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = parseInt(req.params.id, 10);
+  const workspaceId = req.params.id;
   const membership = await getMembership(workspaceId, req.userId!);
   if (!membership || !ADMIN_ROLES.includes(membership.role)) {
     res.status(403).json({ error: "Requires admin role or higher" }); return;
@@ -205,23 +174,49 @@ router.post("/workspaces/:id/members/invite", requireAuth, async (req: Authentic
   if (!["admin", "member"].includes(role)) { res.status(400).json({ error: "Role must be admin or member" }); return; }
 
   const normalizedEmail = email.toLowerCase().trim();
-  const [existing] = await db
-    .select()
-    .from(workspaceMembersTable)
-    .where(and(eq(workspaceMembersTable.workspaceId, workspaceId), eq(workspaceMembersTable.email, normalizedEmail)));
+  const existing = await WorkspaceMember.findOne({
+    workspaceId: new Types.ObjectId(workspaceId),
+    email: normalizedEmail,
+  });
   if (existing) { res.status(409).json({ error: "This person is already a member or has a pending invite" }); return; }
 
-  const [member] = await db
-    .insert(workspaceMembersTable)
-    .values({ workspaceId, userId: null, email: normalizedEmail, role })
-    .returning();
+  const member = await WorkspaceMember.create({
+    workspaceId: new Types.ObjectId(workspaceId),
+    email: normalizedEmail,
+    role,
+  });
 
-  res.status(201).json({ id: member.id, email: member.email, role: member.role, status: "pending" });
+  // Fire-and-forget invitation email
+  const workspace = await Workspace.findById(workspaceId);
+  const inviterEmail = req.userEmail ?? "someone";
+  const inviterName = inviterEmail.split("@")[0];
+  const APP_URL = process.env.APP_URL || "http://localhost:3000";
+
+  setImmediate(async () => {
+    try {
+      await sendHighPriorityEmail({
+        to: normalizedEmail,
+        subject: `${inviterName} invited you to join ${workspace?.name ?? "a workspace"} on CommissionKit`,
+        html: invitationTemplate({
+          inviterName,
+          workspaceName: workspace?.name ?? "CommissionKit Workspace",
+          role: role as "admin" | "member",
+          acceptUrl: `${APP_URL}/accept-invite?workspaceId=${workspaceId}&email=${encodeURIComponent(normalizedEmail)}`,
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        }),
+        meta: { workspaceId, memberId: String(member._id), event: "workspace_invitation" },
+      });
+    } catch (err) {
+      console.error("[Invite] Failed to enqueue invitation email:", err);
+    }
+  });
+
+  res.status(201).json({ id: member._id, email: member.email, role: member.role, status: "pending" });
 });
 
 router.patch("/workspaces/:id/members/:memberId", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = parseInt(req.params.id, 10);
-  const memberId = parseInt(req.params.memberId, 10);
+  const workspaceId = req.params.id;
+  const memberId = req.params.memberId;
   const callerMembership = await getMembership(workspaceId, req.userId!);
   if (callerMembership?.role !== "owner") {
     res.status(403).json({ error: "Only the owner can change member roles" }); return;
@@ -232,32 +227,29 @@ router.patch("/workspaces/:id/members/:memberId", requireAuth, async (req: Authe
     res.status(400).json({ error: "Role must be admin or member" }); return;
   }
 
-  const [target] = await db
-    .select()
-    .from(workspaceMembersTable)
-    .where(and(eq(workspaceMembersTable.id, memberId), eq(workspaceMembersTable.workspaceId, workspaceId)));
+  const target = await WorkspaceMember.findOne({
+    _id: new Types.ObjectId(memberId),
+    workspaceId: new Types.ObjectId(workspaceId),
+  });
   if (!target || target.role === "owner") {
     res.status(400).json({ error: "Cannot change the owner role" }); return;
   }
 
-  const [updated] = await db
-    .update(workspaceMembersTable)
-    .set({ role: role! })
-    .where(eq(workspaceMembersTable.id, memberId))
-    .returning();
+  target.role = role!;
+  await target.save();
 
-  res.json({ id: updated.id, email: updated.email, role: updated.role });
+  res.json({ id: target._id, email: target.email, role: target.role });
 });
 
 router.delete("/workspaces/:id/members/:memberId", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = parseInt(req.params.id, 10);
-  const memberId = parseInt(req.params.memberId, 10);
+  const workspaceId = req.params.id;
+  const memberId = req.params.memberId;
   const callerMembership = await getMembership(workspaceId, req.userId!);
 
-  const [target] = await db
-    .select()
-    .from(workspaceMembersTable)
-    .where(and(eq(workspaceMembersTable.id, memberId), eq(workspaceMembersTable.workspaceId, workspaceId)));
+  const target = await WorkspaceMember.findOne({
+    _id: new Types.ObjectId(memberId),
+    workspaceId: new Types.ObjectId(workspaceId),
+  });
   if (!target) { res.status(404).json({ error: "Member not found" }); return; }
 
   const isSelf = target.userId === req.userId;
@@ -265,7 +257,7 @@ router.delete("/workspaces/:id/members/:memberId", requireAuth, async (req: Auth
   if (!isSelf && !isAdminOrOwner) { res.status(403).json({ error: "Access denied" }); return; }
   if (target.role === "owner") { res.status(400).json({ error: "Cannot remove the workspace owner" }); return; }
 
-  await db.delete(workspaceMembersTable).where(eq(workspaceMembersTable.id, memberId));
+  await WorkspaceMember.deleteOne({ _id: new Types.ObjectId(memberId) });
   res.status(204).send();
 });
 

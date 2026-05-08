@@ -1,0 +1,19 @@
+{
+  "name": "@workspace/email-templates",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./base": "./src/base.ts",
+    "./invitation": "./src/invitation.ts",
+    "./commission-run": "./src/commission-run.ts",
+    "./welcome": "./src/welcome.ts",
+    "./password-reset": "./src/password-reset.ts",
+    "./clawback-alert": "./src/clawback-alert.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.3",
+    "typescript": "~5.9.2"
+  }
+}

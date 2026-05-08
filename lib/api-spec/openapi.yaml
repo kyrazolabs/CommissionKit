@@ -78,7 +78,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Rep
@@ -95,7 +95,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -118,7 +118,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "204":
           description: Deleted
@@ -166,7 +166,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Plan
@@ -183,7 +183,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -206,7 +206,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "204":
           description: Deleted
@@ -221,7 +221,7 @@ paths:
         - name: repId
           in: query
           schema:
-            type: integer
+            type: string
         - name: period
           in: query
           description: "Filter by period (YYYY-MM)"
@@ -283,7 +283,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "204":
           description: Deleted
@@ -331,7 +331,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Run with results
@@ -364,7 +364,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
         - name: period
           in: query
           required: false
@@ -393,7 +393,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         name:
           type: string
         email:
@@ -401,7 +401,7 @@ components:
         role:
           type: string
         planId:
-          type: integer
+          type: string
           nullable: true
         planName:
           type: string
@@ -420,7 +420,7 @@ components:
         role:
           type: string
         planId:
-          type: integer
+          type: string
           nullable: true
       required: [name, email, role]
 
@@ -429,7 +429,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         fromAmount:
           type: number
         toAmount:
@@ -444,7 +444,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         name:
           type: string
         type:
@@ -517,9 +517,9 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         repId:
-          type: integer
+          type: string
         repName:
           type: string
         name:
@@ -545,7 +545,7 @@ components:
       type: object
       properties:
         repId:
-          type: integer
+          type: string
         name:
           type: string
         amount:
@@ -592,13 +592,13 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         repId:
-          type: integer
+          type: string
         repName:
           type: string
         dealId:
-          type: integer
+          type: string
         dealName:
           type: string
         dealAmount:
@@ -615,7 +615,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         period:
           type: string
         totalCommission:
@@ -632,7 +632,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         period:
           type: string
         totalCommission:
@@ -662,7 +662,7 @@ components:
       type: object
       properties:
         repId:
-          type: integer
+          type: string
         repName:
           type: string
         totalCommission:
@@ -700,7 +700,7 @@ components:
       type: object
       properties:
         dealId:
-          type: integer
+          type: string
         dealName:
           type: string
         dealAmount:
@@ -719,7 +719,7 @@ components:
       type: object
       properties:
         repId:
-          type: integer
+          type: string
         repName:
           type: string
         email:

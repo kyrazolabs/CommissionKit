@@ -3,3 +3,4 @@ export * from "./plans";
 export * from "./deals";
 export * from "./commissionRuns";
 export * from "./workspaces";
+export * from "./notifications";

@@ -2,10 +2,11 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 import { setWorkspaceId } from "@workspace/api-client-react";
 import { useAuth } from "./use-auth";
 
-const BASE_URL = import.meta.env.BASE_URL.replace(/\/$/, "");
+// Get the API URL from env, similar to auth-client
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 
 export interface Workspace {
-  id: number;
+  id: string;
   slug: string;
   name: string;
   role: "owner" | "admin" | "member";
@@ -41,8 +42,14 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const fetchWorkspaces = useCallback(async () => {
     if (!session) return;
     try {
-      const res = await fetch(`${BASE_URL}/api/workspaces`, {
-        headers: { Authorization: `Bearer ${session.access_token}` },
+      // Better Auth uses cookies, so we don't need the Authorization header
+      // if the request is same-origin or includes credentials.
+      const res = await fetch(`${API_URL}/api/workspaces`, {
+        headers: { 
+          // We include credentials (cookies) for Better Auth
+        },
+        // In case of cross-origin (e.g. dev server vs api server)
+        credentials: "include",
       });
       if (!res.ok) return;
       const data: Workspace[] = await res.json();
@@ -52,7 +59,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       const saved = savedId ? data.find((w) => String(w.id) === savedId) : null;
       const active = saved ?? data[0] ?? null;
       setActiveWorkspaceState(active);
-      setWorkspaceId(active ? String(active.id) : null);
+      setWorkspaceId(active ? active.id : null);
     } finally {
       setLoading(false);
     }
@@ -72,19 +79,19 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
   const setActiveWorkspace = useCallback((ws: Workspace) => {
     setActiveWorkspaceState(ws);
-    setWorkspaceId(String(ws.id));
-    localStorage.setItem(STORAGE_KEY, String(ws.id));
+    setWorkspaceId(ws.id);
+    localStorage.setItem(STORAGE_KEY, ws.id);
   }, []);
 
   const createWorkspace = useCallback(
     async (name: string): Promise<Workspace> => {
       if (!session) throw new Error("Not authenticated");
-      const res = await fetch(`${BASE_URL}/api/workspaces`, {
+      const res = await fetch(`${API_URL}/api/workspaces`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
         },
+        credentials: "include",
         body: JSON.stringify({ name }),
       });
       if (!res.ok) throw new Error(await res.text());

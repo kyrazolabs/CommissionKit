@@ -7,6 +7,7 @@ import dealsRouter from "./deals";
 import runsRouter from "./runs";
 import dashboardRouter from "./dashboard";
 import billingRouter from "./billing";
+import notificationsRouter from "./notifications";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(dealsRouter);
 router.use(runsRouter);
 router.use(dashboardRouter);
 router.use("/billing", billingRouter);
+router.use(notificationsRouter);
 
 export default router;

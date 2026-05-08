@@ -1,12 +1,12 @@
 import type { Request, Response, NextFunction, RequestHandler } from "express";
-import { supabase } from "../lib/supabase";
-import { db, workspaceMembersTable } from "@workspace/db";
-import { eq, and, isNull } from "drizzle-orm";
+import { auth } from "../lib/auth";
+import { WorkspaceMember } from "@workspace/db";
+import { Types } from "mongoose";
 
 export interface AuthenticatedRequest extends Request {
   userId?: string;
   userEmail?: string;
-  workspaceId?: number;
+  workspaceId?: string;
   workspaceRole?: "owner" | "admin" | "member";
 }
 
@@ -15,22 +15,17 @@ export async function requireAuth(
   res: Response,
   next: NextFunction,
 ): Promise<void> {
-  const authHeader = req.headers["authorization"];
-  if (!authHeader?.startsWith("Bearer ")) {
-    res.status(401).json({ error: "Missing or invalid Authorization header" });
+  const session = await auth.api.getSession({
+    headers: req.headers,
+  });
+
+  if (!session || !session.user) {
+    res.status(401).json({ error: "Unauthorized" });
     return;
   }
 
-  const token = authHeader.slice(7);
-  const { data, error } = await supabase.auth.getUser(token);
-
-  if (error || !data.user) {
-    res.status(401).json({ error: "Invalid or expired token" });
-    return;
-  }
-
-  req.userId = data.user.id;
-  req.userEmail = data.user.email;
+  req.userId = session.user.id;
+  req.userEmail = session.user.email;
   next();
 }
 
@@ -54,8 +49,8 @@ export function requireWorkspaceMember(
     next: NextFunction,
   ): Promise<void> => {
     const raw = req.headers["x-workspace-id"];
-    const workspaceId = parseInt(Array.isArray(raw) ? raw[0] : (raw ?? ""), 10);
-    if (!workspaceId || isNaN(workspaceId)) {
+    const workspaceId = Array.isArray(raw) ? raw[0] : (raw ?? "");
+    if (!workspaceId) {
       res.status(400).json({ error: "X-Workspace-ID header is required" });
       return;
     }
@@ -64,38 +59,24 @@ export function requireWorkspaceMember(
     const userEmail = req.userEmail ?? "";
 
     // Try to find the membership by userId
-    let [member] = await db
-      .select()
-      .from(workspaceMembersTable)
-      .where(
-        and(
-          eq(workspaceMembersTable.workspaceId, workspaceId),
-          eq(workspaceMembersTable.userId, userId),
-        ),
-      )
-      .limit(1);
+    let member = await WorkspaceMember.findOne({
+      workspaceId: new Types.ObjectId(workspaceId),
+      userId,
+    });
 
     // If not found, check for a pending invite matching their email
     if (!member && userEmail) {
-      const [pending] = await db
-        .select()
-        .from(workspaceMembersTable)
-        .where(
-          and(
-            eq(workspaceMembersTable.workspaceId, workspaceId),
-            isNull(workspaceMembersTable.userId),
-            eq(workspaceMembersTable.email, userEmail),
-          ),
-        )
-        .limit(1);
+      const pending = await WorkspaceMember.findOne({
+        workspaceId: new Types.ObjectId(workspaceId),
+        userId: null,
+        email: userEmail,
+      });
 
       if (pending) {
         // Auto-accept: link the pending invite to this user
-        await db
-          .update(workspaceMembersTable)
-          .set({ userId })
-          .where(eq(workspaceMembersTable.id, pending.id));
-        member = { ...pending, userId };
+        pending.userId = userId;
+        await pending.save();
+        member = pending;
       }
     }
 

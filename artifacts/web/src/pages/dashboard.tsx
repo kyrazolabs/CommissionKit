@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { HelpTooltip } from "@/components/help-tooltip";
 
 export function Dashboard() {
   const currentPeriod = format(new Date(), "yyyy-MM");
@@ -18,7 +19,7 @@ export function Dashboard() {
 
   if (isLoading) return <DashboardSkeleton />;
 
-  if (!summary) {
+  if (!summary || (summary as any).error) {
     return (
       <div className="flex flex-col items-center justify-center h-96 text-center">
         <Activity className="h-10 w-10 text-muted-foreground mb-4" />
@@ -27,6 +28,9 @@ export function Dashboard() {
       </div>
     );
   }
+
+  const repEarnings = summary.repEarnings ?? [];
+  const recentRuns = summary.recentRuns ?? [];
 
   const statCards = [
     { label: "Total Commissions", value: formatCurrency(summary.totalCommission), delta: "Calculated this period", icon: DollarSign },
@@ -59,7 +63,15 @@ export function Dashboard() {
             style={{ boxShadow: "var(--shadow-card)" }}
           >
             <div className="flex items-center justify-between mb-3.5">
-              <span className="text-[12px] font-medium text-muted-foreground">{label}</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[12px] font-medium text-muted-foreground">{label}</span>
+                <HelpTooltip content={
+                  label === "Total Commissions" ? "The total amount earned by all reps this period." :
+                  label === "Pipeline Revenue" ? "Total value of deals marked as Closed Won." :
+                  label === "Deals Closed" ? "Number of successfully closed deals this period." :
+                  "Total number of sales reps in the system."
+                } />
+              </div>
               <div className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-secondary">
                 <Icon className="h-3.5 w-3.5 text-primary" />
               </div>
@@ -77,7 +89,10 @@ export function Dashboard() {
         <div className="bg-card border border-card-border rounded-2xl overflow-hidden" style={{ boxShadow: "var(--shadow-card)" }}>
           <div className="flex items-center justify-between px-[22px] py-[18px] border-b border-border">
             <div>
-              <p className="text-[14.5px] font-bold text-foreground">Top Earners</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-[14.5px] font-bold text-foreground">Top Earners</p>
+                <HelpTooltip content="Sales reps ranked by their total earned commission for the current period." />
+              </div>
               <p className="text-[12px] text-muted-foreground mt-0.5">Ranked by commission earned</p>
             </div>
             <Link href="/reps" className="flex items-center gap-1 text-[12px] font-semibold text-primary hover:opacity-80 transition-opacity">
@@ -85,7 +100,7 @@ export function Dashboard() {
             </Link>
           </div>
 
-          {summary.repEarnings.length === 0 ? (
+          {repEarnings.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">No deals closed yet.</p>
           ) : (
             <table className="w-full border-collapse">
@@ -99,7 +114,7 @@ export function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {summary.repEarnings.map((rep, i) => (
+                {repEarnings.map((rep, i) => (
                   <tr key={rep.repId} className="border-t border-muted/60 hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2.5">
@@ -172,14 +187,17 @@ export function Dashboard() {
             className="flex-1 bg-card border border-card-border rounded-2xl px-[22px] py-[18px]"
             style={{ boxShadow: "var(--shadow-card)" }}
           >
-            <p className="text-[14.5px] font-bold text-foreground mb-0.5">Recent Runs</p>
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <p className="text-[14.5px] font-bold text-foreground">Recent Runs</p>
+              <HelpTooltip content="Historical calculation snapshots. Each run locks the commission data for that period." />
+            </div>
             <p className="text-[12px] text-muted-foreground mb-4">Previous calculation jobs</p>
 
-            {summary.recentRuns.length === 0 ? (
+            {recentRuns.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">No runs yet.</p>
             ) : (
               <div className="space-y-0">
-                {summary.recentRuns.map((run) => (
+                {recentRuns.map((run) => (
                   <div key={run.id} className="flex items-center gap-3 py-3 border-b border-muted/60 last:border-0">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-muted">
                       <Play className="h-3.5 w-3.5 text-primary" />
