@@ -1,5 +1,7 @@
 [variables]
-BUN_VERSION = "1.3.13"
+NIXPACKS_BUN_VERSION = "1.3.13"
+
+
 
 [phases.setup]
 nixPkgs = ["bun"]
