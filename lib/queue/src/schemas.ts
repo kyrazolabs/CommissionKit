@@ -35,3 +35,12 @@ export type MailJob = z.infer<typeof MailJobSchema>;
 
 /** What the SMTP send worker receives (priority stripped by routing worker) */
 export type MailSendPayload = Omit<MailJob, "priority">;
+
+export const CommissionCalcJobSchema = z.object({
+  workspaceId: z.string(),
+  runId: z.string(),
+  period: z.string(),
+  userId: z.string().optional(), // Who triggered it
+});
+
+export type CommissionCalcPayload = z.infer<typeof CommissionCalcJobSchema>;

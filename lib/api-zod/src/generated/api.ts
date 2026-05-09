@@ -281,6 +281,8 @@ export const ListRunsResponseItem = zod.object({
   "totalCommission": zod.number(),
   "totalDeals": zod.number(),
   "repsCount": zod.number(),
+  "status": zod.enum(['pending', 'processing', 'completed', 'failed']),
+  "error": zod.string().nullish(),
   "createdAt": zod.string()
 })
 export const ListRunsResponse = zod.array(ListRunsResponseItem)
@@ -307,6 +309,8 @@ export const GetRunResponse = zod.object({
   "totalCommission": zod.number(),
   "totalDeals": zod.number(),
   "repsCount": zod.number(),
+  "status": zod.enum(['pending', 'processing', 'completed', 'failed']),
+  "error": zod.string().nullish(),
   "createdAt": zod.string(),
   "results": zod.array(zod.object({
   "id": zod.string(),
@@ -344,6 +348,8 @@ export const GetDashboardSummaryResponse = zod.object({
   "totalCommission": zod.number(),
   "totalDeals": zod.number(),
   "repsCount": zod.number(),
+  "status": zod.enum(['pending', 'processing', 'completed', 'failed']),
+  "error": zod.string().nullish(),
   "createdAt": zod.string()
 }))
 })

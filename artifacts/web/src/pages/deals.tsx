@@ -278,8 +278,9 @@ function ImportDealsDialog({ period }: { period: string }) {
       onSuccess: (res) => {
         queryClient.invalidateQueries({ queryKey: getListDealsQueryKey({ period }) });
         toast({ 
-          title: "Import complete", 
-          description: `Successfully imported ${res.imported} deals. Skipped ${res.skipped}.` 
+          title: res.skipped > 0 ? "Import partially successful" : "Import complete", 
+          description: `Imported ${res.imported} deals. ${res.skipped} skipped.`,
+          variant: res.skipped > 0 ? "destructive" : "default"
         });
         setOpen(false);
         setCsvText("");
@@ -372,8 +373,13 @@ john@example.com,Globex Expansion,25000,2023-09-20,closed_won,SMB expansion
                   </TableBody>
                 </Table>
               </div>
-              <div className="text-sm text-muted-foreground">
-                Found {parsedData.filter(d => d.repNameFound).length} valid deals. Missing reps will be skipped.
+              <div className="text-sm font-medium p-2 rounded bg-amber-50 border border-amber-200 text-amber-700 flex justify-between items-center">
+                <span>Valid deals: {parsedData.filter(d => d.repNameFound).length}</span>
+                {parsedData.filter(d => !d.repNameFound).length > 0 && (
+                  <span className="text-destructive font-bold underline">
+                    {parsedData.filter(d => !d.repNameFound).length} rows will be skipped (rep not found)
+                  </span>
+                )}
               </div>
             </div>
           )}

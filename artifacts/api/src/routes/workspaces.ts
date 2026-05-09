@@ -4,6 +4,7 @@ import { Types } from "mongoose";
 import { requireAuth, type AuthenticatedRequest } from "../middleware/auth";
 import { sendHighPriorityEmail } from "@workspace/queue";
 import { invitationTemplate } from "@workspace/email-templates";
+import { checkLimits } from "../lib/limits";
 
 const router = Router();
 
@@ -171,6 +172,14 @@ router.post("/workspaces/:id/members/invite", requireAuth, async (req: Authentic
 
   const { email, role = "member" } = req.body as { email?: string; role?: string };
   if (!email?.trim()) { res.status(400).json({ error: "Email is required" }); return; }
+
+  const limits = await checkLimits(workspaceId, "members");
+  if (!limits.allowed) {
+    res.status(403).json({ 
+      error: `You have reached the limit of ${limits.limit} members for your current plan.` 
+    });
+    return;
+  }
   if (!["admin", "member"].includes(role)) { res.status(400).json({ error: "Role must be admin or member" }); return; }
 
   const normalizedEmail = email.toLowerCase().trim();

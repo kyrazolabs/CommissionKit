@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HelpTooltip } from "@/components/help-tooltip";
+import { useBillingStatus } from "@/hooks/use-billing-status";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 
@@ -94,8 +95,8 @@ function MemberAvatar({ email, status }: { email: string; status: MemberStatus }
 // ─── Invite Dialog ─────────────────────────────────────────────────────────────
 
 function InviteMemberDialog({
-  workspaceId, onInvited,
-}: { workspaceId: string; onInvited: () => void }) {
+  workspaceId, onInvited, isLimitReached, limit
+}: { workspaceId: string; onInvited: () => void; isLimitReached: boolean; limit: number }) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"admin" | "member">("member");
@@ -132,9 +133,9 @@ function InviteMemberDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2">
+        <Button className="gap-2" disabled={isLimitReached}>
           <UserPlus className="h-4 w-4" />
-          Invite Member
+          {isLimitReached ? `Limit Reached (${limit})` : "Invite Member"}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[440px]">
@@ -377,6 +378,7 @@ export function TeamPage() {
   const { activeWorkspace } = useWorkspace();
   const { user } = useAuth();
   const { role, can, is } = useRole();
+  const { limits } = useBillingStatus();
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -423,7 +425,12 @@ export function TeamPage() {
           </p>
         </div>
         {can("admin") && (
-          <InviteMemberDialog workspaceId={activeWorkspace.id} onInvited={fetchMembers} />
+          <InviteMemberDialog 
+            workspaceId={activeWorkspace.id} 
+            onInvited={fetchMembers} 
+            isLimitReached={limits.members !== -1 && members.length >= limits.members}
+            limit={limits.members}
+          />
         )}
       </div>
 
@@ -463,6 +470,7 @@ export function TeamPage() {
                 <span className="text-[11px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                   {activeMembers.length} active
                   {pendingMembers.length > 0 && ` · ${pendingMembers.length} pending`}
+                  {limits.members !== -1 && ` / ${limits.members} total`}
                 </span>
               </div>
               <p className="text-[12px] text-muted-foreground mt-0.5">

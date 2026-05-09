@@ -21,6 +21,7 @@ import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/hooks/use-role";
+import { useBillingStatus } from "@/hooks/use-billing-status";
 
 export function RepsPage() {
   const { data: reps, isLoading } = useListReps({ query: { queryKey: getListRepsQueryKey() } });
@@ -28,6 +29,7 @@ export function RepsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const { can } = useRole();
+  const { limits } = useBillingStatus();
 
   const filteredReps = Array.isArray(reps) ? reps.filter(rep =>
     rep.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -42,7 +44,14 @@ export function RepsPage() {
           <h1 className="text-[28px] font-bold tracking-tight text-foreground leading-tight">Sales Representatives</h1>
           <p className="text-[14px] text-muted-foreground mt-1">Manage your sales team and their commission plans.</p>
         </div>
-        {can("admin") && <RepFormDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} plans={plans || []} />}
+        {can("admin") && (
+          <RepFormDialog 
+            open={isCreateOpen} 
+            onOpenChange={setIsCreateOpen} 
+            plans={plans || []} 
+            isLimitReached={limits.reps !== -1 && Array.isArray(reps) && reps.length >= limits.reps}
+          />
+        )}
       </div>
 
       <Card>
@@ -151,7 +160,7 @@ export function RepsPage() {
   );
 }
 
-function RepFormDialog({ open, onOpenChange, plans, initialData }: any) {
+function RepFormDialog({ open, onOpenChange, plans, initialData, isLimitReached }: any) {
   const isEditing = !!initialData;
   const [name, setName] = useState(initialData?.name || "");
   const [email, setEmail] = useState(initialData?.email || "");
@@ -196,7 +205,10 @@ function RepFormDialog({ open, onOpenChange, plans, initialData }: any) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!isEditing && (
         <DialogTrigger asChild>
-          <Button><Plus className="mr-2 h-4 w-4" />Add Rep</Button>
+          <Button disabled={isLimitReached} title={isLimitReached ? "Limit reached. Upgrade plan." : ""}>
+            <Plus className="mr-2 h-4 w-4" />
+            {isLimitReached ? "Limit Reached" : "Add Rep"}
+          </Button>
         </DialogTrigger>
       )}
       <DialogContent className="sm:max-w-[425px]">

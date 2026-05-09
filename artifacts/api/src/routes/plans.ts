@@ -9,6 +9,7 @@ import {
   DeletePlanParams,
 } from "@workspace/api-zod";
 import { requireWorkspaceMember, type AuthenticatedRequest } from "../middleware/auth";
+import { checkLimits } from "../lib/limits";
 
 const router = Router();
 
@@ -46,6 +47,15 @@ router.get("/plans", ...requireWorkspaceMember("member"), async (req: Authentica
 
 router.post("/plans", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.workspaceId!;
+  
+  const limits = await checkLimits(workspaceId, "plans");
+  if (!limits.allowed) {
+    res.status(403).json({ 
+      error: `You have reached the limit of ${limits.limit} commission plans for your current subscription.` 
+    });
+    return;
+  }
+
   const body = CreatePlanBody.parse(req.body);
   const plan = await Plan.create({
     workspaceId: new Types.ObjectId(workspaceId),
@@ -59,7 +69,7 @@ router.post("/plans", ...requireWorkspaceMember("admin"), async (req: Authentica
 
   if (body.tiers && body.tiers.length > 0) {
     await PlanTier.insertMany(
-      body.tiers.map((t) => ({
+      body.tiers.map((t: { fromAmount: number; toAmount?: number | null; rate: number }) => ({
         planId: plan._id,
         fromAmount: t.fromAmount,
         toAmount: t.toAmount ?? null,
@@ -110,7 +120,7 @@ router.put("/plans/:id", ...requireWorkspaceMember("admin"), async (req: Authent
     await PlanTier.deleteMany({ planId: new Types.ObjectId(id) });
     if (body.tiers.length > 0) {
       await PlanTier.insertMany(
-        body.tiers.map((t) => ({
+        body.tiers.map((t: { fromAmount: number; toAmount?: number | null; rate: number }) => ({
           planId: new Types.ObjectId(id),
           fromAmount: t.fromAmount,
           toAmount: t.toAmount ?? null,

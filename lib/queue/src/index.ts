@@ -5,8 +5,8 @@ export { getRedisClient, closeRedis } from "./connection.js";
 export * from "./constants.js";
 
 // Schemas & types
-export { MailJobSchema } from "./schemas.js";
-export type { MailJob, MailSendPayload } from "./schemas.js";
+export { MailJobSchema, CommissionCalcJobSchema } from "./schemas.js";
+export type { MailJob, MailSendPayload, CommissionCalcPayload } from "./schemas.js";
 
 // Queue instances
 export {
@@ -14,6 +14,7 @@ export {
   mailMediumQueue,
   mailLowQueue,
   mailSendQueue,
+  commissionCalcQueue,
   PRIORITY_QUEUE_MAP,
 } from "./queues.js";
 
@@ -35,4 +36,5 @@ export {
   sendHighPriorityEmail,
   sendMediumPriorityEmail,
   sendLowPriorityEmail,
+  enqueueCommissionCalc,
 } from "./enqueue.js";

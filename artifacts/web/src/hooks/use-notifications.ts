@@ -41,14 +41,35 @@ export function useNotifications() {
     }
   }, [activeWorkspace?.id, user]);
 
-  // Initial load + poll every 30s
+  // Initial load + poll every 60s (only when tab is visible)
   useEffect(() => {
     setLoading(true);
     fetch().finally(() => setLoading(false));
 
-    intervalRef.current = setInterval(fetch, 30_000);
+    function startPolling() {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      intervalRef.current = setInterval(() => {
+        if (document.visibilityState === "visible") fetch();
+      }, 60_000);
+    }
+
+    function handleVisibility() {
+      if (document.visibilityState === "visible") {
+        // Tab became visible — fetch immediately then restart timer
+        fetch();
+        startPolling();
+      } else {
+        // Tab hidden — clear interval to stop firing
+        if (intervalRef.current) clearInterval(intervalRef.current);
+      }
+    }
+
+    startPolling();
+    document.addEventListener("visibilitychange", handleVisibility);
+
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [fetch]);
 

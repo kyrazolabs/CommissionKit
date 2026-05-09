@@ -624,9 +624,15 @@ components:
           type: integer
         repsCount:
           type: integer
+        status:
+          type: string
+          enum: [pending, processing, completed, failed]
+        error:
+          type: string
+          nullable: true
         createdAt:
           type: string
-      required: [id, period, totalCommission, totalDeals, repsCount, createdAt]
+      required: [id, period, totalCommission, totalDeals, repsCount, status, createdAt]
 
     CommissionRunWithResults:
       type: object
@@ -641,13 +647,19 @@ components:
           type: integer
         repsCount:
           type: integer
+        status:
+          type: string
+          enum: [pending, processing, completed, failed]
+        error:
+          type: string
+          nullable: true
         createdAt:
           type: string
         results:
           type: array
           items:
             $ref: "#/components/schemas/CommissionResult"
-      required: [id, period, totalCommission, totalDeals, repsCount, createdAt, results]
+      required: [id, period, totalCommission, totalDeals, repsCount, status, createdAt, results]
 
     CreateRunBody:
       type: object

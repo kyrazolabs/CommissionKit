@@ -6,8 +6,11 @@ const CommissionRunSchema = new Schema({
   period: { type: String, required: true },
   totalCommission: { type: Number, required: true, default: 0 },
   totalDeals: { type: Number, required: true, default: 0 },
+  skippedDeals: { type: Number, required: true, default: 0 },
   repsCount: { type: Number, required: true, default: 0 },
-}, { timestamps: { createdAt: true, updatedAt: false } });
+  status: { type: String, enum: ["pending", "processing", "completed", "failed"], default: "pending" },
+  error: { type: String },
+}, { timestamps: { createdAt: true, updatedAt: true } });
 
 const CommissionResultSchema = new Schema({
   runId: { type: Schema.Types.ObjectId, ref: "CommissionRun", required: true },
@@ -27,8 +30,12 @@ export type CommissionRun = mongoose.Document & {
   period: string;
   totalCommission: number;
   totalDeals: number;
+  skippedDeals: number;
   repsCount: number;
+  status: "pending" | "processing" | "completed" | "failed";
+  error?: string;
   createdAt: Date;
+  updatedAt: Date;
 };
 
 export type CommissionResult = mongoose.Document & {
@@ -47,7 +54,10 @@ export const insertCommissionRunSchema = z.object({
   period: z.string(),
   totalCommission: z.number().default(0),
   totalDeals: z.number().default(0),
+  skippedDeals: z.number().default(0),
   repsCount: z.number().default(0),
+  status: z.enum(["pending", "processing", "completed", "failed"]).default("pending"),
+  error: z.string().optional(),
 });
 
 export const insertCommissionResultSchema = z.object({

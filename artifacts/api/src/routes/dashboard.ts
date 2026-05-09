@@ -72,7 +72,7 @@ router.get("/dashboard/summary", ...requireWorkspaceMember("member"), async (req
     totalRevenue,
     totalDeals,
     totalReps,
-    repEarnings: Array.from(repEarningsMap.values()),
+    repEarnings: Array.from(repEarningsMap.values()).sort((a, b) => b.totalCommission - a.totalCommission),
     recentRuns: recentRuns.map((r) => ({
       id: r._id,
       period: r.period,

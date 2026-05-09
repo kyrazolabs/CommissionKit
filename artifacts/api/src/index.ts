@@ -8,6 +8,7 @@ import { getRedisClient, closeWorkers, verifySmtp } from "@workspace/queue";
 // Import the workers module to register all BullMQ workers inside this process.
 // In production you can move this to a separate worker process.
 import "@workspace/queue/worker";
+import "./workers/calc-worker";
 
 const rawPort = process.env["PORT"] ?? "8080";
 const port = Number(rawPort);

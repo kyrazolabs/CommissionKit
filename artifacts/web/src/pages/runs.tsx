@@ -9,7 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlayCircle, ArrowRight, CalendarDays, Clock, FileText } from "lucide-react";
+import { PlayCircle, ArrowRight, CalendarDays, Clock, FileText, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import { HelpTooltip } from "@/components/help-tooltip";
@@ -18,10 +19,22 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useRole } from "@/hooks/use-role";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function RunsPage() {
-  const { data: runs, isLoading } = useListRuns({ query: { queryKey: getListRunsQueryKey() } });
+  const { data: runs, isLoading } = useListRuns({ 
+    query: { 
+      queryKey: getListRunsQueryKey(),
+      refetchInterval: (query: any) => {
+        const data = query?.state?.data;
+        const hasActiveRuns = Array.isArray(data) && data.some((r: any) => r.status === "pending" || r.status === "processing");
+        return hasActiveRuns ? 2000 : false;
+      }
+    } 
+  });
   const { can } = useRole();
+
+  const isAnyRunProcessing = Array.isArray(runs) && runs.some(r => r.status === "pending" || r.status === "processing");
 
   return (
     <div className="space-y-6">
@@ -30,7 +43,7 @@ export function RunsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Calculation Runs</h1>
           <p className="text-muted-foreground">Execute and audit commission calculations.</p>
         </div>
-        {can("admin") && <RunCalculationDialog />}
+        {can("admin") && <RunCalculationDialog isProcessing={isAnyRunProcessing} />}
       </div>
 
       <Card>
@@ -62,6 +75,7 @@ export function RunsPage() {
                   <TableHead>Run ID</TableHead>
                   <TableHead>Period</TableHead>
                   <TableHead>Executed On</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead className="text-right">Reps</TableHead>
                   <TableHead className="text-right">Deals</TableHead>
                   <TableHead className="text-right">Total Commission</TableHead>
@@ -81,8 +95,46 @@ export function RunsPage() {
                         {format(new Date(run.createdAt), "MMM d, yyyy h:mm a")}
                       </div>
                     </TableCell>
+                    <TableCell>
+                      {run.status === "completed" && (
+                        <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20 gap-1">
+                          <CheckCircle2 className="h-3 w-3" /> Completed
+                        </Badge>
+                      )}
+                      {(run.status === "pending" || run.status === "processing") && (
+                        <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20 animate-pulse gap-1">
+                          <Loader2 className="h-3 w-3 animate-spin" /> {run.status === "processing" ? "Processing" : "Pending"}
+                        </Badge>
+                      )}
+                      {run.status === "failed" && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Badge variant="destructive" className="gap-1 cursor-help">
+                              <AlertCircle className="h-3 w-3" /> Failed
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{run.error || "An unknown error occurred during calculation."}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">{formatNumber(run.repsCount)}</TableCell>
-                    <TableCell className="text-right">{formatNumber(run.totalDeals)}</TableCell>
+                    <TableCell className="text-right">
+                      {formatNumber(run.totalDeals)}
+                      {run.skippedDeals > 0 && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="ml-1.5 text-amber-500 cursor-help">
+                              <AlertCircle className="h-3 w-3 inline" />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{run.skippedDeals} deals skipped (missing rep plan or stage not won)</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right font-bold text-primary">
                       {formatCurrency(run.totalCommission)}
                     </TableCell>
@@ -104,7 +156,7 @@ export function RunsPage() {
   );
 }
 
-function RunCalculationDialog() {
+function RunCalculationDialog({ isProcessing }: { isProcessing: boolean }) {
   const [open, setOpen] = useState(false);
   const [period, setPeriod] = useState<string>(format(new Date(), "yyyy-MM"));
   const queryClient = useQueryClient();
@@ -115,7 +167,7 @@ function RunCalculationDialog() {
     createMutation.mutate({ data: { period } }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListRunsQueryKey() });
-        toast({ title: "Calculation Complete", description: `Successfully processed commissions for ${period}.` });
+        toast({ title: "Calculation Queued", description: `Commission calculation for ${period} has been started.` });
         setOpen(false);
       },
       onError: (err: any) => {
@@ -127,9 +179,21 @@ function RunCalculationDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-          <PlayCircle className="mr-2 h-4 w-4" />
-          Run Calculation
+        <Button 
+          className="bg-primary hover:bg-primary/90 text-primary-foreground" 
+          disabled={isProcessing}
+        >
+          {isProcessing ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Processing...
+            </>
+          ) : (
+            <>
+              <PlayCircle className="mr-2 h-4 w-4" />
+              Run Calculation
+            </>
+          )}
         </Button>
       </DialogTrigger>
       <DialogContent>

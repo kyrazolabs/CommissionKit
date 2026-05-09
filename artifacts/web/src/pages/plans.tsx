@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { 
   useListPlans, getListPlansQueryKey, 
@@ -16,11 +16,15 @@ import { HelpTooltip } from "@/components/help-tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/hooks/use-role";
+import { useBillingStatus } from "@/hooks/use-billing-status";
 
 export function PlansPage() {
   const { data: plans, isLoading } = useListPlans({ query: { queryKey: getListPlansQueryKey() } });
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const { can } = useRole();
+  const { sub, limits } = useBillingStatus();
+
+  const isLimitReached = limits.plans !== -1 && Array.isArray(plans) && plans.length >= limits.plans;
 
   return (
     <div className="space-y-6">
@@ -30,14 +34,18 @@ export function PlansPage() {
           <p className="text-muted-foreground">Design and manage compensation structures.</p>
         </div>
         {can("admin") && (
-          <Button onClick={() => setIsCreateOpen(true)}>
+          <Button 
+            onClick={() => setIsCreateOpen(true)}
+            disabled={isLimitReached}
+            title={isLimitReached ? "Limit reached. Upgrade plan." : ""}
+          >
             <Plus className="mr-2 h-4 w-4" />
-            Create Plan
+            {isLimitReached ? "Limit Reached" : "Create Plan"}
           </Button>
         )}
       </div>
 
-      <PlanFormDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
+      <PlanFormDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} sub={sub} />
 
       {isLoading ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -57,15 +65,19 @@ export function PlansPage() {
           <p className="text-sm text-muted-foreground mt-1 mb-6 max-w-sm mx-auto">
             Build your first commission plan to assign to sales representatives. Support for flat rates, tiers, and accelerators.
           </p>
-          <Button onClick={() => setIsCreateOpen(true)}>
+          <Button 
+            onClick={() => setIsCreateOpen(true)}
+            disabled={isLimitReached}
+            title={isLimitReached ? "Limit reached. Upgrade plan." : ""}
+          >
             <Plus className="mr-2 h-4 w-4" />
-            Create First Plan
+            {isLimitReached ? "Limit Reached" : "Create Plan"}
           </Button>
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {plans.map((plan) => (
-            <PlanCard key={plan.id} plan={plan} />
+            <PlanCard key={plan.id} plan={plan} sub={sub} />
           ))}
         </div>
       )}
@@ -73,7 +85,7 @@ export function PlansPage() {
   );
 }
 
-function PlanCard({ plan }: { plan: any }) {
+function PlanCard({ plan, sub }: { plan: any, sub: any }) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -181,7 +193,7 @@ function PlanCard({ plan }: { plan: any }) {
         </CardFooter>
       )}
 
-      <PlanFormDialog open={isEditOpen} onOpenChange={setIsEditOpen} initialData={plan} />
+      <PlanFormDialog open={isEditOpen} onOpenChange={setIsEditOpen} initialData={plan} sub={sub} />
 
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <DialogContent>
@@ -203,7 +215,7 @@ function PlanCard({ plan }: { plan: any }) {
   );
 }
 
-function PlanFormDialog({ open, onOpenChange, initialData }: any) {
+function PlanFormDialog({ open, onOpenChange, initialData, sub }: any) {
   const isEditing = !!initialData;
   const [name, setName] = useState(initialData?.name || "");
   const [type, setType] = useState<"flat" | "tiered" | "accelerator">(initialData?.type || "flat");
@@ -226,9 +238,28 @@ function PlanFormDialog({ open, onOpenChange, initialData }: any) {
   const updateMutation = useUpdatePlan();
 
   // Reset form when dialog opens
-  if (open && !isEditing && name === "" && type !== "flat") {
-    setType("flat");
-  }
+  useEffect(() => {
+    if (open && !isEditing) {
+      setName("");
+      setType("flat");
+      setFlatRate("5");
+      setClawbackDays("");
+    } else if (open && isEditing && initialData) {
+      setName(initialData.name || "");
+      setType(initialData.type || "flat");
+      setFlatRate(initialData.flatRate ? (initialData.flatRate * 100).toString() : "5");
+      setClawbackDays(initialData.clawbackDays?.toString() || "");
+      if (initialData.type === "tiered" && initialData.tiers) {
+        setTiers(initialData.tiers.map((t: any) => ({ ...t, rate: (t.rate * 100).toString() })));
+      }
+      if (initialData.type === "accelerator") {
+        setAcceleratorThreshold(initialData.acceleratorThreshold?.toString() || "100000");
+        setAcceleratorRate(initialData.acceleratorRate ? (initialData.acceleratorRate * 100).toString() : "10");
+      }
+    }
+  }, [open, isEditing, initialData]);
+
+  const isGrowthPlus = sub?.plan === "growth" || sub?.plan === "lifetime";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -296,10 +327,27 @@ function PlanFormDialog({ open, onOpenChange, initialData }: any) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="flat">Flat Rate</SelectItem>
-                  <SelectItem value="tiered">Tiered Rates</SelectItem>
-                  <SelectItem value="accelerator">Base + Accelerator</SelectItem>
+                  <SelectItem value="tiered" disabled={!isGrowthPlus}>
+                    Tiered Rates {!isGrowthPlus && "(Growth)"}
+                  </SelectItem>
+                  <SelectItem value="accelerator" disabled={!isGrowthPlus}>
+                    Base + Accelerator {!isGrowthPlus && "(Growth)"}
+                  </SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="clawbackDays">Clawback Period (Days) {!isGrowthPlus && <span className="text-[10px] text-primary ml-1">(Growth feature)</span>}</Label>
+              <Input 
+                id="clawbackDays" 
+                type="number" 
+                placeholder="e.g. 30" 
+                value={clawbackDays} 
+                onChange={e => setClawbackDays(e.target.value)}
+                disabled={!isGrowthPlus}
+              />
+              {!isGrowthPlus && <p className="text-[10px] text-muted-foreground">Upgrade to Growth to enable automatic commission clawbacks.</p>}
             </div>
 
             <div className="bg-muted/30 p-4 rounded-lg border">

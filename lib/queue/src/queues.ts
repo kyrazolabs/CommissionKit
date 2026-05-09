@@ -5,8 +5,9 @@ import {
   MAIL_LOW_QUEUE,
   MAIL_MEDIUM_QUEUE,
   MAIL_SEND_QUEUE,
+  COMMISSION_CALC_QUEUE,
 } from "./constants.js";
-import type { MailSendPayload } from "./schemas.js";
+import type { MailSendPayload, CommissionCalcPayload } from "./schemas.js";
 
 /** Shared BullMQ queue options — exponential back-off, 10 retries */
 function buildOptions(overrides?: Partial<QueueOptions>): QueueOptions {
@@ -51,6 +52,12 @@ export const mailLowQueue = new Queue<MailSendPayload>(
 export const mailSendQueue = new Queue<MailSendPayload>(
   MAIL_SEND_QUEUE,
   buildOptions(),
+);
+
+/** Asynchronous commission calculation queue. */
+export const commissionCalcQueue = new Queue<CommissionCalcPayload>(
+  COMMISSION_CALC_QUEUE,
+  buildOptions({ defaultJobOptions: { attempts: 3, backoff: { type: "exponential", delay: 10_000 } } }),
 );
 
 /** Helper map from priority to routing queue */

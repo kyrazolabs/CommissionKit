@@ -3,6 +3,7 @@ import { Rep, Plan } from "@workspace/db";
 import { Types } from "mongoose";
 import { CreateRepBody, UpdateRepBody, GetRepParams, UpdateRepParams, DeleteRepParams } from "@workspace/api-zod";
 import { requireWorkspaceMember, type AuthenticatedRequest } from "../middleware/auth";
+import { checkLimits } from "../lib/limits";
 
 const router = Router();
 
@@ -23,6 +24,15 @@ router.get("/reps", ...requireWorkspaceMember("member"), async (req: Authenticat
 
 router.post("/reps", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.workspaceId!;
+  
+  const limits = await checkLimits(workspaceId, "reps");
+  if (!limits.allowed) {
+    res.status(403).json({ 
+      error: `You have reached the limit of ${limits.limit} sales reps for your current plan.` 
+    });
+    return;
+  }
+
   const body = CreateRepBody.parse(req.body);
   const rep = await Rep.create({
     workspaceId: new Types.ObjectId(workspaceId),

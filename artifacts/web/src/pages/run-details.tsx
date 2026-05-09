@@ -14,7 +14,14 @@ export function RunDetailsPage() {
   const id = params.id || "";
 
   const { data: run, isLoading } = useGetRun(id, { 
-    query: { enabled: !!id, queryKey: getGetRunQueryKey(id) } 
+    query: { 
+      enabled: !!id, 
+      queryKey: getGetRunQueryKey(id),
+      refetchInterval: (query: any) => {
+        const data = query?.state?.data;
+        return (data?.status === "pending" || data?.status === "processing") ? 3000 : false;
+      }
+    } 
   });
 
   if (isLoading) {

@@ -150,14 +150,36 @@ export interface CommissionResult {
   calculationNote: string;
 }
 
+export type CommissionRunStatus = typeof CommissionRunStatus[keyof typeof CommissionRunStatus];
+
+
+export const CommissionRunStatus = {
+  pending: 'pending',
+  processing: 'processing',
+  completed: 'completed',
+  failed: 'failed',
+} as const;
+
 export interface CommissionRun {
   id: string;
   period: string;
   totalCommission: number;
   totalDeals: number;
   repsCount: number;
+  status: CommissionRunStatus;
+  error?: string | null;
   createdAt: string;
 }
+
+export type CommissionRunWithResultsStatus = typeof CommissionRunWithResultsStatus[keyof typeof CommissionRunWithResultsStatus];
+
+
+export const CommissionRunWithResultsStatus = {
+  pending: 'pending',
+  processing: 'processing',
+  completed: 'completed',
+  failed: 'failed',
+} as const;
 
 export interface CommissionRunWithResults {
   id: string;
@@ -165,6 +187,8 @@ export interface CommissionRunWithResults {
   totalCommission: number;
   totalDeals: number;
   repsCount: number;
+  status: CommissionRunWithResultsStatus;
+  error?: string | null;
   createdAt: string;
   results: CommissionResult[];
 }

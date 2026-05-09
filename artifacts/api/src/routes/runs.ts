@@ -11,66 +11,15 @@ import {
 import { Types } from "mongoose";
 import { CreateRunBody, GetRunParams } from "@workspace/api-zod";
 import { requireWorkspaceMember, type AuthenticatedRequest } from "../middleware/auth";
-import { sendMediumPriorityEmail } from "@workspace/queue";
+import { sendMediumPriorityEmail, enqueueCommissionCalc } from "@workspace/queue";
 import { commissionRunTemplate } from "@workspace/email-templates";
 import { createNotification } from "../lib/notify";
 
 const router = Router();
 
-function calculateCommission(
-  amount: number,
-  planType: string,
-  flatRate: number | null,
-  acceleratorThreshold: number | null,
-  acceleratorRate: number | null,
-  tiers: { fromAmount: number; toAmount: number | null; rate: number }[]
-): { rate: number; commission: number; note: string } {
-  if (planType === "flat" && flatRate !== null) {
-    const commission = amount * flatRate;
-    return { rate: flatRate, commission, note: `Flat rate ${(flatRate * 100).toFixed(2)}% on $${amount.toFixed(2)}` };
-  }
-
-  if (planType === "accelerator" && flatRate !== null) {
-    if (acceleratorThreshold !== null && acceleratorRate !== null && amount > acceleratorThreshold) {
-      const baseCommission = acceleratorThreshold * flatRate;
-      const accelCommission = (amount - acceleratorThreshold) * acceleratorRate;
-      const total = baseCommission + accelCommission;
-      const effectiveRate = total / amount;
-      return {
-        rate: effectiveRate,
-        commission: total,
-        note: `Base ${(flatRate * 100).toFixed(2)}% up to $${acceleratorThreshold}, then ${(acceleratorRate * 100).toFixed(2)}% above`,
-      };
-    }
-    const commission = amount * flatRate;
-    return { rate: flatRate, commission, note: `Base rate ${(flatRate * 100).toFixed(2)}% (below threshold of $${acceleratorThreshold})` };
-  }
-
-  if (planType === "tiered" && tiers.length > 0) {
-    let remaining = amount;
-    let totalCommission = 0;
-    const notes: string[] = [];
-    let lastRate = 0;
-
-    for (const tier of tiers) {
-      if (remaining <= 0) break;
-      const tierTop = tier.toAmount !== null ? tier.toAmount : Infinity;
-      const tierBottom = tier.fromAmount;
-      const applicable = Math.min(remaining, tierTop - tierBottom);
-      if (applicable <= 0) continue;
-      const commission = applicable * tier.rate;
-      totalCommission += commission;
-      notes.push(`${(tier.rate * 100).toFixed(2)}% on $${applicable.toFixed(2)}`);
-      lastRate = tier.rate;
-      remaining -= applicable;
-    }
-
-    const effectiveRate = amount > 0 ? totalCommission / amount : lastRate;
-    return { rate: effectiveRate, commission: totalCommission, note: `Tiered: ${notes.join(", ")}` };
-  }
-
-  return { rate: 0, commission: 0, note: "No plan or rate configured" };
-}
+// ... existing calculateCommission function omitted for brevity if you keep it, 
+// but it's now in the worker, so I can remove it from here if it's not used.
+// Actually, it's better to keep the routes file clean.
 
 async function formatRun(run: any) {
   const results = await CommissionResult.find({ runId: run._id })
@@ -83,6 +32,8 @@ async function formatRun(run: any) {
     totalCommission: Number(run.totalCommission),
     totalDeals: run.totalDeals,
     repsCount: run.repsCount,
+    status: run.status,
+    error: run.error,
     createdAt: run.createdAt.toISOString(),
     results: results.map((r) => {
       const rep = r.repId as any;
@@ -113,6 +64,7 @@ router.get("/runs", ...requireWorkspaceMember("member"), async (req: Authenticat
       totalCommission: Number(r.totalCommission),
       totalDeals: r.totalDeals,
       repsCount: r.repsCount,
+      status: r.status,
       createdAt: r.createdAt.toISOString(),
     }))
   );
@@ -123,142 +75,45 @@ router.post("/runs", ...requireWorkspaceMember("admin"), async (req: Authenticat
   const body = CreateRunBody.parse(req.body);
   const { period } = body;
 
-  const deals = await Deal.find({ 
-    workspaceId: new Types.ObjectId(workspaceId), 
-    period, 
-    stage: "closed_won" 
+  // Check if there's already a run in progress for this period
+  // Ignore stale runs (older than 10 mins) that might be stuck
+  const staleThreshold = new Date(Date.now() - 10 * 60 * 1000);
+  const existingRun = await CommissionRun.findOne({
+    workspaceId: new Types.ObjectId(workspaceId),
+    period,
+    status: { $in: ["pending", "processing"] },
+    updatedAt: { $gt: staleThreshold }
   });
 
-  const reps = await Rep.find({ workspaceId: new Types.ObjectId(workspaceId) });
-  const plans = await Plan.find({ workspaceId: new Types.ObjectId(workspaceId) });
-  const tiers = await PlanTier.find({}).sort({ fromAmount: 1 });
-
-  const planMap = new Map(plans.map((p) => [p._id.toString(), p]));
-  const tierMap = new Map<string, { fromAmount: number; toAmount: number | null; rate: number }[]>();
-  for (const t of tiers) {
-    const planIdStr = t.planId.toString();
-    if (!tierMap.has(planIdStr)) tierMap.set(planIdStr, []);
-    tierMap.get(planIdStr)!.push({ fromAmount: Number(t.fromAmount), toAmount: t.toAmount !== null ? Number(t.toAmount) : null, rate: Number(t.rate) });
+  if (existingRun) {
+    res.status(409).json({ error: `A calculation for ${period} is already in progress. Please wait a few minutes.` });
+    return;
   }
 
-  const repMap = new Map(reps.map((r) => [r._id.toString(), r]));
-
+  // Create the run record in 'pending' state
   const run = await CommissionRun.create({ 
     workspaceId: new Types.ObjectId(workspaceId), 
     period, 
     totalCommission: 0, 
     totalDeals: 0, 
-    repsCount: 0 
+    repsCount: 0,
+    status: "pending"
   });
 
-  let totalCommission = 0;
-  const resultRows = [];
-  const involvedReps = new Set<string>();
-
-  for (const deal of deals) {
-    const rep = repMap.get(deal.repId.toString());
-    if (!rep || !rep.planId) continue;
-
-    const plan = planMap.get(rep.planId.toString());
-    if (!plan) continue;
-
-    const { rate, commission, note } = calculateCommission(
-      Number(deal.amount),
-      plan.type,
-      plan.flatRate !== null ? Number(plan.flatRate) : null,
-      plan.acceleratorThreshold !== null ? Number(plan.acceleratorThreshold) : null,
-      plan.acceleratorRate !== null ? Number(plan.acceleratorRate) : null,
-      tierMap.get(plan._id.toString()) ?? []
-    );
-
-    totalCommission += commission;
-    involvedReps.add(rep._id.toString());
-    resultRows.push({
-      runId: run._id,
-      repId: rep._id,
-      dealId: deal._id,
-      rateApplied: rate,
-      commissionAmount: commission,
-      calculationNote: note,
-    });
-  }
-
-  if (resultRows.length > 0) {
-    await CommissionResult.insertMany(resultRows);
-  }
-
-  run.totalCommission = totalCommission;
-  run.totalDeals = resultRows.length;
-  run.repsCount = involvedReps.size;
-  await run.save();
-
-  const result = await formatRun(run);
-
-  // ─── Notify workspace admins/owners ───────────────────────────────────────
-  // Fire-and-forget — don't block the HTTP response
-  setImmediate(async () => {
-    try {
-      const adminMembers = await WorkspaceMember.find({
-        workspaceId: new Types.ObjectId(workspaceId),
-        role: { $in: ["owner", "admin"] },
-        userId: { $ne: null },
-      });
-
-      // Get top earner for the summary
-      let topEarner: { name: string; amount: string } | undefined;
-      if (result.results.length > 0) {
-        const top = result.results.reduce((a, b) =>
-          a.commissionAmount > b.commissionAmount ? a : b,
-        );
-        topEarner = {
-          name: top.repName,
-          amount: `$${top.commissionAmount.toFixed(2)}`,
-        };
-      }
-
-      const APP_URL = process.env.APP_URL || "http://localhost:3000";
-      const runUrl = `${APP_URL}/runs/${run._id}`;
-      const totalPaid = `$${totalCommission.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
-      const [py, pm] = period.split("-");
-      const periodLabel = new Date(Number(py), Number(pm) - 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
-
-      for (const member of adminMembers) {
-        // Send email notification
-        await sendMediumPriorityEmail({
-          to: member.email,
-          subject: `Commission run complete — ${period}`,
-          html: commissionRunTemplate({
-            recipientName: member.email.split("@")[0],
-            workspaceName: workspaceId,
-            period,
-            totalPaid,
-            totalDeals: resultRows.length,
-            totalReps: involvedReps.size,
-            topEarner,
-            runUrl,
-          }),
-          meta: { runId: String(run._id), workspaceId, period },
-        });
-
-        // Create in-app notification (respects member's prefs)
-        if (member.userId) {
-          await createNotification({
-            workspaceId,
-            userId: member.userId,
-            type: "commission_run_completed",
-            title: "Commission run completed",
-            message: `${periodLabel} run finished — ${totalPaid} across ${involvedReps.size} reps.`,
-            href: runUrl,
-            meta: { runId: String(run._id), period },
-          }).catch(console.error);
-        }
-      }
-    } catch (err) {
-      console.error("[Runs] Failed to enqueue completion emails:", err);
-    }
+  // Enqueue the calculation
+  await enqueueCommissionCalc({
+    workspaceId,
+    runId: run._id.toString(),
+    period,
+    userId: req.user?.id
   });
 
-  res.status(201).json(result);
+  res.status(201).json({
+    id: run._id,
+    period: run.period,
+    status: run.status,
+    createdAt: run.createdAt.toISOString()
+  });
 });
 
 router.get("/runs/:id", ...requireWorkspaceMember("member"), async (req: AuthenticatedRequest, res): Promise<void> => {

@@ -158,7 +158,18 @@ router.patch("/users/me/notification-prefs", requireAuth, async (req: Authentica
 
 // ─── Workspace settings ───────────────────────────────────────────────────────
 
-const VALID_CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF", "CNY", "INR", "BRL", "MXN", "SGD", "HKD", "NOK", "SEK", "DKK"];
+const VALID_CURRENCIES = [
+  "USD","EUR","GBP","JPY","CAD","AUD","CHF","CNY","HKD","NZD",
+  "SEK","NOK","DKK","SGD","INR","BRL","MXN","ZAR","RUB","TRY",
+  "KRW","THB","IDR","MYR","PHP","TWD","PLN","CZK","HUF","RON",
+  "BGN","HRK","ISK","ILS","SAR","AED","QAR","KWD","BHD","OMR",
+  "JOD","EGP","NGN","KES","GHS","TZS","UGX","ETB","MAD","DZD",
+  "TND","PKR","BDT","LKR","NPR","MMK","VND","KHR","LAK","MNT",
+  "KZT","UZS","AZN","GEL","AMD","UAH","BYN","MDL","ALL","MKD",
+  "RSD","BAM","HNL","GTQ","CRC","PAB","DOP","JMD","TTD","BBD",
+  "CLP","COP","PEN","ARS","BOB","PYG","UYU","VES","GYD","SRD",
+  "FJD","PGK","WST","TOP","XCD","XOF","XAF","XPF",
+];
 const VALID_MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 /**

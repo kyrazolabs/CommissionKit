@@ -4,12 +4,14 @@ import { useRole } from "@/hooks/use-role";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useAuth } from "@/hooks/use-auth";
 import {
-  Sun, Moon, Bell, Shield, Users, Building2, Crown, ArrowRight, Save, Loader2, Check,
+  Sun, Moon, Bell, Shield, Users, Building2, Crown, ArrowRight, Save, Loader2, Check, ChevronsUpDown,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -22,7 +24,106 @@ const ROLE_META = {
   member: { label: "Member", description: "Read-only access to dashboards and reports.", Icon: Users, color: "text-muted-foreground bg-muted border-border" },
 };
 
-const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF", "CNY", "INR", "BRL", "MXN", "SGD", "HKD", "NOK", "SEK", "DKK"];
+const CURRENCIES: { code: string; name: string }[] = [
+  { code: "USD", name: "US Dollar" },
+  { code: "EUR", name: "Euro" },
+  { code: "GBP", name: "British Pound" },
+  { code: "JPY", name: "Japanese Yen" },
+  { code: "CAD", name: "Canadian Dollar" },
+  { code: "AUD", name: "Australian Dollar" },
+  { code: "CHF", name: "Swiss Franc" },
+  { code: "CNY", name: "Chinese Yuan" },
+  { code: "HKD", name: "Hong Kong Dollar" },
+  { code: "NZD", name: "New Zealand Dollar" },
+  { code: "SEK", name: "Swedish Krona" },
+  { code: "NOK", name: "Norwegian Krone" },
+  { code: "DKK", name: "Danish Krone" },
+  { code: "SGD", name: "Singapore Dollar" },
+  { code: "INR", name: "Indian Rupee" },
+  { code: "BRL", name: "Brazilian Real" },
+  { code: "MXN", name: "Mexican Peso" },
+  { code: "ZAR", name: "South African Rand" },
+  { code: "RUB", name: "Russian Ruble" },
+  { code: "TRY", name: "Turkish Lira" },
+  { code: "KRW", name: "South Korean Won" },
+  { code: "THB", name: "Thai Baht" },
+  { code: "IDR", name: "Indonesian Rupiah" },
+  { code: "MYR", name: "Malaysian Ringgit" },
+  { code: "PHP", name: "Philippine Peso" },
+  { code: "TWD", name: "Taiwan Dollar" },
+  { code: "PLN", name: "Polish Złoty" },
+  { code: "CZK", name: "Czech Koruna" },
+  { code: "HUF", name: "Hungarian Forint" },
+  { code: "RON", name: "Romanian Leu" },
+  { code: "BGN", name: "Bulgarian Lev" },
+  { code: "HRK", name: "Croatian Kuna" },
+  { code: "ISK", name: "Icelandic Króna" },
+  { code: "ILS", name: "Israeli Shekel" },
+  { code: "SAR", name: "Saudi Riyal" },
+  { code: "AED", name: "UAE Dirham" },
+  { code: "QAR", name: "Qatari Riyal" },
+  { code: "KWD", name: "Kuwaiti Dinar" },
+  { code: "BHD", name: "Bahraini Dinar" },
+  { code: "OMR", name: "Omani Rial" },
+  { code: "JOD", name: "Jordanian Dinar" },
+  { code: "EGP", name: "Egyptian Pound" },
+  { code: "NGN", name: "Nigerian Naira" },
+  { code: "KES", name: "Kenyan Shilling" },
+  { code: "GHS", name: "Ghanaian Cedi" },
+  { code: "TZS", name: "Tanzanian Shilling" },
+  { code: "UGX", name: "Ugandan Shilling" },
+  { code: "ETB", name: "Ethiopian Birr" },
+  { code: "MAD", name: "Moroccan Dirham" },
+  { code: "DZD", name: "Algerian Dinar" },
+  { code: "TND", name: "Tunisian Dinar" },
+  { code: "PKR", name: "Pakistani Rupee" },
+  { code: "BDT", name: "Bangladeshi Taka" },
+  { code: "LKR", name: "Sri Lankan Rupee" },
+  { code: "NPR", name: "Nepalese Rupee" },
+  { code: "MMK", name: "Myanmar Kyat" },
+  { code: "VND", name: "Vietnamese Dong" },
+  { code: "KHR", name: "Cambodian Riel" },
+  { code: "LAK", name: "Lao Kip" },
+  { code: "MNT", name: "Mongolian Tögrög" },
+  { code: "KZT", name: "Kazakhstani Tenge" },
+  { code: "UZS", name: "Uzbekistani Som" },
+  { code: "AZN", name: "Azerbaijani Manat" },
+  { code: "GEL", name: "Georgian Lari" },
+  { code: "AMD", name: "Armenian Dram" },
+  { code: "UAH", name: "Ukrainian Hryvnia" },
+  { code: "BYN", name: "Belarusian Ruble" },
+  { code: "MDL", name: "Moldovan Leu" },
+  { code: "ALL", name: "Albanian Lek" },
+  { code: "MKD", name: "Macedonian Denar" },
+  { code: "RSD", name: "Serbian Dinar" },
+  { code: "BAM", name: "Bosnia-Herzegovina Convertible Mark" },
+  { code: "HNL", name: "Honduran Lempira" },
+  { code: "GTQ", name: "Guatemalan Quetzal" },
+  { code: "CRC", name: "Costa Rican Colón" },
+  { code: "PAB", name: "Panamanian Balboa" },
+  { code: "DOP", name: "Dominican Peso" },
+  { code: "JMD", name: "Jamaican Dollar" },
+  { code: "TTD", name: "Trinidad and Tobago Dollar" },
+  { code: "BBD", name: "Barbadian Dollar" },
+  { code: "CLP", name: "Chilean Peso" },
+  { code: "COP", name: "Colombian Peso" },
+  { code: "PEN", name: "Peruvian Sol" },
+  { code: "ARS", name: "Argentine Peso" },
+  { code: "BOB", name: "Bolivian Boliviano" },
+  { code: "PYG", name: "Paraguayan Guaraní" },
+  { code: "UYU", name: "Uruguayan Peso" },
+  { code: "VES", name: "Venezuelan Bolívar" },
+  { code: "GYD", name: "Guyanese Dollar" },
+  { code: "SRD", name: "Surinamese Dollar" },
+  { code: "FJD", name: "Fijian Dollar" },
+  { code: "PGK", name: "Papua New Guinean Kina" },
+  { code: "WST", name: "Samoan Tālā" },
+  { code: "TOP", name: "Tongan Paʻanga" },
+  { code: "XCD", name: "East Caribbean Dollar" },
+  { code: "XOF", name: "West African CFA Franc" },
+  { code: "XAF", name: "Central African CFA Franc" },
+  { code: "XPF", name: "CFP Franc" },
+];
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 const NOTIFICATION_TYPES: { key: string; label: string; description: string }[] = [
@@ -38,22 +139,84 @@ const NOTIFICATION_TYPES: { key: string; label: string; description: string }[] 
 
 type NotifPrefs = Record<string, { email: boolean; inApp: boolean }>;
 
+/**
+ * Standard Headless UI toggle pattern — no pixel math.
+ * Track: h-6 w-11 with border-2 (inner area 40×20px)
+ * Thumb: h-5 w-5 inline-block (20×20px)
+ * OFF → translate-x-0  (flush left inside border)
+ * ON  → translate-x-5  (20px right = 40-20 = flush right inside border)
+ */
 function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
   return (
     <button
-      onClick={() => onChange(!on)}
-      className={cn(
-        "relative h-5 w-9 rounded-full transition-colors focus-visible:outline-none",
-        on ? "bg-primary" : "bg-muted-foreground/30",
-      )}
       role="switch"
       aria-checked={on}
+      onClick={() => onChange(!on)}
+      className={cn(
+        "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full",
+        "border-2 border-transparent",
+        "transition-colors duration-200 ease-in-out",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+        on ? "bg-primary" : "bg-muted-foreground/30",
+      )}
     >
-      <span className={cn(
-        "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform",
-        on ? "translate-x-4" : "translate-x-0.5",
-      )} />
+      <span
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-md ring-0",
+          "transition-transform duration-200 ease-in-out",
+          on ? "translate-x-5" : "translate-x-0",
+        )}
+      />
     </button>
+  );
+}
+
+function CurrencyCombobox({
+  value, onChange, disabled,
+}: { value: string; onChange: (v: string) => void; disabled?: boolean }) {
+  const [open, setOpen] = useState(false);
+  const selected = CURRENCIES.find((c) => c.code === value);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          disabled={disabled}
+          className={cn(
+            "flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-sm shadow-sm transition-colors",
+            "hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+            disabled && "cursor-not-allowed opacity-50",
+          )}
+        >
+          <span className="truncate">
+            {selected ? <><span className="font-mono font-medium">{selected.code}</span> — {selected.name}</> : "Select currency…"}
+          </span>
+          <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[320px] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Search currency…" />
+          <CommandList className="max-h-60">
+            <CommandEmpty>No currency found.</CommandEmpty>
+            <CommandGroup>
+              {CURRENCIES.map((c) => (
+                <CommandItem
+                  key={c.code}
+                  value={`${c.code} ${c.name}`}
+                  onSelect={() => { onChange(c.code); setOpen(false); }}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <span className="font-mono font-semibold w-10 shrink-0">{c.code}</span>
+                  <span className="text-muted-foreground text-sm truncate">{c.name}</span>
+                  {value === c.code && <Check className="ml-auto h-3.5 w-3.5 text-primary shrink-0" />}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -214,16 +377,7 @@ export function SettingsPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-sm font-medium">Currency</Label>
-              <Select value={currency} onValueChange={setCurrency} disabled={!isAdmin || wsLoading}>
-                <SelectTrigger className="h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CURRENCIES.map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <CurrencyCombobox value={currency} onChange={setCurrency} disabled={!isAdmin || wsLoading} />
               <p className="text-xs text-muted-foreground">Used for all amount formatting.</p>
             </div>
             <div className="space-y-2">
