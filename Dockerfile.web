@@ -1,0 +1,40 @@
+# Stage 1: Build the web application
+FROM oven/bun:1.3.13-alpine AS builder
+
+WORKDIR /app
+
+# Copy dependency files first to cache the bun install layer
+COPY package.json bun.lock ./
+COPY artifacts/api/package.json ./artifacts/api/
+COPY artifacts/web/package.json ./artifacts/web/
+COPY lib/api-zod/package.json ./lib/api-zod/
+COPY lib/api-client-react/package.json ./lib/api-client-react/
+COPY lib/db/package.json ./lib/db/
+COPY lib/email-templates/package.json ./lib/email-templates/
+
+# Install dependencies (ignoring scripts to prevent native build issues in alpine if any, based on previous usage)
+RUN bun i --ignore-scripts
+
+# Copy the rest of the monorepo source code
+COPY . .
+
+# Build the web application
+# This assumes outDir in vite.config.ts is set to "dist/public"
+RUN bun run --filter @workspace/web build
+
+# Stage 2: Production Nginx Server
+FROM nginx:alpine AS runner
+
+# Remove default nginx static assets
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy custom Nginx configuration
+COPY artifacts/web/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy the built Vite static assets from the builder stage
+# If your vite.config.ts outDir is just "dist", change this to /app/artifacts/web/dist
+COPY --from=builder /app/artifacts/web/dist/public /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
