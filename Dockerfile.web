@@ -11,6 +11,9 @@ COPY lib/api-zod/package.json ./lib/api-zod/
 COPY lib/api-client-react/package.json ./lib/api-client-react/
 COPY lib/db/package.json ./lib/db/
 COPY lib/email-templates/package.json ./lib/email-templates/
+COPY lib/api-spec/package.json ./lib/api-spec/
+COPY lib/queue/package.json ./lib/queue/
+COPY scripts/package.json ./scripts/
 
 # Install dependencies (ignoring scripts to prevent native build issues in alpine if any, based on previous usage)
 RUN bun i --ignore-scripts
