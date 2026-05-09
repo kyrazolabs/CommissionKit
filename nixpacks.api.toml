@@ -1,11 +1,8 @@
-[variables]
-NIXPACKS_BUN_VERSION = "1.3.13"
-
 [phases.setup]
-nixpkgsArchive = 'nixpkgs/73c703c22422b8951895a960959dbbaca7296492#bun'
+nixPkgs = ["bun"]
 
 [phases.install]
-cmds = ["bun i"]
+cmds = ["bun i --ignore-scripts"]
 
 [phases.build]
 cmds = ["bun run --filter @workspace/api build"]
