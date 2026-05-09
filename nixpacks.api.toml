@@ -2,7 +2,7 @@
 NIXPACKS_BUN_VERSION = "1.3.13"
 
 [phases.setup]
-nixpkgsArchive = '73c703c22422b8951895a960959dbbaca7296492#bun'
+nixpkgsArchive = 'nixpkgs/73c703c22422b8951895a960959dbbaca7296492#bun'
 
 [phases.install]
 cmds = ["bun i"]
