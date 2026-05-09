@@ -21,8 +21,6 @@ const envDir = path.resolve(import.meta.dirname);
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, envDir, "");
 
-  const supabaseUrl = env.VITE_SUPABASE_URL || env.SUPABASE_URL || "";
-  const supabaseAnonKey = env.VITE_SUPABASE_ANON_KEY || env.SUPABASE_ANON_KEY || "";
   const stripePublishableKey =
     env.VITE_STRIPE_PUBLISHABLE_KEY || env.STRIPE_PUBLISHABLE_KEY || "";
 
@@ -30,7 +28,8 @@ export default defineConfig(({ mode }) => {
     react(),
     tailwindcss(),
     runtimeErrorOverlay(),
-    ...(process.env.NODE_ENV !== "production" && process.env.REPL_ID !== undefined
+    ...(process.env.NODE_ENV !== "production" &&
+    process.env.REPL_ID !== undefined
       ? [
           cartographer({
             root: path.resolve(import.meta.dirname, ".."),
@@ -44,36 +43,40 @@ export default defineConfig(({ mode }) => {
     envDir,
     base: basePath,
     define: {
-      "import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY": JSON.stringify(
-        stripePublishableKey,
-      ),
+      "import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY":
+        JSON.stringify(stripePublishableKey),
     },
     plugins,
-  resolve: {
-    alias: {
-      "@": path.resolve(import.meta.dirname, "src"),
-      "@assets": path.resolve(import.meta.dirname, "..", "..", "attached_assets"),
+    resolve: {
+      alias: {
+        "@": path.resolve(import.meta.dirname, "src"),
+        "@assets": path.resolve(
+          import.meta.dirname,
+          "..",
+          "..",
+          "attached_assets",
+        ),
+      },
+      dedupe: ["react", "react-dom", "zod"],
     },
-    dedupe: ["react", "react-dom", "zod"],
-  },
-  root: path.resolve(import.meta.dirname),
-  build: {
-    outDir: path.resolve(import.meta.dirname, "dist/public"),
-    emptyOutDir: true,
-  },
-  server: {
-    port,
-    strictPort: true,
-    host: "0.0.0.0",
-    allowedHosts: true,
-    fs: {
-      strict: true,
+    root: path.resolve(import.meta.dirname),
+    build: {
+      outDir: path.resolve(import.meta.dirname, "dist/public"),
+      emptyOutDir: true,
     },
-  },
-  preview: {
-    port,
-    host: "0.0.0.0",
-    allowedHosts: true,
-  },
+    server: {
+      port,
+      strictPort: true,
+      host: "0.0.0.0",
+      allowedHosts: true,
+      fs: {
+        strict: true,
+      },
+    },
+    preview: {
+      port,
+      host: "0.0.0.0",
+      allowedHosts: true,
+    },
   };
 });
