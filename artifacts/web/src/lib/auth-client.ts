@@ -3,7 +3,7 @@ import { organizationClient } from "better-auth/client/plugins";
 import { dashClient } from "@better-auth/infra/client";
 
 export const authClient = createAuthClient({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8088",
+  baseURL: import.meta.env.VITE_BETTER_AUTH_URL || (import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/auth` : "http://localhost:8088/api/auth"),
   plugins: [dashClient(), organizationClient()],
 });
 
