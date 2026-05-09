@@ -8,10 +8,12 @@ import runsRouter from "./runs";
 import dashboardRouter from "./dashboard";
 import billingRouter from "./billing";
 import notificationsRouter from "./notifications";
+import portalRouter from "./portal";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(portalRouter);
 router.use(workspacesRouter);
 router.use(repsRouter);
 router.use(plansRouter);

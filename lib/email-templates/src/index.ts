@@ -15,3 +15,6 @@ export type { PasswordResetTemplateProps } from "./password-reset.js";
 
 export { clawbackAlertTemplate } from "./clawback-alert.js";
 export type { ClawbackAlertTemplateProps } from "./clawback-alert.js";
+
+export { repPortalTemplate } from "./rep-portal.js";
+export type { RepPortalTemplateProps } from "./rep-portal.js";

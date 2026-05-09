@@ -7,6 +7,7 @@ const RepSchema = new Schema({
   email: { type: String, required: true },
   role: { type: String, required: true, default: "Sales Rep" },
   planId: { type: Schema.Types.ObjectId, ref: "Plan" },
+  portalAccessCode: { type: String, unique: true, sparse: true },
 }, { timestamps: { createdAt: true, updatedAt: false } });
 
 export const Rep = model("Rep", RepSchema);
@@ -18,6 +19,7 @@ export type Rep = mongoose.Document & {
   email: string;
   role: string;
   planId?: Types.ObjectId;
+  portalAccessCode?: string;
   createdAt: Date;
 };
 

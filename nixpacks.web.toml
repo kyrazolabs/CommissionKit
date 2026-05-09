@@ -1,0 +1,14 @@
+[variables]
+BUN_VERSION = "1.3.13"
+
+[phases.setup]
+nixPkgs = ["bun"]
+
+[phases.install]
+cmds = ["bun i"]
+
+[phases.build]
+cmds = ["bun run --filter @workspace/web build"]
+
+[start]
+cmd = "bun run --filter @workspace/web start"

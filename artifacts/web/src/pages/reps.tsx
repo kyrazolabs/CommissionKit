@@ -15,13 +15,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, MoreHorizontal, Edit, Trash, ChevronRight, Users } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Plus, Search, MoreHorizontal, Edit, Trash, ChevronRight, Users, Mail } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/hooks/use-role";
 import { useBillingStatus } from "@/hooks/use-billing-status";
+import { useWorkspace } from "@/hooks/use-workspace";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 
 export function RepsPage() {
   const { data: reps, isLoading } = useListReps({ query: { queryKey: getListRepsQueryKey() } });
@@ -144,8 +147,13 @@ export function RepsPage() {
                               View Portal
                             </Link>
                           </DropdownMenuItem>
-                          {can("admin") && <RepEditAction rep={rep} plans={plans || []} />}
-                          {can("admin") && <RepDeleteAction rep={rep} />}
+                          {can("admin") && (
+                            <>
+                              <SendPortalLinkAction rep={rep} />
+                              <RepEditAction rep={rep} plans={plans || []} />
+                              <RepDeleteAction rep={rep} />
+                            </>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -264,6 +272,52 @@ function RepEditAction({ rep, plans }: { rep: any, plans: any[] }) {
       </DropdownMenuItem>
       <RepFormDialog open={open} onOpenChange={setOpen} plans={plans} initialData={rep} />
     </>
+  );
+}
+
+function SendPortalLinkAction({ rep }: { rep: any }) {
+  const { toast } = useToast();
+  const [sending, setSending] = useState(false);
+  const { activeWorkspace } = useWorkspace();
+  
+  const queryClient = useQueryClient();
+
+  const handleSend = async () => {
+    setSending(true);
+    try {
+      const res = await fetch(`${API_URL}/api/reps/${rep.id}/send-portal-link`, { 
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "x-workspace-id": activeWorkspace.id,
+        },
+       });
+      if (!res.ok) throw new Error("Failed to send");
+      queryClient.invalidateQueries({ queryKey: getListRepsQueryKey() });
+      toast({
+        title: "Portal link sent",
+        description: `A new portal link has been emailed to ${rep.email}.`,
+      });
+    } catch {
+      toast({
+        title: "Failed to send",
+        description: "Could not send the portal link. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <DropdownMenuItem
+      onSelect={(e) => { e.preventDefault(); handleSend(); }}
+      disabled={sending}
+    >
+      <Mail className="mr-2 h-4 w-4" />
+      {sending ? "Sending..." : "Send Portal Link"}
+    </DropdownMenuItem>
   );
 }
 

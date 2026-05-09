@@ -12,6 +12,7 @@ import { DealsPage } from "@/pages/deals";
 import { RunsPage } from "@/pages/runs";
 import { RunDetailsPage } from "@/pages/run-details";
 import { RepPortal } from "@/pages/rep-portal";
+import { PublicRepPortal } from "@/pages/public-portal";
 import { SettingsPage } from "@/pages/settings";
 import { TeamPage } from "@/pages/team";
 import { BillingPage } from "@/pages/billing";
@@ -147,18 +148,25 @@ function ProtectedRouter() {
 function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <WorkspaceProvider>
-          <QueryClientProvider client={queryClient}>
-            <TooltipProvider>
-              <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-                <ProtectedRouter />
-              </WouterRouter>
-              <Toaster />
-            </TooltipProvider>
-          </QueryClientProvider>
-        </WorkspaceProvider>
-      </AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            {/* Public routes — no auth required */}
+            <Switch>
+              <Route path="/portal/:accessCode" component={PublicRepPortal} />
+              {/* All other routes go through the authenticated provider stack */}
+              <Route>
+                <AuthProvider>
+                  <WorkspaceProvider>
+                    <ProtectedRouter />
+                  </WorkspaceProvider>
+                </AuthProvider>
+              </Route>
+            </Switch>
+          </WouterRouter>
+          <Toaster />
+        </TooltipProvider>
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }
