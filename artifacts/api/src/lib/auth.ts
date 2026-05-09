@@ -117,13 +117,7 @@ export const auth = betterAuth({
     before: async (context) => {
       if (context.body && "email" in (context.body as any) && typeof (context.body as any).email === "string") {
         const body = context.body as any;
-        let normalized = body.email.trim().toLowerCase();
-        
-        // Gmail normalization: dots are ignored in the local part
-        if (normalized.endsWith("@gmail.com")) {
-          const [local, domain] = normalized.split("@");
-          normalized = `${local.replace(/\./g, "")}@${domain}`;
-        }
+        const normalized = body.email.trim().toLowerCase();
         
         return {
           context: {
