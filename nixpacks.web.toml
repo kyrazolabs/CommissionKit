@@ -6,6 +6,3 @@ cmds = ["bun i --ignore-scripts"]
 
 [phases.build]
 cmds = ["bun run --filter @workspace/web build"]
-
-[start]
-cmd = "bun run --filter @workspace/web start"
