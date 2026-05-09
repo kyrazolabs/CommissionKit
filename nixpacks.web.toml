@@ -1,11 +1,8 @@
-[variables]
-BUN_VERSION = "1.3.13"
-
 [phases.setup]
 nixPkgs = ["bun"]
 
 [phases.install]
-cmds = ["bun i"]
+cmds = ["bun i --ignore-scripts"]
 
 [phases.build]
 cmds = ["bun run --filter @workspace/web build"]
