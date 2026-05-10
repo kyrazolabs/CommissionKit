@@ -1,89 +1,54 @@
-# CommissionKit: Platform Documentation
+# CommissionKit: The Ultimate Sales Commission & Performance Platform
 
-CommissionKit is a high-performance Sales Commission Platform designed for SaaS and sales-driven organizations. It automates the complex process of tracking deals, calculating rep earnings, and providing transparent reporting through a centralized dashboard and public representative portals.
-
----
-
-## 1. Core Objectives
-- **Transparency**: Provide sales reps with real-time visibility into their earnings.
-- **Automation**: Replace error-prone spreadsheets with automated commission calculation runs.
-- **Scalability**: Handle thousands of deals asynchronously using background workers.
-- **Multi-tenancy**: Support multiple independent workspaces with team collaboration.
+CommissionKit is an enterprise-grade solution designed to eliminate the complexity, errors, and manual labor associated with sales commission management. By automating the entire pipeline from deal ingestion to representative payouts, CommissionKit empowers sales-driven organizations to scale with confidence and total transparency.
 
 ---
 
-## 2. Technical Architecture
-CommissionKit is built as a **TypeScript Monorepo** using **Bun** for maximum performance and unified developer experience.
-
-### Monorepo Structure:
-- **`artifacts/web`**: React SPA built with Vite and Tailwind CSS.
-- **`artifacts/api`**: Express backend serving as the API and orchestrator.
-- **`lib/db`**: Shared database layer using Mongoose (MongoDB).
-- **`lib/queue`**: Shared BullMQ (Redis) logic for background workers.
-- **`lib/email-templates`**: Reusable email templates for system notifications.
-- **`lib/api-spec`**: OpenAPI specification defining the contract between frontend and backend.
-
-### Technology Stack:
-- **Runtime**: Bun
-- **Frontend**: React, Tailwind CSS, Shadcn UI, Vite
-- **Backend**: Express.js
-- **Database**: MongoDB (Mongoose)
-- **Authentication**: Better Auth (with Organization & Multi-tenancy support)
-- **Task Queue**: BullMQ + Redis
-- **Email**: SMTP with dynamic templates
-- **Billing**: Stripe Integration
+## 1. Why CommissionKit?
+Sales commissions are the engine of your business, but managing them in spreadsheets is a recipe for disaster. CommissionKit solves the three biggest challenges in sales operations:
+- **Accuracy**: Eliminate "shadow accounting" and disputes by using a standardized, automated calculation engine.
+- **Efficiency**: Save hundreds of hours every month by replacing manual data entry with high-speed automated runs.
+- **Motivation**: Boost sales rep performance by providing them with instant, transparent visibility into their earnings and progress.
 
 ---
 
-## 3. Key Modules & Features
+## 2. Key Product Features
 
-### A. Sales Representative Management
-Manage the sales force with granular control.
-- **Rep Profile**: Name, Email, and specific Commission Rate.
-- **Public Portal**: Each rep receives a secure, unique link (with a rotating access code) to view their own commission dashboard without needing a platform login.
+### Automated Commission Runs
+Stop calculating commissions manually. With one click, CommissionKit processes thousands of deals, applies specific representative rates, and generates comprehensive payout reports.
+- **Asynchronous Processing**: Handle massive datasets without any system slowdown.
+- **History Tracking**: Maintain a perfect audit trail of every commission run ever performed.
 
-### B. Deal Ingestion
-The system records sales data (Deals) which serve as the raw input for commissions.
-- **Fields**: Amount, Close Date, Status (Pending/Approved), and Rep Assignment.
-- **Integration**: Designed to accept deals via API or manual entry.
+### The Representative Portal (Transparency-First)
+Empower your sales force with their own dedicated dashboard. Every rep gets a secure, personalized portal where they can:
+- **View Real-Time Earnings**: See exactly how much they've earned and what is pending.
+- **Track Performance**: Monitor their deal volume and historical trends.
+- **Secure Access**: Access their data via a simple, secure link—no complex logins or corporate credentials required for the reps.
 
-### C. Commission Calculation (Runs)
-The core engine of the platform.
-- **Asynchronous Processing**: Calculations are handled by the `calc-worker` in the background to prevent UI lag.
-- **Runs**: Admin can trigger a "Commission Run" for specific periods. The system iterates through all approved deals and applies the Rep's specific rates to generate accurate earnings reports.
+### Enterprise Deal Management
+A centralized hub for all your sales data.
+- **Centralized Tracking**: Monitor every deal's status, from pending to approved.
+- **Rep Assignments**: Easily assign or reassign deals to the correct sales personnel.
+- **Granular Rates**: Set custom commission percentages per representative to match your unique compensation plans.
 
-### D. Multi-tenant Workspaces
-- **Organization Support**: Users can create or join multiple workspaces.
-- **RBAC**: Role-based access control (Admin/Member) managed via Better Auth.
-- **Invitations**: Secure email invitation system for onboarding team members.
-
----
-
-## 4. Database Schema Overview
-The system uses MongoDB for flexibility and performance:
-- **Workspaces**: Stores organization metadata and subscription status.
-- **Reps**: Profiles for sales personnel, including their `portalAccessCode`.
-- **Deals**: Individual sale records linked to a Rep and Workspace.
-- **CommissionRuns**: Logs of calculation batches and their results.
-- **Plans**: Configuration for different commission structures/tiers.
-- **Subscriptions**: Stripe-linked billing data.
+### Professional Team Workspaces
+Built for collaboration and growth.
+- **Multi-Tenant Architecture**: Securely manage multiple independent workspaces.
+- **Team Roles**: Assign administrators to manage the platform while keeping data siloed and secure.
+- **Easy Onboarding**: Invite new team members with a single email invitation.
 
 ---
 
-## 5. Deployment & Infrastructure
-The platform is optimized for modern containerized environments:
-- **Docker Compose**: Orchestrates the Web (Nginx), API (Bun), and Redis services.
-- **Nginx Reverse Proxy**: Acts as the top-level entry point, routing traffic to the static frontend and `/api` requests to the backend.
-- **Coolify Integration**: Ready for seamless CI/CD via GitHub and Coolify.
-- **Internal Networking**: Uses a private Docker network for secure communication between the API and the internal Redis database.
+## 3. Reliability & Security
+CommissionKit is built for modern business requirements:
+- **Data Isolation**: Each workspace is strictly isolated, ensuring your proprietary sales data is never mixed or exposed.
+- **High Availability**: Optimized for speed and uptime, ensuring your team always has access to their data when they need it.
+- **Scalable Infrastructure**: Built to grow with your company, from a small team of five to an organization of thousands.
 
 ---
 
-## 6. Authentication & Security
-- **Better Auth**: Handles session management, password hashing, and CSRF protection.
-- **Secure Cookies**: Production-grade cookie security enabled by default.
-- **Email Normalization**: Standardizes emails (lowercasing and trimming) to prevent duplicate accounts.
-- **Access Codes**: Uses 12-character high-entropy codes for the Public Rep Portal.
+## 4. The Result: A Motivated, High-Performance Sales Team
+By removing the friction of commission management, CommissionKit allows your leadership to focus on strategy and your sales reps to focus on what they do best: **closing deals.**
 
 ---
-*Created by the CommissionKit Engineering Team.*
+**CommissionKit — Automate. Motivate. Scale.**
