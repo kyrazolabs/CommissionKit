@@ -1,8 +1,16 @@
 import { Router } from "express";
 import Stripe from "stripe";
 import { Types } from "mongoose";
-import { WorkspaceSubscription, Workspace, WorkspaceMember } from "@workspace/db";
-import { requireAuth, requireWorkspaceMember, type AuthenticatedRequest } from "../middleware/auth";
+import {
+  WorkspaceSubscription,
+  Workspace,
+  WorkspaceMember,
+} from "@workspace/db";
+import {
+  requireAuth,
+  requireWorkspaceMember,
+  type AuthenticatedRequest,
+} from "../middleware/auth";
 import { logger } from "../lib/logger";
 
 const router = Router();
@@ -14,21 +22,25 @@ if (!stripeSecretKey) throw new Error("Missing STRIPE_SECRET_KEY");
 const stripe = new Stripe(stripeSecretKey, { apiVersion: "2026-04-22.dahlia" });
 
 // ─── Price → Plan mapping ─────────────────────────────────────────────────────
-const PRICE_TO_PLAN: Record<string, "starter" | "growth" | "lifetime"> = {
-  "price_1TSwQIBA7ra9J8VO3P4tgtLi": "starter",
-  "price_1TSwQHBA7ra9J8VOxFgWrEHg": "growth",
-  "price_1TUvwTBA7ra9J8VOVNIv5D1b": "lifetime",
-};
+const PRICE_TO_PLAN: Record<string, "starter" | "growth" | "flex" | "annual"> =
+  {
+    price_1TSwQIBA7ra9J8VO3P4tgtLi: "starter",
+    price_1TSwQHBA7ra9J8VOxFgWrEHg: "growth",
+    price_1TVwYcBA7ra9J8VOvNnoscbn: "flex",
+    price_1TVwbbBA7ra9J8VOok7hEjEG: "annual",
+  };
 
 const PLAN_PRICE_IDS = {
-  starter:  "price_1TSwQIBA7ra9J8VO3P4tgtLi",
-  growth:   "price_1TSwQHBA7ra9J8VOxFgWrEHg",
-  lifetime: "price_1TUvwTBA7ra9J8VOVNIv5D1b",
+  starter: "price_1TSwQIBA7ra9J8VO3P4tgtLi",
+  growth: "price_1TSwQHBA7ra9J8VOxFgWrEHg",
+  flex: "price_1TVwYcBA7ra9J8VOvNnoscbn",
+  annual: "price_1TVwbbBA7ra9J8VOok7hEjEG",
 };
 
 function getAppUrl(): string {
   if (process.env.APP_URL) return process.env.APP_URL.replace(/\/$/, "");
-  if (process.env.REPLIT_DOMAINS) return `https://${process.env.REPLIT_DOMAINS.split(",")[0]}`;
+  if (process.env.REPLIT_DOMAINS)
+    return `https://${process.env.REPLIT_DOMAINS.split(",")[0]}`;
   return "http://localhost:3000";
 }
 
@@ -53,7 +65,12 @@ async function getOrCreateCustomer(
   // Upsert the subscription record with the customer id
   await WorkspaceSubscription.findOneAndUpdate(
     { workspaceId: new Types.ObjectId(workspaceId) },
-    { $set: { workspaceId: new Types.ObjectId(workspaceId), stripeCustomerId: customer.id } },
+    {
+      $set: {
+        workspaceId: new Types.ObjectId(workspaceId),
+        stripeCustomerId: customer.id,
+      },
+    },
     { upsert: true, new: true },
   );
 
@@ -64,101 +81,132 @@ async function getOrCreateCustomer(
 /**
  * Returns the current subscription status for the authenticated workspace.
  */
-router.get("/status", ...requireWorkspaceMember("member"), async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = req.workspaceId!;
+router.get(
+  "/status",
+  ...requireWorkspaceMember("member"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const workspaceId = req.workspaceId!;
 
-  const sub = await WorkspaceSubscription.findOne({
-    workspaceId: new Types.ObjectId(workspaceId),
-  });
+    const sub = await WorkspaceSubscription.findOne({
+      workspaceId: new Types.ObjectId(workspaceId),
+    });
 
-  if (!sub || sub.plan === "free") {
-    res.json({ plan: "free", status: "active", isLifetime: false });
-    return;
-  }
+    if (!sub || sub.plan === "free") {
+      res.json({ plan: "free", status: "active", isLifetime: false });
+      return;
+    }
 
-  res.json({
-    plan:                sub.plan,
-    status:              sub.status,
-    isLifetime:          sub.isLifetime,
-    currentPeriodEnd:    sub.currentPeriodEnd?.toISOString() ?? null,
-    cancelAtPeriodEnd:   sub.cancelAtPeriodEnd,
-    stripeCustomerId:    sub.stripeCustomerId,
-  });
-});
+    res.json({
+      plan: sub.plan,
+      status: sub.status,
+      isLifetime: sub.isLifetime,
+      currentPeriodEnd: sub.currentPeriodEnd?.toISOString() ?? null,
+      cancelAtPeriodEnd: sub.cancelAtPeriodEnd,
+      stripeCustomerId: sub.stripeCustomerId,
+    });
+  },
+);
 
 // ─── POST /billing/checkout ───────────────────────────────────────────────────
 /**
  * Creates a Stripe Checkout Session and returns the redirect URL.
  */
-router.post("/checkout", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
-  const { priceId, mode } = req.body as { priceId?: string; mode?: string };
-  const workspaceId = req.workspaceId!;
+router.post(
+  "/checkout",
+  ...requireWorkspaceMember("admin"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const { priceId, mode } = req.body as { priceId?: string; mode?: string };
+    const workspaceId = req.workspaceId!;
 
-  if (!priceId) { res.status(400).json({ error: "priceId is required" }); return; }
+    if (!priceId) {
+      res.status(400).json({ error: "priceId is required" });
+      return;
+    }
 
-  const plan = PRICE_TO_PLAN[priceId];
-  if (!plan) { res.status(400).json({ error: "Invalid priceId" }); return; }
+    const plan = PRICE_TO_PLAN[priceId];
+    if (!plan) {
+      res.status(400).json({ error: "Invalid priceId" });
+      return;
+    }
 
-  // Prevent purchasing a plan they're already on
-  const existing = await WorkspaceSubscription.findOne({ workspaceId: new Types.ObjectId(workspaceId) });
-  if (existing?.isLifetime) {
-    res.status(400).json({ error: "This workspace already has a lifetime plan." }); return;
-  }
-
-  const ws = await Workspace.findById(workspaceId);
-  const customerId = await getOrCreateCustomer(workspaceId, req.userEmail!, ws?.name);
-
-  const checkoutMode: "subscription" | "payment" = mode === "payment" ? "payment" : "subscription";
-  const appUrl = getAppUrl();
-
-  try {
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      mode: checkoutMode,
-      line_items: [{ price: priceId, quantity: 1 }],
-      metadata: { workspaceId, userId: req.userId ?? "", plan },
-      allow_promotion_codes: true,
-      billing_address_collection: "auto",
-      success_url: `${appUrl}/billing?checkout=success&plan=${plan}`,
-      cancel_url:  `${appUrl}/billing?checkout=cancelled`,
-      ...(checkoutMode === "subscription" && {
-        subscription_data: { metadata: { workspaceId, plan } },
-      }),
+    // Prevent purchasing a plan they're already on
+    const existing = await WorkspaceSubscription.findOne({
+      workspaceId: new Types.ObjectId(workspaceId),
     });
+    if (existing?.plan === plan) {
+      res.status(400).json({ error: "This workspace is already on this plan." });
+      return;
+    }
 
-    res.json({ url: session.url });
-  } catch (err: any) {
-    logger.error({ err }, "Stripe checkout error");
-    res.status(500).json({ error: err.message });
-  }
-});
+    const ws = await Workspace.findById(workspaceId);
+    const customerId = await getOrCreateCustomer(
+      workspaceId,
+      req.userEmail!,
+      ws?.name,
+    );
+
+    const checkoutMode: "subscription" | "payment" =
+      mode === "payment" ? "payment" : "subscription";
+    const appUrl = getAppUrl();
+
+    try {
+      const session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        mode: checkoutMode,
+        line_items: [{ price: priceId, quantity: 1 }],
+        metadata: { workspaceId, userId: req.userId ?? "", plan },
+        allow_promotion_codes: true,
+        billing_address_collection: "auto",
+        success_url: `${appUrl}/billing?checkout=success&plan=${plan}`,
+        cancel_url: `${appUrl}/billing?checkout=cancelled`,
+        ...(checkoutMode === "subscription" && {
+          subscription_data: { metadata: { workspaceId, plan } },
+        }),
+      });
+
+      res.json({ url: session.url });
+    } catch (err: any) {
+      logger.error({ err }, "Stripe checkout error");
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
 
 // ─── POST /billing/portal ─────────────────────────────────────────────────────
 /**
  * Creates a Stripe Customer Portal session so users can manage their
  * subscription, update payment methods, or cancel.
  */
-router.post("/portal", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = req.workspaceId!;
+router.post(
+  "/portal",
+  ...requireWorkspaceMember("admin"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const workspaceId = req.workspaceId!;
 
-  const sub = await WorkspaceSubscription.findOne({ workspaceId: new Types.ObjectId(workspaceId) });
-  if (!sub?.stripeCustomerId) {
-    res.status(400).json({ error: "No Stripe customer found for this workspace." }); return;
-  }
-
-  const appUrl = getAppUrl();
-
-  try {
-    const session = await stripe.billingPortal.sessions.create({
-      customer: sub.stripeCustomerId,
-      return_url: `${appUrl}/billing`,
+    const sub = await WorkspaceSubscription.findOne({
+      workspaceId: new Types.ObjectId(workspaceId),
     });
-    res.json({ url: session.url });
-  } catch (err: any) {
-    logger.error({ err }, "Stripe portal error");
-    res.status(500).json({ error: err.message });
-  }
-});
+    if (!sub?.stripeCustomerId) {
+      res
+        .status(400)
+        .json({ error: "No Stripe customer found for this workspace." });
+      return;
+    }
+
+    const appUrl = getAppUrl();
+
+    try {
+      const session = await stripe.billingPortal.sessions.create({
+        customer: sub.stripeCustomerId,
+        return_url: `${appUrl}/billing`,
+      });
+      res.json({ url: session.url });
+    } catch (err: any) {
+      logger.error({ err }, "Stripe portal error");
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
 
 // ─── POST /billing/webhook ────────────────────────────────────────────────────
 /**
@@ -174,7 +222,11 @@ router.post("/webhook", async (req, res): Promise<void> => {
   if (webhookSecret && sig) {
     try {
       // Bun requires constructEventAsync due to its async SubtleCrypto implementation
-      event = await stripe.webhooks.constructEventAsync(req.body as Buffer, sig, webhookSecret);
+      event = await stripe.webhooks.constructEventAsync(
+        req.body as Buffer,
+        sig,
+        webhookSecret,
+      );
       logger.info("Stripe signature verified successfully");
     } catch (err: any) {
       logger.error({ err }, "Stripe webhook signature verification failed");
@@ -202,7 +254,7 @@ router.post("/webhook", async (req, res): Promise<void> => {
     const path = require("path");
     fs.writeFileSync(
       path.join(process.cwd(), "stripe-webhook-debug.json"),
-      JSON.stringify(event, null, 2)
+      JSON.stringify(event, null, 2),
     );
   }
 
@@ -210,39 +262,27 @@ router.post("/webhook", async (req, res): Promise<void> => {
 
   try {
     switch (event.type) {
-
       // ── Checkout completed ──────────────────────────────────────────────────
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         const workspaceId = session.metadata?.workspaceId;
-        const plan = session.metadata?.plan as "starter" | "growth" | "lifetime" | undefined;
+        const plan = session.metadata?.plan as
+          | "starter"
+          | "growth"
+          | "flex"
+          | "annual"
+          | undefined;
         const customerId = session.customer as string;
 
         if (!workspaceId || !plan) {
-          logger.warn({ sessionId: session.id }, "checkout.session.completed missing metadata");
+          logger.warn(
+            { sessionId: session.id },
+            "checkout.session.completed missing metadata",
+          );
           break;
         }
 
-        if (session.mode === "payment") {
-          // One-time lifetime purchase
-          await WorkspaceSubscription.findOneAndUpdate(
-            { workspaceId: new Types.ObjectId(workspaceId) },
-            {
-              $set: {
-                workspaceId: new Types.ObjectId(workspaceId),
-                stripeCustomerId: customerId,
-                stripePriceId: PLAN_PRICE_IDS.lifetime,
-                plan: "lifetime",
-                status: "active",
-                isLifetime: true,
-                cancelAtPeriodEnd: false,
-                currentPeriodEnd: null,
-              },
-            },
-            { upsert: true, new: true },
-          );
-          logger.info({ workspaceId }, "Lifetime plan activated");
-        } else if (session.mode === "subscription") {
+        if (session.mode === "subscription") {
           // Subscription — further handled in subscription.updated
           const subscriptionId = session.subscription as string;
           await WorkspaceSubscription.findOneAndUpdate(
@@ -271,34 +311,46 @@ router.post("/webhook", async (req, res): Promise<void> => {
         const workspaceId = sub.metadata?.workspaceId;
         if (!workspaceId) {
           // Try to look up via customer
-          const found = await WorkspaceSubscription.findOne({ stripeSubscriptionId: sub.id });
-          if (!found) { logger.warn({ subId: sub.id }, "No workspace found for subscription update"); break; }
+          const found = await WorkspaceSubscription.findOne({
+            stripeSubscriptionId: sub.id,
+          });
+          if (!found) {
+            logger.warn(
+              { subId: sub.id },
+              "No workspace found for subscription update",
+            );
+            break;
+          }
         }
 
         const priceId = sub.items.data[0]?.price.id;
         const plan = PRICE_TO_PLAN[priceId ?? ""] ?? "starter";
         // current_period_end moved to SubscriptionItem in Stripe SDK v22
-        const itemPeriodEnd = (sub.items.data[0] as any)?.current_period_end as number | undefined;
-        const periodEnd = itemPeriodEnd ? new Date(itemPeriodEnd * 1000) : undefined;
+        const itemPeriodEnd = (sub.items.data[0] as any)?.current_period_end as
+          | number
+          | undefined;
+        const periodEnd = itemPeriodEnd
+          ? new Date(itemPeriodEnd * 1000)
+          : undefined;
 
         const query = workspaceId
           ? { workspaceId: new Types.ObjectId(workspaceId) }
           : { stripeSubscriptionId: sub.id };
 
-        await WorkspaceSubscription.findOneAndUpdate(
-          query,
-          {
-            $set: {
-              stripeSubscriptionId: sub.id,
-              stripePriceId:        priceId,
-              plan,
-              status:               sub.status,
-              cancelAtPeriodEnd:    sub.cancel_at_period_end,
-              currentPeriodEnd:     periodEnd,
-            },
+        await WorkspaceSubscription.findOneAndUpdate(query, {
+          $set: {
+            stripeSubscriptionId: sub.id,
+            stripePriceId: priceId,
+            plan,
+            status: sub.status,
+            cancelAtPeriodEnd: sub.cancel_at_period_end,
+            currentPeriodEnd: periodEnd,
           },
+        });
+        logger.info(
+          { subId: sub.id, status: sub.status, plan },
+          "Subscription updated",
         );
-        logger.info({ subId: sub.id, status: sub.status, plan }, "Subscription updated");
         break;
       }
 
@@ -309,14 +361,17 @@ router.post("/webhook", async (req, res): Promise<void> => {
           { stripeSubscriptionId: sub.id },
           {
             $set: {
-              plan:               "free",
-              status:             "canceled",
-              cancelAtPeriodEnd:  false,
-              currentPeriodEnd:   null,
+              plan: "free",
+              status: "canceled",
+              cancelAtPeriodEnd: false,
+              currentPeriodEnd: null,
             },
           },
         );
-        logger.info({ subId: sub.id }, "Subscription cancelled → downgraded to free");
+        logger.info(
+          { subId: sub.id },
+          "Subscription cancelled → downgraded to free",
+        );
         break;
       }
 
@@ -329,7 +384,10 @@ router.post("/webhook", async (req, res): Promise<void> => {
             { stripeSubscriptionId: subId },
             { $set: { status: "past_due" } },
           );
-          logger.warn({ subId }, "Invoice payment failed — status set to past_due");
+          logger.warn(
+            { subId },
+            "Invoice payment failed — status set to past_due",
+          );
         }
         break;
       }
@@ -351,7 +409,10 @@ router.post("/webhook", async (req, res): Promise<void> => {
         logger.info({ type: event.type }, "Unhandled Stripe event — ignored");
     }
   } catch (err) {
-    logger.error({ err, eventType: event.type }, "Error processing Stripe webhook");
+    logger.error(
+      { err, eventType: event.type },
+      "Error processing Stripe webhook",
+    );
     // Still return 200 so Stripe doesn't retry — we log the error for manual inspection
   }
 

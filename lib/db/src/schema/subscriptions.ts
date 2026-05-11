@@ -6,9 +6,9 @@ const WorkspaceSubscriptionSchema = new Schema({
   stripeSubscriptionId: { type: String },       // null for lifetime
   stripePriceId:        { type: String },
   stripeProductId:      { type: String },
-  plan:                 { type: String, enum: ["starter", "growth", "lifetime", "free"], default: "free" },
+  plan:                 { type: String, enum: ["starter", "growth", "flex", "annual", "free"], default: "free" },
   status:               { type: String, default: "active" }, // active | past_due | canceled | trialing
-  /** true for lifetime (one-time payment) */
+  /** true for legacy lifetime (one-time payment) */
   isLifetime:           { type: Boolean, default: false },
   currentPeriodEnd:     { type: Date },
   cancelAtPeriodEnd:    { type: Boolean, default: false },
@@ -26,7 +26,7 @@ export type WorkspaceSubscription = mongoose.Document & {
   stripeSubscriptionId?: string;
   stripePriceId?: string;
   stripeProductId?: string;
-  plan: "starter" | "growth" | "lifetime" | "free";
+  plan: "starter" | "growth" | "flex" | "annual" | "free";
   status: string;
   isLifetime: boolean;
   currentPeriodEnd?: Date;

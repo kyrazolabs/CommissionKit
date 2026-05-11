@@ -17,7 +17,7 @@ const plans = [
     name: "Starter",
     price: "$49",
     period: "/month",
-    description: "Perfect for small sales teams getting started.",
+    description: "Perfect for testing the product or tiny teams.",
     icon: Zap,
     iconBg: "bg-blue-50 dark:bg-blue-900/20",
     iconColor: "text-blue-600 dark:text-blue-400",
@@ -26,7 +26,7 @@ const plans = [
       "Up to 3 commission plans",
       "Deal & commission tracking",
       "Unlimited calculation runs",
-      "Email support",
+      "Email support (48h response)",
     ],
     priceId: "price_1TSwQIBA7ra9J8VO3P4tgtLi",
     highlighted: false,
@@ -34,11 +34,32 @@ const plans = [
     mode: "subscription" as const,
   },
   {
+    id: "flex",
+    name: "Flex",
+    price: "$12",
+    period: "/rep/mo",
+    description: "Best for small or variable teams (3–8 reps).",
+    icon: InfinityIcon,
+    iconBg: "bg-amber-50 dark:bg-amber-900/20",
+    iconColor: "text-amber-600 dark:text-amber-400",
+    features: [
+      "Pay only for active reps",
+      "All Growth features included",
+      "Unlimited commission plans",
+      "Rep self-service portal",
+      "Perfect for seasonal teams",
+    ],
+    priceId: "price_1TVwYcBA7ra9J8VOvNnoscbn",
+    highlighted: false,
+    badge: "Most Flexible",
+    mode: "subscription" as const,
+  },
+  {
     id: "growth",
     name: "Growth",
-    price: "$149",
+    price: "$99",
     period: "/month",
-    description: "For growing teams that need more power.",
+    description: "For stable teams of 8+ reps.",
     icon: Building2,
     iconBg: "bg-primary/10",
     iconColor: "text-primary",
@@ -48,7 +69,7 @@ const plans = [
       "Advanced tiered plans",
       "Accelerator & clawback rules",
       "Rep self-service portal",
-      "Priority support",
+      "Priority support (24h)",
       "CSV export",
     ],
     priceId: "price_1TSwQHBA7ra9J8VOxFgWrEHg",
@@ -57,26 +78,24 @@ const plans = [
     mode: "subscription" as const,
   },
   {
-    id: "lifetime",
-    name: "Lifetime",
-    price: "$1,299",
-    period: "one-time",
-    description: "Pay once, own it forever. Less than 9 months of Growth.",
-    icon: InfinityIcon,
-    iconBg: "bg-amber-50 dark:bg-amber-900/20",
-    iconColor: "text-amber-600 dark:text-amber-400",
+    id: "annual",
+    name: "Growth Annual",
+    price: "$990",
+    period: "/year",
+    description: "Committed teams saving 17% vs monthly.",
+    icon: Crown,
+    iconBg: "bg-purple-50 dark:bg-purple-900/20",
+    iconColor: "text-purple-600 dark:text-purple-400",
     features: [
-      "Unlimited sales reps",
-      "All Growth plan features",
-      "Future feature updates included",
-      "Priority support — forever",
-      "White-label ready",
-      "API access",
+      "Everything in Growth",
+      "2 months free vs monthly",
+      "Quarterly commission audit",
+      "Dedicated onboarding call",
     ],
-    priceId: "price_1TUvwTBA7ra9J8VOVNIv5D1b",
+    priceId: "price_1TVwbbBA7ra9J8VOok7hEjEG",
     highlighted: false,
-    badge: "Best Value",
-    mode: "payment" as const,
+    badge: "Save 17%",
+    mode: "subscription" as const,
   },
 ];
 
@@ -96,16 +115,7 @@ function StatusBanner({ sub }: { sub: SubscriptionStatus }) {
   const isPastDue  = sub.status === "past_due";
   const isCanceled = sub.status === "canceled";
 
-  if (sub.isLifetime) {
-    return (
-      <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800/40 dark:bg-amber-900/20">
-        <Crown className="h-4 w-4 text-amber-600 shrink-0" />
-        <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
-          You have <strong>Lifetime access</strong> — all Growth features, forever.
-        </p>
-      </div>
-    );
-  }
+
 
   if (isPastDue) {
     return (
@@ -161,9 +171,7 @@ export function BillingPage() {
       const plan = params.get("plan");
       toast({
         title: "Payment successful!",
-        description: plan === "lifetime"
-          ? "Welcome to Lifetime — you're all set, forever."
-          : `Your ${plan} plan is now active.`,
+        description: `Your ${plan} plan is now active.`,
       });
       // Clean URL
       window.history.replaceState({}, "", "/billing");
@@ -236,7 +244,7 @@ export function BillingPage() {
         <p className="text-[12px] font-semibold text-primary mb-1">Account</p>
         <h1 className="text-[28px] font-bold tracking-tight text-foreground leading-tight">Billing & Plans</h1>
         <p className="text-[14px] text-muted-foreground mt-1">
-          Choose the plan that fits your team. Upgrade, downgrade, or go lifetime at any time.
+          Choose the plan that fits your team. Upgrade, downgrade, or switch to annual at any time.
         </p>
       </div>
 
@@ -247,28 +255,23 @@ export function BillingPage() {
       {sub && sub.plan !== "free" && (
         <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-3">
           <div>
-            <p className="text-sm font-semibold text-foreground capitalize">{sub.isLifetime ? "Lifetime" : sub.plan} Plan</p>
+            <p className="text-sm font-semibold text-foreground capitalize">{sub.plan} Plan</p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {sub.isLifetime
-                ? "One-time purchase — no recurring charges."
-                : `Billing portal: update payment method, invoices, or cancel.`}
+              Billing portal: update payment method, invoices, or cancel.
             </p>
           </div>
-          {!sub.isLifetime && (
-            <Button variant="outline" size="sm" onClick={handlePortal} disabled={portalLoading} className="gap-2 shrink-0">
-              {portalLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ExternalLink className="h-3.5 w-3.5" />}
-              Manage Subscription
-            </Button>
-          )}
+          <Button variant="outline" size="sm" onClick={handlePortal} disabled={portalLoading} className="gap-2 shrink-0">
+            {portalLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ExternalLink className="h-3.5 w-3.5" />}
+            Manage Subscription
+          </Button>
         </div>
       )}
 
       {/* Plan cards */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {plans.map((plan) => {
           const Icon = plan.icon;
           const isCurrent  = currentPlan === plan.id;
-          const isLifetimeOwned = sub?.isLifetime && plan.id === "lifetime";
 
           return (
             <Card
@@ -282,9 +285,9 @@ export function BillingPage() {
               {plan.badge && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className={cn(
-                    "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold border",
-                    plan.id === "lifetime"
-                      ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/40"
+                    "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold border whitespace-nowrap",
+                    plan.id === "annual"
+                      ? "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800/40"
                       : "bg-primary text-primary-foreground border-primary",
                   )}>
                     {isCurrent ? "✓ Current Plan" : plan.badge}
@@ -298,11 +301,6 @@ export function BillingPage() {
                     <Icon className={cn("h-4 w-4", plan.iconColor)} />
                   </div>
                   <CardTitle className="text-base">{plan.name}</CardTitle>
-                  {isCurrent && !plan.badge && (
-                    <span className="ml-auto text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                      Current
-                    </span>
-                  )}
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className="text-3xl font-bold text-foreground">{plan.price}</span>
@@ -332,24 +330,15 @@ export function BillingPage() {
                     <Check className="mr-2 h-4 w-4" />
                     Current Plan
                   </Button>
-                ) : sub?.isLifetime ? (
-                  <Button className="w-full" variant="outline" disabled>
-                    Lifetime Active
-                  </Button>
                 ) : (
                   <Button
-                    className={cn(
-                      "w-full",
-                      plan.id === "lifetime" && "bg-amber-600 hover:bg-amber-700 text-white dark:bg-amber-600 dark:hover:bg-amber-700",
-                    )}
+                    className={cn("w-full")}
                     variant={plan.highlighted ? "default" : "outline"}
                     onClick={() => handleCheckout(plan.priceId, plan.id, plan.mode)}
                     disabled={loadingPlan !== null}
                   >
                     {loadingPlan === plan.id ? (
                       <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Redirecting…</>
-                    ) : plan.id === "lifetime" ? (
-                      "Get Lifetime Access"
                     ) : currentPlan !== "free" ? (
                       "Switch Plan"
                     ) : (
@@ -363,9 +352,24 @@ export function BillingPage() {
         })}
       </div>
 
+      {/* Positioning Note */}
+      <Card className="bg-primary/5 border-primary/20">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-bold flex items-center gap-2">
+            <Zap className="h-4 w-4 text-primary" />
+            Choosing between Flex and Growth?
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            <strong>Flex</strong> is best for teams <strong>under 8 reps</strong> or teams that fluctuate seasonally. 
+            <strong> Growth</strong> is the most cost-effective for stable teams of <strong>8 or more reps</strong>.
+          </p>
+        </CardContent>
+      </Card>
+
       <p className="text-xs text-muted-foreground">
         Payments processed securely by Stripe. Subscriptions renew automatically and can be cancelled any time via the billing portal.
-        Lifetime is a one-time charge with no recurring fees.
       </p>
     </div>
   );

@@ -7,11 +7,12 @@ export const PLAN_LIMITS = {
   free: { reps: 3, plans: 1, members: 1 },
   starter: { reps: 10, plans: 3, members: 3 },
   growth: { reps: 50, plans: -1, members: 15 },
-  lifetime: { reps: -1, plans: -1, members: -1 },
+  annual: { reps: 50, plans: -1, members: 15 },
+  flex: { reps: -1, plans: -1, members: -1 }, // Flex is per-rep, effectively unlimited
 };
 
 export interface SubscriptionStatus {
-  plan: "starter" | "growth" | "lifetime" | "free";
+  plan: "starter" | "growth" | "flex" | "annual" | "free";
   status: string;
   isLifetime: boolean;
   currentPeriodEnd: string | null;
