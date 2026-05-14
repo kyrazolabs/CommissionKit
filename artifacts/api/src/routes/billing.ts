@@ -12,8 +12,23 @@ import {
   type AuthenticatedRequest,
 } from "../middleware/auth";
 import { logger } from "../lib/logger";
+import { getLatestRates } from "../lib/exchange";
 
 const router = Router();
+
+/**
+ * GET /billing/rates
+ * Returns the latest exchange rates.
+ */
+router.get("/rates", ...requireWorkspaceMember("member"), async (req: AuthenticatedRequest, res): Promise<void> => {
+  try {
+    const rates = await getLatestRates();
+    res.json(rates);
+  } catch (err) {
+    logger.error({ err }, "Failed to fetch exchange rates");
+    res.status(500).json({ error: "Failed to fetch exchange rates" });
+  }
+});
 
 // ─── Stripe setup ──────────────────────────────────────────────────────────────
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;

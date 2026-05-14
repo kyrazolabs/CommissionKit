@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
@@ -38,6 +39,7 @@ const plans = [
   {
     id: "lite",
     name: "Lite",
+    priceUsd: 19,
     price: "$19",
     period: "/month",
     description: "Cheaper plan for small teams that need the basics.",
@@ -59,6 +61,7 @@ const plans = [
   {
     id: "starter",
     name: "Starter",
+    priceUsd: 49,
     price: "$49",
     period: "/month",
     description: "Perfect for testing the product or tiny teams.",
@@ -80,6 +83,7 @@ const plans = [
   {
     id: "growth",
     name: "Growth",
+    priceUsd: 99,
     price: "$99",
     period: "/month",
     description: "For stable teams of 8+ reps.",
@@ -103,6 +107,7 @@ const plans = [
   {
     id: "annual",
     name: "Growth Annual",
+    priceUsd: 990,
     price: "$990",
     period: "/year",
     description: "Committed teams saving 17% vs monthly.",
@@ -201,153 +206,102 @@ function BillingUsageCard({
   plansLoading: boolean;
   membersLoading: boolean;
   sub: SubscriptionStatus | null;
-  limits: PlanLimitsRow;
-  planBaseLimits: PlanLimitsRow;
+  limits: PlanLimitsRow | null;
+  planBaseLimits: PlanLimitsRow | null;
   repsCount: number | null;
   plansCount: number | null;
   membersCount: number | null;
 }) {
-  const planName = sub?.plan ?? "free";
-  const extraPurchased = sub?.extraRepSeats ?? 0;
-  const repsUsed = repsCount ?? 0;
-  const plansUsed = plansCount ?? 0;
-  const membersUsed = membersCount ?? 0;
-  const showDash = (n: number | null) => (n === null ? "—" : String(n));
+  const currentPlan = sub?.plan ?? "free";
+  const hasSub = sub && currentPlan !== "free";
 
   return (
-    <Card className="border-border">
+    <Card className="border-border bg-card/50 shadow-sm">
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">Usage & limits</CardTitle>
-        <CardDescription className="text-xs">
-          Current workspace caps for your{" "}
-          <span className="font-medium capitalize text-foreground">{planName}</span> plan
-          {extraPurchased > 0 ? " (including purchased extra rep seats)." : "."}
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-base font-bold">Usage & Limits</CardTitle>
+            <CardDescription className="text-xs">
+              Plan: <span className="capitalize text-foreground font-semibold">{currentPlan}</span>
+            </CardDescription>
+          </div>
+          {hasSub && (
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Zap className="h-4 w-4" />
+            </div>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-5">
+        {/* Sales Reps */}
         <div className="space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-              <UserRound className="h-4 w-4 shrink-0 text-primary" />
-              Sales reps
-            </span>
-            <span className="text-sm tabular-nums text-muted-foreground">
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-1.5 font-medium text-foreground">
+              <UserRound className="h-3.5 w-3.5 text-muted-foreground" />
+              Sales Representatives
+            </div>
+            <div className="text-muted-foreground">
               {repsLoading ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin inline" />
-              ) : limits.reps === -1 ? (
-                <>
-                  {showDash(repsCount)} / <span className="text-foreground font-medium">Unlimited</span>
-                </>
+                <Loader2 className="h-3 w-3 animate-spin" />
               ) : (
-                <div className="flex flex-col items-end">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-medium text-foreground">{repsUsed}</span>
-                    <span>/</span>
-                    <span>{limits.reps}</span>
-                  </div>
-                  <span className="text-[10px] font-medium text-primary/80">
-                    {Math.max(0, limits.reps - repsUsed)} remaining
-                  </span>
-                </div>
-              )}
-            </span>
-          </div>
-          {limits.reps !== -1 && (
-            <Progress value={usagePercent(repsUsed, limits.reps)} className="h-1.5" />
-          )}
-          <p className="text-[11px] leading-relaxed text-muted-foreground">
-            Included with plan: <strong className="text-foreground">{formatCap(planBaseLimits.reps)}</strong>{" "}
-            sales rep{planBaseLimits.reps === 1 ? "" : "s"}.
-            {extraPurchased > 0 ? (
-              <>
-                {" "}
-                Purchased <strong className="text-foreground">{extraPurchased}</strong> extra rep seat
-                {extraPurchased === 1 ? "" : "s"} (add-on). You can change add-on quantity from{" "}
-                <strong className="text-foreground">Manage subscription</strong> when Stripe Customer Portal exposes it.
-              </>
-            ) : (
-              <> No extra rep add-on on this subscription.</>
-            )}
-          </p>
-        </div>
-
-        <div className="space-y-2 border-t border-border pt-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-              <FileText className="h-4 w-4 shrink-0 text-primary" />
-              Commission plans
-            </span>
-            <span className="text-sm tabular-nums text-muted-foreground">
-              {plansLoading ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin inline" />
-              ) : limits.plans === -1 ? (
                 <>
-                  <span className="font-medium text-foreground">{plansUsed}</span>
+                  <span className="text-foreground font-bold">{repsCount ?? 0}</span>
                   {" / "}
-                  <span className="text-foreground font-medium">Unlimited</span>
+                  {formatCap(limits?.reps ?? 0)}
                 </>
-              ) : (
-                <div className="flex flex-col items-end">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-medium text-foreground">{plansUsed}</span>
-                    <span>/</span>
-                    <span>{limits.plans}</span>
-                  </div>
-                  <span className="text-[10px] font-medium text-primary/80">
-                    {Math.max(0, limits.plans - plansUsed)} remaining
-                  </span>
-                </div>
               )}
-            </span>
+            </div>
           </div>
-          {limits.plans !== -1 && (
-            <Progress value={usagePercent(plansUsed, limits.plans)} className="h-1.5" />
+          <Progress value={usagePercent(repsCount ?? 0, limits?.reps ?? 0)} className="h-1.5" />
+          {limits && planBaseLimits && limits.reps > planBaseLimits.reps && (
+             <p className="text-[10px] text-primary font-medium">
+               Includes {limits.reps - planBaseLimits.reps} extra rep seats from your add-on.
+             </p>
           )}
         </div>
 
-        <div className="space-y-2 border-t border-border pt-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-              <Users className="h-4 w-4 shrink-0 text-primary" />
-              Team members
-            </span>
-            <span className="text-sm tabular-nums text-muted-foreground">
-              {membersLoading ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin inline" />
-              ) : limits.members === -1 ? (
+        {/* Commission Plans */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-1.5 font-medium text-foreground">
+              <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+              Commission Plans
+            </div>
+            <div className="text-muted-foreground">
+              {plansLoading ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
                 <>
-                  {membersCount ?? 0} / <span className="text-foreground font-medium">Unlimited</span>
+                  <span className="text-foreground font-bold">{plansCount ?? 0}</span>
+                  {" / "}
+                  {formatCap(limits?.plans ?? 0)}
                 </>
-              ) : (
-                <div className="flex flex-col items-end">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-medium text-foreground">{membersUsed}</span>
-                    <span>/</span>
-                    <span>{limits.members}</span>
-                  </div>
-                  <span className="text-[10px] font-medium text-primary/80">
-                    {Math.max(0, limits.members - membersUsed)} remaining
-                  </span>
-                </div>
               )}
-            </span>
+            </div>
           </div>
-          {limits.members !== -1 && (
-            <Progress value={usagePercent(membersUsed, limits.members)} className="h-1.5" />
-          )}
-          <p className="text-[11px] text-muted-foreground">
-            Count includes active and pending invites (same limit as the Team page).
-          </p>
+          <Progress value={usagePercent(plansCount ?? 0, limits?.plans ?? 0)} className="h-1.5" />
         </div>
 
-        <div className="rounded-lg border border-dashed border-border/80 bg-muted/15 px-3 py-2.5">
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-            <span className="font-medium text-foreground">Purchased extra rep seats (add-on)</span>
-            <span className="tabular-nums font-semibold text-foreground">{extraPurchased}</span>
+        {/* Members */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-1.5 font-medium text-foreground">
+              <Users className="h-3.5 w-3.5 text-muted-foreground" />
+              Workspace Members
+            </div>
+            <div className="text-muted-foreground">
+              {membersLoading ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <>
+                  <span className="text-foreground font-bold">{membersCount ?? 0}</span>
+                  {" / "}
+                  {formatCap(limits?.members ?? 0)}
+                </>
+              )}
+            </div>
           </div>
-          <p className="mt-1 text-[11px] text-muted-foreground leading-relaxed">
-            These seats are added on top of your plan’s included reps and appear in the sales rep cap above after checkout or portal sync.
-          </p>
+          <Progress value={usagePercent(membersCount ?? 0, limits?.members ?? 0)} className="h-1.5" />
         </div>
       </CardContent>
     </Card>
@@ -360,6 +314,21 @@ export function BillingPage() {
   const { activeWorkspace } = useWorkspace();
   const { toast } = useToast();
   const { sub, limits, planBaseLimits, refetch } = useBillingStatus();
+
+  const [showLocalCurrency, setShowLocalCurrency] = useState(false);
+  const [rates, setRates] = useState<Record<string, number>>({});
+  const workspaceCurrency = activeWorkspace?.currency || "USD";
+
+  useEffect(() => {
+    if (!activeWorkspace?.id) return;
+    fetch(`${API_URL}/api/billing/rates`, {
+      credentials: "include",
+      headers: { "x-workspace-id": activeWorkspace.id },
+    })
+      .then((res) => res.json())
+      .then((data) => setRates(data))
+      .catch((err) => console.error("Failed to fetch rates", err));
+  }, [activeWorkspace?.id]);
 
   const currentPlan = sub?.plan ?? "free";
   const ACTIVE_BILLING_SUB_STATUSES = new Set([
@@ -423,58 +392,51 @@ export function BillingPage() {
 
   const [loadingPlan, setLoadingPlan]   = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
-  /** When true, show Growth Annual instead of monthly Growth (only yearly offering). */
+
+  const [selectedPlanId, setSelectedPlanId] = useState<string>(() => {
+     // Default to growth if not subscribed, otherwise use current plan
+     if (currentPlan === "free") return "growth";
+     return currentPlan === "annual" ? "annual" : currentPlan;
+  });
+
   const [payYearly, setPayYearly] = useState(false);
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-  const [extraReps, setExtraReps] = useState<string>("0");
-  const [addonRepsQty, setAddonRepsQty] = useState("0");
+  const [extraReps, setExtraReps] = useState("0");
   const [addonSaving, setAddonSaving] = useState(false);
 
-  // Check for success/cancel query params on mount
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("checkout") === "success") {
-      const plan = params.get("plan");
-      toast({
-        title: "Payment successful!",
-        description: `Your ${plan} plan is now active.`,
-      });
-      window.history.replaceState({}, "", "/billing");
-      void refetch();
-      void queryClient.invalidateQueries({ queryKey: getListRepsQueryKey() });
-      void queryClient.invalidateQueries({ queryKey: getListPlansQueryKey() });
-      void fetchMemberCount();
-    }
-    if (params.get("checkout") === "cancelled") {
-      toast({ title: "Checkout cancelled", description: "No charge was made." });
-      window.history.replaceState({}, "", "/billing");
-    }
-  }, [toast, refetch, queryClient, fetchMemberCount]);
-
-  useEffect(() => {
-    if (sub?.extraRepSeats !== undefined) {
-      setAddonRepsQty(String(sub.extraRepSeats));
-    }
+    if (sub?.extraRepSeats) setExtraReps(String(sub.extraRepSeats));
   }, [sub?.extraRepSeats]);
 
-  const handleUpdateAddonReps = async () => {
-    if (!session) {
-      toast({ title: "Not signed in", variant: "destructive" });
-      return;
-    }
-    if (!activeWorkspace?.id) {
-      toast({ title: "No workspace selected", variant: "destructive" });
-      return;
-    }
-    const q = Math.max(0, Math.min(500, Math.floor(Number(addonRepsQty || 0))));
-    if (!Number.isFinite(q)) {
-      toast({
-        title: "Invalid amount",
-        description: "Enter a whole number between 0 and 500.",
-        variant: "destructive",
+  const handleCheckout = async (priceId: string, plan: string, mode: string, extraQty: number) => {
+    if (!activeWorkspace?.id) return;
+    setLoadingPlan(plan);
+    try {
+      const res = await fetch(`${API_URL}/api/billing/checkout`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "x-workspace-id": activeWorkspace.id,
+        },
+        body: JSON.stringify({ priceId, mode, extraReps: extraQty }),
       });
-      return;
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? "Checkout failed");
+      }
+
+      const { url } = await res.json();
+      window.location.href = url;
+    } catch (err: any) {
+      toast({ title: "Checkout Error", description: err.message, variant: "destructive" });
+      setLoadingPlan(null);
     }
+  };
+
+  const handleUpdateAddonReps = async () => {
+    if (!activeWorkspace?.id) return;
+    const qty = Math.max(0, Math.floor(Number(extraReps || 0)));
     setAddonSaving(true);
     try {
       const res = await fetch(`${API_URL}/api/billing/extra-reps`, {
@@ -484,69 +446,20 @@ export function BillingPage() {
           "Content-Type": "application/json",
           "x-workspace-id": activeWorkspace.id,
         },
-        body: JSON.stringify({ quantity: q }),
+        body: JSON.stringify({ quantity: qty }),
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error ?? "Update failed");
-      }
-      const data = (await res.json()) as { extraRepSeats: number };
-      toast({
-        title: "Extra rep seats updated",
-        description: `Add-on is now ${data.extraRepSeats} seat${data.extraRepSeats === 1 ? "" : "s"}. Stripe may prorate the change on your next invoice.`,
-      });
-      void refetch();
-      void queryClient.invalidateQueries({ queryKey: getListRepsQueryKey() });
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Update failed";
-      toast({
-        title: "Could not update add-on",
-        description: msg,
-        variant: "destructive",
-      });
-    } finally {
-      setAddonSaving(false);
-    }
-  };
 
-  const handleCheckout = async (priceId: string, planId: string, mode: "subscription" | "payment", extraRepsQty: number) => {
-    if (alreadySubscribed) {
-      toast({
-        title: "You already have a subscription",
-        description:
-          "Use Manage subscription to change your base plan, or use Extra rep seats below to change add-ons. Another checkout would bill you twice.",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (!session) {
-      toast({ title: "Not signed in", description: "Please sign in first.", variant: "destructive" });
-      return;
-    }
-    if (!activeWorkspace?.id) {
-      toast({ title: "No workspace selected", variant: "destructive" });
-      return;
-    }
-    setLoadingPlan(planId);
-    try {
-      const res = await fetch(`${API_URL}/api/billing/checkout`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "x-workspace-id": activeWorkspace.id,
-        },
-        body: JSON.stringify({ priceId, mode, extraReps: extraRepsQty }),
-      });
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.error ?? "Checkout failed");
+        throw new Error(err.error ?? "Failed to update add-on");
       }
-      const { url } = await res.json();
-      window.location.href = url;
+
+      toast({ title: "Updated", description: `You now have ${qty} extra rep seats.` });
+      await refetch();
     } catch (err: any) {
-      toast({ title: "Checkout failed", description: err.message, variant: "destructive" });
-      setLoadingPlan(null);
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setAddonSaving(false);
     }
   };
 
@@ -698,40 +611,40 @@ export function BillingPage() {
             <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">New checkout is turned off</p>
             <p className="text-xs text-amber-900/85 dark:text-amber-200/90 mt-1 leading-relaxed">
               You already have an active paid subscription on this workspace. Starting another Stripe checkout would create a <strong>second subscription</strong> and charge you again. To <strong>change your base plan</strong> (for example Growth to Growth Annual), use{" "}
-              <strong>Manage subscription</strong>. To <strong>add or remove extra rep seats</strong> on this subscription, use the form below.
+              <strong>Manage Subscription</strong> above.
             </p>
           </div>
         </div>
       )}
 
+      {/* Add-on management for active subscribers */}
       {alreadySubscribed && (
-        <Card className="border-primary/30 bg-primary/5">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Extra rep seats (this subscription)</CardTitle>
-            <CardDescription className="text-xs leading-relaxed">
-              Set the <strong>total</strong> number of paid extra rep seats (0–500). Stripe updates your existing subscription and may create prorations (usually on your next invoice).{" "}
-              {currentPlan === "annual" ? (
-                <>This plan uses your <strong>yearly</strong> extra-rep Stripe price.</>
-              ) : (
-                <>This plan uses your <strong>monthly</strong> extra-rep Stripe price.</>
-              )}
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
+              <Users className="h-4 w-4 text-primary" />
+              Manage Add-ons
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Add or remove extra rep seats on your current plan.
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-end">
-            <div className="space-y-2 flex-1 max-w-[200px]">
-              <Label htmlFor="addon-reps-qty">Total extra rep seats</Label>
-              <Input
-                id="addon-reps-qty"
-                type="number"
-                min={0}
-                max={500}
-                step={1}
-                value={addonRepsQty}
-                onChange={(e) => setAddonRepsQty(e.target.value)}
-              />
+          <CardContent className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="flex-1 space-y-1 w-full">
+              <Label htmlFor="addon-reps" className="text-xs font-medium">Extra rep seats</Label>
+              <div className="flex items-center gap-3">
+                <Input
+                  id="addon-reps"
+                  type="number"
+                  min={0}
+                  value={extraReps}
+                  onChange={(e) => setExtraReps(e.target.value)}
+                  className="max-w-[120px]"
+                />
+                <span className="text-xs text-muted-foreground">total add-on seats</span>
+              </div>
             </div>
             <Button
-              type="button"
               className="sm:shrink-0 w-full sm:w-auto"
               onClick={() => void handleUpdateAddonReps()}
               disabled={addonSaving}
@@ -750,6 +663,26 @@ export function BillingPage() {
       )}
 
       {/* Plan cards */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-foreground">Choose a Plan</h2>
+        {workspaceCurrency !== "USD" && (
+          <div className="flex items-center gap-2">
+            <Label htmlFor="currency-toggle" className="text-sm text-muted-foreground">
+              Show in {
+                workspaceCurrency === "SAR" ? "Riyal" : 
+                workspaceCurrency === "AED" ? "Dirham" : 
+                workspaceCurrency
+              }
+            </Label>
+            <Switch
+              id="currency-toggle"
+              checked={showLocalCurrency}
+              onCheckedChange={setShowLocalCurrency}
+            />
+          </div>
+        )}
+      </div>
+
       <div
         className={cn(
           "grid gap-6 md:grid-cols-2 lg:grid-cols-3",
@@ -798,7 +731,16 @@ export function BillingPage() {
                   <CardTitle className="text-base">{plan.name}</CardTitle>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-bold text-foreground">{plan.price}</span>
+                  <span className="text-3xl font-bold text-foreground">
+                    {showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] ? (
+                      <span className="flex items-baseline gap-1">
+                        <span className="text-xl text-muted-foreground font-normal">≈</span>
+                        {formatCurrency(plan.priceUsd * rates[workspaceCurrency], workspaceCurrency)}
+                      </span>
+                    ) : (
+                      plan.price
+                    )}
+                  </span>
                   <span className="text-sm text-muted-foreground">{plan.period}</span>
                 </div>
                 <CardDescription className="mt-1 text-[13px]">{plan.description}</CardDescription>
@@ -877,7 +819,14 @@ export function BillingPage() {
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <p className="text-sm font-semibold">Add-on: Extra reps</p>
               <p className="text-xs text-muted-foreground">
-                {formatCurrency(extraRepUnitDisplayUsd)} per extra rep
+                {showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] ? (
+                  <>
+                    <span className="mr-1">≈</span>
+                    {formatCurrency(extraRepUnitDisplayUsd * rates[workspaceCurrency], workspaceCurrency)}
+                  </>
+                ) : (
+                  formatCurrency(extraRepUnitDisplayUsd)
+                )} per extra rep
                 {isAnnualGrowth ? " / year" : " / month"}
               </p>
             </div>
@@ -906,11 +855,20 @@ export function BillingPage() {
             {extraRepsQty > 0 && (
               <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border/80 bg-background/80 px-3 py-2">
                 <span className="text-xs font-medium text-foreground">
-                  Add-on total ({extraRepsQty} × {formatCurrency(extraRepUnitDisplayUsd)})
+                  Add-on total ({extraRepsQty} × {showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] 
+                    ? `≈${formatCurrency(extraRepUnitDisplayUsd * rates[workspaceCurrency], workspaceCurrency)}` 
+                    : formatCurrency(extraRepUnitDisplayUsd)})
                 </span>
                 <span className="text-sm font-bold tabular-nums text-foreground">
-                  {formatCurrency(extraRepsAddonTotalUsd)}
-                  <span className="text-xs font-normal text-muted-foreground">
+                  {showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] ? (
+                    <>
+                      <span className="mr-1 font-normal text-muted-foreground text-[10px]">≈</span>
+                      {formatCurrency(extraRepsAddonTotalUsd * rates[workspaceCurrency], workspaceCurrency)}
+                    </>
+                  ) : (
+                    formatCurrency(extraRepsAddonTotalUsd)
+                  )}
+                  <span className="text-xs font-normal text-muted-foreground ml-1">
                     {isAnnualGrowth ? " / year" : " / month"}
                   </span>
                 </span>
@@ -926,8 +884,15 @@ export function BillingPage() {
                 {extraRepsQty > 0 ? (
                   <>
                     <strong>{extraRepsQty}</strong> extra rep{extraRepsQty === 1 ? "" : "s"} at{" "}
-                    <strong>{formatCurrency(extraRepsAddonTotalUsd)}</strong>
-                    {isAnnualGrowth ? " / year" : " / month"} ({formatCurrency(extraRepUnitDisplayUsd)} each).
+                    <strong>
+                      {showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] 
+                        ? `≈${formatCurrency(extraRepsAddonTotalUsd * rates[workspaceCurrency], workspaceCurrency)}` 
+                        : formatCurrency(extraRepsAddonTotalUsd)}
+                    </strong>
+                    {isAnnualGrowth ? " / year" : " / month"} (
+                    {showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] 
+                      ? `≈${formatCurrency(extraRepUnitDisplayUsd * rates[workspaceCurrency], workspaceCurrency)}` 
+                      : formatCurrency(extraRepUnitDisplayUsd)} each).
                   </>
                 ) : (
                   <>no extra-rep add-on.</>
