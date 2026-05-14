@@ -20,8 +20,13 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label";
 import { useRole } from "@/hooks/use-role";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useWorkspace } from "@/hooks/use-workspace";
+import { useBillingStatus } from "@/hooks/use-billing-status";
+import { Download } from "lucide-react";
 
 export function RunsPage() {
+  const { activeWorkspace } = useWorkspace();
+  const currency = activeWorkspace?.currency || "USD";
   const { data: runs, isLoading } = useListRuns({ 
     query: { 
       queryKey: getListRunsQueryKey(),
@@ -43,7 +48,10 @@ export function RunsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Calculation Runs</h1>
           <p className="text-muted-foreground">Execute and audit commission calculations.</p>
         </div>
-        {can("admin") && <RunCalculationDialog isProcessing={isAnyRunProcessing} />}
+        <div className="flex gap-2">
+          {can("admin") && <ExportCommissionsButton />}
+          {can("admin") && <RunCalculationDialog isProcessing={isAnyRunProcessing} />}
+        </div>
       </div>
 
       <Card>
@@ -136,7 +144,7 @@ export function RunsPage() {
                       )}
                     </TableCell>
                     <TableCell className="text-right font-bold text-primary">
-                      {formatCurrency(run.totalCommission)}
+                      {formatCurrency(run.totalCommission, currency)}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" asChild>
@@ -230,5 +238,82 @@ function RunCalculationDialog({ isProcessing }: { isProcessing: boolean }) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function ExportCommissionsButton() {
+  const { sub } = useBillingStatus();
+  const { activeWorkspace } = useWorkspace();
+  const { toast } = useToast();
+  const [isExporting, setIsExporting] = useState(false);
+
+  const isGrowth = sub?.plan === "growth" || sub?.plan === "annual" || sub?.isLifetime;
+
+  const handleExport = async () => {
+    if (!isGrowth) {
+      toast({
+        title: "Growth Plan Required",
+        description: "Bulk CSV export is a premium feature. Please upgrade to the Growth plan to export your data.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!activeWorkspace?.id) return;
+
+    setIsExporting(true);
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:8088";
+      const response = await fetch(`${baseUrl}/api/export/commissions`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "x-workspace-id": activeWorkspace.id,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Export failed");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `commissions-export-${new Date().toISOString().split("T")[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast({
+        title: "Export Successful",
+        description: "Your commission data has been exported to CSV.",
+      });
+    } catch (err) {
+      toast({
+        title: "Export Failed",
+        description: "There was an error exporting your data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  return (
+    <Button 
+      variant="outline" 
+      onClick={handleExport} 
+      disabled={isExporting}
+      className={!isGrowth ? "opacity-70 border-dashed" : ""}
+    >
+      {isExporting ? (
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      ) : (
+        <Download className="mr-2 h-4 w-4" />
+      )}
+      Export CSV
+    </Button>
   );
 }

@@ -1,6 +1,15 @@
 import { Router } from "express";
-import { Rep, Plan, CommissionRun, CommissionResult } from "@workspace/db";
-import { GetPortalByCodeParams, GetPortalByCodeQueryParams } from "@workspace/api-zod";
+import {
+  Rep,
+  Plan,
+  CommissionRun,
+  CommissionResult,
+  Workspace,
+} from "@workspace/db";
+import {
+  GetPortalByCodeParams,
+  GetPortalByCodeQueryParams,
+} from "@workspace/api-zod";
 
 const router = Router();
 
@@ -26,6 +35,8 @@ router.get("/portal/:accessCode", async (req, res): Promise<void> => {
   }
 
   const workspaceId = rep.workspaceId;
+  const workspace = await Workspace.findById(workspaceId);
+  const currency = (workspace as any)?.currency || "USD";
 
   let planName: string | null = null;
   if (rep.planId) {
@@ -33,7 +44,9 @@ router.get("/portal/:accessCode", async (req, res): Promise<void> => {
     planName = plan?.name ?? null;
   }
 
-  const latestRun = await CommissionRun.findOne({ workspaceId, period }).sort({ createdAt: -1 });
+  const latestRun = await CommissionRun.findOne({ workspaceId, period }).sort({
+    createdAt: -1,
+  });
 
   let totalCommission = 0;
   let totalRevenue = 0;
@@ -45,11 +58,24 @@ router.get("/portal/:accessCode", async (req, res): Promise<void> => {
     closeDate: string;
     rateApplied: number;
     commissionAmount: number;
+    currency: string;
     calculationNote: string;
   }[] = [];
+  const currencySummariesMap = new Map<
+    string,
+    {
+      currency: string;
+      totalCommission: number;
+      totalRevenue: number;
+      totalDeals: number;
+    }
+  >();
 
   if (latestRun) {
-    const results = await CommissionResult.find({ runId: latestRun._id, repId: rep._id }).populate("dealId");
+    const results = await CommissionResult.find({
+      runId: latestRun._id,
+      repId: rep._id,
+    }).populate("dealId");
 
     for (const r of results) {
       const commission = Number(r.commissionAmount);
@@ -67,23 +93,52 @@ router.get("/portal/:accessCode", async (req, res): Promise<void> => {
         closeDate: deal?.closeDate || "",
         rateApplied: Number(r.rateApplied),
         commissionAmount: commission,
+        currency: (r as any).currency || deal?.currency || "USD",
         calculationNote: r.calculationNote,
+        // Snapshot fields
+        wsCurrency: (r as any).wsCurrency,
+        convertedDealAmount: (r as any).convertedDealAmount,
+        convertedCommission: (r as any).convertedCommission,
+        exchangeRateSnapshot: (r as any).exchangeRateSnapshot,
+        rateSnapshotDate: (r as any).rateSnapshotDate,
       });
+
+      const resCurrency = (r as any).currency || deal?.currency || "USD";
+      if (!currencySummariesMap.has(resCurrency)) {
+        currencySummariesMap.set(resCurrency, {
+          currency: resCurrency,
+          totalCommission: 0,
+          totalRevenue: 0,
+          totalDeals: 0,
+        });
+      }
+      const cSummary = currencySummariesMap.get(resCurrency)!;
+      cSummary.totalCommission += commission;
+      cSummary.totalRevenue += dealAmt;
+      cSummary.totalDeals++;
     }
   }
 
   // Monthly history (last 6 runs for this workspace)
-  const allRuns = await CommissionRun.find({ workspaceId }).sort({ createdAt: -1 }).limit(6);
+  const allRuns = await CommissionRun.find({ workspaceId })
+    .sort({ createdAt: -1 })
+    .limit(6);
   const monthlyHistory = await Promise.all(
     allRuns.map(async (run) => {
-      const repRunResults = await CommissionResult.find({ runId: run._id, repId: rep._id });
-      const commission = repRunResults.reduce((sum, r) => sum + Number(r.commissionAmount), 0);
+      const repRunResults = await CommissionResult.find({
+        runId: run._id,
+        repId: rep._id,
+      });
+      const commission = repRunResults.reduce(
+        (sum, r) => sum + Number(r.commissionAmount),
+        0,
+      );
       return {
         period: run.period,
         totalCommission: commission,
         totalDeals: repRunResults.length,
       };
-    })
+    }),
   );
 
   res.json({
@@ -97,6 +152,8 @@ router.get("/portal/:accessCode", async (req, res): Promise<void> => {
     totalDeals,
     dealBreakdown,
     monthlyHistory,
+    currencySummaries: Array.from(currencySummariesMap.values()),
+    currency,
   });
 });
 

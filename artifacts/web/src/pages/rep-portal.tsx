@@ -10,8 +10,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { CalendarDays, DollarSign, Activity, Briefcase } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip } from "recharts";
+import { useWorkspace } from "@/hooks/use-workspace";
+import { CurrencyCell } from "@/components/currency-cell";
 
 export function RepPortal() {
+  const { activeWorkspace } = useWorkspace();
+  const currency = activeWorkspace?.currency || "USD";
   const params = useParams();
   const id = params.id || "";
   const [period, setPeriod] = useState<string>(format(new Date(), "yyyy-MM"));
@@ -65,7 +69,7 @@ export function RepPortal() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{formatCurrency(summary.totalCommission)}</div>
+            <div className="text-3xl font-bold">{formatCurrency(summary.totalCommission, currency)}</div>
             <p className="text-xs text-primary-foreground/70 mt-1">For {format(new Date(period + "-01"), "MMMM yyyy")}</p>
           </CardContent>
         </Card>
@@ -76,7 +80,7 @@ export function RepPortal() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{formatCurrency(summary.totalRevenue)}</div>
+            <div className="text-3xl font-bold">{formatCurrency(summary.totalRevenue, currency)}</div>
           </CardContent>
         </Card>
         <Card>
@@ -90,6 +94,31 @@ export function RepPortal() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Currency Breakdown (if multiple) */}
+      {(summary as any).currencySummaries && (summary as any).currencySummaries.length > 1 && (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {(summary as any).currencySummaries.map((c: any) => (
+            <Card key={c.currency} className="border-l-4 border-l-primary/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  {c.currency} Summary
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-2 gap-2">
+                <div>
+                  <p className="text-[10px] text-muted-foreground">Commission</p>
+                  <p className="text-sm font-bold">{formatCurrency(c.totalCommission, c.currency)}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] text-muted-foreground">Deals</p>
+                  <p className="text-sm font-bold">{c.totalDeals}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {summary.monthlyHistory && summary.monthlyHistory.length > 0 && (
         <Card>
@@ -115,7 +144,7 @@ export function RepPortal() {
                     axisLine={false}
                   />
                   <RechartsTooltip 
-                    formatter={(value: number) => [formatCurrency(value), "Commission"]}
+                    formatter={(value: number) => [formatCurrency(value, currency), "Commission"]}
                     labelFormatter={(label) => format(new Date(label + "-01"), "MMMM yyyy")}
                     contentStyle={{ borderRadius: '8px', border: '1px solid var(--border)', backgroundColor: 'hsl(var(--background))' }}
                   />
@@ -153,22 +182,46 @@ export function RepPortal() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {summary.dealBreakdown.map((deal: any) => (
-                  <TableRow key={deal.dealId}>
-                    <TableCell>
-                      <div className="font-medium">{deal.dealName}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">{deal.calculationNote}</div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {format(new Date(deal.closeDate), "MMM d")}
-                    </TableCell>
-                    <TableCell className="text-right">{formatCurrency(deal.dealAmount)}</TableCell>
-                    <TableCell className="text-right font-medium">{formatPercent(deal.rateApplied)}</TableCell>
-                    <TableCell className="text-right font-bold text-primary">
-                      {formatCurrency(deal.commissionAmount)}
-                    </TableCell>
-                  </TableRow>
-                ))}
+              {summary.dealBreakdown.map((deal: any) => {
+                  const dealCurrency = deal.currency || currency;
+                  return (
+                    <TableRow key={deal.dealId}>
+                      <TableCell>
+                        <div className="font-medium">{deal.dealName}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5">{deal.calculationNote}</div>
+                        {dealCurrency !== currency && (
+                          <Badge variant="outline" className="mt-0.5 text-[10px] px-1.5 py-0 h-4">
+                            {dealCurrency}
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {format(new Date(deal.closeDate), "MMM d")}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <CurrencyCell
+                          amount={deal.dealAmount}
+                          currency={dealCurrency}
+                          wsCurrency={deal.wsCurrency ?? currency}
+                          convertedAmount={deal.convertedDealAmount}
+                          exchangeRateSnapshot={deal.exchangeRateSnapshot}
+                          rateSnapshotDate={deal.rateSnapshotDate}
+                        />
+                      </TableCell>
+                      <TableCell className="text-right font-medium">{formatPercent(deal.rateApplied)}</TableCell>
+                      <TableCell className="text-right font-bold text-primary">
+                        <CurrencyCell
+                          amount={deal.commissionAmount}
+                          currency={dealCurrency}
+                          wsCurrency={deal.wsCurrency ?? currency}
+                          convertedAmount={deal.convertedCommission}
+                          exchangeRateSnapshot={deal.exchangeRateSnapshot}
+                          rateSnapshotDate={deal.rateSnapshotDate}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}

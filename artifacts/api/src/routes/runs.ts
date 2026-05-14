@@ -38,16 +38,26 @@ async function formatRun(run: any) {
     results: results.map((r) => {
       const rep = r.repId as any;
       const deal = r.dealId as any;
+      const dealCurrency = (r as any).currency || deal?.currency || "USD";
+      const wsCurrency = (r as any).wsCurrency || null;
       return {
         id: r._id,
         repId: rep?._id,
         repName: rep?.name ?? "Unknown",
         dealId: deal?._id,
         dealName: deal?.name ?? "Unknown",
+        // Original currency amounts
         dealAmount: deal?.amount ? Number(deal.amount) : 0,
-        rateApplied: Number(r.rateApplied),
+        dealCurrency,
         commissionAmount: Number(r.commissionAmount),
+        rateApplied: Number(r.rateApplied),
         calculationNote: r.calculationNote,
+        // Workspace currency + snapshot (present on results after multi-currency update)
+        wsCurrency,
+        convertedDealAmount: (r as any).convertedDealAmount ?? null,
+        convertedCommission: (r as any).convertedCommission ?? null,
+        exchangeRateSnapshot: (r as any).exchangeRateSnapshot ?? null,
+        rateSnapshotDate: (r as any).rateSnapshotDate ?? null,
       };
     }),
   };

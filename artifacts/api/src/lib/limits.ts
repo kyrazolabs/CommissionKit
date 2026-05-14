@@ -23,6 +23,8 @@ export async function checkLimits(
   
   const plan = sub?.plan || "free";
   const limits = getPlanLimits(plan);
+  const extraRepSeats =
+    (sub as { extraRepSeats?: number } | null | undefined)?.extraRepSeats ?? 0;
 
   let current = 0;
   let limit = 0;
@@ -34,7 +36,10 @@ export async function checkLimits(
       break;
     case "reps":
       current = await Rep.countDocuments({ workspaceId: new Types.ObjectId(workspaceId) });
-      limit = limits.maxReps;
+      limit =
+        plan === "flex" || limits.maxReps >= 1_000_000
+          ? limits.maxReps
+          : limits.maxReps + extraRepSeats;
       break;
     case "plans":
       current = await Plan.countDocuments({ workspaceId: new Types.ObjectId(workspaceId) });

@@ -9,6 +9,8 @@ export interface Workspace {
   id: string;
   slug: string;
   name: string;
+  currency: string;
+  fiscalYearStart: string;
   role: "owner" | "admin" | "member";
   createdAt: string;
 }

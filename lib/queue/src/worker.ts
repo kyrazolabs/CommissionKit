@@ -8,7 +8,10 @@ import {
   MAIL_LOW_QUEUE,
   MAIL_MEDIUM_QUEUE,
   MAIL_SEND_QUEUE,
+  COMMISSION_CALC_QUEUE,
+  EXCHANGE_RATE_QUEUE,
 } from "./constants.js";
+import { fetchAndSaveRates } from "./exchangeRateService.js";
 
 const WORKER_OPTS = {
   connection: getRedisClient(),
@@ -79,6 +82,21 @@ export const smtpWorker = new Worker<MailSendPayload>(
   },
 );
 
+/**
+ * Exchange rate sync worker.
+ * Concurrency 1 — sequential updates.
+ */
+export const exchangeRateWorker = new Worker(
+  EXCHANGE_RATE_QUEUE,
+  async (job) => {
+    console.log(`[Worker:ExchangeRate] Processing job ${job.id}`);
+    const { connectDB } = await import("@workspace/db");
+    await connectDB();
+    await fetchAndSaveRates();
+  },
+  { ...WORKER_OPTS, concurrency: 1 },
+);
+
 // ─── Shared event handlers ────────────────────────────────────────────────────
 
 function attachHandlers(worker: Worker, name: string) {
@@ -109,6 +127,7 @@ attachHandlers(highWorker,   "High");
 attachHandlers(mediumWorker, "Medium");
 attachHandlers(lowWorker,    "Low");
 attachHandlers(smtpWorker,   "SMTP");
+attachHandlers(exchangeRateWorker, "ExchangeRate");
 
 /**
  * Gracefully close all workers.
@@ -120,6 +139,7 @@ export async function closeWorkers(): Promise<void> {
     mediumWorker.close(),
     lowWorker.close(),
     smtpWorker.close(),
+    exchangeRateWorker.close(),
   ]);
   console.info("[Workers] All workers closed gracefully");
 }

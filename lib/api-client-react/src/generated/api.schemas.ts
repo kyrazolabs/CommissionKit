@@ -103,6 +103,7 @@ export interface Deal {
   /** YYYY-MM */
   period: string;
   stage: DealStage;
+  currency: string;
   notes: string | null;
   createdAt: string;
 }
@@ -123,6 +124,27 @@ export interface CreateDealBody {
   closeDate: string;
   period: string;
   stage: CreateDealBodyStage;
+  currency: string;
+  notes?: string | null;
+}
+
+export type UpdateDealBodyStage = typeof UpdateDealBodyStage[keyof typeof UpdateDealBodyStage];
+
+
+export const UpdateDealBodyStage = {
+  closed_won: 'closed_won',
+  closed_lost: 'closed_lost',
+  pending: 'pending',
+} as const;
+
+export interface UpdateDealBody {
+  repId: string;
+  name: string;
+  amount: number;
+  closeDate: string;
+  period: string;
+  stage: UpdateDealBodyStage;
+  currency: string;
   notes?: string | null;
 }
 
@@ -165,6 +187,7 @@ export interface CommissionRun {
   period: string;
   totalCommission: number;
   totalDeals: number;
+  skippedDeals: number;
   repsCount: number;
   status: CommissionRunStatus;
   error?: string | null;
@@ -186,6 +209,7 @@ export interface CommissionRunWithResults {
   period: string;
   totalCommission: number;
   totalDeals: number;
+  skippedDeals: number;
   repsCount: number;
   status: CommissionRunWithResultsStatus;
   error?: string | null;
@@ -245,6 +269,41 @@ export interface RepSummary {
   monthlyHistory: RepSummaryMonthlyHistoryItem[];
 }
 
+export type ReportDataExecutiveSummary = {
+  totalRevenue: number;
+  totalCommission: number;
+  margin: number;
+  winRate: number;
+  avgDealSize: number;
+};
+
+export type ReportDataDealStagesItem = {
+  name: string;
+  value: number;
+};
+
+export type ReportDataMonthlyTrendsItem = {
+  period: string;
+  revenue: number;
+  commission: number;
+  deals: number;
+};
+
+export type ReportDataTopPerformersItem = {
+  name: string;
+  commission: number;
+  revenue: number;
+  dealsWon: number;
+  winRate: number;
+};
+
+export interface ReportData {
+  executiveSummary: ReportDataExecutiveSummary;
+  dealStages: ReportDataDealStagesItem[];
+  monthlyTrends: ReportDataMonthlyTrendsItem[];
+  topPerformers: ReportDataTopPerformersItem[];
+}
+
 export type ListDealsParams = {
 repId?: string;
 /**
@@ -252,6 +311,29 @@ repId?: string;
  */
 period?: string;
 };
+
+export type GetReportsParams = {
+/**
+ * Start date (YYYY-MM-DD)
+ */
+startDate?: string;
+/**
+ * End date (YYYY-MM-DD)
+ */
+endDate?: string;
+/**
+ * Aggregation interval
+ */
+interval?: GetReportsInterval;
+};
+
+export type GetReportsInterval = typeof GetReportsInterval[keyof typeof GetReportsInterval];
+
+
+export const GetReportsInterval = {
+  day: 'day',
+  month: 'month',
+} as const;
 
 export type GetRepSummaryParams = {
 /**

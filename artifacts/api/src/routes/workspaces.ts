@@ -44,6 +44,8 @@ router.get("/workspaces", requireAuth, async (req: AuthenticatedRequest, res): P
       id: (m.workspaceId as any)._id,
       slug: (m.workspaceId as any).slug,
       name: (m.workspaceId as any).name,
+      currency: (m.workspaceId as any).currency || "USD",
+      fiscalYearStart: (m.workspaceId as any).fiscalYearStart || "January",
       role: m.role,
       createdAt: (m.workspaceId as any).createdAt.toISOString(),
     }))
@@ -81,6 +83,8 @@ router.post("/workspaces", requireAuth, async (req: AuthenticatedRequest, res): 
     id: workspace._id,
     slug: workspace.slug,
     name: workspace.name,
+    currency: workspace.currency || "USD",
+    fiscalYearStart: workspace.fiscalYearStart || "January",
     role: "owner",
     createdAt: workspace.createdAt.toISOString(),
   });
@@ -100,6 +104,8 @@ router.get("/workspaces/:id", requireAuth, async (req: AuthenticatedRequest, res
     id: workspace._id,
     slug: workspace.slug,
     name: workspace.name,
+    currency: (workspace as any).currency || "USD",
+    fiscalYearStart: (workspace as any).fiscalYearStart || "January",
     role: membership.role,
     createdAt: workspace.createdAt.toISOString(),
     members: members.map((m) => ({
@@ -129,7 +135,14 @@ router.put("/workspaces/:id", requireAuth, async (req: AuthenticatedRequest, res
     { new: true }
   );
 
-  res.json({ id: updated!._id, slug: updated!.slug, name: updated!.name, role: membership.role });
+  res.json({
+    id: updated!._id,
+    slug: updated!.slug,
+    name: updated!.name,
+    currency: (updated as any).currency || "USD",
+    fiscalYearStart: (updated as any).fiscalYearStart || "January",
+    role: membership.role,
+  });
 });
 
 router.delete("/workspaces/:id", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {

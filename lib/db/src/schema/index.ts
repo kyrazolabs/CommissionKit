@@ -5,3 +5,4 @@ export * from "./commissionRuns";
 export * from "./workspaces";
 export * from "./notifications";
 export * from "./subscriptions";
+export * from "./exchangeRate";

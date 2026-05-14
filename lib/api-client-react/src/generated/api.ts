@@ -29,13 +29,16 @@ import type {
   DashboardSummary,
   Deal,
   GetRepSummaryParams,
+  GetReportsParams,
   HealthStatus,
   ImportDealsBody,
   ImportDealsResult,
   ListDealsParams,
   Plan,
   Rep,
-  RepSummary
+  RepSummary,
+  ReportData,
+  UpdateDealBody
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -1157,6 +1160,78 @@ export const useDeleteDeal = <TError = ErrorType<unknown>,
       return useMutation(getDeleteDealMutationOptions(options));
     }
 
+export const getUpdateDealUrl = (id: string,) => {
+
+
+
+
+  return `/api/deals/${id}`
+}
+
+/**
+ * @summary Update an existing deal
+ */
+export const updateDeal = async (id: string,
+    updateDealBody: UpdateDealBody, options?: RequestInit): Promise<Deal> => {
+
+  return customFetch<Deal>(getUpdateDealUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      updateDealBody,)
+  }
+);}
+
+
+
+
+export const getUpdateDealMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDeal>>, TError,{id: string;data: BodyType<UpdateDealBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateDeal>>, TError,{id: string;data: BodyType<UpdateDealBody>}, TContext> => {
+
+const mutationKey = ['updateDeal'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateDeal>>, {id: string;data: BodyType<UpdateDealBody>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateDeal(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateDealMutationResult = NonNullable<Awaited<ReturnType<typeof updateDeal>>>
+    export type UpdateDealMutationBody = BodyType<UpdateDealBody>
+    export type UpdateDealMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update an existing deal
+ */
+export const useUpdateDeal = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDeal>>, TError,{id: string;data: BodyType<UpdateDealBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateDeal>>,
+        TError,
+        {id: string;data: BodyType<UpdateDealBody>},
+        TContext
+      > => {
+      return useMutation(getUpdateDealMutationOptions(options));
+    }
+
 export const getListRunsUrl = () => {
 
 
@@ -1370,6 +1445,90 @@ export function useGetRun<TData = Awaited<ReturnType<typeof getRun>>, TError = E
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetRunQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetReportsUrl = (params?: GetReportsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/reports?${stringifiedParams}` : `/api/reports`
+}
+
+/**
+ * @summary Get comprehensive reports data for charts
+ */
+export const getReports = async (params?: GetReportsParams, options?: RequestInit): Promise<ReportData> => {
+
+  return customFetch<ReportData>(getGetReportsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetReportsQueryKey = (params?: GetReportsParams,) => {
+    return [
+    `/api/reports`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetReportsQueryOptions = <TData = Awaited<ReturnType<typeof getReports>>, TError = ErrorType<unknown>>(params?: GetReportsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReports>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetReportsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReports>>> = ({ signal }) => getReports(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReports>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetReportsQueryResult = NonNullable<Awaited<ReturnType<typeof getReports>>>
+export type GetReportsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get comprehensive reports data for charts
+ */
+
+export function useGetReports<TData = Awaited<ReturnType<typeof getReports>>, TError = ErrorType<unknown>>(
+ params?: GetReportsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReports>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetReportsQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

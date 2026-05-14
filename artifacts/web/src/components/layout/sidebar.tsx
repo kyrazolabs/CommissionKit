@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Users, FileText, Briefcase, PlayCircle,
   Settings, CreditCard, LogOut, ChevronsUpDown, Check, Plus,
-  Building2, Shield, Crown,
+  Building2, Shield, Crown, PieChart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -14,6 +14,7 @@ const navGroups = [
     label: "Main",
     items: [
       { name: "Dashboard", href: "/",      icon: LayoutDashboard },
+      { name: "Reports",   href: "/reports",icon: PieChart },
       { name: "Reps",      href: "/reps",   icon: Users },
       { name: "Plans",     href: "/plans",  icon: FileText },
     ],

@@ -22,6 +22,7 @@ import {
   YAxis,
   Tooltip as RechartsTooltip,
 } from "recharts";
+import { CurrencyCell } from "@/components/currency-cell";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -32,7 +33,21 @@ interface DealBreakdown {
   closeDate: string;
   rateApplied: number;
   commissionAmount: number;
+  currency: string;
   calculationNote: string;
+  // Snapshot fields
+  wsCurrency?: string;
+  convertedDealAmount?: number;
+  convertedCommission?: number;
+  exchangeRateSnapshot?: Record<string, number>;
+  rateSnapshotDate?: Date | string;
+}
+
+interface CurrencySummary {
+  currency: string;
+  totalCommission: number;
+  totalRevenue: number;
+  totalDeals: number;
 }
 
 interface MonthlyHistory {
@@ -52,6 +67,8 @@ interface PortalSummary {
   totalDeals: number;
   dealBreakdown: DealBreakdown[];
   monthlyHistory: MonthlyHistory[];
+  currencySummaries?: CurrencySummary[];
+  currency: string;
 }
 
 // ─── Fetch helper ───────────────────────────────────────────────────────────
@@ -177,7 +194,7 @@ export function PublicRepPortal() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold">{formatCurrency(summary.totalCommission)}</div>
+                  <div className="text-3xl font-bold">{formatCurrency(summary.totalCommission, summary.currency)}</div>
                   <p className="text-xs text-primary-foreground/70 mt-1">
                     For {format(new Date(period + "-01"), "MMMM yyyy")}
                   </p>
@@ -190,7 +207,7 @@ export function PublicRepPortal() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold">{formatCurrency(summary.totalRevenue)}</div>
+                  <div className="text-3xl font-bold">{formatCurrency(summary.totalRevenue, summary.currency)}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -204,6 +221,31 @@ export function PublicRepPortal() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Currency Breakdown (if multiple) */}
+            {summary.currencySummaries && summary.currencySummaries.length > 1 && (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {summary.currencySummaries.map((c) => (
+                  <Card key={c.currency} className="border-l-4 border-l-primary/50">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        {c.currency} Summary
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-2 gap-2">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">Commission</p>
+                        <p className="text-sm font-bold">{formatCurrency(c.totalCommission, c.currency)}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] text-muted-foreground">Deals</p>
+                        <p className="text-sm font-bold">{c.totalDeals}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
 
             {/* Earnings history chart */}
             {summary.monthlyHistory && summary.monthlyHistory.length > 0 && (
@@ -233,7 +275,7 @@ export function PublicRepPortal() {
                           axisLine={false}
                         />
                         <RechartsTooltip
-                          formatter={(value: number) => [formatCurrency(value), "Commission"]}
+                          formatter={(value: number) => [formatCurrency(value, summary.currency), "Commission"]}
                           labelFormatter={(label) =>
                             format(new Date(label + "-01"), "MMMM yyyy")
                           }
@@ -278,28 +320,50 @@ export function PublicRepPortal() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {summary.dealBreakdown.map((deal) => (
-                        <TableRow key={deal.dealId}>
-                          <TableCell>
-                            <div className="font-medium">{deal.dealName}</div>
-                            <div className="text-xs text-muted-foreground mt-0.5">
-                              {deal.calculationNote}
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground text-sm">
-                            {deal.closeDate ? format(new Date(deal.closeDate), "MMM d") : "—"}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {formatCurrency(deal.dealAmount)}
-                          </TableCell>
-                          <TableCell className="text-right font-medium">
-                            {formatPercent(deal.rateApplied)}
-                          </TableCell>
-                          <TableCell className="text-right font-bold text-primary">
-                            {formatCurrency(deal.commissionAmount)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {summary.dealBreakdown.map((deal: any) => {
+                        const dealCurrency = deal.currency || summary.currency;
+                        return (
+                          <TableRow key={deal.dealId}>
+                            <TableCell>
+                              <div className="font-medium">{deal.dealName}</div>
+                              <div className="text-xs text-muted-foreground mt-0.5">
+                                {deal.calculationNote}
+                              </div>
+                              {dealCurrency !== summary.currency && (
+                                <Badge variant="outline" className="mt-0.5 text-[10px] px-1.5 py-0 h-4">
+                                  {dealCurrency}
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-muted-foreground text-sm">
+                              {deal.closeDate ? format(new Date(deal.closeDate), "MMM d") : "—"}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <CurrencyCell
+                                amount={deal.dealAmount}
+                                currency={dealCurrency}
+                                wsCurrency={deal.wsCurrency ?? summary.currency}
+                                convertedAmount={deal.convertedDealAmount}
+                                exchangeRateSnapshot={deal.exchangeRateSnapshot}
+                                rateSnapshotDate={deal.rateSnapshotDate}
+                              />
+                            </TableCell>
+                            <TableCell className="text-right font-medium">
+                              {formatPercent(deal.rateApplied)}
+                            </TableCell>
+                            <TableCell className="text-right font-bold text-primary">
+                              <CurrencyCell
+                                amount={deal.commissionAmount}
+                                currency={dealCurrency}
+                                wsCurrency={deal.wsCurrency ?? summary.currency}
+                                convertedAmount={deal.convertedCommission}
+                                exchangeRateSnapshot={deal.exchangeRateSnapshot}
+                                rateSnapshotDate={deal.rateSnapshotDate}
+                              />
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 )}

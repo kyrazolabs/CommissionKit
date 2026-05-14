@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "dotenv": "^17.4.2",
-    "mongoose": "catalog:"
+    "mongoose": "catalog:",
+    "@workspace/queue": "workspace:*",
+    "@workspace/db": "workspace:*"
   }
 }

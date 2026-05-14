@@ -18,7 +18,19 @@ const CommissionResultSchema = new Schema({
   dealId: { type: Schema.Types.ObjectId, ref: "Deal", required: true },
   rateApplied: { type: Number, required: true },
   commissionAmount: { type: Number, required: true },
+  /** Original deal currency (e.g. "EUR"). Same as currency field for backwards compat. */
+  currency: { type: String, required: true, default: "USD" },
   calculationNote: { type: String, required: true },
+  /** Workspace currency at calculation time (e.g. "SAR") */
+  wsCurrency: { type: String },
+  /** Deal amount converted to workspace currency at calculation time */
+  convertedDealAmount: { type: Number },
+  /** Commission converted to workspace currency at calculation time */
+  convertedCommission: { type: Number },
+  /** 1 <dealCurrency> = exchangeRateSnapshot <wsCurrency>. Captured from historical ExchangeRate record. */
+  exchangeRateSnapshot: { type: Number },
+  /** ISO date string of the ExchangeRate record used for conversion */
+  rateSnapshotDate: { type: String },
 }, { timestamps: { createdAt: true, updatedAt: false } });
 
 export const CommissionRun = model("CommissionRun", CommissionRunSchema);
@@ -45,8 +57,15 @@ export type CommissionResult = mongoose.Document & {
   dealId: Types.ObjectId;
   rateApplied: number;
   commissionAmount: number;
+  currency: string;
   calculationNote: string;
   createdAt: Date;
+  // Snapshot fields (present on results calculated after the multi-currency update)
+  wsCurrency?: string;
+  convertedDealAmount?: number;
+  convertedCommission?: number;
+  exchangeRateSnapshot?: number;
+  rateSnapshotDate?: string;
 };
 
 export const insertCommissionRunSchema = z.object({
@@ -66,5 +85,11 @@ export const insertCommissionResultSchema = z.object({
   dealId: z.string(),
   rateApplied: z.number(),
   commissionAmount: z.number(),
+  currency: z.string().default("USD"),
   calculationNote: z.string(),
+  wsCurrency: z.string().optional(),
+  convertedDealAmount: z.number().optional(),
+  convertedCommission: z.number().optional(),
+  exchangeRateSnapshot: z.number().optional(),
+  rateSnapshotDate: z.string().optional(),
 });

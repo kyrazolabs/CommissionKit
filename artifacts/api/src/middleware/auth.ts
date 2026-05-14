@@ -100,3 +100,39 @@ export function requireWorkspaceMember(
 
   return [requireAuth as RequestHandler, memberCheck];
 }
+
+/**
+ * Middleware to ensure the workspace has a Growth plan or higher.
+ * Exporting data is a premium feature.
+ */
+export async function requireGrowthPlan(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  const { WorkspaceSubscription } = await import("@workspace/db");
+  const workspaceId = req.workspaceId;
+
+  if (!workspaceId) {
+    res.status(400).json({ error: "X-Workspace-ID header is required" });
+    return;
+  }
+
+  const sub = await WorkspaceSubscription.findOne({
+    workspaceId: new Types.ObjectId(workspaceId),
+  });
+
+  const plan = sub?.plan || "free";
+  const isGrowth = plan === "growth" || plan === "annual";
+  const isLifetime = sub?.isLifetime || false;
+
+  if (!isGrowth && !isLifetime) {
+    res.status(403).json({
+      error: "This feature requires a Growth subscription.",
+      code: "SUBSCRIPTION_REQUIRED",
+    });
+    return;
+  }
+
+  next();
+}

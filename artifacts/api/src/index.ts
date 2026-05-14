@@ -2,13 +2,10 @@ import "dotenv/config";
 
 import app from "./app";
 import { logger } from "./lib/logger";
-import { getRedisClient, closeWorkers, verifySmtp } from "@workspace/queue";
+import { getRedisClient, verifySmtp, enqueueExchangeRateSync } from "@workspace/queue";
+import { connectDB } from "@workspace/db";
 
-// ─── Boot workers ─────────────────────────────────────────────────────────────
-// Import the workers module to register all BullMQ workers inside this process.
-// In production you can move this to a separate worker process.
-import "@workspace/queue/worker";
-import "./workers/calc-worker";
+// ─── Boot workers (moved to boot() function) ──────────────────────────────────
 
 const rawPort = process.env["PORT"] ?? "8080";
 const port = Number(rawPort);
@@ -27,36 +24,54 @@ if (process.env.SMTP_HOST) {
 }
 
 // ─── Start HTTP server ────────────────────────────────────────────────────────
-const server = app.listen(port, (err) => {
-  if (err) {
-    logger.error({ err }, "Error listening on port");
+async function boot() {
+  try {
+    await connectDB();
+
+    // ─── Boot workers ─────────────────────────────────────────────────────────────
+    // Register BullMQ workers only AFTER DB is connected.
+    await import("@workspace/queue/worker");
+    await import("./workers/calc-worker");
+    
+    const server = app.listen(port, (err) => {
+      if (err) {
+        logger.error({ err }, "Error listening on port");
+        process.exit(1);
+      }
+      logger.info({ port }, "Server listening");
+      
+      // ─── Schedule Background Jobs ───────────────────────────────────────────────
+      enqueueExchangeRateSync({ force: true }).catch((err) => {
+        logger.error({ err }, "[Queue] Failed to schedule exchange rate sync on startup");
+      });
+    });
+
+    // Handle shutdown
+    const shutdownHandler = (signal: string) => {
+      logger.info({ signal }, "Shutdown signal received — closing gracefully");
+      server.close(async () => {
+        try {
+          const { closeWorkers } = await import("@workspace/queue/worker");
+          await closeWorkers();
+          await getRedisClient().quit();
+          logger.info("Shutdown complete");
+          process.exit(0);
+        } catch (err) {
+          logger.error({ err }, "Error during shutdown");
+          process.exit(1);
+        }
+      });
+    };
+
+    process.on("SIGTERM", () => shutdownHandler("SIGTERM"));
+    process.on("SIGINT",  () => shutdownHandler("SIGINT"));
+
+  } catch (err) {
+    // Print raw error directly — pino fails to serialize Mongoose error objects (circular refs)
+    console.error("[boot] Startup error:", err instanceof Error ? err.stack : String(err));
+    logger.error({ err: String(err) }, "Failed to connect to database on startup");
     process.exit(1);
   }
-  logger.info({ port }, "Server listening");
-});
-
-// ─── Graceful shutdown ────────────────────────────────────────────────────────
-async function shutdown(signal: string) {
-  logger.info({ signal }, "Shutdown signal received — closing gracefully");
-
-  server.close(async () => {
-    try {
-      await closeWorkers();
-      await getRedisClient().quit();
-      logger.info("Shutdown complete");
-      process.exit(0);
-    } catch (err) {
-      logger.error({ err }, "Error during shutdown");
-      process.exit(1);
-    }
-  });
-
-  // Force-exit after 10s if connections hang
-  setTimeout(() => {
-    logger.error("Shutdown timeout — forcing exit");
-    process.exit(1);
-  }, 10_000);
 }
 
-process.on("SIGTERM", () => shutdown("SIGTERM"));
-process.on("SIGINT",  () => shutdown("SIGINT"));
+boot();

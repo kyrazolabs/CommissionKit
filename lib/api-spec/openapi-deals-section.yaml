@@ -1,0 +1,64 @@
+    Deal:
+      type: object
+      properties:
+        id:
+          type: string
+        repId:
+          type: string
+        repName:
+          type: string
+        name:
+          type: string
+        amount:
+          type: number
+        closeDate:
+          type: string
+        period:
+          type: string
+          description: "YYYY-MM"
+        stage:
+          type: string
+          enum: [closed_won, closed_lost, pending]
+        currency:
+          type: string
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required: [id, repId, repName, name, amount, closeDate, period, stage, currency, notes, createdAt]
+
+    CreateDealBody:
+      type: object
+      properties:
+        repId:
+          type: string
+        name:
+          type: string
+        amount:
+          type: number
+        closeDate:
+          type: string
+        period:
+          type: string
+        stage:
+          type: string
+          enum: [closed_won, closed_lost, pending]
+        currency:
+          type: string
+        notes:
+          type: string
+          nullable: true
+      required: [repId, name, amount, closeDate, period, stage, currency]
+
+    ImportDealsBody:
+      type: object
+      properties:
+        period:
+          type: string
+          description: "YYYY-MM period for these deals"
+        deals:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreateDealBody"
+      required: [period, deals]

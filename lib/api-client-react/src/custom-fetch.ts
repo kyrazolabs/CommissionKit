@@ -325,7 +325,7 @@ async function parseSuccessBody(
       if (typeof response.blob !== "function") {
         throw new TypeError(
           "Blob responses are not supported in this runtime. " +
-            "Use responseType \"json\" or \"text\" instead.",
+            "Use responseType 'json' or 'text' instead.",
         );
       }
       return response.blob();

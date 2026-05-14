@@ -10,6 +10,7 @@ import { RepsPage } from "@/pages/reps";
 import { PlansPage } from "@/pages/plans";
 import { DealsPage } from "@/pages/deals";
 import { RunsPage } from "@/pages/runs";
+import { ReportsPage } from "@/pages/reports";
 import { RunDetailsPage } from "@/pages/run-details";
 import { RepPortal } from "@/pages/rep-portal";
 import { PublicRepPortal } from "@/pages/public-portal";
@@ -30,11 +31,13 @@ function Layout({ children }: { children: React.ReactNode }) {
       <Header />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
-        <div className="flex-1 overflow-y-auto pr-3 pb-3" style={{ background: "hsl(var(--sidebar))" }}>
-          <div className="bg-card rounded-[18px] border border-card-border min-h-full shadow-xs">
-            <main className="mx-auto py-8 px-8 lg:px-10 max-w-6xl">
-              {children}
-            </main>
+        <div className="flex-1 flex flex-col pr-3 pb-3 overflow-hidden" style={{ background: "hsl(var(--sidebar))" }}>
+          <div className="bg-card rounded-2xl border border-card-border flex-1 flex flex-col overflow-hidden shadow-xs">
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+              <main className="mx-auto py-8 px-8 lg:px-10 max-w-6xl min-h-full">
+                {children}
+              </main>
+            </div>
           </div>
         </div>
       </div>
@@ -135,6 +138,7 @@ function ProtectedRouter() {
         <Route path="/deals" component={DealsPage} />
         <Route path="/runs" component={RunsPage} />
         <Route path="/runs/:id" component={RunDetailsPage} />
+        <Route path="/reports" component={ReportsPage} />
         <Route path="/reps/:id" component={RepPortal} />
         <Route path="/team" component={TeamPage} />
         <Route path="/settings" component={SettingsPage} />

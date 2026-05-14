@@ -287,6 +287,29 @@ paths:
       responses:
         "204":
           description: Deleted
+    put:
+      operationId: updateDeal
+      tags: [deals]
+      summary: Update an existing deal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDealBody"
+      responses:
+        "200":
+          description: Updated deal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deal"
 
   # ── Commission Runs ────────────────────────────────────────────────────────
   /runs:
@@ -339,6 +362,39 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CommissionRunWithResults"
+
+  # ── Reports ──────────────────────────────────────────────────────────────
+  /reports:
+    get:
+      operationId: getReports
+      tags: [dashboard]
+      summary: Get comprehensive reports data for charts
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: "Start date (YYYY-MM-DD)"
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: "End date (YYYY-MM-DD)"
+        - name: interval
+          in: query
+          schema:
+            type: string
+            enum: [day, month]
+          description: "Aggregation interval"
+      responses:
+        "200":
+          description: Reports data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportData"
 
   # ── Dashboard ──────────────────────────────────────────────────────────────
   /dashboard/summary:
@@ -534,12 +590,14 @@ components:
         stage:
           type: string
           enum: [closed_won, closed_lost, pending]
+        currency:
+          type: string
         notes:
           type: string
           nullable: true
         createdAt:
           type: string
-      required: [id, repId, repName, name, amount, closeDate, period, stage, notes, createdAt]
+      required: [id, repId, repName, name, amount, closeDate, period, stage, currency, notes, createdAt]
 
     CreateDealBody:
       type: object
@@ -557,10 +615,35 @@ components:
         stage:
           type: string
           enum: [closed_won, closed_lost, pending]
+        currency:
+          type: string
         notes:
           type: string
           nullable: true
-      required: [repId, name, amount, closeDate, period, stage]
+      required: [repId, name, amount, closeDate, period, stage, currency]
+
+    UpdateDealBody:
+      type: object
+      properties:
+        repId:
+          type: string
+        name:
+          type: string
+        amount:
+          type: number
+        closeDate:
+          type: string
+        period:
+          type: string
+        stage:
+          type: string
+          enum: [closed_won, closed_lost, pending]
+        currency:
+          type: string
+        notes:
+          type: string
+          nullable: true
+      required: [repId, name, amount, closeDate, period, stage, currency]
 
     ImportDealsBody:
       type: object
@@ -622,6 +705,8 @@ components:
           type: number
         totalDeals:
           type: integer
+        skippedDeals:
+          type: integer
         repsCount:
           type: integer
         status:
@@ -632,7 +717,7 @@ components:
           nullable: true
         createdAt:
           type: string
-      required: [id, period, totalCommission, totalDeals, repsCount, status, createdAt]
+      required: [id, period, totalCommission, totalDeals, skippedDeals, repsCount, status, createdAt]
 
     CommissionRunWithResults:
       type: object
@@ -644,6 +729,8 @@ components:
         totalCommission:
           type: number
         totalDeals:
+          type: integer
+        skippedDeals:
           type: integer
         repsCount:
           type: integer
@@ -659,7 +746,7 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/CommissionResult"
-      required: [id, period, totalCommission, totalDeals, repsCount, status, createdAt, results]
+      required: [id, period, totalCommission, totalDeals, skippedDeals, repsCount, status, createdAt, results]
 
     CreateRunBody:
       type: object
@@ -764,3 +851,62 @@ components:
                 type: integer
             required: [period, totalCommission, totalDeals]
       required: [repId, repName, email, planName, period, totalCommission, totalRevenue, totalDeals, dealBreakdown, monthlyHistory]
+
+    ReportData:
+      type: object
+      properties:
+        executiveSummary:
+          type: object
+          properties:
+            totalRevenue:
+              type: number
+            totalCommission:
+              type: number
+            margin:
+              type: number
+            winRate:
+              type: number
+            avgDealSize:
+              type: number
+          required: [totalRevenue, totalCommission, margin, winRate, avgDealSize]
+        dealStages:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: integer
+            required: [name, value]
+        monthlyTrends:
+          type: array
+          items:
+            type: object
+            properties:
+              period:
+                type: string
+              revenue:
+                type: number
+              commission:
+                type: number
+              deals:
+                type: integer
+            required: [period, revenue, commission, deals]
+        topPerformers:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              commission:
+                type: number
+              revenue:
+                type: number
+              dealsWon:
+                type: integer
+              winRate:
+                type: number
+            required: [name, commission, revenue, dealsWon, winRate]
+      required: [executiveSummary, dealStages, monthlyTrends, topPerformers]

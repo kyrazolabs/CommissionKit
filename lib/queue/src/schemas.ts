@@ -44,3 +44,9 @@ export const CommissionCalcJobSchema = z.object({
 });
 
 export type CommissionCalcPayload = z.infer<typeof CommissionCalcJobSchema>;
+
+export const ExchangeRateJobSchema = z.object({
+  force: z.boolean().optional().default(false),
+});
+
+export type ExchangeRatePayload = z.infer<typeof ExchangeRateJobSchema>;

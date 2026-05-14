@@ -221,6 +221,7 @@ export const ListDealsResponseItem = zod.object({
   "closeDate": zod.string(),
   "period": zod.string().describe('YYYY-MM'),
   "stage": zod.enum(['closed_won', 'closed_lost', 'pending']),
+  "currency": zod.string(),
   "notes": zod.string().nullable(),
   "createdAt": zod.string()
 })
@@ -237,6 +238,7 @@ export const CreateDealBody = zod.object({
   "closeDate": zod.string(),
   "period": zod.string(),
   "stage": zod.enum(['closed_won', 'closed_lost', 'pending']),
+  "currency": zod.string(),
   "notes": zod.string().nullish()
 })
 
@@ -253,6 +255,7 @@ export const ImportDealsBody = zod.object({
   "closeDate": zod.string(),
   "period": zod.string(),
   "stage": zod.enum(['closed_won', 'closed_lost', 'pending']),
+  "currency": zod.string(),
   "notes": zod.string().nullish()
 }))
 })
@@ -273,6 +276,39 @@ export const DeleteDealParams = zod.object({
 
 
 /**
+ * @summary Update an existing deal
+ */
+export const UpdateDealParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const UpdateDealBody = zod.object({
+  "repId": zod.string(),
+  "name": zod.string(),
+  "amount": zod.number(),
+  "closeDate": zod.string(),
+  "period": zod.string(),
+  "stage": zod.enum(['closed_won', 'closed_lost', 'pending']),
+  "currency": zod.string(),
+  "notes": zod.string().nullish()
+})
+
+export const UpdateDealResponse = zod.object({
+  "id": zod.string(),
+  "repId": zod.string(),
+  "repName": zod.string(),
+  "name": zod.string(),
+  "amount": zod.number(),
+  "closeDate": zod.string(),
+  "period": zod.string().describe('YYYY-MM'),
+  "stage": zod.enum(['closed_won', 'closed_lost', 'pending']),
+  "currency": zod.string(),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.string()
+})
+
+
+/**
  * @summary List commission runs
  */
 export const ListRunsResponseItem = zod.object({
@@ -280,6 +316,7 @@ export const ListRunsResponseItem = zod.object({
   "period": zod.string(),
   "totalCommission": zod.number(),
   "totalDeals": zod.number(),
+  "skippedDeals": zod.number(),
   "repsCount": zod.number(),
   "status": zod.enum(['pending', 'processing', 'completed', 'failed']),
   "error": zod.string().nullish(),
@@ -308,6 +345,7 @@ export const GetRunResponse = zod.object({
   "period": zod.string(),
   "totalCommission": zod.number(),
   "totalDeals": zod.number(),
+  "skippedDeals": zod.number(),
   "repsCount": zod.number(),
   "status": zod.enum(['pending', 'processing', 'completed', 'failed']),
   "error": zod.string().nullish(),
@@ -322,6 +360,43 @@ export const GetRunResponse = zod.object({
   "rateApplied": zod.number(),
   "commissionAmount": zod.number(),
   "calculationNote": zod.string()
+}))
+})
+
+
+/**
+ * @summary Get comprehensive reports data for charts
+ */
+export const GetReportsQueryParams = zod.object({
+  "startDate": zod.date().optional().describe('Start date (YYYY-MM-DD)'),
+  "endDate": zod.date().optional().describe('End date (YYYY-MM-DD)'),
+  "interval": zod.enum(['day', 'month']).optional().describe('Aggregation interval')
+})
+
+export const GetReportsResponse = zod.object({
+  "executiveSummary": zod.object({
+  "totalRevenue": zod.number(),
+  "totalCommission": zod.number(),
+  "margin": zod.number(),
+  "winRate": zod.number(),
+  "avgDealSize": zod.number()
+}),
+  "dealStages": zod.array(zod.object({
+  "name": zod.string(),
+  "value": zod.number()
+})),
+  "monthlyTrends": zod.array(zod.object({
+  "period": zod.string(),
+  "revenue": zod.number(),
+  "commission": zod.number(),
+  "deals": zod.number()
+})),
+  "topPerformers": zod.array(zod.object({
+  "name": zod.string(),
+  "commission": zod.number(),
+  "revenue": zod.number(),
+  "dealsWon": zod.number(),
+  "winRate": zod.number()
 }))
 })
 
@@ -347,6 +422,7 @@ export const GetDashboardSummaryResponse = zod.object({
   "period": zod.string(),
   "totalCommission": zod.number(),
   "totalDeals": zod.number(),
+  "skippedDeals": zod.number(),
   "repsCount": zod.number(),
   "status": zod.enum(['pending', 'processing', 'completed', 'failed']),
   "error": zod.string().nullish(),
@@ -410,3 +486,4 @@ export const GetPortalByCodeParams = zod.object({
 export const GetPortalByCodeQueryParams = zod.object({
   "period": zod.coerce.string().optional().describe("Filter by period (YYYY-MM). Defaults to current period.")
 })
+

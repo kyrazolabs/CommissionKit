@@ -6,17 +6,18 @@
 
 // ─── Email queues ─────────────────────────────────────────────────────────────
 /** Critical path: team invitations, password resets, magic links */
-export const MAIL_HIGH_QUEUE    = "{ck-mail-high}";
+export const MAIL_HIGH_QUEUE = "{ck-mail-high}";
 
 /** Standard: commission run reports, workspace notifications */
-export const MAIL_MEDIUM_QUEUE  = "{ck-mail-medium}";
+export const MAIL_MEDIUM_QUEUE = "{ck-mail-medium}";
 
 /** Bulk / marketing: digest summaries, weekly reports */
-export const MAIL_LOW_QUEUE     = "{ck-mail-low}";
+export const MAIL_LOW_QUEUE = "{ck-mail-low}";
 
 /** Internal execution queue — workers pull from here to call SMTP */
-export const MAIL_SEND_QUEUE    = "{ck-mail-send}";
+export const MAIL_SEND_QUEUE = "{ck-mail-send}";
 
 // ─── Future queues (stubs) ────────────────────────────────────────────────────
 export const COMMISSION_CALC_QUEUE = "{ck-commission-calc}";
-export const WEBHOOK_QUEUE         = "{ck-webhook}";
+export const EXCHANGE_RATE_QUEUE = "{ck-exchange-rate}";
+export const WEBHOOK_QUEUE = "{ck-webhook}";

@@ -9,6 +9,8 @@ import dashboardRouter from "./dashboard";
 import billingRouter from "./billing";
 import notificationsRouter from "./notifications";
 import portalRouter from "./portal";
+import exportRouter from "./export";
+import reportsRouter from "./reports";
 
 const router: IRouter = Router();
 
@@ -22,5 +24,7 @@ router.use(runsRouter);
 router.use(dashboardRouter);
 router.use("/billing", billingRouter);
 router.use(notificationsRouter);
+router.use(exportRouter);
+router.use("/reports", reportsRouter);
 
 export default router;

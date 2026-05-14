@@ -7,6 +7,11 @@ export const PLAN_LIMITS = {
     maxReps: 3,
     maxPlans: 1,
   },
+  lite: {
+    maxMembers: 3,
+    maxReps: 5,
+    maxPlans: 2,
+  },
   starter: {
     maxMembers: 3,
     maxReps: 10,
@@ -15,11 +20,16 @@ export const PLAN_LIMITS = {
   growth: {
     maxMembers: 15,
     maxReps: 50,
-    maxPlans: 1000, // Unlimited-ish
+    maxPlans: 1_000_000, // Unlimited
   },
-  lifetime: {
+  annual: {
+    maxMembers: 15,
+    maxReps: 50,
+    maxPlans: 1_000_000, // Unlimited
+  },
+  flex: {
     maxMembers: 1000,
-    maxReps: 1000,
+    maxReps: 1_000_000,
     maxPlans: 1000,
   },
 } as const;

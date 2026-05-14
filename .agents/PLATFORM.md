@@ -37,6 +37,11 @@ Built for collaboration and growth.
 - **Team Roles**: Assign administrators to manage the platform while keeping data siloed and secure.
 - **Easy Onboarding**: Invite new team members with a single email invitation.
 
+### Global Localization & Multi-Currency Support
+CommissionKit is built for global teams. Whether you operate in USD, EUR, SAR, or any other currency, the platform adapts to your regional needs.
+- **Dynamic Currency Formatting**: All dashboards, reports, and portals automatically use your workspace's primary currency.
+- **Custom Fiscal Years**: Align your commission cycles with your company's specific fiscal calendar, not just the standard calendar year.
+
 ---
 
 ## 3. Reliability & Security

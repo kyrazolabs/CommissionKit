@@ -21,15 +21,6 @@ export {
 // Mailer (SMTP)
 export { sendMail, verifySmtp, getMailFrom } from "./mailer.js";
 
-// Workers
-export {
-  highWorker,
-  mediumWorker,
-  lowWorker,
-  smtpWorker,
-  closeWorkers,
-} from "./worker.js";
-
 // Enqueue helpers
 export {
   enqueueEmail,
@@ -37,4 +28,8 @@ export {
   sendMediumPriorityEmail,
   sendLowPriorityEmail,
   enqueueCommissionCalc,
+  enqueueExchangeRateSync,
 } from "./enqueue.js";
+
+// Services
+export { fetchAndSaveRates } from "./exchangeRateService.js";

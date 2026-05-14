@@ -18,7 +18,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/hooks/use-role";
 import { useBillingStatus } from "@/hooks/use-billing-status";
 
+import { useWorkspace } from "@/hooks/use-workspace";
+
 export function PlansPage() {
+  const { activeWorkspace } = useWorkspace();
+  const currency = activeWorkspace?.currency || "USD";
   const { data: plans, isLoading } = useListPlans({ query: { queryKey: getListPlansQueryKey() } });
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const { can } = useRole();
@@ -77,7 +81,7 @@ export function PlansPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {plans.map((plan) => (
-            <PlanCard key={plan.id} plan={plan} sub={sub} />
+            <PlanCard key={plan.id} plan={plan} sub={sub} currency={currency} />
           ))}
         </div>
       )}
@@ -85,7 +89,7 @@ export function PlansPage() {
   );
 }
 
-function PlanCard({ plan, sub }: { plan: any, sub: any }) {
+function PlanCard({ plan, sub, currency }: { plan: any, sub: any, currency: string }) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -152,7 +156,7 @@ function PlanCard({ plan, sub }: { plan: any, sub: any }) {
                   <span className="text-sm font-medium text-primary">Accelerator Rate</span>
                   <span className="font-bold text-primary">{formatPercent(plan.acceleratorRate || 0)}</span>
                 </div>
-                <p className="text-xs text-primary/80">Applied above {formatCurrency(plan.acceleratorThreshold || 0)}</p>
+                <p className="text-xs text-primary/80">Applied above {formatCurrency(plan.acceleratorThreshold || 0, currency)}</p>
               </div>
             </div>
           )}
@@ -164,7 +168,7 @@ function PlanCard({ plan, sub }: { plan: any, sub: any }) {
                 {plan.tiers?.map((tier: any, i: number) => (
                   <div key={tier.id || i} className="flex justify-between items-center text-sm p-2 bg-muted/30 rounded border border-border/50">
                     <span className="text-muted-foreground">
-                      {formatCurrency(tier.fromAmount)} {tier.toAmount ? `- ${formatCurrency(tier.toAmount)}` : '+'}
+                      {formatCurrency(tier.fromAmount, currency)} {tier.toAmount ? `- ${formatCurrency(tier.toAmount, currency)}` : '+'}
                     </span>
                     <span className="font-semibold">{formatPercent(tier.rate)}</span>
                   </div>
@@ -193,7 +197,7 @@ function PlanCard({ plan, sub }: { plan: any, sub: any }) {
         </CardFooter>
       )}
 
-      <PlanFormDialog open={isEditOpen} onOpenChange={setIsEditOpen} initialData={plan} sub={sub} />
+      <PlanFormDialog open={isEditOpen} onOpenChange={setIsEditOpen} initialData={plan} sub={sub} currency={currency} />
 
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <DialogContent>
@@ -215,7 +219,7 @@ function PlanCard({ plan, sub }: { plan: any, sub: any }) {
   );
 }
 
-function PlanFormDialog({ open, onOpenChange, initialData, sub }: any) {
+function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any) {
   const isEditing = !!initialData;
   const [name, setName] = useState(initialData?.name || "");
   const [type, setType] = useState<"flat" | "tiered" | "accelerator">(initialData?.type || "flat");
@@ -371,10 +375,10 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub }: any) {
                     </div>
                   </div>
                   <div className="grid gap-2">
-                    <Label>Accelerator Threshold ($)</Label>
+                    <Label>Accelerator Threshold ({currency})</Label>
                     <div className="relative">
-                      <span className="absolute left-3 top-2.5 text-muted-foreground">$</span>
-                      <Input type="number" min="0" className="pl-7" value={acceleratorThreshold} onChange={e => setAcceleratorThreshold(e.target.value)} required />
+                      <span className="absolute left-3 top-2.5 text-muted-foreground font-mono text-xs">{currency}</span>
+                      <Input type="number" min="0" className="pl-12" value={acceleratorThreshold} onChange={e => setAcceleratorThreshold(e.target.value)} required />
                     </div>
                   </div>
                   <div className="grid gap-2">
@@ -394,7 +398,7 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub }: any) {
                     {tiers.map((tier, index) => (
                       <div key={index} className="flex gap-2 items-start">
                         <div className="grid flex-1 gap-1">
-                          <span className="text-xs text-muted-foreground block">From ($)</span>
+                          <span className="text-xs text-muted-foreground block">From ({currency})</span>
                           <Input type="number" min="0" value={tier.fromAmount} onChange={e => {
                             const newTiers = [...tiers];
                             newTiers[index].fromAmount = e.target.value;
@@ -402,7 +406,7 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub }: any) {
                           }} required />
                         </div>
                         <div className="grid flex-1 gap-1">
-                          <span className="text-xs text-muted-foreground block">To ($)</span>
+                          <span className="text-xs text-muted-foreground block">To ({currency})</span>
                           <Input type="number" min="0" placeholder="Infinity" value={tier.toAmount} onChange={e => {
                             const newTiers = [...tiers];
                             newTiers[index].toAmount = e.target.value;

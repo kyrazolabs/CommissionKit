@@ -10,8 +10,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { HelpTooltip } from "@/components/help-tooltip";
+import { useWorkspace } from "@/hooks/use-workspace";
 
 export function Dashboard() {
+  const { activeWorkspace } = useWorkspace();
+  const currency = activeWorkspace?.currency || "USD";
   const currentPeriod = format(new Date(), "yyyy-MM");
   const { data: summary, isLoading } = useGetDashboardSummary(
     { query: { queryKey: getGetDashboardSummaryQueryKey() } }
@@ -33,8 +36,8 @@ export function Dashboard() {
   const recentRuns = summary.recentRuns ?? [];
 
   const statCards = [
-    { label: "Total Commissions", value: formatCurrency(summary.totalCommission), delta: "Calculated this period", icon: DollarSign },
-    { label: "Pipeline Revenue",  value: formatCurrency(summary.totalRevenue),    delta: "Closed won deals",       icon: TrendingUp },
+    { label: "Total Commissions", value: formatCurrency(summary.totalCommission, currency), delta: "Calculated this period", icon: DollarSign },
+    { label: "Pipeline Revenue",  value: formatCurrency(summary.totalRevenue, currency),    delta: "Closed won deals",       icon: TrendingUp },
     { label: "Deals Closed",      value: formatNumber(summary.totalDeals),        delta: "This period",            icon: Briefcase },
     { label: "Active Reps",       value: formatNumber(summary.totalReps),         delta: `of ${formatNumber(summary.totalReps)} total`, icon: Users },
   ];
@@ -145,10 +148,10 @@ export function Dashboard() {
                     <td className="px-4 py-3 text-[12.5px] text-muted-foreground">—</td>
                     <td className="px-4 py-3 text-[13px] font-medium text-foreground">{rep.totalDeals}</td>
                     <td className="px-4 py-3 text-[13px] font-medium text-foreground">
-                      ${(rep.totalRevenue / 1000).toFixed(0)}K
+                      {formatCurrency(rep.totalRevenue, currency)}
                     </td>
                     <td className="px-4 py-3 text-[13.5px] font-bold text-primary">
-                      {formatCurrency(rep.totalCommission)}
+                      {formatCurrency(rep.totalCommission, currency)}
                     </td>
                   </tr>
                 ))}

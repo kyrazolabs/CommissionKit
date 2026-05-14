@@ -42,7 +42,7 @@
       "vite": "^7.3.2",
       "wouter": "^3.3.5",
       "zod": "^4.4.3",
-      "mongoose": "^8.9.5",
+      "mongoose": "8.12.1",
       "mongodb": "^6.13.0"
     }
   },
@@ -129,6 +129,7 @@
     "@esbuild-kit/esm-loader": "npm:tsx@^4.21.0",
     "esbuild": "0.27.3",
     "mongodb": "6.13.0",
-    "bson": "6.10.1"
+    "bson": "6.10.1",
+    "mongoose": "8.12.1"
   }
 }

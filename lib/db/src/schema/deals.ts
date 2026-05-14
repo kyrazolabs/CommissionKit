@@ -9,6 +9,7 @@ const DealSchema = new Schema({
   closeDate: { type: String, required: true },
   period: { type: String, required: true },
   stage: { type: String, required: true, default: "closed_won" },
+  currency: { type: String, required: true, default: "USD" },
   notes: { type: String },
 }, { timestamps: { createdAt: true, updatedAt: false } });
 
@@ -23,6 +24,7 @@ export type Deal = mongoose.Document & {
   closeDate: string;
   period: string;
   stage: string;
+  currency: string;
   notes?: string;
   createdAt: Date;
 };
@@ -35,5 +37,6 @@ export const insertDealSchema = z.object({
   closeDate: z.string(),
   period: z.string(),
   stage: z.string().default("closed_won"),
+  currency: z.string().default("USD"),
   notes: z.string().optional(),
 });
