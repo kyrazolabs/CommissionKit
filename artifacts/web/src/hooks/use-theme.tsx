@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "light" | "dark";
 
@@ -14,8 +14,10 @@ const ThemeContext = createContext<ThemeContextValue>({
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
-    const stored = localStorage.getItem("ck-theme");
-    if (stored === "dark" || stored === "light") return stored;
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("ck-theme");
+      if (stored === "dark" || stored === "light") return stored as Theme;
+    }
     return "light";
   });
 
