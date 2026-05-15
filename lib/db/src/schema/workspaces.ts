@@ -14,7 +14,8 @@ const WorkspaceMemberSchema = new Schema({
   workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
   userId: { type: String },
   email: { type: String, required: true },
-  role: { type: String, required: true, default: "member" },
+  role: { type: String, required: true, default: "member" }, // legacy fallback
+  roleIds: [{ type: Schema.Types.ObjectId, ref: "Role" }],
 }, { timestamps: { createdAt: true, updatedAt: false } });
 
 export const Workspace = model("Workspace", WorkspaceSchema);
@@ -36,6 +37,7 @@ export type WorkspaceMember = mongoose.Document & {
   userId?: string;
   email: string;
   role: string;
+  roleIds?: Types.ObjectId[];
   createdAt: Date;
 };
 
@@ -50,4 +52,5 @@ export const insertWorkspaceMemberSchema = z.object({
   userId: z.string().optional(),
   email: z.string(),
   role: z.string().default("member"),
+  roleIds: z.array(z.string()).optional(),
 });

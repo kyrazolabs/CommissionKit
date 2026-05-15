@@ -18,10 +18,33 @@ import { cn } from "@/lib/utils";
 
 const COLORS = ['#0D9488', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'];
 
+import { useRole } from "@/hooks/use-role";
+
+const CustomTooltip = ({ active, payload, label, currency }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-popover text-popover-foreground border border-border p-3 rounded-lg shadow-lg text-sm">
+        <p className="font-semibold mb-1">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <div key={index} className="flex items-center gap-2">
+            <div className="size-2 rounded-full" style={{ backgroundColor: entry.color }} />
+            <span className="text-muted-foreground">{entry.name}:</span>
+            <span className="font-medium">
+              {entry.name === 'Deals' ? entry.value : formatCurrency(entry.value, currency)}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
 export function ReportsPage() {
   const { activeWorkspace } = useWorkspace();
+  const { hasPermission, isLoading: roleLoading } = useRole();
   const currency = activeWorkspace?.currency || "USD";
-  
+
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subDays(new Date(), 30),
     to: new Date()
@@ -39,28 +62,30 @@ export function ReportsPage() {
     { query: { queryKey: [...getGetReportsQueryKey(queryParams)] } }
   );
 
+  if (roleLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="size-10" />
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
+        </div>
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
+  }
+
+  if (!hasPermission("analytics", "read")) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
+        <PieIcon className="size-10 text-muted-foreground" />
+        <h2 className="text-lg font-semibold">Access Denied</h2>
+        <p className="text-sm text-muted-foreground">You don't have permission to view reports.</p>
+      </div>
+    );
+  }
+
   const handleExportPdf = () => {
     window.print();
-  };
-
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-popover text-popover-foreground border border-border p-3 rounded-lg shadow-lg text-sm">
-          <p className="font-semibold mb-1">{label}</p>
-          {payload.map((entry: any, index: number) => (
-            <div key={index} className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-              <span className="text-muted-foreground">{entry.name}:</span>
-              <span className="font-medium">
-                {entry.name === 'Deals' ? entry.value : formatCurrency(entry.value, currency)}
-              </span>
-            </div>
-          ))}
-        </div>
-      );
-    }
-    return null;
   };
 
   const exec = reportData?.executiveSummary;
@@ -106,7 +131,7 @@ export function ReportsPage() {
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4">
           <div>
             <p className="text-[12px] font-semibold text-primary mb-1">Analytics</p>
-            <h1 className="text-[28px] font-bold tracking-tight text-foreground leading-tight">Executive Report</h1>
+            <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">Executive Report</h1>
             <p className="text-[14px] text-muted-foreground mt-1 leading-relaxed">
               Data-driven insights for compensation and revenue decisions.
             </p>
@@ -124,7 +149,7 @@ export function ReportsPage() {
                       !dateRange && "text-muted-foreground"
                     )}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <CalendarIcon className="mr-2 size-4 text-muted-foreground" />
                     {dateRange?.from ? (
                       dateRange.to ? (
                         <>
@@ -182,7 +207,7 @@ export function ReportsPage() {
           </div>
         ) : !reportData || !exec ? (
           <div className="bg-card border border-card-border rounded-2xl flex flex-col items-center justify-center p-16 text-center" style={{ boxShadow: "var(--shadow-card)" }}>
-            <FileText className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
+            <FileText className="size-12 text-muted-foreground mb-4 opacity-20" />
             <h3 className="text-lg font-semibold text-foreground">No data available</h3>
             <p className="text-sm text-muted-foreground mt-1">There is no report data for the selected date range.</p>
           </div>
@@ -194,37 +219,37 @@ export function ReportsPage() {
               <div className="bg-card border border-card-border rounded-2xl px-[22px] py-5" style={{ boxShadow: "var(--shadow-card)" }}>
                 <div className="flex items-center justify-between mb-3.5">
                   <span className="text-[12px] font-medium text-muted-foreground">Pipeline Revenue</span>
-                  <div className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-secondary"><TrendingUp className="h-3.5 w-3.5 text-primary" /></div>
+                  <div className="flex size-7 items-center justify-center rounded-[10px] bg-secondary"><TrendingUp className="size-3.5 text-primary" /></div>
                 </div>
-                <div className="text-[26px] font-bold tracking-tight text-foreground leading-none">{formatCurrency(exec.totalRevenue, currency)}</div>
+                <div className="text-[26px] font-semibold tracking-tight text-foreground leading-none">{formatCurrency(exec.totalRevenue, currency)}</div>
               </div>
               <div className="bg-card border border-card-border rounded-2xl px-[22px] py-5" style={{ boxShadow: "var(--shadow-card)" }}>
                 <div className="flex items-center justify-between mb-3.5">
                   <span className="text-[12px] font-medium text-muted-foreground">Commissions Paid</span>
-                  <div className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-secondary"><DollarSign className="h-3.5 w-3.5 text-primary" /></div>
+                  <div className="flex size-7 items-center justify-center rounded-[10px] bg-secondary"><DollarSign className="size-3.5 text-primary" /></div>
                 </div>
-                <div className="text-[26px] font-bold tracking-tight text-foreground leading-none">{formatCurrency(exec.totalCommission, currency)}</div>
+                <div className="text-[26px] font-semibold tracking-tight text-foreground leading-none">{formatCurrency(exec.totalCommission, currency)}</div>
               </div>
               <div className="bg-card border border-card-border rounded-2xl px-[22px] py-5" style={{ boxShadow: "var(--shadow-card)" }}>
                 <div className="flex items-center justify-between mb-3.5">
                   <span className="text-[12px] font-medium text-muted-foreground">Effective Win Rate</span>
-                  <div className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-secondary"><Target className="h-3.5 w-3.5 text-primary" /></div>
+                  <div className="flex size-7 items-center justify-center rounded-[10px] bg-secondary"><Target className="size-3.5 text-primary" /></div>
                 </div>
-                <div className="text-[26px] font-bold tracking-tight text-foreground leading-none">{exec.winRate.toFixed(1)}%</div>
+                <div className="text-[26px] font-semibold tracking-tight text-foreground leading-none">{exec.winRate.toFixed(1)}%</div>
               </div>
               <div className="bg-card border border-card-border rounded-2xl px-[22px] py-5" style={{ boxShadow: "var(--shadow-card)" }}>
                 <div className="flex items-center justify-between mb-3.5">
                   <span className="text-[12px] font-medium text-muted-foreground">Avg Deal Size</span>
-                  <div className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-secondary"><PieIcon className="h-3.5 w-3.5 text-primary" /></div>
+                  <div className="flex size-7 items-center justify-center rounded-[10px] bg-secondary"><PieIcon className="size-3.5 text-primary" /></div>
                 </div>
-                <div className="text-[26px] font-bold tracking-tight text-foreground leading-none">{formatCurrency(exec.avgDealSize, currency)}</div>
+                <div className="text-[26px] font-semibold tracking-tight text-foreground leading-none">{formatCurrency(exec.avgDealSize, currency)}</div>
               </div>
             </div>
 
             {/* Trends Chart */}
             <div className="bg-card border border-card-border rounded-2xl p-[22px]" style={{ boxShadow: "var(--shadow-card)" }}>
               <div className="mb-6">
-                <h3 className="text-[14.5px] font-bold text-foreground">Revenue & Margin Trends</h3>
+                <h3 className="text-[14.5px] font-semibold text-foreground">Revenue & Margin Trends</h3>
                 <p className="text-[12px] text-muted-foreground mt-0.5">Tracking pipeline impact against commission cost</p>
               </div>
               
@@ -261,7 +286,7 @@ export function ReportsPage() {
                       tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} 
                     />
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" opacity={0.5} />
-                    <RechartsTooltip content={<CustomTooltip />} />
+                    <RechartsTooltip content={<CustomTooltip currency={currency} />} />
                     <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
                     <Area 
                       yAxisId="left"
@@ -292,7 +317,7 @@ export function ReportsPage() {
               {/* Top Performers Table */}
               <div className="col-span-2 bg-card border border-card-border rounded-2xl overflow-hidden" style={{ boxShadow: "var(--shadow-card)" }}>
                 <div className="px-[22px] py-[18px] border-b border-border">
-                  <h3 className="text-[14.5px] font-bold text-foreground">Rep Performance Matrix</h3>
+                  <h3 className="text-[14.5px] font-semibold text-foreground">Rep Performance Matrix</h3>
                   <p className="text-[12px] text-muted-foreground mt-0.5">Decision metrics for sales leadership</p>
                 </div>
                 
@@ -315,7 +340,7 @@ export function ReportsPage() {
                         return (
                           <tr key={rep.name} className="border-t border-border hover:bg-muted/30 transition-colors">
                             <td className="px-[22px] py-3.5 text-[13.5px] font-semibold text-foreground flex items-center gap-2">
-                              {i === 0 && <span className="text-[10px] font-bold text-primary bg-secondary rounded px-1 py-0.5 print-hide">#1</span>}
+                              {i === 0 && <span className="text-[10px] font-semibold text-primary bg-secondary rounded p-1 print-hide">#1</span>}
                               {rep.name}
                             </td>
                             <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground">{formatNumber(rep.dealsWon)}</td>
@@ -334,7 +359,7 @@ export function ReportsPage() {
               {/* Deal Stages Pie */}
               <div className="col-span-2 lg:col-span-1 bg-card border border-card-border rounded-2xl p-[22px]" style={{ boxShadow: "var(--shadow-card)" }}>
                 <div className="mb-6">
-                  <h3 className="text-[14.5px] font-bold text-foreground">Pipeline Health</h3>
+                  <h3 className="text-[14.5px] font-semibold text-foreground">Pipeline Health</h3>
                   <p className="text-[12px] text-muted-foreground mt-0.5">Overall distribution of deal outcomes</p>
                 </div>
                 <div className="h-[300px] w-full flex items-center justify-center">

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
 import { authClient, useSession } from "@/lib/auth-client";
 import { setAuthTokenGetter, setWorkspaceId, setBaseUrl } from "@workspace/api-client-react";
 
@@ -33,14 +33,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => setAuthTokenGetter(null);
   }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     await authClient.signOut();
     setAuthTokenGetter(null);
     setWorkspaceId(null);
-  };
+  }, []);
+
+  const value = useMemo(() => ({ 
+    session, 
+    user: session?.user ?? null, 
+    loading, 
+    signOut 
+  }), [session, loading, signOut]);
 
   return (
-    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, signOut }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

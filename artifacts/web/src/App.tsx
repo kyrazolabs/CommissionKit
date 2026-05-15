@@ -18,6 +18,8 @@ import { SettingsPage } from "@/pages/settings";
 import { TeamPage } from "@/pages/team";
 import { BillingPage } from "@/pages/billing";
 import { LoginPage } from "@/pages/login";
+import { PayoutsPage } from "@/pages/payouts";
+import { DisputesPage } from "@/pages/disputes";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { WorkspaceProvider, useWorkspace } from "@/hooks/use-workspace";
@@ -34,7 +36,7 @@ function Layout({ children }: { children: React.ReactNode }) {
         <div className="flex-1 flex flex-col pr-3 pb-3 overflow-hidden" style={{ background: "hsl(var(--sidebar))" }}>
           <div className="bg-card rounded-2xl border border-card-border flex-1 flex flex-col overflow-hidden shadow-xs">
             <div className="flex-1 overflow-y-auto custom-scrollbar">
-              <main className="mx-auto py-8 px-8 lg:px-10 max-w-6xl min-h-full">
+              <main className="mx-auto p-8 lg:px-10 max-w-6xl min-h-full">
                 {children}
               </main>
             </div>
@@ -76,7 +78,7 @@ function CreateWorkspaceScreen() {
             <circle cx="36" cy="36" r="2.5" fill="#0D9488" />
           </svg>
         </div>
-        <h1 className="text-[18px] font-bold text-foreground text-center mb-1">Create your workspace</h1>
+        <h1 className="text-[18px] font-semibold text-foreground text-center mb-1">Create your workspace</h1>
         <p className="text-[13px] text-muted-foreground text-center mb-6">
           A workspace holds your team's reps, plans, and deals.
         </p>
@@ -86,14 +88,13 @@ function CreateWorkspaceScreen() {
             placeholder="e.g. Acme Sales"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
-            autoFocus
+            className="w-full rounded-lg border border-border bg-background p-3 text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
           />
           {error && <p className="text-[12px] text-destructive">{error}</p>}
           <button
             type="submit"
             disabled={!name.trim() || creating}
-            className="w-full rounded-lg bg-primary text-primary-foreground px-4 py-2.5 text-[14px] font-semibold hover:bg-primary/90 disabled:opacity-50 transition-colors"
+            className="w-full rounded-lg bg-primary text-primary-foreground p-4 text-[14px] font-semibold hover:bg-primary/90 disabled:opacity-50 transition-colors"
           >
             {creating ? "Creating…" : "Create workspace"}
           </button>
@@ -143,11 +144,15 @@ function ProtectedRouter() {
         <Route path="/team" component={TeamPage} />
         <Route path="/settings" component={SettingsPage} />
         <Route path="/billing" component={BillingPage} />
+        <Route path="/payouts" component={PayoutsPage} />
+        <Route path="/disputes" component={DisputesPage} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
   );
 }
+
+import { AcceptInvite } from "@/pages/accept-invite";
 
 function App() {
   return (
@@ -155,9 +160,10 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            {/* Public routes — no auth required */}
+            {/* Public routes : no auth required directly here */}
             <Switch>
               <Route path="/portal/:accessCode" component={PublicRepPortal} />
+              <Route path="/accept-invite" component={AcceptInvite} />
               {/* All other routes go through the authenticated provider stack */}
               <Route>
                 <AuthProvider>

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { Deal, CommissionResult, Rep } from "@workspace/db";
 import { Types } from "mongoose";
 import {
-  requireWorkspaceMember,
+  requirePermission,
   requireGrowthPlan,
   type AuthenticatedRequest,
 } from "../middleware/auth";
@@ -32,7 +32,7 @@ function toCSV(data: any[], fields: Record<string, string>) {
  */
 router.get(
   "/export/deals",
-  ...requireWorkspaceMember("member"),
+  ...requirePermission("deals", "export_csv"),
   requireGrowthPlan,
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
@@ -82,7 +82,7 @@ router.get(
  */
 router.get(
   "/export/commissions",
-  ...requireWorkspaceMember("member"),
+  ...requirePermission("runs", "export_csv"),
   requireGrowthPlan,
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;

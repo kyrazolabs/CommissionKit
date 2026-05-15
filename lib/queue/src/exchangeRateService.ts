@@ -24,7 +24,7 @@ export async function fetchAndSaveRates(): Promise<void> {
       throw new Error(`Open Exchange Rates API returned status ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as { base: string; rates: Record<string, number> };
     if (!data.rates) {
       throw new Error("Invalid response from Open Exchange Rates API: missing rates");
     }

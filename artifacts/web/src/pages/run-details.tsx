@@ -11,9 +11,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { CurrencyCell } from "@/components/currency-cell";
 import { useWorkspace } from "@/hooks/use-workspace";
 
+import { useRole } from "@/hooks/use-role";
+
 export function RunDetailsPage() {
   const { activeWorkspace } = useWorkspace();
+  const { hasPermission, isLoading: roleLoading } = useRole();
   const currency = activeWorkspace?.currency || "USD";
+
   const params = useParams();
   const id = params.id || "";
 
@@ -27,6 +31,29 @@ export function RunDetailsPage() {
       }
     }
   });
+
+  if (roleLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="size-10" />
+        <div className="grid gap-4 md:grid-cols-3">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
+  }
+
+  if (!hasPermission("calculations", "read")) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
+        <h2 className="text-lg font-semibold">Access Denied</h2>
+        <p className="text-sm text-muted-foreground">You don't have permission to view run details.</p>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -60,7 +87,7 @@ export function RunDetailsPage() {
       {/* Header */}
       <div>
         <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-bold tracking-tight">Run Details</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Run Details</h1>
           <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium border border-primary/20">
             {runData.period}
           </span>
@@ -89,7 +116,7 @@ export function RunDetailsPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Payout</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-primary">
+            <div className="text-3xl font-semibold text-primary">
               {formatCurrency(runData.totalCommission, currency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">In {currency}</p>
@@ -100,7 +127,7 @@ export function RunDetailsPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Deals Processed</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{runData.totalDeals}</div>
+            <div className="text-3xl font-semibold">{runData.totalDeals}</div>
           </CardContent>
         </Card>
         <Card>
@@ -108,7 +135,7 @@ export function RunDetailsPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Reps Included</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{runData.repsCount}</div>
+            <div className="text-3xl font-semibold">{runData.repsCount}</div>
           </CardContent>
         </Card>
       </div>
@@ -122,7 +149,7 @@ export function RunDetailsPage() {
             <span className="ml-2 text-muted-foreground/60 text-xs">
               Deal amounts shown in their original currency.{" "}
               <span className="border-b border-dashed border-current cursor-help">Underlined values</span>{" "}
-              have a conversion tooltip — hover to see the {currency} equivalent at the rate captured when the deal was entered.
+              have a conversion tooltip : hover to see the {currency} equivalent at the rate captured when the deal was entered.
             </span>
           </CardDescription>
         </CardHeader>
@@ -147,7 +174,7 @@ export function RunDetailsPage() {
                     <TableCell>
                       <div>{result.dealName}</div>
                       {dealCurrency !== currency && (
-                        <Badge variant="outline" className="mt-0.5 text-[10px] px-1.5 py-0 h-4">
+                        <Badge variant="outline" className="mt-0.5 text-[10px] p-1.5 h-4">
                           {dealCurrency}
                         </Badge>
                       )}
@@ -163,7 +190,7 @@ export function RunDetailsPage() {
                       />
                     </TableCell>
                     <TableCell className="text-right">{formatPercent(result.rateApplied)}</TableCell>
-                    <TableCell className="text-right font-bold text-primary">
+                    <TableCell className="text-right font-semibold text-primary">
                       <CurrencyCell
                         amount={result.commissionAmount}
                         currency={dealCurrency}
@@ -177,7 +204,7 @@ export function RunDetailsPage() {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div className="cursor-help p-1">
-                            <Info className="h-4 w-4 text-muted-foreground" />
+                            <Info className="size-4 text-muted-foreground" />
                           </div>
                         </TooltipTrigger>
                         <TooltipContent side="left" className="max-w-sm">

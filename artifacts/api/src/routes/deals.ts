@@ -8,7 +8,7 @@ import {
   DeleteDealParams,
 } from "@workspace/api-zod";
 import {
-  requireWorkspaceMember,
+  requirePermission,
   type AuthenticatedRequest,
 } from "../middleware/auth";
 
@@ -32,7 +32,7 @@ function formatDeal(deal: any, repName: string) {
 
 router.get(
   "/deals",
-  ...requireWorkspaceMember("member"),
+  ...requirePermission("deals", "read"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
     const query = ListDealsQueryParams.parse(req.query);
@@ -59,7 +59,7 @@ router.get(
 
 router.post(
   "/deals",
-  ...requireWorkspaceMember("admin"),
+  ...requirePermission("deals", "create"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
     const body = CreateDealBody.parse(req.body);
@@ -82,7 +82,7 @@ router.post(
 
 router.post(
   "/deals/import",
-  ...requireWorkspaceMember("admin"),
+  ...requirePermission("deals", "create"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
     const body = ImportDealsBody.parse(req.body);
@@ -127,7 +127,7 @@ router.post(
 
 router.delete(
   "/deals/:id",
-  ...requireWorkspaceMember("admin"),
+  ...requirePermission("deals", "delete"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
     const { id } = DeleteDealParams.parse(req.params);
@@ -141,7 +141,7 @@ router.delete(
 
 router.put(
   "/deals/:id",
-  ...requireWorkspaceMember("admin"),
+  ...requirePermission("deals", "edit"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
     const { id } = req.params;

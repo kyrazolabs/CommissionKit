@@ -140,3 +140,6 @@ export const statRow = (label: string, value: string) => `
       <td align="right" style="color:#111827;font-size:13px;font-weight:600;">${value}</td>
     </tr>
   </table>`;
+
+export const badge = (text: string, color: string = BRAND_COLOR) => `
+  <span style="display:inline-block;padding:2px 8px;border-radius:12px;background-color:${color}15;color:${color};font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border:1px solid ${color}30;">${text}</span>`;

@@ -25,6 +25,14 @@ CommissionKit is designed to feel **premium, precise, and high-performance.** As
   - High contrast between primary text (`foreground`) and secondary metadata (`muted-foreground`).
   - Tabular numbers for all financial data to ensure alignment.
 
+### Iconography
+- **Primary Pack**: `Lucide React`
+- **Principles**:
+  - Consistent stroke width of `2px`.
+  - Minimalist and geometric forms.
+  - Sizing: Standard UI icons are `16px` (`h-4 w-4`) or `18px` (`h-[18px] w-[18px]`).
+  - Usage: Always paired with text labels in primary navigation to ensure clarity.
+
 ---
 
 ## 2. UI/UX Principles

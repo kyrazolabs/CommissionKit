@@ -31,8 +31,29 @@ export function RepsPage() {
   const { data: plans } = useListPlans({ query: { queryKey: getListPlansQueryKey() } });
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const { can } = useRole();
+  const { can, hasPermission, isLoading: roleLoading } = useRole();
   const { limits } = useBillingStatus();
+
+  if (roleLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="size-10" />
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasPermission("reps", "read")) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
+        <Users className="size-10 text-muted-foreground" />
+        <h2 className="text-lg font-semibold">Access Denied</h2>
+        <p className="text-sm text-muted-foreground">You don't have permission to view sales representatives.</p>
+      </div>
+    );
+  }
 
   const filteredReps = Array.isArray(reps) ? reps.filter(rep =>
     rep.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -44,10 +65,10 @@ export function RepsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <p className="text-[12px] font-semibold text-primary mb-1">Team</p>
-          <h1 className="text-[28px] font-bold tracking-tight text-foreground leading-tight">Sales Representatives</h1>
+          <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">Sales Representatives</h1>
           <p className="text-[14px] text-muted-foreground mt-1">Manage your sales team and their commission plans.</p>
         </div>
-        {can("admin") && (
+        {hasPermission("reps", "create") && (
           <RepFormDialog 
             open={isCreateOpen} 
             onOpenChange={setIsCreateOpen} 
@@ -60,9 +81,9 @@ export function RepsPage() {
       <Card>
         <div className="px-5 pt-4 pb-3 border-b border-border">
           <div className="relative max-w-sm">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
             <Input
-              placeholder="Search reps..."
+              placeholder="Search reps…"
               className="pl-8"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -78,9 +99,9 @@ export function RepsPage() {
               <Skeleton className="h-12 w-full" />
             </div>
           ) : filteredReps.length === 0 ? (
-            <div className="text-center py-10 px-5">
-              <div className="bg-muted w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Users className="h-6 w-6 text-muted-foreground" />
+            <div className="text-center p-10">
+              <div className="bg-muted size-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Users className="size-6 text-muted-foreground" />
               </div>
               <h3 className="text-base font-semibold">No reps found</h3>
               <p className="text-sm text-muted-foreground mt-1 mb-4">
@@ -88,7 +109,7 @@ export function RepsPage() {
               </p>
               {!searchTerm && (
                 <Button onClick={() => setIsCreateOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
+                  <Plus className="mr-2 size-4" />
                   Add Rep
                 </Button>
               )}
@@ -109,7 +130,7 @@ export function RepsPage() {
                   <TableRow key={rep.id}>
                     <TableCell>
                       <div className="flex items-center gap-2.5">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-primary text-[11px] font-bold">
+                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary text-primary text-[11px] font-semibold">
                           {rep.name.split(" ").map(n => n[0]).join("")}
                         </div>
                         <div>
@@ -121,7 +142,7 @@ export function RepsPage() {
                     <TableCell className="text-sm text-muted-foreground">{rep.role}</TableCell>
                     <TableCell>
                       {rep.planName ? (
-                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-secondary text-secondary-foreground border-primary/20">
+                        <span className="inline-flex items-center rounded-full border p-2.5 text-xs font-semibold bg-secondary text-secondary-foreground border-primary/20">
                           {rep.planName}
                         </span>
                       ) : (
@@ -134,25 +155,27 @@ export function RepsPage() {
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
+                          <Button variant="ghost" className="size-8 p-0">
                             <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
+                            <MoreHorizontal className="size-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuItem asChild>
                             <Link href={`/reps/${rep.id}`} className="cursor-pointer w-full flex items-center">
-                              <ChevronRight className="mr-2 h-4 w-4" />
+                              <ChevronRight className="mr-2 size-4" />
                               View Portal
                             </Link>
                           </DropdownMenuItem>
-                          {can("admin") && (
+                          {hasPermission("reps", "edit") && (
                             <>
                               <SendPortalLinkAction rep={rep} />
                               <RepEditAction rep={rep} plans={plans || []} />
-                              <RepDeleteAction rep={rep} />
                             </>
+                          )}
+                          {hasPermission("reps", "delete") && (
+                            <RepDeleteAction rep={rep} />
                           )}
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -214,7 +237,7 @@ function RepFormDialog({ open, onOpenChange, plans, initialData, isLimitReached 
       {!isEditing && (
         <DialogTrigger asChild>
           <Button disabled={isLimitReached} title={isLimitReached ? "Limit reached. Upgrade plan." : ""}>
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 size-4" />
             {isLimitReached ? "Limit Reached" : "Add Rep"}
           </Button>
         </DialogTrigger>
@@ -255,7 +278,7 @@ function RepFormDialog({ open, onOpenChange, plans, initialData, isLimitReached 
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={isPending}>{isPending ? "Saving..." : "Save"}</Button>
+            <Button type="submit" disabled={isPending}>{isPending ? "Saving…" : "Save"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -268,7 +291,7 @@ function RepEditAction({ rep, plans }: { rep: any, plans: any[] }) {
   return (
     <>
       <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setOpen(true); }}>
-        <Edit className="mr-2 h-4 w-4" />Edit Details
+        <Edit className="mr-2 size-4" />Edit Details
       </DropdownMenuItem>
       <RepFormDialog open={open} onOpenChange={setOpen} plans={plans} initialData={rep} />
     </>
@@ -290,7 +313,7 @@ function SendPortalLinkAction({ rep }: { rep: any }) {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "x-workspace-id": activeWorkspace.id,
+          "x-workspace-id": activeWorkspace?.id ?? "",
         },
        });
       if (!res.ok) throw new Error("Failed to send");
@@ -315,8 +338,8 @@ function SendPortalLinkAction({ rep }: { rep: any }) {
       onSelect={(e) => { e.preventDefault(); handleSend(); }}
       disabled={sending}
     >
-      <Mail className="mr-2 h-4 w-4" />
-      {sending ? "Sending..." : "Send Portal Link"}
+      <Mail className="mr-2 size-4" />
+      {sending ? "Sending…" : "Send Portal Link"}
     </DropdownMenuItem>
   );
 }
@@ -343,7 +366,7 @@ function RepDeleteAction({ rep }: { rep: any }) {
         className="text-destructive focus:bg-destructive/10 focus:text-destructive"
         onSelect={(e) => { e.preventDefault(); setOpen(true); }}
       >
-        <Trash className="mr-2 h-4 w-4" />Delete Rep
+        <Trash className="mr-2 size-4" />Delete Rep
       </DropdownMenuItem>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
@@ -356,7 +379,7 @@ function RepDeleteAction({ rep }: { rep: any }) {
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
             <Button variant="destructive" onClick={handleDelete} disabled={deleteMutation.isPending}>
-              {deleteMutation.isPending ? "Deleting..." : "Delete Representative"}
+              {deleteMutation.isPending ? "Deleting…" : "Delete Representative"}
             </Button>
           </DialogFooter>
         </DialogContent>

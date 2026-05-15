@@ -17,7 +17,7 @@ import {
 } from "@workspace/queue";
 import { commissionRunTemplate } from "@workspace/email-templates";
 import { createNotification } from "../lib/notify";
-import type { CommissionCalcPayload } from "@workspace/queue/schemas";
+import type { CommissionCalcPayload } from "@workspace/queue";
 import { convertCurrency, convertCurrencyAt } from "../lib/exchange";
 
 const WORKER_OPTS = {

@@ -1,0 +1,697 @@
+import { useState, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import {
+  DollarSign, CheckCircle2, Clock, AlertTriangle, Download,
+  MoreHorizontal, Check, Filter, Search, Plus, Loader2,
+  XCircle,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
+import { useWorkspace } from "@/hooks/use-workspace";
+import { useRole } from "@/hooks/use-role";
+import { useBillingStatus } from "@/hooks/use-billing-status";
+import { formatCurrency } from "@/lib/format";
+import { cn } from "@/lib/utils";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface Payout {
+  id: string;
+  repId: string;
+  repName: string;
+  periodStart: string;
+  periodEnd: string;
+  commissionAmount: number;
+  adjustments: number;
+  finalAmount: number;
+  currency: string;
+  status: "pending" | "approved" | "paid" | "disputed" | "on_hold";
+  paymentMethod?: string;
+  scheduledPaymentDate?: string;
+  actualPaymentDate?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const STATUS_CONFIG = {
+  pending:   { label: "Pending",   class: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200/50" },
+  approved:  { label: "Approved",  class: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200/50" },
+  paid:      { label: "Paid",      class: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200/50" },
+  disputed:  { label: "Disputed",  class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200/50" },
+  on_hold:   { label: "On Hold",   class: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 border-gray-200/50" },
+};
+
+function StatusBadge({ status }: { status: Payout["status"] }) {
+  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
+  return (
+    <span className={cn("inline-flex items-center rounded-full border p-2.5 text-[11px] font-semibold", cfg.class)}>
+      {cfg.label}
+    </span>
+  );
+}
+
+function useFetchPayouts(workspaceId: string, filters: any) {
+  return useQuery({
+    queryKey: ["payouts", workspaceId, filters],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (filters.status) params.set("status", filters.status);
+      if (filters.repId) params.set("repId", filters.repId);
+      const res = await fetch(`${API_URL}/api/payouts?${params}`, {
+        credentials: "include",
+        headers: { "x-workspace-id": workspaceId },
+      });
+      if (!res.ok) throw new Error("Failed to fetch payouts");
+      return res.json() as Promise<Payout[]>;
+    },
+    enabled: Boolean(workspaceId),
+  });
+}
+
+function usePayoutMutation(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, action, body }: { id: string; action: string; body: any }) => {
+      const res = await fetch(`${API_URL}/api/payouts/${id}/${action}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json", "x-workspace-id": workspaceId },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? "Action failed");
+      }
+      return res.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["payouts", workspaceId] }),
+  });
+}
+
+// ─── Summary Cards ────────────────────────────────────────────────────────────
+function SummaryCards({ payouts, currency }: { payouts: Payout[]; currency: string }) {
+  const totalPending  = payouts.filter(p => p.status === "pending").reduce((s, p) => s + p.finalAmount, 0);
+  const totalApproved = payouts.filter(p => p.status === "approved").reduce((s, p) => s + p.finalAmount, 0);
+  const thisMonth = new Date().toISOString().slice(0, 7);
+  const totalPaidMonth = payouts
+    .filter(p => p.status === "paid" && p.actualPaymentDate?.startsWith(thisMonth))
+    .reduce((s, p) => s + p.finalAmount, 0);
+  const openDisputes = payouts.filter(p => p.status === "disputed").length;
+
+  const cards = [
+    { label: "Total Pending", value: formatCurrency(totalPending, currency), icon: Clock, delta: "Awaiting approval" },
+    { label: "Total Approved", value: formatCurrency(totalApproved, currency), icon: CheckCircle2, delta: "Ready for payment" },
+    { label: "Paid This Month", value: formatCurrency(totalPaidMonth, currency), icon: DollarSign, delta: "Successfully disbursed" },
+    { label: "Open Disputes", value: String(openDisputes), icon: AlertTriangle, delta: "Require resolution" },
+  ];
+
+  return (
+    <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      {cards.map(({ label, value, delta, icon: Icon }) => (
+        <div
+          key={label}
+          className="bg-card border border-card-border rounded-2xl px-[22px] py-5"
+          style={{ boxShadow: "var(--shadow-card)" }}
+        >
+          <div className="flex items-center justify-between mb-3.5">
+            <span className="text-[12px] font-medium text-muted-foreground">{label}</span>
+            <div className="flex size-7 items-center justify-center rounded-[10px] bg-secondary">
+              <Icon className="size-3.5 text-primary" />
+            </div>
+          </div>
+          <div className="text-[26px] font-semibold tracking-tight text-foreground leading-none">{value}</div>
+          <p className="text-[12px] text-primary font-medium mt-1.5">{delta}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Adjust Modal ─────────────────────────────────────────────────────────────
+function AdjustModal({ payout, workspaceId, onClose }: { payout: Payout; workspaceId: string; onClose: () => void }) {
+  const [amount, setAmount] = useState("");
+  const [note, setNote] = useState("");
+  const { toast } = useToast();
+  const mutation = usePayoutMutation(workspaceId);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const num = parseFloat(amount);
+    if (isNaN(num)) return;
+    mutation.mutate(
+      { id: payout.id, action: "adjust", body: { amount: num, note } },
+      {
+        onSuccess: () => { toast({ title: "Adjustment applied" }); onClose(); },
+        onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+      },
+    );
+  };
+
+  return (
+    <DialogContent className="sm:max-w-md">
+      <DialogHeader>
+        <DialogTitle>Add Adjustment</DialogTitle>
+        <DialogDescription>
+          Adjust the payout for <strong>{payout.repName}</strong>. Use a negative value for clawbacks.
+        </DialogDescription>
+      </DialogHeader>
+      <form onSubmit={handleSubmit} className="space-y-4 py-2">
+        <div className="grid gap-2">
+          <Label>Amount (+ bonus / − clawback)</Label>
+          <Input
+            type="number"
+            step="0.01"
+            placeholder="e.g. -150.00"
+            value={amount}
+            onChange={e => setAmount(e.target.value)}
+            required
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label>Note</Label>
+          <Textarea placeholder="Reason for adjustment…" value={note} onChange={e => setNote(e.target.value)} rows={3} />
+        </div>
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+          <Button type="submit" disabled={mutation.isPending}>
+            {mutation.isPending ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+            Apply
+          </Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
+  );
+}
+
+// ─── Create Payout Modal ──────────────────────────────────────────────────────
+function CreatePayoutModal({ workspaceId, onClose }: { workspaceId: string; onClose: () => void }) {
+  const [repId, setRepId] = useState("");
+  const [periodStart, setPeriodStart] = useState("");
+  const [periodEnd, setPeriodEnd] = useState("");
+  const [amount, setAmount] = useState("");
+  const [notes, setNotes] = useState("");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: reps } = useQuery({
+    queryKey: ["reps-list", workspaceId],
+    queryFn: async () => {
+      const res = await fetch(`${API_URL}/api/reps`, { credentials: "include", headers: { "x-workspace-id": workspaceId } });
+      return res.json();
+    },
+  });
+
+  const mutation = useMutation({
+    mutationFn: async (body: any) => {
+      const res = await fetch(`${API_URL}/api/payouts`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json", "x-workspace-id": workspaceId },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? "Failed to create payout");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["payouts", workspaceId] });
+      toast({ title: "Payout created" });
+      onClose();
+    },
+    onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    mutation.mutate({ repId, periodStart, periodEnd, commissionAmount: parseFloat(amount), notes });
+  };
+
+  return (
+    <DialogContent className="sm:max-w-md">
+      <DialogHeader>
+        <DialogTitle>Create Payout</DialogTitle>
+        <DialogDescription>Manually create a commission payout for a rep.</DialogDescription>
+      </DialogHeader>
+      <form onSubmit={handleSubmit} className="space-y-4 py-2">
+        <div className="grid gap-2">
+          <Label>Sales Rep</Label>
+          <Select value={repId} onValueChange={setRepId} required>
+            <SelectTrigger><SelectValue placeholder="Select rep…" /></SelectTrigger>
+            <SelectContent>
+              {Array.isArray(reps) && reps.map((r: any) => (
+                <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-2">
+            <Label>Period Start</Label>
+            <Input type="date" value={periodStart} onChange={e => setPeriodStart(e.target.value)} required />
+          </div>
+          <div className="grid gap-2">
+            <Label>Period End</Label>
+            <Input type="date" value={periodEnd} onChange={e => setPeriodEnd(e.target.value)} required />
+          </div>
+        </div>
+        <div className="grid gap-2">
+          <Label>Commission Amount</Label>
+          <Input type="number" step="0.01" min="0" placeholder="0.00" value={amount} onChange={e => setAmount(e.target.value)} required />
+        </div>
+        <div className="grid gap-2">
+          <Label>Notes (optional)</Label>
+          <Textarea rows={2} value={notes} onChange={e => setNotes(e.target.value)} />
+        </div>
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+          <Button type="submit" disabled={mutation.isPending}>
+            {mutation.isPending ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+            Create Payout
+          </Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
+  );
+}
+
+// ─── Status Confirmation Modal ───────────────────────────────────────────────
+function StatusConfirmModal({
+  payout,
+  targetStatus,
+  onConfirm,
+  onClose,
+  isPending
+}: {
+  payout: Payout;
+  targetStatus: string;
+  onConfirm: () => void;
+  onClose: () => void;
+  isPending: boolean;
+}) {
+  const isFinal = targetStatus === "paid";
+  return (
+    <DialogContent className="sm:max-w-md">
+      <DialogHeader>
+        <DialogTitle className="flex items-center gap-2">
+          {isFinal ? <AlertTriangle className="size-5 text-amber-500" /> : <CheckCircle2 className="size-5 text-blue-500" />}
+          Confirm Status Change
+        </DialogTitle>
+        <DialogDescription>
+          Are you sure you want to change the status for <strong>{payout.repName}</strong> to <span className="font-semibold text-foreground">{targetStatus.toUpperCase()}</span>?
+          {isFinal && (
+            <p className="mt-2 text-destructive font-semibold">
+              Warning: Marking a payout as PAID will finalize it. You will no longer be able to edit or adjust this record.
+            </p>
+          )}
+        </DialogDescription>
+      </DialogHeader>
+      <DialogFooter>
+        <Button variant="outline" onClick={onClose} disabled={isPending}>Cancel</Button>
+        <Button onClick={onConfirm} disabled={isPending} variant={isFinal ? "destructive" : "default"}>
+          {isPending ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+          Confirm
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+export function PayoutsPage() {
+  const { activeWorkspace } = useWorkspace();
+  const { hasPermission, isLoading: roleLoading } = useRole();
+  const { toast } = useToast();
+  const { sub } = useBillingStatus();
+  const queryClient = useQueryClient();
+
+  const workspaceId = activeWorkspace?.id || "";
+
+  const currency = activeWorkspace?.currency ?? "USD";
+  const plan = sub?.plan ?? "free";
+  const isGrowthPlus = ["growth", "annual", "flex"].includes(plan);
+
+  const [filters, setFilters] = useState({ status: "", repId: "" });
+  const [search, setSearch] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [adjustTarget, setAdjustTarget] = useState<Payout | null>(null);
+  const [confirmTarget, setConfirmTarget] = useState<{ payout: Payout; status: string; extra?: any } | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [bulkLoading, setBulkLoading] = useState(false);
+
+  const { data: payouts = [], isLoading } = useFetchPayouts(workspaceId, filters);
+  const mutation = usePayoutMutation(workspaceId);
+
+  if (roleLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="size-10" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
+        </div>
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
+  }
+
+  if (!hasPermission("payouts", "read")) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
+        <AlertTriangle className="size-10 text-muted-foreground" />
+        <h2 className="text-lg font-semibold">Access Denied</h2>
+        <p className="text-sm text-muted-foreground">You don't have permission to view payouts.</p>
+      </div>
+    );
+  }
+
+  const filtered = payouts.filter(p =>
+    p.repName.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  const executeStatusChange = (payout: Payout, status: string, extra?: any) => {
+    mutation.mutate(
+      { id: payout.id, action: "status", body: { status, ...extra } },
+      {
+        onSuccess: () => {
+          toast({ title: "Status updated" });
+          setConfirmTarget(null);
+        },
+        onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+      },
+    );
+  };
+
+  const handleBulkApprove = async () => {
+    if (!isGrowthPlus) return;
+    setBulkLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/payouts/bulk-approve`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json", "x-workspace-id": workspaceId },
+        body: JSON.stringify({ ids: [...selectedIds] }),
+      });
+      const data = await res.json();
+      toast({ title: `${data.approved} payout(s) approved` });
+      setSelectedIds(new Set());
+      queryClient.invalidateQueries({ queryKey: ["payouts", workspaceId] });
+    } catch {
+      toast({ title: "Bulk approve failed", variant: "destructive" });
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
+  const handleExport = async () => {
+    if (!isGrowthPlus) return;
+    try {
+      const params = new URLSearchParams();
+      if (filters.status) params.set("status", filters.status);
+      
+      const res = await fetch(`${API_URL}/api/payouts/export?${params}`, {
+        credentials: "include",
+        headers: { "x-workspace-id": workspaceId },
+      });
+      
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Export failed");
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `payouts-${format(new Date(), "yyyy-MM-dd")}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err: any) {
+      toast({ title: "Export failed", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    const pendingIds = filtered.filter(p => p.status === "pending").map(p => p.id);
+    if (pendingIds.every(id => selectedIds.has(id))) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(pendingIds));
+    }
+  };
+
+  return (
+    <div className="space-y-7">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <p className="text-[12px] font-semibold text-primary mb-1">Operations</p>
+          <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">Payout Tracker</h1>
+          <p className="text-[14px] text-muted-foreground mt-1 leading-relaxed">
+            Manage and approve commission payouts for your team.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          {isGrowthPlus ? (
+            <Button variant="outline" onClick={handleExport} className="h-10 px-4 shadow-sm gap-2">
+              <Download className="size-4" />
+              Export CSV
+            </Button>
+          ) : (
+            <Button variant="outline" disabled title="Growth plan required" className="h-10 px-4 shadow-sm gap-2 opacity-60">
+              <Download className="size-4" />
+              Export CSV
+            </Button>
+          )}
+          <Button className="h-10 px-4 shadow-sm gap-2" onClick={() => setCreateOpen(true)}>
+            <Plus className="size-4" />
+            New Payout
+          </Button>
+        </div>
+      </div>
+
+      {/* Summary cards */}
+      {isLoading ? (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
+        </div>
+      ) : (
+        <SummaryCards payouts={payouts} currency={currency} />
+      )}
+
+      {/* Filters & bulk actions */}
+      <Card>
+        <div className="px-5 pt-4 pb-3 border-b border-border flex flex-wrap items-center gap-3">
+          <div className="relative flex-1 min-w-[180px] max-w-xs">
+            <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+            <Input placeholder="Search by rep…" className="pl-8" value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
+          <Select value={filters.status || "all"} onValueChange={v => setFilters(f => ({ ...f, status: v === "all" ? "" : v }))}>
+            <SelectTrigger className="w-36">
+              <Filter className="size-3.5 mr-1.5 text-muted-foreground" />
+              <SelectValue placeholder="All statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="paid">Paid</SelectItem>
+              <SelectItem value="disputed">Disputed</SelectItem>
+              <SelectItem value="on_hold">On Hold</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {selectedIds.size > 0 && (
+            <Button
+              size="sm"
+              onClick={handleBulkApprove}
+              disabled={bulkLoading || !isGrowthPlus}
+              className="gap-2"
+            >
+              {bulkLoading ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
+              Approve {selectedIds.size} Selected
+              {!isGrowthPlus && <span className="ml-1 text-[10px] opacity-70">(Growth+)</span>}
+            </Button>
+          )}
+        </div>
+
+        <CardContent className="p-0">
+          {isLoading ? (
+            <div className="p-5 space-y-2">
+              {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full" />)}
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-14">
+              <DollarSign className="size-10 text-muted-foreground mx-auto mb-3" />
+              <h3 className="text-base font-semibold">No payouts found</h3>
+              <p className="text-sm text-muted-foreground mt-1">Create a payout or adjust your filters.</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={
+                        filtered.filter(p => p.status === "pending").length > 0 &&
+                        filtered.filter(p => p.status === "pending").every(p => selectedIds.has(p.id))
+                      }
+                      onCheckedChange={toggleAll}
+                    />
+                  </TableHead>
+                  <TableHead>Rep</TableHead>
+                  <TableHead>Period</TableHead>
+                  <TableHead className="text-right">Commission</TableHead>
+                  <TableHead className="text-right">Adjustments</TableHead>
+                  <TableHead className="text-right">Final</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Scheduled</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map(payout => {
+                  const isPaid = payout.status === "paid";
+                  return (
+                    <TableRow key={payout.id} className={cn(selectedIds.has(payout.id) ? "bg-primary/5" : "", isPaid && "opacity-80 bg-muted/20")}>
+                      <TableCell>
+                        {payout.status === "pending" && (
+                          <Checkbox
+                            checked={selectedIds.has(payout.id)}
+                            onCheckedChange={() => toggleSelect(payout.id)}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div className="size-7 rounded-full bg-primary/10 text-primary text-[10px] font-semibold flex items-center justify-center shrink-0">
+                            {payout.repName.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                          </div>
+                          <span className="text-sm font-medium">{payout.repName}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {format(new Date(payout.periodStart), "MMM d")}–{format(new Date(payout.periodEnd), "MMM d, yyyy")}
+                      </TableCell>
+                      <TableCell className="text-right text-sm tabular-nums">
+                        {formatCurrency(payout.commissionAmount, payout.currency)}
+                      </TableCell>
+                      <TableCell className={cn("text-right text-sm tabular-nums", payout.adjustments < 0 ? "text-red-600" : payout.adjustments > 0 ? "text-green-600" : "text-muted-foreground")}>
+                        {payout.adjustments !== 0 ? (payout.adjustments > 0 ? "+" : "") + formatCurrency(payout.adjustments, payout.currency) : ":"}
+                      </TableCell>
+                      <TableCell className="text-right text-sm font-semibold tabular-nums">
+                        {formatCurrency(payout.finalAmount, payout.currency)}
+                      </TableCell>
+                      <TableCell><StatusBadge status={payout.status} /></TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {payout.scheduledPaymentDate
+                          ? format(new Date(payout.scheduledPaymentDate), "MMM d, yyyy")
+                          : ":"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="size-8 p-0" disabled={isPaid}>
+                              {isPaid ? <XCircle className="size-4 text-muted-foreground" /> : <MoreHorizontal className="size-4" />}
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {payout.status === "pending" && hasPermission("payouts", "approve") && (
+                              <DropdownMenuItem onClick={() => setConfirmTarget({ payout, status: "approved" })}>
+                                <CheckCircle2 className="mr-2 size-4 text-blue-500" />Approve
+                              </DropdownMenuItem>
+                            )}
+                            {payout.status === "approved" && hasPermission("payouts", "mark_paid") && (
+                              <DropdownMenuItem onClick={() => setConfirmTarget({ payout, status: "paid", extra: { actualPaymentDate: new Date().toISOString() } })}>
+                                <DollarSign className="mr-2 size-4 text-green-500" />Mark as Paid
+                              </DropdownMenuItem>
+                            )}
+                            {hasPermission("payouts", "adjust") && (
+                              <DropdownMenuItem onClick={() => setAdjustTarget(payout)}>
+                                <Plus className="mr-2 size-4" />Add Adjustment
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                            {payout.status !== "on_hold" && hasPermission("payouts", "edit") && (
+                              <DropdownMenuItem onClick={() => setConfirmTarget({ payout, status: "on_hold" })} className="text-muted-foreground">
+                                <Clock className="mr-2 size-4" />Put on Hold
+                              </DropdownMenuItem>
+                            )}
+                            {payout.status === "on_hold" && hasPermission("payouts", "edit") && (
+                              <DropdownMenuItem onClick={() => setConfirmTarget({ payout, status: "pending" })}>
+                                <Clock className="mr-2 size-4" />Resume (→ Pending)
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Modals */}
+      <Dialog open={!!adjustTarget} onOpenChange={() => setAdjustTarget(null)}>
+        {adjustTarget && (
+          <AdjustModal payout={adjustTarget} workspaceId={workspaceId} onClose={() => setAdjustTarget(null)} />
+        )}
+      </Dialog>
+
+      <Dialog open={!!confirmTarget} onOpenChange={() => setConfirmTarget(null)}>
+        {confirmTarget && (
+          <StatusConfirmModal
+            payout={confirmTarget.payout}
+            targetStatus={confirmTarget.status}
+            isPending={mutation.isPending}
+            onConfirm={() => executeStatusChange(confirmTarget.payout, confirmTarget.status, confirmTarget.extra)}
+            onClose={() => setConfirmTarget(null)}
+          />
+        )}
+      </Dialog>
+
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        {createOpen && (
+          <CreatePayoutModal workspaceId={workspaceId} onClose={() => setCreateOpen(false)} />
+        )}
+      </Dialog>
+    </div>
+  );
+}

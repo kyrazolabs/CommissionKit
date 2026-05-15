@@ -8,7 +8,7 @@ import {
   UpdatePlanParams,
   DeletePlanParams,
 } from "@workspace/api-zod";
-import { requireWorkspaceMember, type AuthenticatedRequest } from "../middleware/auth";
+import { requirePermission, type AuthenticatedRequest } from "../middleware/auth";
 import { checkLimits } from "../lib/limits";
 
 const router = Router();
@@ -38,14 +38,14 @@ async function getPlanWithTiers(id: string, workspaceId: string) {
   };
 }
 
-router.get("/plans", ...requireWorkspaceMember("member"), async (req: AuthenticatedRequest, res): Promise<void> => {
+router.get("/plans", ...requirePermission("plans", "read"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.workspaceId!;
   const plans = await Plan.find({ workspaceId: new Types.ObjectId(workspaceId) }).sort({ name: 1 });
   const withTiers = await Promise.all(plans.map((p) => getPlanWithTiers(p._id.toString(), workspaceId)));
   res.json(withTiers.filter(Boolean));
 });
 
-router.post("/plans", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
+router.post("/plans", ...requirePermission("plans", "create"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.workspaceId!;
   
   const limits = await checkLimits(workspaceId, "plans");
@@ -82,7 +82,7 @@ router.post("/plans", ...requireWorkspaceMember("admin"), async (req: Authentica
   res.status(201).json(result);
 });
 
-router.get("/plans/:id", ...requireWorkspaceMember("member"), async (req: AuthenticatedRequest, res): Promise<void> => {
+router.get("/plans/:id", ...requirePermission("plans", "read"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.workspaceId!;
   const { id } = GetPlanParams.parse(req.params);
   const plan = await getPlanWithTiers(id, workspaceId);
@@ -93,7 +93,7 @@ router.get("/plans/:id", ...requireWorkspaceMember("member"), async (req: Authen
   res.json(plan);
 });
 
-router.put("/plans/:id", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
+router.put("/plans/:id", ...requirePermission("plans", "edit"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.workspaceId!;
   const { id } = UpdatePlanParams.parse(req.params);
   const body = UpdatePlanBody.parse(req.body);
@@ -134,7 +134,7 @@ router.put("/plans/:id", ...requireWorkspaceMember("admin"), async (req: Authent
   res.json(result);
 });
 
-router.delete("/plans/:id", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
+router.delete("/plans/:id", ...requirePermission("plans", "delete"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.workspaceId!;
   const { id } = DeletePlanParams.parse(req.params);
   const existing = await Plan.findOne({

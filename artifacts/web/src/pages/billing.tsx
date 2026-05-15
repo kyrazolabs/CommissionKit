@@ -153,10 +153,10 @@ function StatusBanner({ sub }: { sub: SubscriptionStatus }) {
 
   if (isPastDue) {
     return (
-      <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800/40 dark:bg-red-900/20">
-        <AlertTriangle className="h-4 w-4 text-red-600 shrink-0" />
+      <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-800/40 dark:bg-red-900/20">
+        <AlertTriangle className="size-4 text-red-600 shrink-0" />
         <p className="text-sm font-medium text-red-800 dark:text-red-300">
-          Payment failed — please update your payment method to keep access.
+          Payment failed : please update your payment method to keep access.
         </p>
       </div>
     );
@@ -164,8 +164,8 @@ function StatusBanner({ sub }: { sub: SubscriptionStatus }) {
 
   if (sub.cancelAtPeriodEnd) {
     return (
-      <div className="flex items-center gap-3 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 dark:border-orange-800/40 dark:bg-orange-900/20">
-        <AlertTriangle className="h-4 w-4 text-orange-600 shrink-0" />
+      <div className="flex items-center gap-3 rounded-xl border border-orange-200 bg-orange-50 p-4 dark:border-orange-800/40 dark:bg-orange-900/20">
+        <AlertTriangle className="size-4 text-orange-600 shrink-0" />
         <p className="text-sm font-medium text-orange-800 dark:text-orange-300">
           Your <strong>{sub.plan}</strong> plan cancels on{" "}
           <strong>{formatDate(sub.currentPeriodEnd)}</strong>. Reactivate in the portal to keep access.
@@ -176,10 +176,10 @@ function StatusBanner({ sub }: { sub: SubscriptionStatus }) {
 
   if (isActive && sub.currentPeriodEnd) {
     return (
-      <div className="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3 dark:border-green-800/40 dark:bg-green-900/20">
-        <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+      <div className="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 p-4 dark:border-green-800/40 dark:bg-green-900/20">
+        <CheckCircle2 className="size-4 text-green-600 shrink-0" />
         <p className="text-sm font-medium text-green-800 dark:text-green-300">
-          <strong className="capitalize">{sub.plan}</strong> plan active — renews{" "}
+          <strong className="capitalize">{sub.plan}</strong> plan active : renews{" "}
           <strong>{formatDate(sub.currentPeriodEnd)}</strong>.
         </p>
       </div>
@@ -220,14 +220,14 @@ function BillingUsageCard({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-base font-bold">Usage & Limits</CardTitle>
+            <CardTitle className="text-base font-semibold">Usage & Limits</CardTitle>
             <CardDescription className="text-xs">
               Plan: <span className="capitalize text-foreground font-semibold">{currentPlan}</span>
             </CardDescription>
           </div>
           {hasSub && (
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <Zap className="h-4 w-4" />
+            <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Zap className="size-4" />
             </div>
           )}
         </div>
@@ -237,15 +237,15 @@ function BillingUsageCard({
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-1.5 font-medium text-foreground">
-              <UserRound className="h-3.5 w-3.5 text-muted-foreground" />
+              <UserRound className="size-3.5 text-muted-foreground" />
               Sales Representatives
             </div>
             <div className="text-muted-foreground">
               {repsLoading ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
+                <Loader2 className="size-3 animate-spin" />
               ) : (
                 <>
-                  <span className="text-foreground font-bold">{repsCount ?? 0}</span>
+                  <span className="text-foreground font-semibold">{repsCount ?? 0}</span>
                   {" / "}
                   {formatCap(limits?.reps ?? 0)}
                 </>
@@ -264,15 +264,15 @@ function BillingUsageCard({
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-1.5 font-medium text-foreground">
-              <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+              <FileText className="size-3.5 text-muted-foreground" />
               Commission Plans
             </div>
             <div className="text-muted-foreground">
               {plansLoading ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
+                <Loader2 className="size-3 animate-spin" />
               ) : (
                 <>
-                  <span className="text-foreground font-bold">{plansCount ?? 0}</span>
+                  <span className="text-foreground font-semibold">{plansCount ?? 0}</span>
                   {" / "}
                   {formatCap(limits?.plans ?? 0)}
                 </>
@@ -286,15 +286,15 @@ function BillingUsageCard({
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-1.5 font-medium text-foreground">
-              <Users className="h-3.5 w-3.5 text-muted-foreground" />
+              <Users className="size-3.5 text-muted-foreground" />
               Workspace Members
             </div>
             <div className="text-muted-foreground">
               {membersLoading ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
+                <Loader2 className="size-3 animate-spin" />
               ) : (
                 <>
-                  <span className="text-foreground font-bold">{membersCount ?? 0}</span>
+                  <span className="text-foreground font-semibold">{membersCount ?? 0}</span>
                   {" / "}
                   {formatCap(limits?.members ?? 0)}
                 </>
@@ -308,12 +308,15 @@ function BillingUsageCard({
   );
 }
 
+import { useRole } from "@/hooks/use-role";
+
 export function BillingPage() {
   const queryClient = useQueryClient();
   const { session } = useAuth();
   const { activeWorkspace } = useWorkspace();
   const { toast } = useToast();
   const { sub, limits, planBaseLimits, refetch } = useBillingStatus();
+  const { hasPermission, isLoading: roleLoading } = useRole();
 
   const [showLocalCurrency, setShowLocalCurrency] = useState(false);
   const [rates, setRates] = useState<Record<string, number>>({});
@@ -330,19 +333,6 @@ export function BillingPage() {
       .catch((err) => console.error("Failed to fetch rates", err));
   }, [activeWorkspace?.id]);
 
-  const currentPlan = sub?.plan ?? "free";
-  const ACTIVE_BILLING_SUB_STATUSES = new Set([
-    "active",
-    "trialing",
-    "past_due",
-    "unpaid",
-    "paused",
-  ]);
-  const alreadySubscribed =
-    Boolean(sub) &&
-    currentPlan !== "free" &&
-    ACTIVE_BILLING_SUB_STATUSES.has(sub.status);
-
   const { data: reps, isLoading: repsLoading } = useListReps({
     query: {
       queryKey: getListRepsQueryKey(),
@@ -355,9 +345,6 @@ export function BillingPage() {
       enabled: Boolean(activeWorkspace?.id),
     },
   });
-
-  const repsCount = Array.isArray(reps) ? reps.length : null;
-  const plansCount = Array.isArray(commissionPlans) ? commissionPlans.length : null;
 
   const [membersCount, setMembersCount] = useState<number | null>(null);
   const [membersLoading, setMembersLoading] = useState(false);
@@ -386,15 +373,12 @@ export function BillingPage() {
     }
   }, [activeWorkspace?.id]);
 
-  useEffect(() => {
-    void fetchMemberCount();
-  }, [fetchMemberCount]);
-
   const [loadingPlan, setLoadingPlan]   = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
 
   const [selectedPlanId, setSelectedPlanId] = useState<string>(() => {
      // Default to growth if not subscribed, otherwise use current plan
+     const currentPlan = sub?.plan ?? "free";
      if (currentPlan === "free") return "growth";
      return currentPlan === "annual" ? "annual" : currentPlan;
   });
@@ -404,8 +388,61 @@ export function BillingPage() {
   const [addonSaving, setAddonSaving] = useState(false);
 
   useEffect(() => {
+    void fetchMemberCount();
+  }, [fetchMemberCount]);
+
+  useEffect(() => {
     if (sub?.extraRepSeats) setExtraReps(String(sub.extraRepSeats));
   }, [sub?.extraRepSeats]);
+
+  // Monthly tiers + optional Growth Annual swap (yearly is Growth-only)
+  const displayPlans = useMemo(() => {
+    const filtered = plans.filter((p) => {
+      if (p.id === "lite" && !p.priceId) return false;
+      if (payYearly) return p.id !== "growth";
+      return p.id !== "annual";
+    });
+    return filtered;
+  }, [payYearly, plans]);
+
+  if (roleLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="size-10" />
+        <div className="grid gap-4 md:grid-cols-3">
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-32 w-full" />)}
+        </div>
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
+  }
+
+  if (!hasPermission("billing", "read")) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
+        <Crown className="size-10 text-muted-foreground" />
+        <h2 className="text-lg font-semibold">Access Denied</h2>
+        <p className="text-sm text-muted-foreground">You don't have permission to view billing information.</p>
+      </div>
+    );
+  }
+
+  const currentPlan = sub?.plan ?? "free";
+  const ACTIVE_BILLING_SUB_STATUSES = new Set([
+    "active",
+    "trialing",
+    "past_due",
+    "unpaid",
+    "paused",
+  ]);
+  const alreadySubscribed = Boolean(
+    sub &&
+    currentPlan !== "free" &&
+    sub.status && ACTIVE_BILLING_SUB_STATUSES.has(sub.status)
+  );
+
+  const repsCount = Array.isArray(reps) ? reps.length : null;
+  const plansCount = Array.isArray(commissionPlans) ? commissionPlans.length : null;
 
   const handleCheckout = async (priceId: string, plan: string, mode: string, extraQty: number) => {
     if (!activeWorkspace?.id) return;
@@ -494,15 +531,6 @@ export function BillingPage() {
     });
   };
 
-  // Monthly tiers + optional Growth Annual swap (yearly is Growth-only)
-  const displayPlans = useMemo(() => {
-    const filtered = plans.filter((p) => {
-      if (p.id === "lite" && !p.priceId) return false;
-      if (payYearly) return p.id !== "growth";
-      return p.id !== "annual";
-    });
-    return filtered;
-  }, [payYearly]);
 
   const selectedPlan = displayPlans.find((p) => p.id === selectedPlanId) ?? null;
   const extraRepsQty = Math.max(0, Math.floor(Number(extraReps || 0)));
@@ -517,16 +545,16 @@ export function BillingPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <p className="text-[12px] font-semibold text-primary mb-1">Account</p>
-          <h1 className="text-[28px] font-bold tracking-tight text-foreground leading-tight">Billing & Plans</h1>
+          <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">Billing & Plans</h1>
           <p className="text-[14px] text-muted-foreground mt-1">
             {alreadySubscribed
-              ? "You’re subscribed. Use Manage subscription to change your plan or add-on seats — new checkout is disabled so you aren’t charged twice."
+              ? "You’re subscribed. Use Manage subscription to change your plan or add-on seats : new checkout is disabled so you aren’t charged twice."
               : "Choose a plan, add extra reps if you need them, then continue to secure checkout."}
           </p>
         </div>
       </div>
 
-      {/* Growth yearly upsell — only for workspaces not already on a paid subscription */}
+      {/* Growth yearly upsell : only for workspaces not already on a paid subscription */}
       {!alreadySubscribed && (
       <div
         className={cn(
@@ -536,8 +564,8 @@ export function BillingPage() {
             : "border-border bg-muted/20 hover:bg-muted/35",
         )}
       >
-        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <Gift className="h-4 w-4" />
+        <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <Gift className="size-4" />
         </div>
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
@@ -564,7 +592,7 @@ export function BillingPage() {
           </div>
           {payYearly && (
             <p className="text-[11px] text-primary font-medium">
-              You’re viewing yearly pricing — the Growth card is replaced by Growth Annual.
+              You’re viewing yearly pricing : the Growth card is replaced by Growth Annual.
             </p>
           )}
         </div>
@@ -590,7 +618,7 @@ export function BillingPage() {
 
       {/* Manage subscription button (for paying customers) */}
       {sub && sub.plan !== "free" && (
-        <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-3">
+        <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-4">
           <div>
             <p className="text-sm font-semibold text-foreground capitalize">{sub.plan} Plan</p>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -598,15 +626,15 @@ export function BillingPage() {
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={handlePortal} disabled={portalLoading} className="gap-2 shrink-0">
-            {portalLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ExternalLink className="h-3.5 w-3.5" />}
+            {portalLoading ? <Loader2 className="size-3.5 animate-spin" /> : <ExternalLink className="size-3.5" />}
             Manage Subscription
           </Button>
         </div>
       )}
 
       {alreadySubscribed && (
-        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800/40 dark:bg-amber-900/20">
-          <AlertTriangle className="h-4 w-4 text-amber-700 shrink-0 mt-0.5 dark:text-amber-400" />
+        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800/40 dark:bg-amber-900/20">
+          <AlertTriangle className="size-4 text-amber-700 shrink-0 mt-0.5 dark:text-amber-400" />
           <div className="min-w-0">
             <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">New checkout is turned off</p>
             <p className="text-xs text-amber-900/85 dark:text-amber-200/90 mt-1 leading-relaxed">
@@ -621,8 +649,8 @@ export function BillingPage() {
       {alreadySubscribed && (
         <Card className="border-primary/20 bg-primary/5">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Users className="h-4 w-4 text-primary" />
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Users className="size-4 text-primary" />
               Manage Add-ons
             </CardTitle>
             <CardDescription className="text-xs">
@@ -651,7 +679,7 @@ export function BillingPage() {
             >
               {addonSaving ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 size-4 animate-spin" />
                   Saving…
                 </>
               ) : (
@@ -713,7 +741,7 @@ export function BillingPage() {
               {plan.badge && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className={cn(
-                    "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold border whitespace-nowrap",
+                    "inline-flex items-center rounded-full p-3 text-[11px] font-semibold border whitespace-nowrap",
                     plan.id === "annual" || plan.id === "lite"
                       ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/40"
                       : "bg-primary text-primary-foreground border-primary",
@@ -725,13 +753,13 @@ export function BillingPage() {
 
               <CardHeader className="pb-3 pt-7">
                 <div className="flex items-center gap-2.5 mb-3">
-                  <div className={cn("flex h-8 w-8 items-center justify-center rounded-lg", plan.iconBg)}>
-                    <Icon className={cn("h-4 w-4", plan.iconColor)} />
+                  <div className={cn("flex size-8 items-center justify-center rounded-lg", plan.iconBg)}>
+                    <Icon className={cn("size-4", plan.iconColor)} />
                   </div>
                   <CardTitle className="text-base">{plan.name}</CardTitle>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-bold text-foreground">
+                  <span className="text-3xl font-semibold text-foreground">
                     {showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] ? (
                       <span className="flex items-baseline gap-1">
                         <span className="text-xl text-muted-foreground font-normal">≈</span>
@@ -750,7 +778,7 @@ export function BillingPage() {
                 <ul className="space-y-2">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-center gap-2 text-[13px] text-foreground">
-                      <Check className={cn("h-3.5 w-3.5 shrink-0", plan.iconColor)} />
+                      <Check className={cn("size-3.5 shrink-0", plan.iconColor)} />
                       {f}
                     </li>
                   ))}
@@ -764,7 +792,7 @@ export function BillingPage() {
                     variant="outline"
                     disabled
                   >
-                    <Check className="mr-2 h-4 w-4" />
+                    <Check className="mr-2 size-4" />
                     Current Plan
                   </Button>
                 ) : (
@@ -790,7 +818,7 @@ export function BillingPage() {
       {/* Selection + add-on + pay */}
       <Card className={cn("border-border", alreadySubscribed && "opacity-80")}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-bold">Checkout</CardTitle>
+          <CardTitle className="text-sm font-semibold">Checkout</CardTitle>
           <CardDescription className="text-xs">
             {alreadySubscribed
               ? "Checkout is only for new subscriptions. Use Manage subscription above for plan or add-on changes."
@@ -853,13 +881,13 @@ export function BillingPage() {
               <span className="text-xs text-muted-foreground">reps</span>
             </div>
             {extraRepsQty > 0 && (
-              <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border/80 bg-background/80 px-3 py-2">
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border/80 bg-background/80 p-3">
                 <span className="text-xs font-medium text-foreground">
                   Add-on total ({extraRepsQty} × {showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] 
                     ? `≈${formatCurrency(extraRepUnitDisplayUsd * rates[workspaceCurrency], workspaceCurrency)}` 
                     : formatCurrency(extraRepUnitDisplayUsd)})
                 </span>
-                <span className="text-sm font-bold tabular-nums text-foreground">
+                <span className="text-sm font-semibold tabular-nums text-foreground">
                   {showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] ? (
                     <>
                       <span className="mr-1 font-normal text-muted-foreground text-[10px]">≈</span>
@@ -918,9 +946,9 @@ export function BillingPage() {
             disabled={loadingPlan !== null || !selectedPlan || alreadySubscribed}
           >
             {loadingPlan ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Redirecting…</>
+              <><Loader2 className="mr-2 size-4 animate-spin" />Redirecting…</>
             ) : alreadySubscribed ? (
-              "Subscribed — use portal"
+              "Subscribed : use portal"
             ) : (
               "Continue to payment"
             )}
@@ -931,8 +959,8 @@ export function BillingPage() {
       {/* Positioning Note */}
       <Card className="bg-primary/5 border-primary/20">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-bold flex items-center gap-2">
-            <Zap className="h-4 w-4 text-primary" />
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <Zap className="size-4 text-primary" />
             Choosing between Lite and Growth?
           </CardTitle>
         </CardHeader>

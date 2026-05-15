@@ -11,6 +11,9 @@ import notificationsRouter from "./notifications";
 import portalRouter from "./portal";
 import exportRouter from "./export";
 import reportsRouter from "./reports";
+import payoutsRouter from "./payouts";
+import disputesRouter from "./disputes";
+import rolesRouter from "./roles";
 
 const router: IRouter = Router();
 
@@ -26,5 +29,8 @@ router.use("/billing", billingRouter);
 router.use(notificationsRouter);
 router.use(exportRouter);
 router.use("/reports", reportsRouter);
+router.use("/payouts", payoutsRouter);
+router.use("/disputes", disputesRouter);
+router.use(rolesRouter);
 
 export default router;

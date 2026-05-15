@@ -16,6 +16,9 @@ import { CurrencyCombobox } from "@/components/currency-combobox";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import SettingsRoles from "./settings-roles";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:8088";
 
@@ -42,9 +45,9 @@ const NOTIFICATION_TYPES: { key: string; label: string; description: string }[] 
 type NotifPrefs = Record<string, { email: boolean; inApp: boolean }>;
 
 /**
- * Standard Headless UI toggle pattern — no pixel math.
- * Track: h-6 w-11 with border-2 (inner area 40×20px)
- * Thumb: h-5 w-5 inline-block (20×20px)
+ * Standard Headless UI toggle pattern : no pixel math.
+ * Track: size-6 with border-2 (inner area 40×20px)
+ * Thumb: size-5 inline-block (20×20px)
  * OFF → translate-x-0  (flush left inside border)
  * ON  → translate-x-5  (20px right = 40-20 = flush right inside border)
  */
@@ -55,7 +58,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
       aria-checked={on}
       onClick={() => onChange(!on)}
       className={cn(
-        "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full",
+        "relative inline-flex size-6 shrink-0 cursor-pointer rounded-full",
         "border-2 border-transparent",
         "transition-colors duration-200 ease-in-out",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
@@ -65,7 +68,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
       <span
         aria-hidden="true"
         className={cn(
-          "pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-md ring-0",
+          "pointer-events-none inline-block size-5 rounded-full bg-white shadow-md ring-0",
           "transition-transform duration-200 ease-in-out",
           on ? "translate-x-5" : "translate-x-0",
         )}
@@ -77,59 +80,63 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
 
 export function SettingsPage() {
   const { theme, toggle } = useTheme();
-  const { role } = useRole();
+  const { role, hasPermission, isLoading: roleLoading } = useRole();
   const { activeWorkspace } = useWorkspace();
   const { user } = useAuth();
   const { toast } = useToast();
-  const roleMeta = ROLE_META[role];
-  const isAdmin = role === "admin" || role === "owner";
-
-  // ─── Workspace settings state ───────────────────────────────────────────────
-  const [currency, setCurrency] = useState("USD");
-  const [fiscalYear, setFiscalYear] = useState("January");
-  const [wsLoading, setWsLoading] = useState(false);
-  const [wsSaving, setWsSaving] = useState(false);
-  const [wsSaved, setWsSaved] = useState(false);
+  const [wsState, setWsState] = useState({
+    currency: "USD",
+    fiscalYear: "January",
+    loading: false,
+    saving: false,
+    saved: false
+  });
 
   useEffect(() => {
     if (!activeWorkspace?.id) return;
-    setWsLoading(true);
+    setWsState(prev => ({ ...prev, loading: true }));
     fetch(`${API}/api/workspaces/${activeWorkspace.id}/settings`, {
       credentials: "include",
       headers: { "x-workspace-id": activeWorkspace.id },
     })
       .then((r) => r.json())
-      .then((d) => { setCurrency(d.currency ?? "USD"); setFiscalYear(d.fiscalYearStart ?? "January"); })
-      .catch(console.error)
-      .finally(() => setWsLoading(false));
+      .then((d) => {
+        setWsState(prev => ({
+          ...prev,
+          currency: d.currency ?? "USD",
+          fiscalYear: d.fiscalYearStart ?? "January",
+          loading: false
+        }));
+      })
+      .catch((err) => {
+        console.error(err);
+        setWsState(prev => ({ ...prev, loading: false }));
+      });
   }, [activeWorkspace?.id]);
 
   const saveWorkspaceSettings = async () => {
     if (!activeWorkspace?.id) return;
-    setWsSaving(true);
+    setWsState(prev => ({ ...prev, saving: true }));
     try {
       await fetch(`${API}/api/workspaces/${activeWorkspace.id}/settings`, {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json", "x-workspace-id": activeWorkspace.id },
-        body: JSON.stringify({ currency, fiscalYearStart: fiscalYear }),
+        body: JSON.stringify({ currency: wsState.currency, fiscalYearStart: wsState.fiscalYear }),
       });
-      setWsSaved(true);
+      setWsState(prev => ({ ...prev, saving: false, saved: true }));
       toast({ title: "Workspace settings saved" });
-      setTimeout(() => setWsSaved(false), 2000);
+      setTimeout(() => setWsState(prev => ({ ...prev, saved: false })), 2000);
     } catch {
       toast({ title: "Failed to save settings", variant: "destructive" });
-    } finally {
-      setWsSaving(false);
+      setWsState(prev => ({ ...prev, saving: false }));
     }
   };
 
-  // ─── Notification prefs state ───────────────────────────────────────────────
   const [prefs, setPrefs] = useState<NotifPrefs>(() =>
     Object.fromEntries(NOTIFICATION_TYPES.map((t) => [t.key, { email: true, inApp: true }])),
   );
-  const [prefsSaving, setPrefsSaving] = useState(false);
-  const [prefsSaved, setPrefsSaved] = useState(false);
+  const [prefsState, setPrefsState] = useState({ saving: false, saved: false });
 
   useEffect(() => {
     fetch(`${API}/api/users/me/notification-prefs`, { credentials: "include" })
@@ -138,8 +145,20 @@ export function SettingsPage() {
       .catch(console.error);
   }, []);
 
+  if (roleLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="size-10" />
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
+  }
+
+  const roleMeta = ROLE_META[role];
+  const isAdmin = hasPermission("workspace", "edit");
+
   const saveNotifPrefs = async () => {
-    setPrefsSaving(true);
+    setPrefsState(prev => ({ ...prev, saving: true }));
     try {
       await fetch(`${API}/api/users/me/notification-prefs`, {
         method: "PATCH",
@@ -147,13 +166,12 @@ export function SettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prefs }),
       });
-      setPrefsSaved(true);
+      setPrefsState(prev => ({ ...prev, saving: false, saved: true }));
       toast({ title: "Notification preferences saved" });
-      setTimeout(() => setPrefsSaved(false), 2000);
+      setTimeout(() => setPrefsState(prev => ({ ...prev, saved: false })), 2000);
     } catch {
       toast({ title: "Failed to save preferences", variant: "destructive" });
-    } finally {
-      setPrefsSaving(false);
+      setPrefsState(prev => ({ ...prev, saving: false }));
     }
   };
 
@@ -165,21 +183,30 @@ export function SettingsPage() {
     <div className="space-y-7 max-w-2xl">
       <div>
         <p className="text-[12px] font-semibold text-primary mb-1">Configuration</p>
-        <h1 className="text-[28px] font-bold tracking-tight text-foreground leading-tight">Settings</h1>
+        <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">Settings</h1>
         <p className="text-[14px] text-muted-foreground mt-1">Manage your workspace and personal preferences.</p>
       </div>
 
-      {/* Account */}
+      <Tabs defaultValue="general" className="w-full">
+        <TabsList className="mb-6 bg-muted/50 w-full sm:w-auto overflow-x-auto justify-start flex">
+          <TabsTrigger value="general" className="min-w-fit px-4">General</TabsTrigger>
+          {hasPermission("roles", "read") && (
+            <TabsTrigger value="roles" className="min-w-fit px-4">Roles & Permissions</TabsTrigger>
+          )}
+        </TabsList>
+
+        <TabsContent value="general" className="space-y-7 outline-none">
+          {/* Account */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base"><Users className="h-4 w-4 text-primary" /> Account</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base"><Users className="size-4 text-primary" /> Account</CardTitle>
           <CardDescription>Your identity in this workspace.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between py-1">
             <div>
               <p className="text-sm font-medium">Email</p>
-              <p className="text-sm text-muted-foreground mt-0.5">{user?.email ?? "—"}</p>
+              <p className="text-sm text-muted-foreground mt-0.5">{user?.email ?? ":"}</p>
             </div>
           </div>
           <div className="flex items-center justify-between py-1 border-t border-border">
@@ -187,8 +214,8 @@ export function SettingsPage() {
               <p className="text-sm font-medium">Your role</p>
               <p className="text-sm text-muted-foreground mt-0.5">Access level in <span className="font-medium text-foreground">{activeWorkspace?.name}</span></p>
             </div>
-            <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] font-semibold", roleMeta.color)}>
-              <roleMeta.Icon className="h-3.5 w-3.5" />{roleMeta.label}
+            <span className={cn("inline-flex items-center gap-1.5 rounded-full border p-3 text-[12px] font-semibold", roleMeta.color)}>
+              <roleMeta.Icon className="size-3.5" />{roleMeta.label}
             </span>
           </div>
           <div className="flex items-center justify-between py-1 border-t border-border">
@@ -197,7 +224,7 @@ export function SettingsPage() {
               <p className="text-sm text-muted-foreground mt-0.5">Invite members, manage roles and access.</p>
             </div>
             <Button variant="outline" size="sm" asChild className="gap-1.5">
-              <Link href="/team">Manage <ArrowRight className="h-3.5 w-3.5" /></Link>
+              <Link href="/team">Manage <ArrowRight className="size-3.5" /></Link>
             </Button>
           </div>
         </CardContent>
@@ -206,7 +233,7 @@ export function SettingsPage() {
       {/* Appearance */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base"><Sun className="h-4 w-4 text-primary" /> Appearance</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base"><Sun className="size-4 text-primary" /> Appearance</CardTitle>
           <CardDescription>Control how CommissionKit looks for you.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -216,7 +243,7 @@ export function SettingsPage() {
               <p className="text-sm text-muted-foreground mt-0.5">Currently using <span className="font-medium text-foreground">{theme === "dark" ? "dark" : "light"}</span> mode.</p>
             </div>
             <Button variant="outline" size="sm" onClick={toggle} className="gap-2">
-              {theme === "dark" ? <><Sun className="h-4 w-4" /> Light mode</> : <><Moon className="h-4 w-4" /> Dark mode</>}
+              {theme === "dark" ? <><Sun className="size-4" /> Light mode</> : <><Moon className="size-4" /> Dark mode</>}
             </Button>
           </div>
         </CardContent>
@@ -225,19 +252,19 @@ export function SettingsPage() {
       {/* Workspace settings */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base"><Building2 className="h-4 w-4 text-primary" /> Workspace</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base"><Building2 className="size-4 text-primary" /> Workspace</CardTitle>
           <CardDescription>Organisation-level settings.{!isAdmin && " Admin or above required to edit."}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-sm font-medium">Currency</Label>
-              <CurrencyCombobox value={currency} onChange={setCurrency} disabled={!isAdmin || wsLoading} />
+              <CurrencyCombobox value={wsState.currency} onChange={(v) => setWsState(prev => ({ ...prev, currency: v }))} disabled={!isAdmin || wsState.loading} />
               <p className="text-xs text-muted-foreground">Used for all amount formatting.</p>
             </div>
             <div className="space-y-2">
               <Label className="text-sm font-medium">Fiscal year start</Label>
-              <Select value={fiscalYear} onValueChange={setFiscalYear} disabled={!isAdmin || wsLoading}>
+              <Select value={wsState.fiscalYear} onValueChange={(v) => setWsState(prev => ({ ...prev, fiscalYear: v }))} disabled={!isAdmin || wsState.loading}>
                 <SelectTrigger className="h-9">
                   <SelectValue />
                 </SelectTrigger>
@@ -252,9 +279,9 @@ export function SettingsPage() {
           </div>
           {isAdmin && (
             <div className="flex justify-end pt-1">
-              <Button size="sm" onClick={saveWorkspaceSettings} disabled={wsSaving || wsLoading} className="gap-2">
-                {wsSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : wsSaved ? <Check className="h-3.5 w-3.5" /> : <Save className="h-3.5 w-3.5" />}
-                {wsSaved ? "Saved!" : "Save workspace settings"}
+              <Button size="sm" onClick={saveWorkspaceSettings} disabled={wsState.saving || wsState.loading} className="gap-2">
+                {wsState.saving ? <Loader2 className="size-3.5 animate-spin" /> : wsState.saved ? <Check className="size-3.5" /> : <Save className="size-3.5" />}
+                {wsState.saved ? "Saved!" : "Save workspace settings"}
               </Button>
             </div>
           )}
@@ -264,7 +291,7 @@ export function SettingsPage() {
       {/* Notifications */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base"><Bell className="h-4 w-4 text-primary" /> Notifications</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base"><Bell className="size-4 text-primary" /> Notifications</CardTitle>
           <CardDescription>Choose which events trigger alerts for you.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-1">
@@ -301,9 +328,9 @@ export function SettingsPage() {
           ))}
 
           <div className="flex justify-end pt-4">
-            <Button size="sm" onClick={saveNotifPrefs} disabled={prefsSaving} className="gap-2">
-              {prefsSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : prefsSaved ? <Check className="h-3.5 w-3.5" /> : <Save className="h-3.5 w-3.5" />}
-              {prefsSaved ? "Saved!" : "Save preferences"}
+            <Button size="sm" onClick={saveNotifPrefs} disabled={prefsState.saving} className="gap-2">
+              {prefsState.saving ? <Loader2 className="size-3.5 animate-spin" /> : prefsState.saved ? <Check className="size-3.5" /> : <Save className="size-3.5" />}
+              {prefsState.saved ? "Saved!" : "Save preferences"}
             </Button>
           </div>
         </CardContent>
@@ -312,7 +339,7 @@ export function SettingsPage() {
       {/* Security */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base"><Shield className="h-4 w-4 text-primary" /> Security</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base"><Shield className="size-4 text-primary" /> Security</CardTitle>
           <CardDescription>Account access and data controls.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -321,10 +348,18 @@ export function SettingsPage() {
               <p className="text-sm font-medium">Session timeout</p>
               <p className="text-sm text-muted-foreground">Automatically sign out after inactivity.</p>
             </div>
-            <span className="text-sm text-muted-foreground bg-muted px-3 py-1 rounded-md">8 hours</span>
+            <span className="text-sm text-muted-foreground bg-muted p-3 rounded-md">8 hours</span>
           </div>
         </CardContent>
       </Card>
+      </TabsContent>
+
+      {isAdmin && (
+        <TabsContent value="roles" className="outline-none mt-0">
+          <SettingsRoles />
+        </TabsContent>
+      )}
+      </Tabs>
     </div>
   );
 }

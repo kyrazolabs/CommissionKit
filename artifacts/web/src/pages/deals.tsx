@@ -37,16 +37,40 @@ export function DealsPage() {
   const [repId, setRepId] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { can } = useRole();
+  const { can, hasPermission, isLoading: roleLoading } = useRole();
   const { data: reps } = useListReps({ query: { queryKey: getListRepsQueryKey() } });
-  
+
   const queryParams: any = { period };
   if (repId !== "all") queryParams.repId = repId;
-  
+
   const { data: deals, isLoading } = useListDeals(
     queryParams,
     { query: { queryKey: getListDealsQueryKey(queryParams) } }
   );
+
+  if (roleLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="size-10" />
+        <div className="grid gap-4 md:grid-cols-3">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
+  }
+
+  if (!hasPermission("deals", "read")) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
+        <Briefcase className="size-10 text-muted-foreground" />
+        <h2 className="text-lg font-semibold">Access Denied</h2>
+        <p className="text-sm text-muted-foreground">You don't have permission to view deals.</p>
+      </div>
+    );
+  }
 
   const filteredDeals = Array.isArray(deals) ? deals.filter(deal => 
     deal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -57,13 +81,13 @@ export function DealsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Deals</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Deals</h1>
           <p className="text-muted-foreground">Manage revenue events for commission calculation.</p>
         </div>
         <div className="flex gap-2">
-          {can("admin") && (
+          {hasPermission("deals", "create") && (
             <>
-              <ExportDealsButton />
+              {hasPermission("deals", "export") && <ExportDealsButton />}
               <CreateDealDialog period={period} workspaceCurrency={currency} />
               <ImportDealsDialog period={period} workspaceCurrency={currency} />
             </>
@@ -75,9 +99,9 @@ export function DealsPage() {
         <CardHeader className="pb-3 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
           <div className="flex flex-1 items-center space-x-2 w-full md:w-auto">
             <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
               <Input
-                placeholder="Search deals..."
+                placeholder="Search deals…"
                 className="pl-8"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -117,8 +141,8 @@ export function DealsPage() {
             </div>
           ) : filteredDeals.length === 0 ? (
             <div className="text-center py-12">
-              <div className="bg-muted w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Briefcase className="h-6 w-6 text-muted-foreground" />
+              <div className="bg-muted size-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Briefcase className="size-6 text-muted-foreground" />
               </div>
               <h3 className="text-lg font-medium">No deals found</h3>
               <p className="text-sm text-muted-foreground mt-1 mb-4">
@@ -152,7 +176,7 @@ export function DealsPage() {
                     </TableCell>
                     <TableCell>{format(new Date(deal.closeDate), "MMM d, yyyy")}</TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
+                      <span className={`inline-flex items-center rounded-full p-2.5 text-xs font-semibold border ${
                         deal.stage === 'closed_won' ? 'bg-primary/10 text-primary border-primary/20' : 
                         deal.stage === 'closed_lost' ? 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/30' :
                         'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800/30'
@@ -161,12 +185,14 @@ export function DealsPage() {
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
-                      {can("admin") && (
-                        <div className="flex justify-end gap-1">
+                      <div className="flex justify-end gap-1">
+                        {hasPermission("deals", "edit") && (
                           <UpdateDealDialog deal={deal} queryParams={queryParams} reps={reps} workspaceCurrency={currency} />
+                        )}
+                        {hasPermission("deals", "delete") && (
                           <DealDeleteAction deal={deal} queryParams={queryParams} currency={currency} />
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -217,7 +243,7 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
         <Button 
           variant="ghost" 
           size="icon" 
-          className="h-8 w-8 text-muted-foreground hover:text-primary"
+          className="size-8 text-muted-foreground hover:text-primary"
           disabled={!isEditable}
           title={!isEditable ? "Only pending deals can be edited" : "Edit deal"}
         >
@@ -281,7 +307,7 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={updateMutation.isPending}>{updateMutation.isPending ? "Saving..." : "Save Changes"}</Button>
+            <Button type="submit" disabled={updateMutation.isPending}>{updateMutation.isPending ? "Saving…" : "Save Changes"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -308,8 +334,8 @@ function DealDeleteAction({ deal, queryParams, currency }: { deal: any, queryPar
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
-          <Trash className="h-4 w-4" />
+        <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-destructive">
+          <Trash className="size-4" />
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -322,7 +348,7 @@ function DealDeleteAction({ deal, queryParams, currency }: { deal: any, queryPar
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
           <Button variant="destructive" onClick={handleDelete} disabled={deleteMutation.isPending}>
-            {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            {deleteMutation.isPending ? "Deleting…" : "Delete"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -458,7 +484,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
     }}>
       <DialogTrigger asChild>
         <Button>
-          <UploadCloud className="mr-2 h-4 w-4" />
+          <UploadCloud className="mr-2 size-4" />
           Bulk Import
         </Button>
       </DialogTrigger>
@@ -473,10 +499,10 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={() => downloadTemplate('csv')} className="text-xs">
-                <FileDown className="mr-1.5 h-3.5 w-3.5" /> Template (CSV)
+                <FileDown className="mr-1.5 size-3.5" /> Template (CSV)
               </Button>
               <Button variant="outline" size="sm" onClick={() => downloadTemplate('xlsx')} className="text-xs">
-                <FileDown className="mr-1.5 h-3.5 w-3.5" /> Template (XLSX)
+                <FileDown className="mr-1.5 size-3.5" /> Template (XLSX)
               </Button>
             </div>
           </div>
@@ -486,7 +512,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
           {!parsedData ? (
             <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-12 text-center bg-muted/30">
               <div className="bg-primary/10 p-4 rounded-full mb-4">
-                <UploadCloud className="h-8 w-8 text-primary" />
+                <UploadCloud className="size-8 text-primary" />
               </div>
               <h3 className="text-lg font-medium">Upload deal data</h3>
               <p className="text-sm text-muted-foreground mb-6 max-w-sm">
@@ -507,7 +533,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
                   className="hidden" 
                 />
                 <Button onClick={() => fileInputRef.current?.click()} disabled={isParsing} className="w-full">
-                  {isParsing ? "Parsing..." : "Select File"}
+                  {isParsing ? "Parsing…" : "Select File"}
                 </Button>
               </div>
             </div>
@@ -595,8 +621,8 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
                             </Select>
                           </TableCell>
                           <TableCell>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={() => removeRow(row.id)}>
-                              <Trash className="h-3 w-3" />
+                            <Button variant="ghost" size="icon" className="size-6 text-muted-foreground hover:text-destructive" onClick={() => removeRow(row.id)}>
+                              <Trash className="size-3" />
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -614,7 +640,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
           {parsedData && (
             <Button onClick={handleImport} disabled={importMutation.isPending}>
               {importMutation.isPending ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Importing...</>
+                <><Loader2 className="mr-2 size-4 animate-spin" /> Importing…</>
               ) : (
                 <>Finalize Import ({parsedData.length} deals)</>
               )}
@@ -661,7 +687,7 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Briefcase className="mr-2 h-4 w-4" />
+          <Briefcase className="mr-2 size-4" />
           Add Deal
         </Button>
       </DialogTrigger>
@@ -718,7 +744,7 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={isPending}>{isPending ? "Saving..." : "Save Deal"}</Button>
+            <Button type="submit" disabled={isPending}>{isPending ? "Saving…" : "Save Deal"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -794,9 +820,9 @@ function ExportDealsButton() {
       className={!isGrowth ? "opacity-70 border-dashed" : ""}
     >
       {isExporting ? (
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        <Loader2 className="mr-2 size-4 animate-spin" />
       ) : (
-        <Download className="mr-2 h-4 w-4" />
+        <Download className="mr-2 size-4" />
       )}
       Export CSV
     </Button>

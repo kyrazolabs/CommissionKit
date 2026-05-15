@@ -25,6 +25,9 @@ import {
 import { cn } from "@/lib/utils";
 import { HelpTooltip } from "@/components/help-tooltip";
 import { useBillingStatus } from "@/hooks/use-billing-status";
+import { useQuery } from "@tanstack/react-query";
+import { apiFetch } from "@/lib/api";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 
@@ -35,7 +38,8 @@ interface Member {
   id: string;
   userId: string | null;
   email: string;
-  role: MemberRole;
+  role: MemberRole; // legacy fallback
+  roleIds: string[];
   status: MemberStatus;
   createdAt: string;
 }
@@ -63,13 +67,32 @@ const ROLE_META: Record<MemberRole, { label: string; description: string; color:
   },
 };
 
-function RoleBadge({ role }: { role: MemberRole }) {
-  const { label, color, Icon } = ROLE_META[role];
+function RoleBadge({ member, rolesList }: { member: Member, rolesList: any[] }) {
+  if (member.role === "owner" || member.roleIds?.length === 0) {
+    const r = member.role || "member";
+    const meta = ROLE_META[r as MemberRole] || ROLE_META.member;
+    return (
+      <span className={cn("inline-flex items-center gap-1 rounded-full border p-2 text-[11px] font-semibold", meta.color)}>
+        <meta.Icon className="size-3" />
+        {meta.label}
+      </span>
+    );
+  }
+  
+  // Custom roles
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold", color)}>
-      <Icon className="h-3 w-3" />
-      {label}
-    </span>
+    <div className="flex flex-wrap gap-1">
+      {member.roleIds.map(id => {
+        const customRole = rolesList.find(r => r.id === id);
+        if (!customRole) return null;
+        return (
+          <span key={id} className="inline-flex items-center gap-1 rounded-full border p-2 text-[11px] font-semibold text-primary bg-primary/10 border-primary/20">
+            <Shield className="size-3" />
+            {customRole.name}
+          </span>
+        );
+      })}
+    </div>
   );
 }
 
@@ -78,15 +101,15 @@ function MemberAvatar({ email, status }: { email: string; status: MemberStatus }
   return (
     <div className="relative shrink-0">
       <div className={cn(
-        "flex h-9 w-9 items-center justify-center rounded-full text-[12px] font-bold",
+        "flex size-9 items-center justify-center rounded-full text-[12px] font-semibold",
         status === "active"
           ? "bg-primary text-primary-foreground"
           : "bg-muted text-muted-foreground border border-dashed border-border",
       )}>
-        {status === "pending" ? <Clock className="h-4 w-4" /> : initials}
+        {status === "pending" ? <Clock className="size-4" /> : initials}
       </div>
       {status === "active" && (
-        <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-card" />
+        <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-green-500 border-2 border-card" />
       )}
     </div>
   );
@@ -95,11 +118,11 @@ function MemberAvatar({ email, status }: { email: string; status: MemberStatus }
 // ─── Invite Dialog ─────────────────────────────────────────────────────────────
 
 function InviteMemberDialog({
-  workspaceId, onInvited, isLimitReached, limit
-}: { workspaceId: string; onInvited: () => void; isLimitReached: boolean; limit: number }) {
+  workspaceId, onInvited, isLimitReached, limit, rolesList
+}: { workspaceId: string; onInvited: () => void; isLimitReached: boolean; limit: number; rolesList: any[] }) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"admin" | "member">("member");
+  const [roleIds, setRoleIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -112,15 +135,15 @@ function InviteMemberDialog({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email: email.trim(), role }),
+        body: JSON.stringify({ email: email.trim(), roleIds }),
       });
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.error || "Invite failed");
       }
-      toast({ title: "Invitation sent", description: `${email} was invited as ${role}.` });
+      toast({ title: "Invitation sent", description: `${email} was invited.` });
       setEmail("");
-      setRole("member");
+      setRoleIds([]);
       setOpen(false);
       onInvited();
     } catch (err: any) {
@@ -134,7 +157,7 @@ function InviteMemberDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="gap-2" disabled={isLimitReached}>
-          <UserPlus className="h-4 w-4" />
+          <UserPlus className="size-4" />
           {isLimitReached ? `Limit Reached (${limit})` : "Invite Member"}
         </Button>
       </DialogTrigger>
@@ -155,7 +178,6 @@ function InviteMemberDialog({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              autoFocus
             />
           </div>
           <div className="grid gap-2">
@@ -163,31 +185,52 @@ function InviteMemberDialog({
               <Label>Role</Label>
               <HelpTooltip content="Owners and Admins can invite and manage members. Members have read access only." />
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              {(["member", "admin"] as const).map((r) => {
-                const meta = ROLE_META[r];
-                return (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => setRole(r)}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[160px] overflow-y-auto pr-1">
+              {rolesList.reduce((acc: any[], r: any) => {
+                if (r.name === "Owner") return acc;
+                const isSelected = roleIds.includes(r.id);
+                acc.push(
+                  <div
+                    key={r.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setRoleIds(prev => prev.includes(r.id) ? prev.filter(id => id !== r.id) : [...prev, r.id])
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setRoleIds(prev => prev.includes(r.id) ? prev.filter(id => id !== r.id) : [...prev, r.id])
+                      }
+                    }}
                     className={cn(
-                      "flex flex-col gap-1 rounded-xl border p-3 text-left transition-all",
-                      role === r
+                      "flex items-start gap-2 rounded-xl border p-3 text-left transition-all cursor-pointer",
+                      isSelected
                         ? "border-primary/40 bg-secondary"
                         : "border-border hover:bg-muted",
                     )}
                   >
-                    <div className="flex items-center gap-1.5">
-                      <meta.Icon className={cn("h-3.5 w-3.5", role === r ? "text-primary" : "text-muted-foreground")} />
-                      <span className={cn("text-[13px] font-semibold", role === r ? "text-foreground" : "text-muted-foreground")}>
-                        {meta.label}
-                      </span>
+                    <div className={cn(
+                      "size-4 shrink-0 rounded border border-primary flex items-center justify-center transition-colors mt-0.5",
+                      isSelected ? "bg-primary text-primary-foreground" : "bg-transparent"
+                    )}>
+                      {isSelected && <CheckCircle2 className="size-3" />}
                     </div>
-                    <p className="text-[11px] text-muted-foreground leading-tight">{meta.description}</p>
-                  </button>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1.5">
+                        <span className={cn("text-[13px] font-semibold truncate", isSelected ? "text-foreground" : "text-muted-foreground")}>
+                          {r.name}
+                        </span>
+                        {r.isSystem && <span className="text-[9px] bg-muted p-1.5 rounded text-muted-foreground">SYSTEM</span>}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground leading-tight mt-0.5 line-clamp-2">{r.description}</p>
+                    </div>
+                  </div>
                 );
-              })}
+                return acc;
+              }, [])}
             </div>
           </div>
           <DialogFooter>
@@ -205,7 +248,7 @@ function InviteMemberDialog({
 // ─── Member Row ────────────────────────────────────────────────────────────────
 
 function MemberRow({
-  member, currentUserId, workspaceId, canManage, isOwner, onChanged,
+  member, currentUserId, workspaceId, canManage, isOwner, onChanged, rolesList
 }: {
   member: Member;
   currentUserId: string | null;
@@ -213,24 +256,24 @@ function MemberRow({
   canManage: boolean;
   isOwner: boolean;
   onChanged: () => void;
+  rolesList: any[];
 }) {
   const { toast } = useToast();
   const [updating, setUpdating] = useState(false);
   const isSelf = member.userId === currentUserId;
   const isProtected = member.role === "owner";
 
-  const updateRole = async (newRole: MemberRole) => {
-    if (newRole === member.role) return;
+  const updateRole = async (newRoleIds: string[]) => {
     setUpdating(true);
     try {
       const res = await fetch(`${API_URL}/api/workspaces/${workspaceId}/members/${member.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ role: newRole }),
+        body: JSON.stringify({ roleIds: newRoleIds }),
       });
       if (!res.ok) throw new Error((await res.json()).error);
-      toast({ title: "Role updated", description: `${member.email} is now ${newRole}.` });
+      toast({ title: "Roles updated", description: `${member.email}'s roles have been updated.` });
       onChanged();
     } catch (err: any) {
       toast({ title: "Failed to update role", description: err.message, variant: "destructive" });
@@ -258,7 +301,7 @@ function MemberRow({
 
   return (
     <div className={cn(
-      "flex items-center gap-4 px-5 py-3.5 border-b border-border last:border-0 transition-colors",
+      "flex items-center gap-4 p-5 border-b border-border last:border-0 transition-colors",
       updating && "opacity-50 pointer-events-none",
     )}>
       <MemberAvatar email={member.email} status={member.status} />
@@ -267,18 +310,18 @@ function MemberRow({
         <div className="flex items-center gap-2 flex-wrap">
           <p className="text-[13.5px] font-semibold text-foreground truncate">{member.email}</p>
           {isSelf && (
-            <span className="text-[10px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
+            <span className="text-[10px] font-medium text-muted-foreground bg-muted p-1.5 rounded-full">
               You
             </span>
           )}
           {member.status === "pending" && (
-            <span className="text-[10px] font-medium text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400 border border-amber-200 dark:border-amber-800/30 px-1.5 py-0.5 rounded-full flex items-center gap-1">
-              <Mail className="h-2.5 w-2.5" /> Invite pending
+            <span className="text-[10px] font-medium text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400 border border-amber-200 dark:border-amber-800/30 p-1.5 rounded-full flex items-center gap-1">
+              <Mail className="size-2.5" /> Invite pending
             </span>
           )}
           {member.status === "active" && !isSelf && (
-            <span className="text-[10px] font-medium text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400 border border-green-200 dark:border-green-800/30 px-1.5 py-0.5 rounded-full flex items-center gap-1">
-              <CheckCircle2 className="h-2.5 w-2.5" /> Active
+            <span className="text-[10px] font-medium text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400 border border-green-200 dark:border-green-800/30 p-1.5 rounded-full flex items-center gap-1">
+              <CheckCircle2 className="size-2.5" /> Active
             </span>
           )}
         </div>
@@ -290,44 +333,58 @@ function MemberRow({
       <div className="flex items-center gap-3 shrink-0">
         {/* Role badge / selector */}
         {canManage && isOwner && !isProtected ? (
-          <Select value={member.role} onValueChange={(v) => updateRole(v as MemberRole)}>
-            <SelectTrigger className="h-7 text-[12px] w-auto gap-1.5 pr-2 border-0 bg-transparent hover:bg-muted rounded-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent align="end">
-              <SelectItem value="member">Member</SelectItem>
-              <SelectItem value="admin">Admin</SelectItem>
-            </SelectContent>
-          </Select>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-7 text-[12px] rounded-full">
+                {member.roleIds?.length || 0} Roles
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 p-2">
+              <div className="mb-2 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Assign Roles</div>
+              <div className="max-h-[200px] overflow-y-auto">
+                {rolesList.reduce((acc, r) => {
+                  if (r.name === "Owner") return acc;
+                  const isSelected = member.roleIds?.includes(r.id);
+                  acc.push(
+                    <DropdownMenuItem 
+                      key={r.id}
+                      className="flex items-center gap-2 py-2"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const nextIds = isSelected 
+                          ? member.roleIds.filter((id: string) => id !== r.id)
+                          : [...(member.roleIds || []), r.id];
+                        updateRole(nextIds);
+                      }}
+                    >
+                      <Checkbox checked={isSelected} className="pointer-events-none" />
+                      <div className="flex-1 truncate text-[13px]">{r.name}</div>
+                      {isSelected && <div className="size-1.5 rounded-full bg-primary" />}
+                    </DropdownMenuItem>
+                  );
+                  return acc;
+                }, [] as React.ReactNode[])}
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
         ) : (
-          <RoleBadge role={member.role} />
+          <RoleBadge member={member} rolesList={rolesList} />
         )}
 
         {/* Actions */}
-        {(canManage || isSelf) && !isProtected && (
+        {(hasPermission("team", "delete") || isSelf) && !isProtected && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground">
-                <MoreHorizontal className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="size-7 text-muted-foreground hover:text-foreground">
+                <MoreHorizontal className="size-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
-              {canManage && isOwner && !isProtected && (
-                <>
-                  <DropdownMenuItem onClick={() => updateRole("admin")} disabled={member.role === "admin"}>
-                    <Shield className="h-3.5 w-3.5 mr-2" /> Make Admin
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => updateRole("member")} disabled={member.role === "member"}>
-                    <Users className="h-3.5 w-3.5 mr-2" /> Make Member
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                </>
-              )}
               <DropdownMenuItem
                 onClick={removeMember}
                 className="text-destructive focus:text-destructive focus:bg-destructive/10"
               >
-                <Trash2 className="h-3.5 w-3.5 mr-2" />
+                <Trash2 className="size-3.5 mr-2" />
                 {isSelf ? "Leave workspace" : "Remove member"}
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -343,18 +400,18 @@ function MemberRow({
 function RoleReference() {
   return (
     <div className="bg-card border border-card-border rounded-2xl overflow-hidden">
-      <div className="px-5 py-4 border-b border-border">
+      <div className="p-5 border-b border-border">
         <div className="flex items-center gap-1.5">
-          <p className="text-[14px] font-bold text-foreground">Role Reference</p>
+          <p className="text-[14px] font-semibold text-foreground">Role Reference</p>
           <HelpTooltip content="Roles are applied at the workspace level. Contact support to transfer ownership." />
         </div>
         <p className="text-[12px] text-muted-foreground mt-0.5">Permissions granted per role</p>
       </div>
       <div className="divide-y divide-border">
         {(Object.entries(ROLE_META) as [MemberRole, typeof ROLE_META[MemberRole]][]).map(([role, meta]) => (
-          <div key={role} className="px-5 py-3.5 flex items-start gap-3">
-            <div className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-full border", meta.color)}>
-              <meta.Icon className="h-3.5 w-3.5" />
+          <div key={role} className="p-5 flex items-start gap-3">
+            <div className={cn("flex size-7 shrink-0 items-center justify-center rounded-full border", meta.color)}>
+              <meta.Icon className="size-3.5" />
             </div>
             <div>
               <p className="text-[13px] font-semibold text-foreground">{meta.label}</p>
@@ -362,7 +419,7 @@ function RoleReference() {
             </div>
           </div>
         ))}
-        <div className="px-5 py-3 bg-muted/30">
+        <div className="p-5 bg-muted/30">
           <p className="text-[11px] text-muted-foreground">
             <span className="font-medium text-foreground">Owners</span> have all Admin permissions plus billing access and workspace deletion.
           </p>
@@ -377,13 +434,19 @@ function RoleReference() {
 export function TeamPage() {
   const { activeWorkspace } = useWorkspace();
   const { user } = useAuth();
-  const { role, can, is } = useRole();
+  const { role, can, is, hasPermission, isLoading: roleLoading } = useRole();
   const { limits } = useBillingStatus();
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const { data: roles = [] } = useQuery({
+    queryKey: ["roles"],
+    queryFn: () => apiFetch("/api/roles"),
+    enabled: !!activeWorkspace,
+  });
+
   const fetchMembers = useCallback(async () => {
-    if (!activeWorkspace) return;
+    if (!activeWorkspace?.id) return;
     setLoading(true);
     try {
       const res = await fetch(`${API_URL}/api/workspaces/${activeWorkspace.id}/members`, {
@@ -402,9 +465,28 @@ export function TeamPage() {
     } finally {
       setLoading(false);
     }
-  }, [activeWorkspace]);
+  }, [activeWorkspace?.id]);
 
   useEffect(() => { fetchMembers(); }, [fetchMembers]);
+
+  if (roleLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="size-10" />
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
+  }
+
+  if (!hasPermission("team", "read")) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
+        <Users className="size-10 text-muted-foreground" />
+        <h2 className="text-lg font-semibold">Access Denied</h2>
+        <p className="text-sm text-muted-foreground">You don't have permission to view the team roster.</p>
+      </div>
+    );
+  }
 
   if (!activeWorkspace) return null;
 
@@ -417,26 +499,27 @@ export function TeamPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <p className="text-[12px] font-semibold text-primary mb-1">Organization</p>
-          <h1 className="text-[28px] font-bold tracking-tight text-foreground leading-tight">Team & Roles</h1>
+          <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">Team & Roles</h1>
           <p className="text-[14px] text-muted-foreground mt-1">
             Manage who has access to{" "}
             <span className="font-medium text-foreground">{activeWorkspace.name}</span>
             {" "}and what they can do.
           </p>
         </div>
-        {can("admin") && (
-          <InviteMemberDialog 
-            workspaceId={activeWorkspace.id} 
-            onInvited={fetchMembers} 
-            isLimitReached={limits.members !== -1 && members.length >= limits.members}
-            limit={limits.members}
-          />
+        {hasPermission("team", "create") && (
+            <InviteMemberDialog 
+              workspaceId={activeWorkspace.id} 
+              onInvited={fetchMembers} 
+              isLimitReached={limits.members !== -1 && members.length >= limits.members}
+              limit={limits.members}
+              rolesList={roles}
+            />
         )}
       </div>
 
       {/* Role banner for current user */}
       <div className={cn(
-        "flex items-center gap-3 rounded-xl border px-4 py-3",
+        "flex items-center gap-3 rounded-xl border p-4",
         is("owner") && "bg-amber-50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-800/30",
         is("admin") && "bg-blue-50 border-blue-200 dark:bg-blue-900/10 dark:border-blue-800/30",
         is("member") && "bg-muted border-border",
@@ -445,8 +528,8 @@ export function TeamPage() {
           const meta = ROLE_META[role];
           return (
             <>
-              <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-full border", meta.color)}>
-                <meta.Icon className="h-4 w-4" />
+              <div className={cn("flex size-8 shrink-0 items-center justify-center rounded-full border", meta.color)}>
+                <meta.Icon className="size-4" />
               </div>
               <div>
                 <p className="text-[13px] font-semibold text-foreground">
@@ -463,11 +546,11 @@ export function TeamPage() {
         {/* Members list */}
         <div className="lg:col-span-2 bg-card border border-card-border rounded-2xl overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <div className="flex items-center justify-between p-5 border-b border-border">
             <div>
               <div className="flex items-center gap-2">
-                <p className="text-[14.5px] font-bold text-foreground">Members</p>
-                <span className="text-[11px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                <p className="text-[14.5px] font-semibold text-foreground">Members</p>
+                <span className="text-[11px] font-semibold text-muted-foreground bg-muted p-2 rounded-full">
                   {activeMembers.length} active
                   {pendingMembers.length > 0 && ` · ${pendingMembers.length} pending`}
                   {limits.members !== -1 && ` / ${limits.members} total`}
@@ -477,8 +560,8 @@ export function TeamPage() {
                 {activeWorkspace.name} workspace
               </p>
             </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={fetchMembers}>
-              <RefreshCw className="h-3.5 w-3.5" />
+            <Button variant="ghost" size="icon" className="size-8 text-muted-foreground" onClick={fetchMembers}>
+              <RefreshCw className="size-3.5" />
             </Button>
           </div>
 
@@ -486,19 +569,19 @@ export function TeamPage() {
           {loading ? (
             <div className="divide-y divide-border">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center gap-4 px-5 py-3.5">
-                  <Skeleton className="h-9 w-9 rounded-full shrink-0" />
+                <div key={i} className="flex items-center gap-4 p-5">
+                  <Skeleton className="size-9 rounded-full shrink-0" />
                   <div className="flex-1 space-y-1.5">
-                    <Skeleton className="h-3.5 w-48" />
-                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="size-3.5" />
+                    <Skeleton className="size-3" />
                   </div>
-                  <Skeleton className="h-6 w-16 rounded-full" />
+                  <Skeleton className="size-6 rounded-full" />
                 </div>
               ))}
             </div>
           ) : members.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center px-6">
-              <Users className="h-10 w-10 text-muted-foreground mb-3" />
+              <Users className="size-10 text-muted-foreground mb-3" />
               <p className="text-[14px] font-semibold text-foreground">No members yet</p>
               <p className="text-[12.5px] text-muted-foreground mt-1">
                 Invite your team to start collaborating.
@@ -512,9 +595,10 @@ export function TeamPage() {
                   member={m}
                   currentUserId={user?.id ?? null}
                   workspaceId={activeWorkspace.id}
-                  canManage={can("admin")}
+                  canManage={hasPermission("team", "edit")}
                   isOwner={is("owner")}
                   onChanged={fetchMembers}
+                  rolesList={roles}
                 />
               ))}
             </div>

@@ -1,12 +1,15 @@
 import { Router } from "express";
 import { Rep, Plan, Workspace } from "@workspace/db";
 import { Types } from "mongoose";
+import mongoose from "mongoose";
 import { randomBytes } from "crypto";
 import { CreateRepBody, UpdateRepBody, GetRepParams, UpdateRepParams, DeleteRepParams, SendPortalLinkParams } from "@workspace/api-zod";
-import { requireWorkspaceMember, type AuthenticatedRequest } from "../middleware/auth";
+import { requirePermission, type AuthenticatedRequest } from "../middleware/auth";
 import { checkLimits } from "../lib/limits";
 import { sendMediumPriorityEmail } from "@workspace/queue";
 import { repPortalTemplate } from "@workspace/email-templates";
+import { auth } from "../lib/auth";
+import { logger } from "../lib/logger";
 
 const router = Router();
 
@@ -22,13 +25,17 @@ function portalUrl(accessCode: string): string {
 }
 
 /** Sends the portal invite email to a rep (fire-and-forget) */
-async function sendPortalLinkEmail(rep: { name: string; email: string; portalAccessCode: string }, workspaceName: string): Promise<void> {
+async function sendPortalLinkEmail(
+  rep: { name: string; email: string; portalAccessCode: string; portalUsername: string; portalPassword?: string },
+  workspaceName: string
+): Promise<void> {
   try {
     const html = repPortalTemplate({
       repName: rep.name,
       workspaceName,
       portalUrl: portalUrl(rep.portalAccessCode),
-      accessCode: rep.portalAccessCode,
+      portalUsername: rep.portalUsername,
+      portalPassword: rep.portalPassword,
     });
     await sendMediumPriorityEmail({
       to: rep.email,
@@ -41,7 +48,7 @@ async function sendPortalLinkEmail(rep: { name: string; email: string; portalAcc
   }
 }
 
-router.get("/reps", ...requireWorkspaceMember("member"), async (req: AuthenticatedRequest, res): Promise<void> => {
+router.get("/reps", ...requirePermission("reps", "read"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.workspaceId!;
   const reps = await Rep.find({ workspaceId: new Types.ObjectId(workspaceId) }).populate('planId').sort({ name: 1 });
 
@@ -57,7 +64,7 @@ router.get("/reps", ...requireWorkspaceMember("member"), async (req: Authenticat
   })));
 });
 
-router.post("/reps", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
+router.post("/reps", ...requirePermission("reps", "create"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.workspaceId!;
   
   const limits = await checkLimits(workspaceId, "reps");
@@ -92,7 +99,13 @@ router.post("/reps", ...requireWorkspaceMember("admin"), async (req: Authenticat
   const workspace = await Workspace.findById(workspaceId);
   const workspaceName = workspace?.name ?? "Your team";
   sendPortalLinkEmail(
-    { name: rep.name, email: rep.email, portalAccessCode: accessCode },
+    { 
+      name: rep.name, 
+      email: rep.email, 
+      portalAccessCode: accessCode,
+      portalUsername: rep.portalUsername ?? accessCode,
+      portalPassword: rep.portalPassword ?? undefined
+    },
     workspaceName
   );
 
@@ -108,7 +121,7 @@ router.post("/reps", ...requireWorkspaceMember("admin"), async (req: Authenticat
   });
 });
 
-router.get("/reps/:id", ...requireWorkspaceMember("member"), async (req: AuthenticatedRequest, res): Promise<void> => {
+router.get("/reps/:id", ...requirePermission("reps", "read"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.workspaceId!;
   const { id } = GetRepParams.parse(req.params);
   const rep = await Rep.findOne({
@@ -132,13 +145,19 @@ router.get("/reps/:id", ...requireWorkspaceMember("member"), async (req: Authent
   });
 });
 
-router.put("/reps/:id", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
+router.put("/reps/:id", ...requirePermission("reps", "edit"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.workspaceId!;
   const { id } = UpdateRepParams.parse(req.params);
   const body = UpdateRepBody.parse(req.body);
   const rep = await Rep.findOneAndUpdate(
     { _id: new Types.ObjectId(id), workspaceId: new Types.ObjectId(workspaceId) },
-    { name: body.name, email: body.email, role: body.role, planId: body.planId ? new Types.ObjectId(body.planId) : null },
+    { 
+      name: body.name, 
+      email: body.email, 
+      role: body.role, 
+      planId: body.planId ? new Types.ObjectId(body.planId) : null,
+      // We no longer save password in the Rep model
+    },
     { new: true }
   );
 
@@ -165,7 +184,7 @@ router.put("/reps/:id", ...requireWorkspaceMember("admin"), async (req: Authenti
   });
 });
 
-router.delete("/reps/:id", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
+router.delete("/reps/:id", ...requirePermission("reps", "delete"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.workspaceId!;
   const { id } = DeleteRepParams.parse(req.params);
   await Rep.deleteOne({ _id: new Types.ObjectId(id), workspaceId: new Types.ObjectId(workspaceId) });
@@ -177,28 +196,114 @@ router.delete("/reps/:id", ...requireWorkspaceMember("admin"), async (req: Authe
  * (Re)sends the portal link email to the rep. Rotates the access code on resend.
  * Admin only.
  */
-router.post("/reps/:id/send-portal-link", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
+router.post("/reps/:id/send-portal-link", ...requirePermission("reps", "edit"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.workspaceId!;
   const { id } = SendPortalLinkParams.parse(req.params);
 
-  // Rotate access code on every send/resend
-  const newCode = generateAccessCode();
-  const rep = await Rep.findOneAndUpdate(
-    { _id: new Types.ObjectId(id), workspaceId: new Types.ObjectId(workspaceId) },
-    { portalAccessCode: newCode },
-    { new: true }
-  );
+  const rep = await Rep.findOne({ 
+    _id: new Types.ObjectId(id), 
+    workspaceId: new Types.ObjectId(workspaceId) 
+  });
 
   if (!rep) {
     res.status(404).json({ error: "Rep not found" });
     return;
   }
 
+  // Only generate a new access code if one doesn't exist yet
+  // This prevents breaking existing links just because an invite was resent
+  let newCode = rep.portalAccessCode;
+  if (!newCode) {
+    newCode = generateAccessCode();
+    rep.portalAccessCode = newCode;
+    await rep.save();
+  }
+
+  // Ensure the rep has a unique readable username
+  let username = rep.portalUsername;
+  if (!username) {
+    let baseUsername = rep.name.toLowerCase().replace(/[^a-z0-9]/g, '.').replace(/\.+/g, '.').replace(/^\.|\.$/g, '');
+    if (!baseUsername) baseUsername = "user";
+    
+    // Check if base username is already taken globally
+    let isUnique = false;
+    let suffix = "";
+    while (!isUnique) {
+      const candidate = suffix ? `${baseUsername}.${suffix}` : baseUsername;
+      const existing = await Rep.findOne({ portalUsername: candidate });
+      if (!existing) {
+        username = candidate;
+        isUnique = true;
+      } else {
+        // If taken, append a random 3-character hex string
+        suffix = randomBytes(2).toString("hex").substring(0, 3);
+      }
+    }
+    
+    rep.portalUsername = username;
+    await rep.save();
+  }
+
+  // Generate a random temporary password
+  const tempPassword = randomBytes(6).toString("hex"); // e.g. "a1b2c3d4e5f6"
+  const portalEmail = `${username}@portal.commissionkit.io`;
+
+  // Create or Update the Better Auth user
+  try {
+    const db = mongoose.connection.db;
+    if (db) {
+      // Find any existing auth user linked to this rep (by repId) or using this email
+      const existingUser = await db.collection("user").findOne({
+        $or: [
+          { repId: rep._id.toString() },
+          { email: portalEmail }
+        ]
+      });
+
+      if (existingUser) {
+        logger.info({ portalEmail, repId: rep._id }, "Found existing auth user, clearing old records...");
+        const actualId = existingUser.id || existingUser._id.toString();
+        // Delete old user, accounts, and sessions to avoid duplicate email conflicts
+        await db.collection("user").deleteOne({ _id: existingUser._id });
+        await db.collection("account").deleteMany({ userId: { $in: [existingUser._id, existingUser._id.toString()] } });
+        await db.collection("session").deleteMany({ userId: { $in: [existingUser._id, existingUser._id.toString()] } });
+      }
+    }
+
+    logger.info({ portalEmail, repId: rep._id }, "Creating fresh portal user in Better Auth");
+    // Use signUpEmail to properly hash the password and create all necessary records
+    await auth.api.signUpEmail({
+      headers: req.headers,
+      body: {
+        email: portalEmail,
+        password: tempPassword,
+        name: rep.name,
+        mustChangePassword: true,
+        repId: rep._id.toString(),
+      }
+    });
+
+    logger.info({ portalEmail }, "Successfully synced portal user to Better Auth");
+  } catch (err: any) {
+    logger.error({ 
+      err: err.message, 
+      portalEmail, 
+      repId: rep._id 
+    }, "Failed to sync portal user to Better Auth");
+    // This is the cause of login failures if it hits here
+  }
+
   const workspace = await Workspace.findById(workspaceId);
   const workspaceName = workspace?.name ?? "Your team";
 
   await sendPortalLinkEmail(
-    { name: rep.name, email: rep.email, portalAccessCode: newCode },
+    { 
+      name: rep.name, 
+      email: rep.email, 
+      portalAccessCode: newCode,
+      portalUsername: username as string,
+      portalPassword: tempPassword
+    },
     workspaceName
   );
 

@@ -2,12 +2,14 @@ import type { Request, Response, NextFunction, RequestHandler } from "express";
 import { auth } from "../lib/auth";
 import { WorkspaceMember } from "@workspace/db";
 import { Types } from "mongoose";
+import { getUserPermissions, hasPermission } from "../lib/rbac";
 
 export interface AuthenticatedRequest extends Request {
   userId?: string;
   userEmail?: string;
   workspaceId?: string;
   workspaceRole?: "owner" | "admin" | "member";
+  permissions?: Set<string>;
 }
 
 export async function requireAuth(
@@ -99,6 +101,77 @@ export function requireWorkspaceMember(
   };
 
   return [requireAuth as RequestHandler, memberCheck];
+}
+
+/**
+ * Returns an array of [requireAuth, permissionCheck] middleware.
+ * Spread into route definitions: router.get('/path', ...requirePermission('deals', 'read'), handler)
+ *
+ * Reads the active workspace from the X-Workspace-ID request header.
+ * Validates that the authenticated user has the necessary permission.
+ */
+export function requirePermission(
+  resource: string,
+  action: string
+): RequestHandler[] {
+  const permissionCheck: RequestHandler = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    const raw = req.headers["x-workspace-id"];
+    const workspaceId = Array.isArray(raw) ? raw[0] : (raw ?? "");
+    if (!workspaceId) {
+      res.status(400).json({ error: "X-Workspace-ID header is required" });
+      return;
+    }
+
+    const userId = req.userId!;
+    
+    // Auto-accept invites if they just landed here
+    const userEmail = req.userEmail ?? "";
+    let member = await WorkspaceMember.findOne({
+      workspaceId: new Types.ObjectId(workspaceId),
+      userId,
+    });
+
+    if (!member && userEmail) {
+      const pending = await WorkspaceMember.findOne({
+        workspaceId: new Types.ObjectId(workspaceId),
+        userId: null,
+        email: userEmail,
+      });
+
+      if (pending) {
+        pending.userId = userId;
+        await pending.save();
+        member = pending;
+      }
+    }
+
+    if (!member) {
+      res.status(403).json({ error: "Access denied: not a member of this workspace" });
+      return;
+    }
+
+    // Get cached permissions via RBAC lib
+    const permissions = await getUserPermissions(workspaceId, userId);
+
+    if (!hasPermission(permissions, resource, action)) {
+      res.status(403).json({
+        error: `This action requires the '${resource}:${action}' permission.`,
+      });
+      return;
+    }
+
+    req.workspaceId = workspaceId;
+    req.permissions = permissions;
+    // Set a legacy role for backward compatibility with some frontend logic if needed
+    req.workspaceRole = (member.role as any) || "member";
+    next();
+  };
+
+  return [requireAuth as RequestHandler, permissionCheck];
 }
 
 /**

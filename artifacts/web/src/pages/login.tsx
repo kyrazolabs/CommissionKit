@@ -14,6 +14,9 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  const searchParams = new URLSearchParams(window.location.search);
+  const redirect = searchParams.get("redirect") || "/";
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -23,7 +26,7 @@ export function LoginPage() {
         const { error } = await authClient.signIn.email({ 
           email, 
           password,
-          callbackURL: "/",
+          callbackURL: redirect,
         });
         if (error) throw error;
       } else {
@@ -31,7 +34,7 @@ export function LoginPage() {
           email, 
           password,
           name: name || email.split("@")[0],
-          callbackURL: "/",
+          callbackURL: redirect,
         });
         if (error) throw error;
         toast({
@@ -64,7 +67,7 @@ export function LoginPage() {
             <circle cx="36" cy="36" r="2.5" fill="#0D9488" />
           </svg>
           <div className="text-center">
-            <h1 className="text-[22px] font-bold tracking-tight text-foreground">
+            <h1 className="text-[22px] font-semibold tracking-tight text-foreground">
               Commission<span className="text-primary">Kit</span>
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">Sales Commission Platform</p>

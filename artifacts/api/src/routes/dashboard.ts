@@ -8,7 +8,7 @@ import {
 } from "@workspace/db";
 import { GetRepSummaryParams } from "@workspace/api-zod";
 import {
-  requireWorkspaceMember,
+  requirePermission,
   type AuthenticatedRequest,
 } from "../middleware/auth";
 import { convertCurrency } from "../lib/exchange";
@@ -23,7 +23,7 @@ function currentPeriod() {
 
 router.get(
   "/dashboard/summary",
-  ...requireWorkspaceMember("member"),
+  ...requirePermission("reports", "read"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
     const workspace = await Workspace.findById(workspaceId);
@@ -124,7 +124,7 @@ router.get(
 
 router.get(
   "/dashboard/rep-summary/:repId",
-  ...requireWorkspaceMember("member"),
+  ...requirePermission("reports", "read"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
     const { repId } = GetRepSummaryParams.parse(req.params);
@@ -159,6 +159,11 @@ router.get(
       commissionAmount: number;
       currency: string;
       calculationNote: string;
+      wsCurrency?: string | null;
+      convertedDealAmount?: number | null;
+      convertedCommission?: number | null;
+      exchangeRateSnapshot?: number | null;
+      rateSnapshotDate?: Date | null;
     }[] = [];
     const currencySummariesMap = new Map<
       string,
