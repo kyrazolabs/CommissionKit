@@ -784,7 +784,7 @@ export function PublicRepPortal() {
                               {formatCurrency(p.finalAmount, p.currency)}
                             </TableCell>
                             <TableCell>
-                              <span className={`inline-flex items-center rounded-full border p-2.5 text-[11px] font-semibold ${cfg.class}`}>
+                              <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${cfg.class}`}>
                                 {cfg.label}
                               </span>
                             </TableCell>

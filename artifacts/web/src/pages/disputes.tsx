@@ -54,7 +54,7 @@ function DisputeStatusBadge({ status }: { status: string }) {
   const cfg = DISPUTE_STATUS[status] ?? DISPUTE_STATUS.open;
   const Icon = cfg.icon;
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded-full border p-2.5 text-[11px] font-semibold", cfg.class)}>
+    <span className={cn("inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold", cfg.class)}>
       <Icon className="size-3" />{cfg.label}
     </span>
   );

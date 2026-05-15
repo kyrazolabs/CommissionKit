@@ -68,7 +68,7 @@ const STATUS_CONFIG = {
 function StatusBadge({ status }: { status: Payout["status"] }) {
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
   return (
-    <span className={cn("inline-flex items-center rounded-full border p-2.5 text-[11px] font-semibold", cfg.class)}>
+    <span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold", cfg.class)}>
       {cfg.label}
     </span>
   );

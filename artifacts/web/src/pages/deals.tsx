@@ -176,7 +176,7 @@ export function DealsPage() {
                     </TableCell>
                     <TableCell>{format(new Date(deal.closeDate), "MMM d, yyyy")}</TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center rounded-full p-2.5 text-xs font-semibold border ${
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
                         deal.stage === 'closed_won' ? 'bg-primary/10 text-primary border-primary/20' : 
                         deal.stage === 'closed_lost' ? 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/30' :
                         'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800/30'
