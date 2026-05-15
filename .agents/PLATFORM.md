@@ -19,6 +19,11 @@ Stop calculating commissions manually. With one click, CommissionKit processes t
 - **Asynchronous Processing**: Handle massive datasets without any system slowdown.
 - **History Tracking**: Maintain a perfect audit trail of every commission run ever performed.
 
+### Payouts Tracker & Disputes
+Manage the final stage of the commission lifecycle with total accountability and trust.
+- **Payouts Tracker**: Monitor the lifecycle of every commission payment. Track statuses from "Pending" and "Approved" to "Paid" or "On Hold".
+- **Dispute Resolution**: Eliminate friction with a built-in dispute workflow. Reps can flag discrepancies directly from their portal, and admins can review, comment, and resolve issues within a centralized dashboard.
+
 ### The Representative Portal (Transparency-First)
 Empower your sales force with their own dedicated dashboard. Every rep gets a secure, personalized portal where they can:
 - **View Real-Time Earnings**: See exactly how much they've earned and what is pending.
@@ -51,7 +56,7 @@ Gain deep insights into your sales performance with our dedicated Reports engine
 ### Professional Team Workspaces
 Built for collaboration and growth.
 - **Multi-Tenant Architecture**: Securely manage multiple independent workspaces.
-- **Team Roles**: Assign administrators to manage the platform while keeping data siloed and secure.
+- **Custom Role Management (RBAC)**: Define granular permissions and create custom roles (e.g., Sales Manager, Auditor, Operations) to match your organizational structure.
 - **Easy Onboarding**: Invite new team members with a single email invitation.
 
 ---
