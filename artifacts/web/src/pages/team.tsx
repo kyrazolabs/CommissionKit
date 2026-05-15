@@ -12,9 +12,6 @@ import {
   DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
-import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -260,6 +257,7 @@ function MemberRow({
 }) {
   const { toast } = useToast();
   const [updating, setUpdating] = useState(false);
+  const { hasPermission } = useRole()
   const isSelf = member.userId === currentUserId;
   const isProtected = member.role === "owner";
 
@@ -550,7 +548,7 @@ export function TeamPage() {
             <div>
               <div className="flex items-center gap-2">
                 <p className="text-[14.5px] font-semibold text-foreground">Members</p>
-                <span className="text-[11px] font-semibold text-muted-foreground bg-muted p-2 rounded-full">
+                <span className="text-[11px] font-semibold text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
                   {activeMembers.length} active
                   {pendingMembers.length > 0 && ` · ${pendingMembers.length} pending`}
                   {limits.members !== -1 && ` / ${limits.members} total`}

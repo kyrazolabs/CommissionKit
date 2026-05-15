@@ -44,21 +44,6 @@ const ROLE_ICONS = {
   member: Users,
 };
 
-function RoleBadge({ role }: { role: Workspace["role"] }) {
-  return (
-    <span
-      className={cn(
-        "ml-auto text-[9px] font-semibold uppercase tracking-wide p-1.5 rounded-full",
-        role === "owner" && "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-        role === "admin" && "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-        role === "member" && "bg-muted text-muted-foreground",
-      )}
-    >
-      {role}
-    </span>
-  );
-}
-
 function WorkspaceSwitcher() {
   const { workspaces, activeWorkspace, setActiveWorkspace, createWorkspace } = useWorkspace();
   const [open, setOpen] = useState(false);
@@ -98,7 +83,7 @@ function WorkspaceSwitcher() {
   const initial = activeWorkspace.name.slice(0, 1).toUpperCase();
 
   return (
-    <div ref={ref} className="relative px-3 pt-3 pb-2 border-b border-border">
+    <div ref={ref} className="relative px-3 pt-3 pb-2 ">
       <button
         onClick={() => { setOpen((o) => !o); setShowCreate(false); }}
         className="w-full flex items-center gap-2 p-2 rounded-[10px] hover:bg-muted text-left transition-colors group"

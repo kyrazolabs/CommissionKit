@@ -45,9 +45,9 @@ const NOTIFICATION_TYPES: { key: string; label: string; description: string }[] 
 type NotifPrefs = Record<string, { email: boolean; inApp: boolean }>;
 
 /**
- * Standard Headless UI toggle pattern : no pixel math.
- * Track: size-6 with border-2 (inner area 40×20px)
- * Thumb: size-5 inline-block (20×20px)
+ * Standard Headless UI toggle pattern — no pixel math.
+ * Track: h-6 w-11 with border-2 (inner area 40×20px)
+ * Thumb: h-5 w-5 inline-block (20×20px)
  * OFF → translate-x-0  (flush left inside border)
  * ON  → translate-x-5  (20px right = 40-20 = flush right inside border)
  */
@@ -58,7 +58,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
       aria-checked={on}
       onClick={() => onChange(!on)}
       className={cn(
-        "relative inline-flex size-6 shrink-0 cursor-pointer rounded-full",
+        "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full",
         "border-2 border-transparent",
         "transition-colors duration-200 ease-in-out",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
@@ -68,7 +68,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
       <span
         aria-hidden="true"
         className={cn(
-          "pointer-events-none inline-block size-5 rounded-full bg-white shadow-md ring-0",
+          "pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-md ring-0",
           "transition-transform duration-200 ease-in-out",
           on ? "translate-x-5" : "translate-x-0",
         )}
@@ -214,7 +214,7 @@ export function SettingsPage() {
               <p className="text-sm font-medium">Your role</p>
               <p className="text-sm text-muted-foreground mt-0.5">Access level in <span className="font-medium text-foreground">{activeWorkspace?.name}</span></p>
             </div>
-            <span className={cn("inline-flex items-center gap-1.5 rounded-full border p-3 text-[12px] font-semibold", roleMeta.color)}>
+            <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-semibold", roleMeta.color)}>
               <roleMeta.Icon className="size-3.5" />{roleMeta.label}
             </span>
           </div>
