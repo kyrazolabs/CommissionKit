@@ -31,6 +31,9 @@ import {
   YAxis,
   Tooltip as RechartsTooltip,
 } from "recharts";
+import { MonthPicker } from "@/components/ui/month-picker";
+import { DatePicker } from "@/components/ui/date-picker";
+import { parseISO } from "date-fns";
 import { CurrencyCell } from "@/components/currency-cell";
 
 // Note: authClient is NOT used in this file.
@@ -542,15 +545,12 @@ export function PublicRepPortal() {
                     Plan: {summary.planName}
                   </Badge>
                 )}
-                <div className="flex items-center border rounded-md px-3 bg-background">
-                  <CalendarDays className="size-4 text-muted-foreground mr-2" />
-                  <Input
-                    type="month"
-                    value={period}
-                    onChange={(e) => setPeriod(e.target.value)}
-                    className="border-0 shadow-none focus-visible:ring-0 w-36 px-0 h-9"
-                  />
-                </div>
+                <MonthPicker 
+                  value={period}
+                  onChange={setPeriod}
+                  placeholder="Pick a month"
+                  className="w-40 h-9"
+                />
               </div>
             </div>
 

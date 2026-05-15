@@ -69,7 +69,7 @@ function RoleBadge({ member, rolesList }: { member: Member, rolesList: any[] }) 
     const r = member.role || "member";
     const meta = ROLE_META[r as MemberRole] || ROLE_META.member;
     return (
-      <span className={cn("inline-flex items-center gap-1 rounded-full border p-2 text-[11px] font-semibold", meta.color)}>
+      <span className={cn("inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold", meta.color)}>
         <meta.Icon className="size-3" />
         {meta.label}
       </span>
@@ -83,7 +83,7 @@ function RoleBadge({ member, rolesList }: { member: Member, rolesList: any[] }) 
         const customRole = rolesList.find(r => r.id === id);
         if (!customRole) return null;
         return (
-          <span key={id} className="inline-flex items-center gap-1 rounded-full border p-2 text-[11px] font-semibold text-primary bg-primary/10 border-primary/20">
+          <span key={id} className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold text-primary bg-primary/10 border-primary/20">
             <Shield className="size-3" />
             {customRole.name}
           </span>
@@ -128,16 +128,10 @@ function InviteMemberDialog({
     if (!email.trim()) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/workspaces/${workspaceId}/members/invite`, {
+      await apiFetch(`/api/workspaces/${workspaceId}/members/invite`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ email: email.trim(), roleIds }),
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Invite failed");
-      }
       toast({ title: "Invitation sent", description: `${email} was invited.` });
       setEmail("");
       setRoleIds([]);
@@ -264,13 +258,10 @@ function MemberRow({
   const updateRole = async (newRoleIds: string[]) => {
     setUpdating(true);
     try {
-      const res = await fetch(`${API_URL}/api/workspaces/${workspaceId}/members/${member.id}`, {
+      await apiFetch(`/api/workspaces/${workspaceId}/members/${member.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ roleIds: newRoleIds }),
       });
-      if (!res.ok) throw new Error((await res.json()).error);
       toast({ title: "Roles updated", description: `${member.email}'s roles have been updated.` });
       onChanged();
     } catch (err: any) {
@@ -283,11 +274,9 @@ function MemberRow({
   const removeMember = async () => {
     setUpdating(true);
     try {
-      const res = await fetch(`${API_URL}/api/workspaces/${workspaceId}/members/${member.id}`, {
+      await apiFetch(`/api/workspaces/${workspaceId}/members/${member.id}`, {
         method: "DELETE",
-        credentials: "include",
       });
-      if (!res.ok && res.status !== 204) throw new Error((await res.json()).error);
       toast({ title: isSelf ? "Left workspace" : "Member removed" });
       onChanged();
     } catch (err: any) {
@@ -308,17 +297,17 @@ function MemberRow({
         <div className="flex items-center gap-2 flex-wrap">
           <p className="text-[13.5px] font-semibold text-foreground truncate">{member.email}</p>
           {isSelf && (
-            <span className="text-[10px] font-medium text-muted-foreground bg-muted p-1.5 rounded-full">
+            <span className="text-[10px] font-medium text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
               You
             </span>
           )}
           {member.status === "pending" && (
-            <span className="text-[10px] font-medium text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400 border border-amber-200 dark:border-amber-800/30 p-1.5 rounded-full flex items-center gap-1">
+            <span className="text-[10px] font-medium text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400 border border-amber-200 dark:border-amber-800/30 px-2.5 py-0.5 rounded-full flex items-center gap-1">
               <Mail className="size-2.5" /> Invite pending
             </span>
           )}
           {member.status === "active" && !isSelf && (
-            <span className="text-[10px] font-medium text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400 border border-green-200 dark:border-green-800/30 p-1.5 rounded-full flex items-center gap-1">
+            <span className="text-[10px] font-medium text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400 border border-green-200 dark:border-green-800/30 px-2.5 py-0.5 rounded-full flex items-center gap-1">
               <CheckCircle2 className="size-2.5" /> Active
             </span>
           )}
@@ -333,7 +322,7 @@ function MemberRow({
         {canManage && isOwner && !isProtected ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-7 text-[12px] rounded-full">
+              <Button variant="outline" size="sm" className="h-7 text-xs rounded-full">
                 {member.roleIds?.length || 0} Roles
               </Button>
             </DropdownMenuTrigger>
@@ -447,19 +436,16 @@ export function TeamPage() {
     if (!activeWorkspace?.id) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/workspaces/${activeWorkspace.id}/members`, {
-        credentials: "include",
-      });
-      if (res.ok) {
-        const data = await res.json();
-        // Sort: owner first, then admin, then member; active before pending
-        const rankRole = (r: MemberRole) => ({ owner: 0, admin: 1, member: 2 }[r] ?? 3);
-        const rankStatus = (s: MemberStatus) => (s === "active" ? 0 : 1);
-        data.sort((a: Member, b: Member) =>
-          rankRole(a.role) - rankRole(b.role) || rankStatus(a.status) - rankStatus(b.status),
-        );
-        setMembers(data);
-      }
+      const data = await apiFetch(`/api/workspaces/${activeWorkspace.id}/members`);
+      // Sort: owner first, then admin, then member; active before pending
+      const rankRole = (r: MemberRole) => ({ owner: 0, admin: 1, member: 2 }[r] ?? 3);
+      const rankStatus = (s: MemberStatus) => (s === "active" ? 0 : 1);
+      data.sort((a: Member, b: Member) =>
+        rankRole(a.role) - rankRole(b.role) || rankStatus(a.status) - rankStatus(b.status),
+      );
+      setMembers(data);
+    } catch (err) {
+      console.error("Failed to fetch members:", err);
     } finally {
       setLoading(false);
     }

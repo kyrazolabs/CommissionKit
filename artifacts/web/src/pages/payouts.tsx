@@ -24,6 +24,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { DatePicker, DateRangePicker } from "@/components/ui/date-picker";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -33,6 +34,7 @@ import { useRole } from "@/hooks/use-role";
 import { useBillingStatus } from "@/hooks/use-billing-status";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/lib/api";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 
@@ -81,12 +83,7 @@ function useFetchPayouts(workspaceId: string, filters: any) {
       const params = new URLSearchParams();
       if (filters.status) params.set("status", filters.status);
       if (filters.repId) params.set("repId", filters.repId);
-      const res = await fetch(`${API_URL}/api/payouts?${params}`, {
-        credentials: "include",
-        headers: { "x-workspace-id": workspaceId },
-      });
-      if (!res.ok) throw new Error("Failed to fetch payouts");
-      return res.json() as Promise<Payout[]>;
+      return apiFetch(`/api/payouts?${params.toString()}`);
     },
     enabled: Boolean(workspaceId),
   });
@@ -96,17 +93,10 @@ function usePayoutMutation(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, action, body }: { id: string; action: string; body: any }) => {
-      const res = await fetch(`${API_URL}/api/payouts/${id}/${action}`, {
+      return apiFetch(`/api/payouts/${id}/${action}`, {
         method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json", "x-workspace-id": workspaceId },
         body: JSON.stringify(body),
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Action failed");
-      }
-      return res.json();
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["payouts", workspaceId] }),
   });
@@ -210,8 +200,8 @@ function AdjustModal({ payout, workspaceId, onClose }: { payout: Payout; workspa
 // ─── Create Payout Modal ──────────────────────────────────────────────────────
 function CreatePayoutModal({ workspaceId, onClose }: { workspaceId: string; onClose: () => void }) {
   const [repId, setRepId] = useState("");
-  const [periodStart, setPeriodStart] = useState("");
-  const [periodEnd, setPeriodEnd] = useState("");
+  const [periodStart, setPeriodStart] = useState<Date | undefined>(undefined);
+  const [periodEnd, setPeriodEnd] = useState<Date | undefined>(undefined);
   const [amount, setAmount] = useState("");
   const [notes, setNotes] = useState("");
   const { toast } = useToast();
@@ -220,24 +210,16 @@ function CreatePayoutModal({ workspaceId, onClose }: { workspaceId: string; onCl
   const { data: reps } = useQuery({
     queryKey: ["reps-list", workspaceId],
     queryFn: async () => {
-      const res = await fetch(`${API_URL}/api/reps`, { credentials: "include", headers: { "x-workspace-id": workspaceId } });
-      return res.json();
+      return apiFetch(`/api/reps`);
     },
   });
 
   const mutation = useMutation({
     mutationFn: async (body: any) => {
-      const res = await fetch(`${API_URL}/api/payouts`, {
+      return apiFetch(`/api/payouts`, {
         method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json", "x-workspace-id": workspaceId },
         body: JSON.stringify(body),
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Failed to create payout");
-      }
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["payouts", workspaceId] });
@@ -249,7 +231,14 @@ function CreatePayoutModal({ workspaceId, onClose }: { workspaceId: string; onCl
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    mutation.mutate({ repId, periodStart, periodEnd, commissionAmount: parseFloat(amount), notes });
+    if (!periodStart || !periodEnd) return;
+    mutation.mutate({ 
+      repId, 
+      periodStart: format(periodStart, "yyyy-MM-dd"), 
+      periodEnd: format(periodEnd, "yyyy-MM-dd"), 
+      commissionAmount: parseFloat(amount), 
+      notes 
+    });
   };
 
   return (
@@ -270,15 +259,17 @@ function CreatePayoutModal({ workspaceId, onClose }: { workspaceId: string; onCl
             </SelectContent>
           </Select>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="grid gap-2">
-            <Label>Period Start</Label>
-            <Input type="date" value={periodStart} onChange={e => setPeriodStart(e.target.value)} required />
-          </div>
-          <div className="grid gap-2">
-            <Label>Period End</Label>
-            <Input type="date" value={periodEnd} onChange={e => setPeriodEnd(e.target.value)} required />
-          </div>
+        <div className="grid gap-2">
+          <Label>Payout Period</Label>
+          <DateRangePicker 
+            from={periodStart} 
+            to={periodEnd} 
+            onRangeChange={(range) => {
+              setPeriodStart(range?.from);
+              setPeriodEnd(range?.to);
+            }} 
+            placeholder="Select period range"
+          />
         </div>
         <div className="grid gap-2">
           <Label>Commission Amount</Label>
@@ -408,15 +399,11 @@ export function PayoutsPage() {
 
   const handleBulkApprove = async () => {
     if (!isGrowthPlus) return;
-    setBulkLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/payouts/bulk-approve`, {
+      const data = await apiFetch(`/api/payouts/bulk-approve`, {
         method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json", "x-workspace-id": workspaceId },
         body: JSON.stringify({ ids: [...selectedIds] }),
       });
-      const data = await res.json();
       toast({ title: `${data.approved} payout(s) approved` });
       setSelectedIds(new Set());
       queryClient.invalidateQueries({ queryKey: ["payouts", workspaceId] });
@@ -433,9 +420,12 @@ export function PayoutsPage() {
       const params = new URLSearchParams();
       if (filters.status) params.set("status", filters.status);
       
-      const res = await fetch(`${API_URL}/api/payouts/export?${params}`, {
+      const workspaceId = localStorage.getItem("ck_active_workspace");
+      const res = await fetch(`${API_URL}/api/payouts/export?${params.toString()}`, {
         credentials: "include",
-        headers: { "x-workspace-id": workspaceId },
+        headers: { 
+          "x-workspace-id": workspaceId ?? "" 
+        },
       });
       
       if (!res.ok) {

@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { HelpTooltip } from "@/components/help-tooltip";
+import { RunCalculationDialog } from "@/components/run-calculation-dialog";
 import { useWorkspace } from "@/hooks/use-workspace";
 
 import { useRole } from "@/hooks/use-role";
@@ -180,13 +181,15 @@ export function Dashboard() {
                 <p className="text-[14px] font-semibold text-foreground">Run Calculation</p>
               </div>
               <p className="text-[12.5px] text-muted-foreground leading-relaxed mb-4">
-                Trigger a commission run for the current period across all active reps and plans.
-              </p>
-              <Link href="/runs">
-                <Button className="w-full rounded-xl text-[13px] font-semibold">
-                  Run {format(new Date(currentPeriod + "-01"), "MMM yyyy")}
-                </Button>
-              </Link>
+                Trigger a commission run for the current period across all active reps and plans.</p>
+              <RunCalculationDialog 
+                isProcessing={recentRuns.some((r: any) => r.status === "pending" || r.status === "processing")} 
+                trigger={
+                  <Button className="w-full rounded-xl text-[13px] font-semibold">
+                    Run {format(new Date(currentPeriod + "-01"), "MMM yyyy")}
+                  </Button>
+                }
+              />
             </div>
           )}
 
@@ -218,7 +221,7 @@ export function Dashboard() {
                     </div>
                     <Link
                       href={`/runs/${run.id}`}
-                      className="flex items-center gap-0.5 text-[11px] font-semibold text-primary bg-secondary border border-primary/20 rounded-md p-2 hover:opacity-80 transition-opacity"
+                      className="flex items-center gap-0.5 text-[11px] font-semibold text-primary bg-secondary border border-primary/20 rounded-md px-2.5 py-0.5 hover:opacity-80 transition-opacity"
                     >
                       Completed
                     </Link>
@@ -237,31 +240,31 @@ function DashboardSkeleton() {
   return (
     <div className="space-y-7">
       <div className="space-y-2">
-        <Skeleton className="size-3" />
-        <Skeleton className="size-8" />
-        <Skeleton className="size-4" />
+        <Skeleton className="h-3 w-16" />
+        <Skeleton className="h-8 w-40" />
+        <Skeleton className="h-4 w-72" />
       </div>
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[...Array(4)].map((_, i) => (
           <div key={i} className="bg-card border border-card-border rounded-2xl px-[22px] py-5">
             <div className="flex items-start justify-between mb-3.5">
-              <Skeleton className="size-3.5" />
-              <Skeleton className="size-7 rounded-[10px]" />
+              <Skeleton className="h-3.5 w-28" />
+              <Skeleton className="h-7 w-7 rounded-[10px]" />
             </div>
-            <Skeleton className="size-7 mb-1.5" />
-            <Skeleton className="size-3" />
+            <Skeleton className="h-7 w-24 mb-1.5" />
+            <Skeleton className="h-3 w-20" />
           </div>
         ))}
       </div>
       <div className="grid gap-5" style={{ gridTemplateColumns: "3fr 2fr" }}>
-        <Card><CardHeader><Skeleton className="size-5" /><Skeleton className="size-44" /></CardHeader>
+        <Card><CardHeader><Skeleton className="h-5 w-28" /><Skeleton className="h-4 w-44" /></CardHeader>
           <CardContent className="space-y-3">
             {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
           </CardContent>
         </Card>
         <div className="flex flex-col gap-4">
           <Skeleton className="h-40 w-full rounded-2xl" />
-          <Card className="flex-1"><CardHeader><Skeleton className="size-5" /></CardHeader>
+          <Card className="flex-1"><CardHeader><Skeleton className="h-5 w-28" /></CardHeader>
             <CardContent className="space-y-3">
               {[...Array(2)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
             </CardContent>

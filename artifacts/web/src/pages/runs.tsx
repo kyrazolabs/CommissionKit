@@ -13,6 +13,8 @@ import { PlayCircle, ArrowRight, CalendarDays, Clock, FileText, Loader2, AlertCi
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { formatCurrency, formatNumber } from "@/lib/format";
+import { DatePicker } from "@/components/ui/date-picker";
+import { parseISO } from "date-fns";
 import { HelpTooltip } from "@/components/help-tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -22,7 +24,9 @@ import { useRole } from "@/hooks/use-role";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useBillingStatus } from "@/hooks/use-billing-status";
+import { RunCalculationDialog } from "@/components/run-calculation-dialog";
 import { Download } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 
 export function RunsPage() {
   const { activeWorkspace } = useWorkspace();
@@ -183,82 +187,6 @@ export function RunsPage() {
   );
 }
 
-function RunCalculationDialog({ isProcessing }: { isProcessing: boolean }) {
-  const [open, setOpen] = useState(false);
-  const [period, setPeriod] = useState<string>(() => format(new Date(), "yyyy-MM"));
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-  const createMutation = useCreateRun();
-
-  const handleRun = () => {
-    createMutation.mutate({ data: { period } }, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListRunsQueryKey() });
-        toast({ title: "Calculation Queued", description: `Commission calculation for ${period} has been started.` });
-        setOpen(false);
-      },
-      onError: (err: any) => {
-        toast({ title: "Run failed", description: err.message || "An error occurred", variant: "destructive" });
-      }
-    });
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button 
-          className="bg-primary hover:bg-primary/90 text-primary-foreground" 
-          disabled={isProcessing}
-        >
-          {isProcessing ? (
-            <>
-              <Loader2 className="mr-2 size-4 animate-spin" />
-              Processing…
-            </>
-          ) : (
-            <>
-              <PlayCircle className="mr-2 size-4" />
-              Run Calculation
-            </>
-          )}
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Trigger Commission Calculation</DialogTitle>
-          <DialogDescription className="flex items-center gap-1.5">
-            This will process all pending and closed won deals for the specified period and calculate rep commissions.
-            <HelpTooltip content="Calculating a run takes a 'snapshot' of current deals and plans. If you add deals later, you'll need to run it again to update totals." />
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="period">Calculation Period (YYYY-MM)</Label>
-            <div className="flex items-center gap-2">
-              <CalendarDays className="size-5 text-muted-foreground" />
-              <Input 
-                id="period" 
-                type="month" 
-                value={period} 
-                onChange={e => setPeriod(e.target.value)} 
-                className="flex-1"
-              />
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Warning: Running for a period that already has a calculation will create a new run record.
-            </p>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={handleRun} disabled={createMutation.isPending}>
-            {createMutation.isPending ? "Processing…" : "Start Calculation"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 function ExportCommissionsButton() {
   const { sub } = useBillingStatus();
@@ -282,18 +210,13 @@ function ExportCommissionsButton() {
 
     setIsExporting(true);
     try {
-      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:8088";
-      const response = await fetch(`${baseUrl}/api/export/commissions`, {
-        method: "GET",
+      const workspaceId = localStorage.getItem("ck_active_workspace");
+      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8088"}/api/export/commissions`, {
         credentials: "include",
-        headers: {
-          "x-workspace-id": activeWorkspace.id,
-        },
+        headers: { "x-workspace-id": workspaceId ?? "" },
       });
 
-      if (!response.ok) {
-        throw new Error("Export failed");
-      }
+      if (!res.ok) throw new Error("Export failed");
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);

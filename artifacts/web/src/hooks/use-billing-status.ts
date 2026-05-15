@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useWorkspace } from "./use-workspace";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
+import { apiFetch } from "@/lib/api";
 
 export const PLAN_LIMITS = {
   free: { reps: 3, plans: 1, members: 1 },
@@ -35,11 +35,7 @@ export function useBillingStatus() {
     }
 
     setLoading(true);
-    fetch(`${API_URL}/api/billing/status`, {
-      credentials: "include",
-      headers: { "x-workspace-id": activeWorkspace.id },
-    })
-      .then((r) => r.json())
+    apiFetch(`/api/billing/status`)
       .then((d) => setSub(d))
       .catch(() =>
         setSub({
@@ -65,11 +61,7 @@ export function useBillingStatus() {
   const refetch = useCallback(() => {
     if (!activeWorkspace?.id) return;
     setLoading(true);
-    fetch(`${API_URL}/api/billing/status`, {
-      credentials: "include",
-      headers: { "x-workspace-id": activeWorkspace.id },
-    })
-      .then((r) => r.json())
+    apiFetch(`/api/billing/status`)
       .then((d) => setSub(d))
       .catch(() =>
         setSub({

@@ -12,8 +12,12 @@ import { CalendarDays, DollarSign, Activity, Briefcase, Wallet } from "lucide-re
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip } from "recharts";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { CurrencyCell } from "@/components/currency-cell";
+import { MonthPicker } from "@/components/ui/month-picker";
 import { useQuery } from "@tanstack/react-query";
+import { DatePicker } from "@/components/ui/date-picker";
+import { parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/lib/api";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 
@@ -29,12 +33,12 @@ function PayoutsSection({ repId, workspaceId, currency }: { repId: string; works
   const { data: payouts = [], isLoading } = useQuery<any[]>({
     queryKey: ["rep-payouts", repId, workspaceId],
     queryFn: async () => {
-      const res = await fetch(`${API_URL}/api/payouts?repId=${repId}`, {
-        credentials: "include",
-        headers: { "x-workspace-id": workspaceId },
-      });
-      if (!res.ok) return [];
-      return res.json();
+      try {
+        return await apiFetch(`/api/payouts?repId=${repId}`);
+      } catch (err) {
+        console.error(err);
+        return [];
+      }
     },
     enabled: Boolean(repId && workspaceId),
   });
@@ -84,7 +88,7 @@ function PayoutsSection({ repId, workspaceId, currency }: { repId: string; works
                       {p.adjustments !== 0 ? (p.adjustments > 0 ? "+" : "") + formatCurrency(p.adjustments, p.currency) : ":"}
                     </TableCell>
                     <TableCell className="text-right text-sm font-semibold tabular-nums">{formatCurrency(p.finalAmount, p.currency)}</TableCell>
-                    <TableCell><span className={cn("inline-flex items-center rounded-full border p-2.5 text-[11px] font-semibold", cfg.class)}>{cfg.label}</span></TableCell>
+                    <TableCell><span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold", cfg.class)}>{cfg.label}</span></TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {p.actualPaymentDate ? format(new Date(p.actualPaymentDate), "MMM d, yyyy") : ":"}
                     </TableCell>
@@ -135,15 +139,12 @@ export function RepPortal() {
               Plan: {summary.planName}
             </Badge>
           )}
-          <div className="flex items-center border rounded-md px-3 bg-background">
-            <CalendarDays className="size-4 text-muted-foreground mr-2" />
-            <Input 
-              type="month" 
-              value={period} 
-              onChange={e => setPeriod(e.target.value)}
-              className="border-0 shadow-none focus-visible:ring-0 w-36 px-0 h-9"
-            />
-          </div>
+          <MonthPicker 
+            value={period}
+            onChange={setPeriod}
+            placeholder="Pick a month"
+            className="w-40 h-9"
+          />
         </div>
       </div>
 

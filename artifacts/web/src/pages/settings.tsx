@@ -19,8 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import SettingsRoles from "./settings-roles";
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:8088";
+import { apiFetch } from "@/lib/api";
 
 const ROLE_META = {
   owner: { label: "Owner", description: "Full access including billing and workspace deletion.", Icon: Crown, color: "text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/30" },
@@ -95,11 +94,7 @@ export function SettingsPage() {
   useEffect(() => {
     if (!activeWorkspace?.id) return;
     setWsState(prev => ({ ...prev, loading: true }));
-    fetch(`${API}/api/workspaces/${activeWorkspace.id}/settings`, {
-      credentials: "include",
-      headers: { "x-workspace-id": activeWorkspace.id },
-    })
-      .then((r) => r.json())
+    apiFetch(`/api/workspaces/${activeWorkspace.id}/settings`)
       .then((d) => {
         setWsState(prev => ({
           ...prev,
@@ -118,10 +113,8 @@ export function SettingsPage() {
     if (!activeWorkspace?.id) return;
     setWsState(prev => ({ ...prev, saving: true }));
     try {
-      await fetch(`${API}/api/workspaces/${activeWorkspace.id}/settings`, {
+      await apiFetch(`/api/workspaces/${activeWorkspace.id}/settings`, {
         method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json", "x-workspace-id": activeWorkspace.id },
         body: JSON.stringify({ currency: wsState.currency, fiscalYearStart: wsState.fiscalYear }),
       });
       setWsState(prev => ({ ...prev, saving: false, saved: true }));
@@ -139,8 +132,7 @@ export function SettingsPage() {
   const [prefsState, setPrefsState] = useState({ saving: false, saved: false });
 
   useEffect(() => {
-    fetch(`${API}/api/users/me/notification-prefs`, { credentials: "include" })
-      .then((r) => r.json())
+    apiFetch(`/api/users/me/notification-prefs`)
       .then((d) => d.prefs && setPrefs(d.prefs))
       .catch(console.error);
   }, []);
@@ -160,10 +152,8 @@ export function SettingsPage() {
   const saveNotifPrefs = async () => {
     setPrefsState(prev => ({ ...prev, saving: true }));
     try {
-      await fetch(`${API}/api/users/me/notification-prefs`, {
+      await apiFetch(`/api/users/me/notification-prefs`, {
         method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prefs }),
       });
       setPrefsState(prev => ({ ...prev, saving: false, saved: true }));

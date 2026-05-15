@@ -19,6 +19,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
+import { apiFetch } from "@/lib/api";
 import { useBillingStatus, type SubscriptionStatus } from "@/hooks/use-billing-status";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
@@ -309,6 +310,7 @@ function BillingUsageCard({
 }
 
 import { useRole } from "@/hooks/use-role";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function BillingPage() {
   const queryClient = useQueryClient();
@@ -324,11 +326,7 @@ export function BillingPage() {
 
   useEffect(() => {
     if (!activeWorkspace?.id) return;
-    fetch(`${API_URL}/api/billing/rates`, {
-      credentials: "include",
-      headers: { "x-workspace-id": activeWorkspace.id },
-    })
-      .then((res) => res.json())
+    apiFetch(`/api/billing/rates`)
       .then((data) => setRates(data))
       .catch((err) => console.error("Failed to fetch rates", err));
   }, [activeWorkspace?.id]);
@@ -354,18 +352,9 @@ export function BillingPage() {
       setMembersCount(null);
       return;
     }
-    setMembersLoading(true);
     try {
-      const res = await fetch(
-        `${API_URL}/api/workspaces/${activeWorkspace.id}/members`,
-        { credentials: "include" },
-      );
-      if (res.ok) {
-        const data = await res.json();
-        setMembersCount(Array.isArray(data) ? data.length : 0);
-      } else {
-        setMembersCount(null);
-      }
+      const data = await apiFetch(`/api/workspaces/${activeWorkspace.id}/members`);
+      setMembersCount(Array.isArray(data) ? data.length : 0);
     } catch {
       setMembersCount(null);
     } finally {
@@ -448,22 +437,10 @@ export function BillingPage() {
     if (!activeWorkspace?.id) return;
     setLoadingPlan(plan);
     try {
-      const res = await fetch(`${API_URL}/api/billing/checkout`, {
+      const { url } = await apiFetch(`/api/billing/checkout`, {
         method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "x-workspace-id": activeWorkspace.id,
-        },
         body: JSON.stringify({ priceId, mode, extraReps: extraQty }),
       });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Checkout failed");
-      }
-
-      const { url } = await res.json();
       window.location.href = url;
     } catch (err: any) {
       toast({ title: "Checkout Error", description: err.message, variant: "destructive" });
@@ -476,20 +453,10 @@ export function BillingPage() {
     const qty = Math.max(0, Math.floor(Number(extraReps || 0)));
     setAddonSaving(true);
     try {
-      const res = await fetch(`${API_URL}/api/billing/extra-reps`, {
+      await apiFetch(`/api/billing/extra-reps`, {
         method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "x-workspace-id": activeWorkspace.id,
-        },
         body: JSON.stringify({ quantity: qty }),
       });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Failed to update add-on");
-      }
 
       toast({ title: "Updated", description: `You now have ${qty} extra rep seats.` });
       await refetch();
@@ -504,16 +471,9 @@ export function BillingPage() {
     if (!activeWorkspace?.id) return;
     setPortalLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/billing/portal`, {
+      const { url } = await apiFetch(`/api/billing/portal`, {
         method: "POST",
-        credentials: "include",
-        headers: { "x-workspace-id": activeWorkspace.id },
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Portal error");
-      }
-      const { url } = await res.json();
       window.location.href = url;
     } catch (err: any) {
       toast({ title: "Could not open portal", description: err.message, variant: "destructive" });
@@ -741,7 +701,7 @@ export function BillingPage() {
               {plan.badge && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className={cn(
-                    "inline-flex items-center rounded-full p-3 text-[11px] font-semibold border whitespace-nowrap",
+                    "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold border whitespace-nowrap",
                     plan.id === "annual" || plan.id === "lite"
                       ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/40"
                       : "bg-primary text-primary-foreground border-primary",

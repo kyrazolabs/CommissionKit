@@ -12,7 +12,10 @@ import {
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MonthPicker } from "@/components/ui/month-picker";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DatePicker, DateRangePicker } from "@/components/ui/date-picker";
+import { parseISO } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Trash, UploadCloud, FileDown, Briefcase, Loader2 } from "lucide-react";
 import { HelpTooltip } from "@/components/help-tooltip";
@@ -29,6 +32,7 @@ import { useWorkspace } from "@/hooks/use-workspace";
 import { CurrencyCombobox } from "@/components/currency-combobox";
 import { useBillingStatus } from "@/hooks/use-billing-status";
 import { Download } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 
 export function DealsPage() {
   const { activeWorkspace } = useWorkspace();
@@ -121,13 +125,12 @@ export function DealsPage() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
             <div className="w-40">
-              <Input 
-                type="month" 
+              <MonthPicker 
                 value={period} 
-                onChange={(e) => setPeriod(e.target.value)} 
-                className="w-full"
+                onChange={setPeriod} 
+                placeholder="Pick a month"
+                className="w-full h-9"
               />
             </div>
           </div>
@@ -291,7 +294,10 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="edit-closeDate">Close Date</Label>
-              <Input id="edit-closeDate" type="date" value={formData.closeDate} onChange={(e) => setFormData(prev => ({ ...prev, closeDate: e.target.value }))} required />
+              <DatePicker 
+                date={formData.closeDate ? parseISO(formData.closeDate) : undefined} 
+                onChange={(d) => setFormData(prev => ({ ...prev, closeDate: d ? format(d, "yyyy-MM-dd") : "" }))}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-stage">Stage</Label>
@@ -728,7 +734,10 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="closeDate">Close Date</Label>
-              <Input id="closeDate" type="date" value={formData.closeDate} onChange={(e) => setFormData(prev => ({ ...prev, closeDate: e.target.value }))} required />
+              <DatePicker 
+                date={formData.closeDate ? parseISO(formData.closeDate) : undefined} 
+                onChange={(d) => setFormData(prev => ({ ...prev, closeDate: d ? format(d, "yyyy-MM-dd") : "" }))}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="stage">Stage</Label>
@@ -774,18 +783,13 @@ function ExportDealsButton() {
 
     setIsExporting(true);
     try {
-      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:8088";
-      const response = await fetch(`${baseUrl}/api/export/deals`, {
-        method: "GET",
+      const workspaceId = localStorage.getItem("ck_active_workspace");
+      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8088"}/api/export/deals`, {
         credentials: "include",
-        headers: {
-          "x-workspace-id": activeWorkspace.id,
-        },
+        headers: { "x-workspace-id": workspaceId ?? "" },
       });
 
-      if (!response.ok) {
-        throw new Error("Export failed");
-      }
+      if (!res.ok) throw new Error("Export failed");
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);

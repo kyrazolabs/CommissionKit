@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useWorkspace } from "./use-workspace";
 import { useAuth } from "./use-auth";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:8088";
+import { apiFetch } from "@/lib/api";
 
 export interface AppNotification {
   id: string;
@@ -25,15 +25,7 @@ export function useNotifications() {
   const fetch = useCallback(async () => {
     if (!activeWorkspace?.id || !user) return;
     try {
-      const res = await window.fetch(
-        `${API}/api/notifications?limit=30`,
-        {
-          credentials: "include",
-          headers: { "x-workspace-id": activeWorkspace.id },
-        },
-      );
-      if (!res.ok) return;
-      const data = await res.json();
+      const data = await apiFetch(`/api/notifications?limit=30`);
       setNotifications(data.notifications ?? []);
       setUnreadCount(data.unreadCount ?? 0);
     } catch {
@@ -75,10 +67,8 @@ export function useNotifications() {
 
   const markRead = useCallback(async (id: string) => {
     if (!activeWorkspace?.id) return;
-    await window.fetch(`${API}/api/notifications/${id}/read`, {
+    await apiFetch(`/api/notifications/${id}/read`, {
       method: "PATCH",
-      credentials: "include",
-      headers: { "x-workspace-id": activeWorkspace.id },
     });
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
@@ -88,10 +78,8 @@ export function useNotifications() {
 
   const markAllRead = useCallback(async () => {
     if (!activeWorkspace?.id) return;
-    await window.fetch(`${API}/api/notifications/read-all`, {
+    await apiFetch(`/api/notifications/read-all`, {
       method: "PATCH",
-      credentials: "include",
-      headers: { "x-workspace-id": activeWorkspace.id },
     });
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     setUnreadCount(0);
@@ -99,10 +87,8 @@ export function useNotifications() {
 
   const dismiss = useCallback(async (id: string) => {
     if (!activeWorkspace?.id) return;
-    await window.fetch(`${API}/api/notifications/${id}`, {
+    await apiFetch(`/api/notifications/${id}`, {
       method: "DELETE",
-      credentials: "include",
-      headers: { "x-workspace-id": activeWorkspace.id },
     });
     setNotifications((prev) => prev.filter((n) => n.id !== id));
     setUnreadCount((c) => {

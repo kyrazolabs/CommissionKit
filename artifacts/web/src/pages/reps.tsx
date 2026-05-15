@@ -23,6 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/hooks/use-role";
 import { useBillingStatus } from "@/hooks/use-billing-status";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { apiFetch } from "@/lib/api";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 
@@ -142,7 +143,7 @@ export function RepsPage() {
                     <TableCell className="text-sm text-muted-foreground">{rep.role}</TableCell>
                     <TableCell>
                       {rep.planName ? (
-                        <span className="inline-flex items-center rounded-full border p-2.5 text-xs font-semibold bg-secondary text-secondary-foreground border-primary/20">
+                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-secondary text-secondary-foreground border-primary/20">
                           {rep.planName}
                         </span>
                       ) : (
@@ -308,15 +309,9 @@ function SendPortalLinkAction({ rep }: { rep: any }) {
   const handleSend = async () => {
     setSending(true);
     try {
-      const res = await fetch(`${API_URL}/api/reps/${rep.id}/send-portal-link`, { 
+      await apiFetch(`/api/reps/${rep.id}/send-portal-link`, { 
         method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "x-workspace-id": activeWorkspace?.id ?? "",
-        },
        });
-      if (!res.ok) throw new Error("Failed to send");
       queryClient.invalidateQueries({ queryKey: getListRepsQueryKey() });
       toast({
         title: "Portal link sent",

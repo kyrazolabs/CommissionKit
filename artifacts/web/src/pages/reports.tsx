@@ -11,9 +11,8 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
 } from "recharts";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DateRangePicker } from "@/components/ui/date-picker";
 import { cn } from "@/lib/utils";
 
 const COLORS = ['#0D9488', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'];
@@ -139,47 +138,17 @@ export function ReportsPage() {
           
           <div className="flex flex-wrap items-center gap-3 print-hide">
             <div className="flex items-center gap-2 bg-card border border-border rounded-lg p-1 shadow-sm">
-               <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    id="date"
-                    variant={"ghost"}
-                    className={cn(
-                      "w-[260px] justify-start text-left font-normal text-[13px] h-8",
-                      !dateRange && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 size-4 text-muted-foreground" />
-                    {dateRange?.from ? (
-                      dateRange.to ? (
-                        <>
-                          {format(dateRange.from, "LLL dd, y")} -{" "}
-                          {format(dateRange.to, "LLL dd, y")}
-                        </>
-                      ) : (
-                        format(dateRange.from, "LLL dd, y")
-                      )
-                    ) : (
-                      <span>Pick a date range</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="end">
-                  <Calendar
-                    initialFocus
-                    mode="range"
-                    defaultMonth={dateRange?.from}
-                    selected={dateRange}
-                    onSelect={setDateRange}
-                    numberOfMonths={2}
-                  />
-                </PopoverContent>
-              </Popover>
+              <DateRangePicker 
+                from={dateRange?.from} 
+                to={dateRange?.to} 
+                onRangeChange={setDateRange} 
+                className="w-[260px] border-none bg-transparent shadow-none h-8 text-sm" 
+              />
 
               <div className="w-px h-5 bg-border mx-1" />
 
               <Select value={interval} onValueChange={(v: "day" | "month") => setInterval(v)}>
-                <SelectTrigger className="w-[110px] h-8 border-none bg-transparent shadow-none text-[13px] focus:ring-0 focus:ring-offset-0">
+                <SelectTrigger className="w-[110px] h-8 border-none bg-transparent shadow-none text-sm focus:ring-0 focus:ring-offset-0">
                   <SelectValue placeholder="Interval" />
                 </SelectTrigger>
                 <SelectContent>

@@ -18,6 +18,7 @@ import { useRole } from "@/hooks/use-role";
 import { useBillingStatus } from "@/hooks/use-billing-status";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/lib/api";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 
@@ -76,17 +77,10 @@ function ResolveModal({
 
   const mutation = useMutation({
     mutationFn: async (body: any) => {
-      const res = await fetch(`${API_URL}/api/disputes/${dispute.id}`, {
+      return apiFetch(`/api/disputes/${dispute.id}`, {
         method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json", "x-workspace-id": workspaceId },
         body: JSON.stringify(body),
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Action failed");
-      }
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["disputes", workspaceId] });
@@ -244,12 +238,7 @@ export function DisputesPage() {
   const { data: disputes = [], isLoading } = useQuery<Dispute[]>({
     queryKey: ["disputes", workspaceId],
     queryFn: async () => {
-      const res = await fetch(`${API_URL}/api/disputes`, {
-        credentials: "include",
-        headers: { "x-workspace-id": workspaceId },
-      });
-      if (!res.ok) throw new Error("Failed to load disputes");
-      return res.json();
+      return apiFetch(`/api/disputes`);
     },
     enabled: Boolean(workspaceId) && hasPermission("disputes", "read") && !roleLoading,
   });
