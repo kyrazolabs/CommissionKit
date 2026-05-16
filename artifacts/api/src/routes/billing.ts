@@ -37,33 +37,45 @@ if (!stripeSecretKey) throw new Error("Missing STRIPE_SECRET_KEY");
 const stripe = new Stripe(stripeSecretKey, { apiVersion: "2026-04-22.dahlia" });
 
 // ─── Price → Plan mapping ─────────────────────────────────────────────────────
-type PaidPlan = "starter" | "lite" | "growth" | "annual" | "flex";
+type PaidPlan = "starter" | "pro" | "growth" | "flex";
 
-const PLAN_PRICE_IDS: Record<Exclude<PaidPlan, "flex">, string | undefined> = {
-  starter:
-    process.env.STRIPE_STARTER_PRICE_ID ?? "price_1TSwQIBA7ra9J8VO3P4tgtLi",
-  lite: process.env.STRIPE_LITE_PRICE_ID,
-  growth:
-    process.env.STRIPE_GROWTH_PRICE_ID ?? "price_1TVwaRBA7ra9J8VOklfQvp9E",
-  annual:
-    process.env.STRIPE_ANNUAL_PRICE_ID ?? "price_1TVwbbBA7ra9J8VOok7hEjEG",
+const PLAN_PRICE_IDS: Record<PaidPlan, { monthly?: string; yearly?: string }> = {
+  starter: {
+    monthly: process.env.STRIPE_STARTER_PRICE_ID ?? "price_1TSwQIBA7ra9J8VO3P4tgtLi",
+    yearly: process.env.STRIPE_STARTER_ANNUAL_PRICE_ID,
+  },
+  growth: {
+    monthly: process.env.STRIPE_GROWTH_PRICE_ID ?? "price_1TVwaRBA7ra9J8VOklfQvp9E",
+    yearly: process.env.STRIPE_GROWTH_ANNUAL_PRICE_ID ?? "price_1TVwbbBA7ra9J8VOok7hEjEG",
+  },
+  pro: {
+    monthly: process.env.STRIPE_PRO_PRICE_ID,
+    yearly: process.env.STRIPE_PRO_ANNUAL_PRICE_ID,
+  },
+  flex: {
+    monthly: process.env.STRIPE_LEGACY_FLEX_PRICE_ID ?? "price_1TVwYcBA7ra9J8VOvNnoscbn",
+  }
 };
-
-/** Legacy Flex Stripe price — kept only so existing subscriptions still map in webhooks. */
-const LEGACY_FLEX_PRICE_ID =
-  process.env.STRIPE_LEGACY_FLEX_PRICE_ID ?? "price_1TVwYcBA7ra9J8VOvNnoscbn";
 
 const EXTRA_REPS_PRICE_ID = process.env.STRIPE_EXTRA_REPS_PRICE_ID;
 const YEARLY_EXTRA_REPS_PRICE_ID = process.env.STRIPE_YEARLY_EXTRA_REPS_PRICE_ID;
 
-const PRICE_TO_PLAN: Record<string, PaidPlan> = {
-  ...(Object.fromEntries(
-    Object.entries(PLAN_PRICE_IDS)
-      .filter(([, priceId]) => Boolean(priceId))
-      .map(([plan, priceId]) => [priceId as string, plan as PaidPlan]),
-  ) as Record<string, PaidPlan>),
-  [LEGACY_FLEX_PRICE_ID]: "flex",
-};
+const PRICE_TO_PLAN: Record<string, PaidPlan> = {};
+const PRICE_TO_INTERVAL: Record<string, "month" | "year"> = {};
+
+Object.entries(PLAN_PRICE_IDS).forEach(([plan, prices]) => {
+  if (prices.monthly) {
+    PRICE_TO_PLAN[prices.monthly] = plan as PaidPlan;
+    PRICE_TO_INTERVAL[prices.monthly] = "month";
+  }
+  if (prices.yearly) {
+    PRICE_TO_PLAN[prices.yearly] = plan as PaidPlan;
+    PRICE_TO_INTERVAL[prices.yearly] = "year";
+  }
+});
+
+if (EXTRA_REPS_PRICE_ID) PRICE_TO_INTERVAL[EXTRA_REPS_PRICE_ID] = "month";
+if (YEARLY_EXTRA_REPS_PRICE_ID) PRICE_TO_INTERVAL[YEARLY_EXTRA_REPS_PRICE_ID] = "year";
 
 function getPlanFromSubscription(sub: Stripe.Subscription): PaidPlan | null {
   for (const item of sub.items.data) {
@@ -73,6 +85,16 @@ function getPlanFromSubscription(sub: Stripe.Subscription): PaidPlan | null {
     if (plan) return plan;
   }
   return null;
+}
+
+function getIntervalFromSubscription(sub: Stripe.Subscription): "month" | "year" {
+  for (const item of sub.items.data) {
+    const priceId = item.price?.id;
+    if (!priceId) continue;
+    const interval = PRICE_TO_INTERVAL[priceId];
+    if (interval) return interval;
+  }
+  return "month";
 }
 
 function getExtraRepSeatsFromStripeItems(
@@ -106,8 +128,8 @@ function findExtraRepSubscriptionItem(
 /** Max add-on seats per workspace (abuse guard). */
 const MAX_EXTRA_REP_SEATS = 500;
 
-function getExtraRepsPriceIdForDbPlan(plan: string): string | undefined {
-  if (plan === "annual") return YEARLY_EXTRA_REPS_PRICE_ID;
+function getExtraRepsPriceIdForDbPlan(interval: "month" | "year"): string | undefined {
+  if (interval === "year") return YEARLY_EXTRA_REPS_PRICE_ID;
   return EXTRA_REPS_PRICE_ID;
 }
 
@@ -245,18 +267,19 @@ router.post(
         ? Math.max(0, Math.floor(extraReps))
         : 0;
 
+    const interval = PRICE_TO_INTERVAL[priceId] ?? "month";
     const extraRepsStripePriceId =
-      plan === "annual" ? YEARLY_EXTRA_REPS_PRICE_ID : EXTRA_REPS_PRICE_ID;
+      interval === "year" ? YEARLY_EXTRA_REPS_PRICE_ID : EXTRA_REPS_PRICE_ID;
 
     if (extraRepsQty > 0) {
-      if (plan === "annual" && !YEARLY_EXTRA_REPS_PRICE_ID) {
+      if (interval === "year" && !YEARLY_EXTRA_REPS_PRICE_ID) {
         res.status(400).json({
           error:
             "Yearly extra reps add-on is not configured (missing STRIPE_YEARLY_EXTRA_REPS_PRICE_ID).",
         });
         return;
       }
-      if (plan !== "annual" && !EXTRA_REPS_PRICE_ID) {
+      if (interval === "month" && !EXTRA_REPS_PRICE_ID) {
         res.status(400).json({
           error:
             "Extra reps add-on is not configured (missing STRIPE_EXTRA_REPS_PRICE_ID).",
@@ -343,6 +366,7 @@ router.post(
           workspaceId,
           userId: req.userId ?? "",
           plan,
+          interval,
           extraReps: String(extraRepsQty),
           ...(extraRepsStripePriceId && {
             extraRepsPriceId: extraRepsStripePriceId,
@@ -357,6 +381,7 @@ router.post(
             metadata: {
               workspaceId,
               plan,
+              interval,
               extraReps: String(extraRepsQty),
               ...(extraRepsStripePriceId && {
                 extraRepsPriceId: extraRepsStripePriceId,
@@ -424,11 +449,12 @@ router.post(
       return;
     }
 
-    const targetPriceId = getExtraRepsPriceIdForDbPlan(record.plan);
+    const interval = record.billingInterval ?? "month";
+    const targetPriceId = getExtraRepsPriceIdForDbPlan(interval);
     if (qty > 0 && !targetPriceId) {
       res.status(400).json({
         error:
-          record.plan === "annual"
+          interval === "year"
             ? "Yearly extra reps price is not configured (STRIPE_YEARLY_EXTRA_REPS_PRICE_ID)."
             : "Extra reps price is not configured (STRIPE_EXTRA_REPS_PRICE_ID).",
       });
@@ -595,7 +621,7 @@ router.post("/webhook", async (req, res): Promise<void> => {
         const workspaceId = session.metadata?.workspaceId;
         const plan = session.metadata?.plan as
           | "starter"
-          | "lite"
+          | "pro"
           | "growth"
           | "flex"
           | "annual"
@@ -614,18 +640,21 @@ router.post("/webhook", async (req, res): Promise<void> => {
           // Subscription — further handled in subscription.updated
           const subscriptionId = session.subscription as string;
           let extraRepSeats = 0;
+          let stripePriceId: string | undefined;
+          let billingInterval: "month" | "year" = "month";
+
           try {
-            const stripeSub =
-              await stripe.subscriptions.retrieve(subscriptionId);
-            extraRepSeats = getExtraRepSeatsFromStripeItems(
-              stripeSub.items.data,
-            );
+            const stripeSub = await stripe.subscriptions.retrieve(subscriptionId);
+            extraRepSeats = getExtraRepSeatsFromStripeItems(stripeSub.items.data);
+            stripePriceId = stripeSub.items.data.find(i => Boolean(PRICE_TO_PLAN[i.price?.id ?? ""]))?.price?.id;
+            billingInterval = getIntervalFromSubscription(stripeSub);
           } catch (err) {
             logger.warn(
               { err, subscriptionId },
-              "Could not retrieve subscription for extraRepSeats; will sync on subscription.updated",
+              "Could not retrieve subscription for details; will sync on subscription.updated",
             );
           }
+
           await WorkspaceSubscription.findOneAndUpdate(
             { workspaceId: new Types.ObjectId(workspaceId) },
             {
@@ -633,9 +662,9 @@ router.post("/webhook", async (req, res): Promise<void> => {
                 workspaceId: new Types.ObjectId(workspaceId),
                 stripeCustomerId: customerId,
                 stripeSubscriptionId: subscriptionId,
-                stripePriceId:
-                  plan === "flex" ? LEGACY_FLEX_PRICE_ID : PLAN_PRICE_IDS[plan],
+                stripePriceId,
                 plan,
+                billingInterval,
                 status: "active",
                 isLifetime: false,
                 extraRepSeats,
@@ -668,12 +697,9 @@ router.post("/webhook", async (req, res): Promise<void> => {
 
         const plan = getPlanFromSubscription(sub) ?? "starter";
         const extraRepSeats = getExtraRepSeatsFromStripeItems(sub.items.data);
-        const priceId =
-          plan === "flex"
-            ? (sub.items.data.find(
-                (i) => PRICE_TO_PLAN[i.price?.id ?? ""] === "flex",
-              )?.price?.id ?? LEGACY_FLEX_PRICE_ID)
-            : PLAN_PRICE_IDS[plan];
+        const priceId = sub.items.data.find(
+          (i) => PRICE_TO_PLAN[i.price?.id ?? ""] === plan,
+        )?.price?.id ?? (plan === "flex" ? PLAN_PRICE_IDS.flex.monthly : undefined);
         // current_period_end moved to SubscriptionItem in Stripe SDK v22
         const baseItem =
           sub.items.data.find((i) =>
@@ -695,6 +721,7 @@ router.post("/webhook", async (req, res): Promise<void> => {
             stripeSubscriptionId: sub.id,
             stripePriceId: priceId,
             plan,
+            billingInterval: getIntervalFromSubscription(sub),
             extraRepSeats,
             status: sub.status,
             cancelAtPeriodEnd: sub.cancel_at_period_end,

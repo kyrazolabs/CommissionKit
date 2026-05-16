@@ -17,7 +17,7 @@ export function FinalCTA() {
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button asChild className="font-bold shadow-lg">
-            <a href="/register">Request a Demo</a>
+            <a href="/register">Get Start Now</a>
           </Button>
           <Button variant="outline" asChild className="font-bold bg-background/60 backdrop-blur-sm shadow-sm">
             <a href="mailto:sales@commissionkit.com">Contact Sales</a>
