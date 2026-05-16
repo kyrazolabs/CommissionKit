@@ -6,26 +6,40 @@ export interface RepPortalTemplateProps {
   workspaceName: string;
   /** Full portal URL, e.g. https://app.commissionkit.io/portal/abc123 */
   portalUrl: string;
-  /** The raw access code to display in the email for reference */
-  accessCode: string;
+  /** The unique username for logging in */
+  portalUsername: string;
+  /** Optional portal password */
+  portalPassword?: string;
 }
 
 export function repPortalTemplate(props: RepPortalTemplateProps): string {
-  const { repName, workspaceName, portalUrl, accessCode } = props;
+  const { repName, workspaceName, portalUrl, portalUsername } = props;
 
   const body = `
     ${h1("Your commission portal is ready 🎉")}
     ${p(`Hi ${repName},`)}
-    ${p(`<strong>${workspaceName}</strong> has set up a personalised commission portal for you. You can view your earnings, deal breakdowns, and historical payouts at any time — no account needed.`)}
+    ${p(`<strong>${workspaceName}</strong> has set up a personalised commission portal for you. You can securely view your earnings, deal breakdowns, and historical payouts at any time.`)}
 
     ${btn(portalUrl, "View My Commission Portal")}
 
     ${infoBox(`Bookmark this link — it's your personal portal and is always up to date with your latest commissions.`)}
 
     <div style="background-color:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;padding:16px 20px;margin:20px 0;">
-      <p style="margin:0 0 6px;font-size:12px;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Your access code</p>
-      <p style="margin:0;font-size:18px;font-family:monospace;color:#111827;letter-spacing:2px;font-weight:700;">${accessCode}</p>
-      <p style="margin:6px 0 0;font-size:12px;color:#6B7280;">Use this code if prompted when accessing your portal.</p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td>
+            <p style="margin:0 0 6px;font-size:12px;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Your username</p>
+            <p style="margin:0;font-size:18px;font-family:monospace;color:#111827;letter-spacing:1px;font-weight:700;">${portalUsername}</p>
+          </td>
+          ${props.portalPassword ? `
+          <td style="text-align:right;">
+            <p style="margin:0 0 6px;font-size:12px;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Your password</p>
+            <p style="margin:0;font-size:18px;font-family:monospace;color:#111827;font-weight:700;">${props.portalPassword}</p>
+          </td>
+          ` : ""}
+        </tr>
+      </table>
+      <p style="margin:12px 0 0;font-size:12px;color:#6B7280;">Keep these credentials secure. You will need them to access your portal.</p>
     </div>
 
     ${divider()}

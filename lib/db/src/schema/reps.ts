@@ -8,6 +8,7 @@ const RepSchema = new Schema({
   role: { type: String, required: true, default: "Sales Rep" },
   planId: { type: Schema.Types.ObjectId, ref: "Plan" },
   portalAccessCode: { type: String, unique: true, sparse: true },
+  portalUsername: { type: String, unique: true, sparse: true },
 }, { timestamps: { createdAt: true, updatedAt: false } });
 
 export const Rep = model("Rep", RepSchema);
@@ -20,6 +21,7 @@ export type Rep = mongoose.Document & {
   role: string;
   planId?: Types.ObjectId;
   portalAccessCode?: string;
+  portalUsername?: string;
   createdAt: Date;
 };
 

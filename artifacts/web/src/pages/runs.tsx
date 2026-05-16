@@ -13,6 +13,8 @@ import { PlayCircle, ArrowRight, CalendarDays, Clock, FileText, Loader2, AlertCi
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { formatCurrency, formatNumber } from "@/lib/format";
+import { DatePicker } from "@/components/ui/date-picker";
+import { parseISO } from "date-fns";
 import { HelpTooltip } from "@/components/help-tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -22,7 +24,9 @@ import { useRole } from "@/hooks/use-role";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useBillingStatus } from "@/hooks/use-billing-status";
+import { RunCalculationDialog } from "@/components/run-calculation-dialog";
 import { Download } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 
 export function RunsPage() {
   const { activeWorkspace } = useWorkspace();
@@ -37,7 +41,26 @@ export function RunsPage() {
       }
     } 
   });
-  const { can } = useRole();
+  const { can, hasPermission, isLoading: roleLoading } = useRole();
+
+  if (roleLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="size-10" />
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
+  }
+
+  if (!hasPermission("calculations", "read")) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
+        <PlayCircle className="size-10 text-muted-foreground" />
+        <h2 className="text-lg font-semibold">Access Denied</h2>
+        <p className="text-sm text-muted-foreground">You don't have permission to view calculation runs.</p>
+      </div>
+    );
+  }
 
   const isAnyRunProcessing = Array.isArray(runs) && runs.some(r => r.status === "pending" || r.status === "processing");
 
@@ -45,12 +68,12 @@ export function RunsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Calculation Runs</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Calculation Runs</h1>
           <p className="text-muted-foreground">Execute and audit commission calculations.</p>
         </div>
         <div className="flex gap-2">
-          {can("admin") && <ExportCommissionsButton />}
-          {can("admin") && <RunCalculationDialog isProcessing={isAnyRunProcessing} />}
+          {hasPermission("calculations", "export") && <ExportCommissionsButton />}
+          {hasPermission("calculations", "create") && <RunCalculationDialog isProcessing={isAnyRunProcessing} />}
         </div>
       </div>
 
@@ -68,8 +91,8 @@ export function RunsPage() {
             </div>
           ) : (!Array.isArray(runs) || runs.length === 0) ? (
             <div className="text-center py-12">
-              <div className="bg-muted w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                <PlayCircle className="h-6 w-6 text-muted-foreground" />
+              <div className="bg-muted size-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                <PlayCircle className="size-6 text-muted-foreground" />
               </div>
               <h3 className="text-lg font-medium">No calculations run yet</h3>
               <p className="text-sm text-muted-foreground mt-1 mb-4">
@@ -99,26 +122,26 @@ export function RunsPage() {
                     <TableCell className="font-medium">{run.period}</TableCell>
                     <TableCell>
                       <div className="flex items-center text-sm">
-                        <Clock className="mr-2 h-3 w-3 text-muted-foreground" />
+                        <Clock className="mr-2 size-3 text-muted-foreground" />
                         {format(new Date(run.createdAt), "MMM d, yyyy h:mm a")}
                       </div>
                     </TableCell>
                     <TableCell>
                       {run.status === "completed" && (
                         <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20 gap-1">
-                          <CheckCircle2 className="h-3 w-3" /> Completed
+                          <CheckCircle2 className="size-3" /> Completed
                         </Badge>
                       )}
                       {(run.status === "pending" || run.status === "processing") && (
                         <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20 animate-pulse gap-1">
-                          <Loader2 className="h-3 w-3 animate-spin" /> {run.status === "processing" ? "Processing" : "Pending"}
+                          <Loader2 className="size-3 animate-spin" /> {run.status === "processing" ? "Processing" : "Pending"}
                         </Badge>
                       )}
                       {run.status === "failed" && (
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Badge variant="destructive" className="gap-1 cursor-help">
-                              <AlertCircle className="h-3 w-3" /> Failed
+                              <AlertCircle className="size-3" /> Failed
                             </Badge>
                           </TooltipTrigger>
                           <TooltipContent>
@@ -134,7 +157,7 @@ export function RunsPage() {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <span className="ml-1.5 text-amber-500 cursor-help">
-                              <AlertCircle className="h-3 w-3 inline" />
+                              <AlertCircle className="size-3 inline" />
                             </span>
                           </TooltipTrigger>
                           <TooltipContent>
@@ -143,13 +166,13 @@ export function RunsPage() {
                         </Tooltip>
                       )}
                     </TableCell>
-                    <TableCell className="text-right font-bold text-primary">
+                    <TableCell className="text-right font-semibold text-primary">
                       {formatCurrency(run.totalCommission, currency)}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" asChild>
                         <Link href={`/runs/${run.id}`}>
-                          View Details <ArrowRight className="ml-2 h-4 w-4" />
+                          View Details <ArrowRight className="ml-2 size-4" />
                         </Link>
                       </Button>
                     </TableCell>
@@ -164,82 +187,6 @@ export function RunsPage() {
   );
 }
 
-function RunCalculationDialog({ isProcessing }: { isProcessing: boolean }) {
-  const [open, setOpen] = useState(false);
-  const [period, setPeriod] = useState<string>(format(new Date(), "yyyy-MM"));
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-  const createMutation = useCreateRun();
-
-  const handleRun = () => {
-    createMutation.mutate({ data: { period } }, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListRunsQueryKey() });
-        toast({ title: "Calculation Queued", description: `Commission calculation for ${period} has been started.` });
-        setOpen(false);
-      },
-      onError: (err: any) => {
-        toast({ title: "Run failed", description: err.message || "An error occurred", variant: "destructive" });
-      }
-    });
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button 
-          className="bg-primary hover:bg-primary/90 text-primary-foreground" 
-          disabled={isProcessing}
-        >
-          {isProcessing ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Processing...
-            </>
-          ) : (
-            <>
-              <PlayCircle className="mr-2 h-4 w-4" />
-              Run Calculation
-            </>
-          )}
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Trigger Commission Calculation</DialogTitle>
-          <DialogDescription className="flex items-center gap-1.5">
-            This will process all pending and closed won deals for the specified period and calculate rep commissions.
-            <HelpTooltip content="Calculating a run takes a 'snapshot' of current deals and plans. If you add deals later, you'll need to run it again to update totals." />
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="period">Calculation Period (YYYY-MM)</Label>
-            <div className="flex items-center gap-2">
-              <CalendarDays className="h-5 w-5 text-muted-foreground" />
-              <Input 
-                id="period" 
-                type="month" 
-                value={period} 
-                onChange={e => setPeriod(e.target.value)} 
-                className="flex-1"
-              />
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Warning: Running for a period that already has a calculation will create a new run record.
-            </p>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={handleRun} disabled={createMutation.isPending}>
-            {createMutation.isPending ? "Processing..." : "Start Calculation"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 function ExportCommissionsButton() {
   const { sub } = useBillingStatus();
@@ -263,18 +210,13 @@ function ExportCommissionsButton() {
 
     setIsExporting(true);
     try {
-      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:8088";
-      const response = await fetch(`${baseUrl}/api/export/commissions`, {
-        method: "GET",
+      const workspaceId = localStorage.getItem("ck_active_workspace");
+      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8088"}/api/export/commissions`, {
         credentials: "include",
-        headers: {
-          "x-workspace-id": activeWorkspace.id,
-        },
+        headers: { "x-workspace-id": workspaceId ?? "" },
       });
 
-      if (!response.ok) {
-        throw new Error("Export failed");
-      }
+      if (!res.ok) throw new Error("Export failed");
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -309,9 +251,9 @@ function ExportCommissionsButton() {
       className={!isGrowth ? "opacity-70 border-dashed" : ""}
     >
       {isExporting ? (
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        <Loader2 className="mr-2 size-4 animate-spin" />
       ) : (
-        <Download className="mr-2 h-4 w-4" />
+        <Download className="mr-2 size-4" />
       )}
       Export CSV
     </Button>

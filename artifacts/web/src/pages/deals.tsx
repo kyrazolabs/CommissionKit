@@ -12,7 +12,10 @@ import {
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MonthPicker } from "@/components/ui/month-picker";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DatePicker, DateRangePicker } from "@/components/ui/date-picker";
+import { parseISO } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Trash, UploadCloud, FileDown, Briefcase, Loader2 } from "lucide-react";
 import { HelpTooltip } from "@/components/help-tooltip";
@@ -29,6 +32,7 @@ import { useWorkspace } from "@/hooks/use-workspace";
 import { CurrencyCombobox } from "@/components/currency-combobox";
 import { useBillingStatus } from "@/hooks/use-billing-status";
 import { Download } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 
 export function DealsPage() {
   const { activeWorkspace } = useWorkspace();
@@ -37,16 +41,40 @@ export function DealsPage() {
   const [repId, setRepId] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { can } = useRole();
+  const { can, hasPermission, isLoading: roleLoading } = useRole();
   const { data: reps } = useListReps({ query: { queryKey: getListRepsQueryKey() } });
-  
+
   const queryParams: any = { period };
   if (repId !== "all") queryParams.repId = repId;
-  
+
   const { data: deals, isLoading } = useListDeals(
     queryParams,
     { query: { queryKey: getListDealsQueryKey(queryParams) } }
   );
+
+  if (roleLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="size-10" />
+        <div className="grid gap-4 md:grid-cols-3">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
+  }
+
+  if (!hasPermission("deals", "read")) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
+        <Briefcase className="size-10 text-muted-foreground" />
+        <h2 className="text-lg font-semibold">Access Denied</h2>
+        <p className="text-sm text-muted-foreground">You don't have permission to view deals.</p>
+      </div>
+    );
+  }
 
   const filteredDeals = Array.isArray(deals) ? deals.filter(deal => 
     deal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -57,13 +85,13 @@ export function DealsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Deals</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Deals</h1>
           <p className="text-muted-foreground">Manage revenue events for commission calculation.</p>
         </div>
         <div className="flex gap-2">
-          {can("admin") && (
+          {hasPermission("deals", "create") && (
             <>
-              <ExportDealsButton />
+              {hasPermission("deals", "export") && <ExportDealsButton />}
               <CreateDealDialog period={period} workspaceCurrency={currency} />
               <ImportDealsDialog period={period} workspaceCurrency={currency} />
             </>
@@ -75,9 +103,9 @@ export function DealsPage() {
         <CardHeader className="pb-3 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
           <div className="flex flex-1 items-center space-x-2 w-full md:w-auto">
             <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
               <Input
-                placeholder="Search deals..."
+                placeholder="Search deals…"
                 className="pl-8"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -99,11 +127,11 @@ export function DealsPage() {
               </Select>
             </div>
             <div className="w-40">
-              <Input 
-                type="month" 
+              <MonthPicker 
                 value={period} 
-                onChange={(e) => setPeriod(e.target.value)} 
-                className="w-full"
+                onChange={setPeriod} 
+                placeholder="Pick a month"
+                className="w-full h-9"
               />
             </div>
           </div>
@@ -117,8 +145,8 @@ export function DealsPage() {
             </div>
           ) : filteredDeals.length === 0 ? (
             <div className="text-center py-12">
-              <div className="bg-muted w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Briefcase className="h-6 w-6 text-muted-foreground" />
+              <div className="bg-muted size-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Briefcase className="size-6 text-muted-foreground" />
               </div>
               <h3 className="text-lg font-medium">No deals found</h3>
               <p className="text-sm text-muted-foreground mt-1 mb-4">
@@ -161,12 +189,14 @@ export function DealsPage() {
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
-                      {can("admin") && (
-                        <div className="flex justify-end gap-1">
+                      <div className="flex justify-end gap-1">
+                        {hasPermission("deals", "edit") && (
                           <UpdateDealDialog deal={deal} queryParams={queryParams} reps={reps} workspaceCurrency={currency} />
+                        )}
+                        {hasPermission("deals", "delete") && (
                           <DealDeleteAction deal={deal} queryParams={queryParams} currency={currency} />
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -217,7 +247,7 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
         <Button 
           variant="ghost" 
           size="icon" 
-          className="h-8 w-8 text-muted-foreground hover:text-primary"
+          className="size-8 text-muted-foreground hover:text-primary"
           disabled={!isEditable}
           title={!isEditable ? "Only pending deals can be edited" : "Edit deal"}
         >
@@ -265,7 +295,10 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="edit-closeDate">Close Date</Label>
-              <Input id="edit-closeDate" type="date" value={formData.closeDate} onChange={(e) => setFormData(prev => ({ ...prev, closeDate: e.target.value }))} required />
+              <DatePicker 
+                date={formData.closeDate ? parseISO(formData.closeDate) : undefined} 
+                onChange={(d) => setFormData(prev => ({ ...prev, closeDate: d ? format(d, "yyyy-MM-dd") : "" }))}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-stage">Stage</Label>
@@ -281,7 +314,7 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={updateMutation.isPending}>{updateMutation.isPending ? "Saving..." : "Save Changes"}</Button>
+            <Button type="submit" disabled={updateMutation.isPending}>{updateMutation.isPending ? "Saving…" : "Save Changes"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -308,8 +341,8 @@ function DealDeleteAction({ deal, queryParams, currency }: { deal: any, queryPar
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
-          <Trash className="h-4 w-4" />
+        <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-destructive">
+          <Trash className="size-4" />
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -322,7 +355,7 @@ function DealDeleteAction({ deal, queryParams, currency }: { deal: any, queryPar
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
           <Button variant="destructive" onClick={handleDelete} disabled={deleteMutation.isPending}>
-            {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            {deleteMutation.isPending ? "Deleting…" : "Delete"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -458,7 +491,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
     }}>
       <DialogTrigger asChild>
         <Button>
-          <UploadCloud className="mr-2 h-4 w-4" />
+          <UploadCloud className="mr-2 size-4" />
           Bulk Import
         </Button>
       </DialogTrigger>
@@ -473,10 +506,10 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={() => downloadTemplate('csv')} className="text-xs">
-                <FileDown className="mr-1.5 h-3.5 w-3.5" /> Template (CSV)
+                <FileDown className="mr-1.5 size-3.5" /> Template (CSV)
               </Button>
               <Button variant="outline" size="sm" onClick={() => downloadTemplate('xlsx')} className="text-xs">
-                <FileDown className="mr-1.5 h-3.5 w-3.5" /> Template (XLSX)
+                <FileDown className="mr-1.5 size-3.5" /> Template (XLSX)
               </Button>
             </div>
           </div>
@@ -486,7 +519,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
           {!parsedData ? (
             <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-12 text-center bg-muted/30">
               <div className="bg-primary/10 p-4 rounded-full mb-4">
-                <UploadCloud className="h-8 w-8 text-primary" />
+                <UploadCloud className="size-8 text-primary" />
               </div>
               <h3 className="text-lg font-medium">Upload deal data</h3>
               <p className="text-sm text-muted-foreground mb-6 max-w-sm">
@@ -507,7 +540,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
                   className="hidden" 
                 />
                 <Button onClick={() => fileInputRef.current?.click()} disabled={isParsing} className="w-full">
-                  {isParsing ? "Parsing..." : "Select File"}
+                  {isParsing ? "Parsing…" : "Select File"}
                 </Button>
               </div>
             </div>
@@ -595,8 +628,8 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
                             </Select>
                           </TableCell>
                           <TableCell>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={() => removeRow(row.id)}>
-                              <Trash className="h-3 w-3" />
+                            <Button variant="ghost" size="icon" className="size-6 text-muted-foreground hover:text-destructive" onClick={() => removeRow(row.id)}>
+                              <Trash className="size-3" />
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -614,7 +647,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
           {parsedData && (
             <Button onClick={handleImport} disabled={importMutation.isPending}>
               {importMutation.isPending ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Importing...</>
+                <><Loader2 className="mr-2 size-4 animate-spin" /> Importing…</>
               ) : (
                 <>Finalize Import ({parsedData.length} deals)</>
               )}
@@ -661,7 +694,7 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Briefcase className="mr-2 h-4 w-4" />
+          <Briefcase className="mr-2 size-4" />
           Add Deal
         </Button>
       </DialogTrigger>
@@ -702,7 +735,10 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="closeDate">Close Date</Label>
-              <Input id="closeDate" type="date" value={formData.closeDate} onChange={(e) => setFormData(prev => ({ ...prev, closeDate: e.target.value }))} required />
+              <DatePicker 
+                date={formData.closeDate ? parseISO(formData.closeDate) : undefined} 
+                onChange={(d) => setFormData(prev => ({ ...prev, closeDate: d ? format(d, "yyyy-MM-dd") : "" }))}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="stage">Stage</Label>
@@ -718,7 +754,7 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={isPending}>{isPending ? "Saving..." : "Save Deal"}</Button>
+            <Button type="submit" disabled={isPending}>{isPending ? "Saving…" : "Save Deal"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -748,20 +784,15 @@ function ExportDealsButton() {
 
     setIsExporting(true);
     try {
-      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:8088";
-      const response = await fetch(`${baseUrl}/api/export/deals`, {
-        method: "GET",
+      const workspaceId = localStorage.getItem("ck_active_workspace");
+      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8088"}/api/export/deals`, {
         credentials: "include",
-        headers: {
-          "x-workspace-id": activeWorkspace.id,
-        },
+        headers: { "x-workspace-id": workspaceId ?? "" },
       });
 
-      if (!response.ok) {
-        throw new Error("Export failed");
-      }
+      if (!res.ok) throw new Error("Export failed");
 
-      const blob = await response.blob();
+      const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -794,9 +825,9 @@ function ExportDealsButton() {
       className={!isGrowth ? "opacity-70 border-dashed" : ""}
     >
       {isExporting ? (
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        <Loader2 className="mr-2 size-4 animate-spin" />
       ) : (
-        <Download className="mr-2 h-4 w-4" />
+        <Download className="mr-2 size-4" />
       )}
       Export CSV
     </Button>

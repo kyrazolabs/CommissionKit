@@ -1,10 +1,12 @@
 import { Router } from "express";
 import { Workspace, WorkspaceMember } from "@workspace/db";
 import { Types } from "mongoose";
-import { requireAuth, type AuthenticatedRequest } from "../middleware/auth";
+import { requireAuth, requirePermission, type AuthenticatedRequest } from "../middleware/auth";
 import { sendHighPriorityEmail } from "@workspace/queue";
 import { invitationTemplate } from "@workspace/email-templates";
 import { checkLimits } from "../lib/limits";
+import { seedWorkspaceRoles } from "../lib/seeds/roles";
+import { getUserPermissions } from "../lib/rbac";
 
 const router = Router();
 
@@ -72,11 +74,14 @@ router.post("/workspaces", requireAuth, async (req: AuthenticatedRequest, res): 
 
   const workspace = await Workspace.create({ slug, name: name.trim(), ownerId: userId });
 
+  const { ownerRole } = await seedWorkspaceRoles(workspace._id);
+
   await WorkspaceMember.create({
     workspaceId: workspace._id,
     userId,
     email: userEmail,
     role: "owner",
+    roleIds: [ownerRole._id],
   });
 
   res.status(201).json({
@@ -91,7 +96,7 @@ router.post("/workspaces", requireAuth, async (req: AuthenticatedRequest, res): 
 });
 
 router.get("/workspaces/:id", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = req.params.id;
+  const workspaceId = String(req.params.id);
   const membership = await getMembership(workspaceId, req.userId!);
   if (!membership) { res.status(403).json({ error: "Not a member of this workspace" }); return; }
 
@@ -113,18 +118,21 @@ router.get("/workspaces/:id", requireAuth, async (req: AuthenticatedRequest, res
       userId: m.userId,
       email: m.email,
       role: m.role,
+      roleIds: m.roleIds,
       status: m.userId ? "active" : "pending",
       createdAt: m.createdAt.toISOString(),
     })),
   });
 });
 
-router.put("/workspaces/:id", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = req.params.id;
-  const membership = await getMembership(workspaceId, req.userId!);
-  if (!membership || !ADMIN_ROLES.includes(membership.role)) {
-    res.status(403).json({ error: "Requires admin role or higher" }); return;
-  }
+router.get("/workspaces/:id/permissions", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
+  const workspaceId = String(req.params.id);
+  const permissions = await getUserPermissions(workspaceId, req.userId!);
+  res.json({ permissions: Array.from(permissions) });
+});
+
+router.put("/workspaces/:id", ...requirePermission("workspace", "edit"), async (req: AuthenticatedRequest, res): Promise<void> => {
+  const workspaceId = String(req.params.id);
 
   const { name } = req.body as { name?: string };
   if (!name?.trim()) { res.status(400).json({ error: "Name is required" }); return; }
@@ -141,12 +149,12 @@ router.put("/workspaces/:id", requireAuth, async (req: AuthenticatedRequest, res
     name: updated!.name,
     currency: (updated as any).currency || "USD",
     fiscalYearStart: (updated as any).fiscalYearStart || "January",
-    role: membership.role,
+    role: req.workspaceRole,
   });
 });
 
 router.delete("/workspaces/:id", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = req.params.id;
+  const workspaceId = String(req.params.id);
   const membership = await getMembership(workspaceId, req.userId!);
   if (membership?.role !== "owner") {
     res.status(403).json({ error: "Only the owner can delete a workspace" }); return;
@@ -157,11 +165,8 @@ router.delete("/workspaces/:id", requireAuth, async (req: AuthenticatedRequest, 
   res.status(204).send();
 });
 
-router.get("/workspaces/:id/members", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = req.params.id;
-  const membership = await getMembership(workspaceId, req.userId!);
-  if (!membership) { res.status(403).json({ error: "Not a member" }); return; }
-
+router.get("/workspaces/:id/members", ...requirePermission("team", "read"), async (req: AuthenticatedRequest, res): Promise<void> => {
+  const workspaceId = String(req.params.id);
   const members = await WorkspaceMember.find({ workspaceId: new Types.ObjectId(workspaceId) }).sort({ createdAt: 1 });
 
   res.json(
@@ -170,42 +175,40 @@ router.get("/workspaces/:id/members", requireAuth, async (req: AuthenticatedRequ
       userId: m.userId,
       email: m.email,
       role: m.role,
+      roleIds: m.roleIds,
       status: m.userId ? "active" : "pending",
       createdAt: m.createdAt.toISOString(),
     }))
   );
 });
 
-router.post("/workspaces/:id/members/invite", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
+router.post("/workspaces/:id/members/invite", ...requirePermission("team", "create"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.params.id;
-  const membership = await getMembership(workspaceId, req.userId!);
-  if (!membership || !ADMIN_ROLES.includes(membership.role)) {
-    res.status(403).json({ error: "Requires admin role or higher" }); return;
-  }
 
-  const { email, role = "member" } = req.body as { email?: string; role?: string };
+  const { email, roleIds = [] } = req.body as { email?: string; roleIds?: string[] };
   if (!email?.trim()) { res.status(400).json({ error: "Email is required" }); return; }
 
-  const limits = await checkLimits(workspaceId, "members");
+  const limits = await checkLimits(workspaceId as string, "members");
   if (!limits.allowed) {
     res.status(403).json({ 
       error: `You have reached the limit of ${limits.limit} members for your current plan.` 
     });
     return;
   }
-  if (!["admin", "member"].includes(role)) { res.status(400).json({ error: "Role must be admin or member" }); return; }
+  // Allow empty roleIds (defaults to basic member permissions via fallback)
 
   const normalizedEmail = email.toLowerCase().trim();
   const existing = await WorkspaceMember.findOne({
-    workspaceId: new Types.ObjectId(workspaceId),
+    workspaceId: new Types.ObjectId(workspaceId as string),
     email: normalizedEmail,
   });
   if (existing) { res.status(409).json({ error: "This person is already a member or has a pending invite" }); return; }
 
   const member = await WorkspaceMember.create({
-    workspaceId: new Types.ObjectId(workspaceId),
+    workspaceId: new Types.ObjectId(workspaceId as string),
     email: normalizedEmail,
-    role,
+    role: "member", // legacy fallback
+    roleIds: roleIds.map(id => new Types.ObjectId(id)),
   });
 
   // Fire-and-forget invitation email
@@ -222,7 +225,7 @@ router.post("/workspaces/:id/members/invite", requireAuth, async (req: Authentic
         html: invitationTemplate({
           inviterName,
           workspaceName: workspace?.name ?? "CommissionKit Workspace",
-          role: role as "admin" | "member",
+          role: "member", // Display purpose only for email
           acceptUrl: `${APP_URL}/accept-invite?workspaceId=${workspaceId}&email=${encodeURIComponent(normalizedEmail)}`,
           expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         }),
@@ -233,53 +236,52 @@ router.post("/workspaces/:id/members/invite", requireAuth, async (req: Authentic
     }
   });
 
-  res.status(201).json({ id: member._id, email: member.email, role: member.role, status: "pending" });
+  res.status(201).json({ id: member._id, email: member.email, roleIds: member.roleIds, status: "pending" });
 });
 
-router.patch("/workspaces/:id/members/:memberId", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
+router.patch("/workspaces/:id/members/:memberId", ...requirePermission("team", "edit"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.params.id;
   const memberId = req.params.memberId;
-  const callerMembership = await getMembership(workspaceId, req.userId!);
-  if (callerMembership?.role !== "owner") {
-    res.status(403).json({ error: "Only the owner can change member roles" }); return;
-  }
 
-  const { role } = req.body as { role?: string };
-  if (!["admin", "member"].includes(role ?? "")) {
-    res.status(400).json({ error: "Role must be admin or member" }); return;
+  const { roleIds } = req.body as { roleIds?: string[] };
+  if (!Array.isArray(roleIds)) {
+    res.status(400).json({ error: "roleIds array is required" }); return;
   }
 
   const target = await WorkspaceMember.findOne({
-    _id: new Types.ObjectId(memberId),
-    workspaceId: new Types.ObjectId(workspaceId),
+    _id: new Types.ObjectId(memberId as string),
+    workspaceId: new Types.ObjectId(workspaceId as string),
   });
   if (!target || target.role === "owner") {
     res.status(400).json({ error: "Cannot change the owner role" }); return;
   }
 
-  target.role = role!;
+  target.roleIds = roleIds.map(id => new Types.ObjectId(id));
   await target.save();
 
-  res.json({ id: target._id, email: target.email, role: target.role });
+  res.json({ id: target._id, email: target.email, roleIds: target.roleIds });
 });
 
-router.delete("/workspaces/:id/members/:memberId", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
+router.delete("/workspaces/:id/members/:memberId", ...requirePermission("team", "delete"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.params.id;
   const memberId = req.params.memberId;
-  const callerMembership = await getMembership(workspaceId, req.userId!);
 
   const target = await WorkspaceMember.findOne({
-    _id: new Types.ObjectId(memberId),
-    workspaceId: new Types.ObjectId(workspaceId),
+    _id: new Types.ObjectId(memberId as string),
+    workspaceId: new Types.ObjectId(workspaceId as string),
   });
   if (!target) { res.status(404).json({ error: "Member not found" }); return; }
 
   const isSelf = target.userId === req.userId;
-  const isAdminOrOwner = callerMembership && ADMIN_ROLES.includes(callerMembership.role);
-  if (!isSelf && !isAdminOrOwner) { res.status(403).json({ error: "Access denied" }); return; }
+  // requirePermission handles the "owner/admin" check via the team:delete permission
+  // but we still allow self-removal if the user is not the owner
+  if (!isSelf && !req.permissions?.has("team:delete") && !req.permissions?.has("team:*") && !req.permissions?.has("*")) {
+     res.status(403).json({ error: "Access denied" }); return;
+  }
+  
   if (target.role === "owner") { res.status(400).json({ error: "Cannot remove the workspace owner" }); return; }
 
-  await WorkspaceMember.deleteOne({ _id: new Types.ObjectId(memberId) });
+  await WorkspaceMember.deleteOne({ _id: new Types.ObjectId(memberId as string) });
   res.status(204).send();
 });
 

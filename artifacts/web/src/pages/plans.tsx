@@ -25,8 +25,29 @@ export function PlansPage() {
   const currency = activeWorkspace?.currency || "USD";
   const { data: plans, isLoading } = useListPlans({ query: { queryKey: getListPlansQueryKey() } });
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const { can } = useRole();
+  const { can, hasPermission, isLoading: roleLoading } = useRole();
   const { sub, limits } = useBillingStatus();
+
+  if (roleLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="size-10" />
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasPermission("plans", "read")) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
+        <FileText className="size-10 text-muted-foreground" />
+        <h2 className="text-lg font-semibold">Access Denied</h2>
+        <p className="text-sm text-muted-foreground">You don't have permission to view commission plans.</p>
+      </div>
+    );
+  }
 
   const isLimitReached = limits.plans !== -1 && Array.isArray(plans) && plans.length >= limits.plans;
 
@@ -34,16 +55,16 @@ export function PlansPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Commission Plans</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Commission Plans</h1>
           <p className="text-muted-foreground">Design and manage compensation structures.</p>
         </div>
-        {can("admin") && (
+        {hasPermission("plans", "create") && (
           <Button 
             onClick={() => setIsCreateOpen(true)}
             disabled={isLimitReached}
             title={isLimitReached ? "Limit reached. Upgrade plan." : ""}
           >
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 size-4" />
             {isLimitReached ? "Limit Reached" : "Create Plan"}
           </Button>
         )}
@@ -55,15 +76,15 @@ export function PlansPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map(i => (
             <Card key={i}>
-              <CardHeader><Skeleton className="h-6 w-3/4 mb-2" /><Skeleton className="h-4 w-1/2" /></CardHeader>
+              <CardHeader><Skeleton className="size-6/4 mb-2" /><Skeleton className="size-4/2" /></CardHeader>
               <CardContent><Skeleton className="h-24 w-full" /></CardContent>
             </Card>
           ))}
         </div>
       ) : (!Array.isArray(plans) || plans.length === 0) ? (
         <div className="text-center py-16 bg-muted/30 rounded-xl border border-dashed">
-          <div className="bg-muted w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FileText className="h-6 w-6 text-muted-foreground" />
+          <div className="bg-muted size-12 rounded-full flex items-center justify-center mx-auto mb-4">
+            <FileText className="size-6 text-muted-foreground" />
           </div>
           <h3 className="text-lg font-medium">No plans created</h3>
           <p className="text-sm text-muted-foreground mt-1 mb-6 max-w-sm mx-auto">
@@ -74,7 +95,7 @@ export function PlansPage() {
             disabled={isLimitReached}
             title={isLimitReached ? "Limit reached. Upgrade plan." : ""}
           >
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 size-4" />
             {isLimitReached ? "Limit Reached" : "Create Plan"}
           </Button>
         </div>
@@ -94,7 +115,7 @@ function PlanCard({ plan, sub, currency }: { plan: any, sub: any, currency: stri
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { can } = useRole();
+  const { can, hasPermission } = useRole();
   const deleteMutation = useDeletePlan();
 
   const handleDelete = () => {
@@ -109,10 +130,10 @@ function PlanCard({ plan, sub, currency }: { plan: any, sub: any, currency: stri
 
   const getPlanIcon = () => {
     switch (plan.type) {
-      case "flat": return <FileText className="h-5 w-5 text-blue-500" />;
-      case "tiered": return <Layers className="h-5 w-5 text-indigo-500" />;
-      case "accelerator": return <Zap className="h-5 w-5 text-amber-500" />;
-      default: return <FileText className="h-5 w-5" />;
+      case "flat": return <FileText className="size-5 text-blue-500" />;
+      case "tiered": return <Layers className="size-5 text-indigo-500" />;
+      case "accelerator": return <Zap className="size-5 text-amber-500" />;
+      default: return <FileText className="size-5" />;
     }
   };
 
@@ -141,7 +162,7 @@ function PlanCard({ plan, sub, currency }: { plan: any, sub: any, currency: stri
           {plan.type === "flat" && (
             <div className="bg-muted/50 p-4 rounded-lg flex justify-between items-center">
               <span className="text-sm font-medium">Flat Rate</span>
-              <span className="text-lg font-bold">{formatPercent(plan.flatRate || 0)}</span>
+              <span className="text-lg font-semibold">{formatPercent(plan.flatRate || 0)}</span>
             </div>
           )}
 
@@ -149,12 +170,12 @@ function PlanCard({ plan, sub, currency }: { plan: any, sub: any, currency: stri
             <div className="space-y-2">
               <div className="bg-muted/50 p-3 rounded-lg flex justify-between items-center">
                 <span className="text-sm font-medium">Base Rate</span>
-                <span className="font-bold">{formatPercent(plan.flatRate || 0)}</span>
+                <span className="font-semibold">{formatPercent(plan.flatRate || 0)}</span>
               </div>
               <div className="bg-primary/10 border border-primary/20 p-3 rounded-lg">
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-sm font-medium text-primary">Accelerator Rate</span>
-                  <span className="font-bold text-primary">{formatPercent(plan.acceleratorRate || 0)}</span>
+                  <span className="font-semibold text-primary">{formatPercent(plan.acceleratorRate || 0)}</span>
                 </div>
                 <p className="text-xs text-primary/80">Applied above {formatCurrency(plan.acceleratorThreshold || 0, currency)}</p>
               </div>
@@ -179,21 +200,25 @@ function PlanCard({ plan, sub, currency }: { plan: any, sub: any, currency: stri
 
           {plan.clawbackDays && (
             <div className="text-xs text-muted-foreground pt-2 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-destructive"></span>
+              <span className="size-2 rounded-full bg-destructive"></span>
               <span>{plan.clawbackDays} day clawback period</span>
               <HelpTooltip content="If a deal is reversed or cancelled within this period, the commission will be deducted from the rep." />
             </div>
           )}
         </div>
       </CardContent>
-      {can("admin") && (
+      {(hasPermission("plans", "edit") || hasPermission("plans", "delete")) && (
         <CardFooter className="border-t bg-muted/20 pt-4 flex justify-between">
-          <Button variant="outline" size="sm" onClick={() => setIsEditOpen(true)}>
-            <Edit className="h-4 w-4 mr-2" /> Edit
-          </Button>
-          <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => setIsDeleteOpen(true)}>
-            <Trash className="h-4 w-4" />
-          </Button>
+          {hasPermission("plans", "edit") ? (
+            <Button variant="outline" size="sm" onClick={() => setIsEditOpen(true)}>
+              <Edit className="size-4 mr-2" /> Edit
+            </Button>
+          ) : <div />}
+          {hasPermission("plans", "delete") && (
+            <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => setIsDeleteOpen(true)}>
+              <Trash className="size-4" />
+            </Button>
+          )}
         </CardFooter>
       )}
 
@@ -210,7 +235,7 @@ function PlanCard({ plan, sub, currency }: { plan: any, sub: any, currency: stri
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
             <Button variant="destructive" onClick={handleDelete} disabled={deleteMutation.isPending}>
-              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+              {deleteMutation.isPending ? "Deleting…" : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -424,15 +449,15 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
                         {tiers.length > 1 && (
                           <div className="pt-5">
                             <Button type="button" variant="ghost" size="icon" onClick={() => setTiers(tiers.filter((_, i) => i !== index))}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
+                              <Trash2 className="size-4 text-destructive" />
                             </Button>
                           </div>
                         )}
                       </div>
                     ))}
                   </div>
-                  <Button type="button" variant="outline" size="sm" onClick={() => setTiers([...tiers, { fromAmount: "", toAmount: "", rate: "" }])}>
-                    <Plus className="h-4 w-4 mr-2" /> Add Tier
+                  <Button type="button" variant="outline" size="sm" onClick={() => setTiers(prev => [...prev, { fromAmount: "", toAmount: "", rate: "" }])}>
+                    <Plus className="size-4 mr-2" /> Add Tier
                   </Button>
                 </div>
               )}
@@ -446,7 +471,7 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
           
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={isPending}>{isPending ? "Saving..." : "Save Plan"}</Button>
+            <Button type="submit" disabled={isPending}>{isPending ? "Saving…" : "Save Plan"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

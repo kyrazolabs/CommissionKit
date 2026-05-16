@@ -18,3 +18,9 @@ export type { ClawbackAlertTemplateProps } from "./clawback-alert.js";
 
 export { repPortalTemplate } from "./rep-portal.js";
 export type { RepPortalTemplateProps } from "./rep-portal.js";
+
+export { payoutUpdateTemplate } from "./payout-update.js";
+export type { PayoutUpdateTemplateProps } from "./payout-update.js";
+
+export { disputeUpdateTemplate } from "./dispute-update.js";
+export type { DisputeUpdateTemplateProps } from "./dispute-update.js";

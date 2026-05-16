@@ -10,7 +10,7 @@ import {
 } from "@workspace/db";
 import { Types } from "mongoose";
 import { CreateRunBody, GetRunParams } from "@workspace/api-zod";
-import { requireWorkspaceMember, type AuthenticatedRequest } from "../middleware/auth";
+import { requirePermission, type AuthenticatedRequest } from "../middleware/auth";
 import { sendMediumPriorityEmail, enqueueCommissionCalc } from "@workspace/queue";
 import { commissionRunTemplate } from "@workspace/email-templates";
 import { createNotification } from "../lib/notify";
@@ -63,7 +63,7 @@ async function formatRun(run: any) {
   };
 }
 
-router.get("/runs", ...requireWorkspaceMember("member"), async (req: AuthenticatedRequest, res): Promise<void> => {
+router.get("/runs", ...requirePermission("calculations", "read"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.workspaceId!;
   const runs = await CommissionRun.find({ workspaceId: new Types.ObjectId(workspaceId) })
     .sort({ createdAt: -1 });
@@ -80,7 +80,7 @@ router.get("/runs", ...requireWorkspaceMember("member"), async (req: Authenticat
   );
 });
 
-router.post("/runs", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
+router.post("/runs", ...requirePermission("calculations", "create"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.workspaceId!;
   const body = CreateRunBody.parse(req.body);
   const { period } = body;
@@ -115,7 +115,7 @@ router.post("/runs", ...requireWorkspaceMember("admin"), async (req: Authenticat
     workspaceId,
     runId: run._id.toString(),
     period,
-    userId: req.user?.id
+    userId: req.userId
   });
 
   res.status(201).json({
@@ -126,7 +126,7 @@ router.post("/runs", ...requireWorkspaceMember("admin"), async (req: Authenticat
   });
 });
 
-router.get("/runs/:id", ...requireWorkspaceMember("member"), async (req: AuthenticatedRequest, res): Promise<void> => {
+router.get("/runs/:id", ...requirePermission("calculations", "read"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.workspaceId!;
   const { id } = GetRunParams.parse(req.params);
   const run = await CommissionRun.findOne({ 

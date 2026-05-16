@@ -7,7 +7,7 @@ import {
   Workspace,
 } from "@workspace/db";
 import {
-  requireWorkspaceMember,
+  requirePermission,
   type AuthenticatedRequest,
 } from "../middleware/auth";
 import { convertCurrency } from "../lib/exchange";
@@ -16,7 +16,7 @@ const router = Router();
 
 router.get(
   "/",
-  ...requireWorkspaceMember("member"),
+  ...requirePermission("reports", "read"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     try {
       const workspaceId = req.workspaceId!;

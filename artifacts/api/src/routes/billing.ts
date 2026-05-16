@@ -7,13 +7,28 @@ import {
   WorkspaceMember,
 } from "@workspace/db";
 import {
-  requireAuth,
+  requirePermission,
   requireWorkspaceMember,
   type AuthenticatedRequest,
 } from "../middleware/auth";
 import { logger } from "../lib/logger";
+import { getLatestRates } from "../lib/exchange";
 
 const router = Router();
+
+/**
+ * GET /billing/rates
+ * Returns the latest exchange rates.
+ */
+router.get("/rates", ...requirePermission("billing", "read"), async (req: AuthenticatedRequest, res): Promise<void> => {
+  try {
+    const rates = await getLatestRates();
+    res.json(rates);
+  } catch (err) {
+    logger.error({ err }, "Failed to fetch exchange rates");
+    res.status(500).json({ error: "Failed to fetch exchange rates" });
+  }
+});
 
 // ─── Stripe setup ──────────────────────────────────────────────────────────────
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
@@ -161,7 +176,7 @@ async function getOrCreateCustomer(
  */
 router.get(
   "/status",
-  ...requireWorkspaceMember("member"),
+  ...requirePermission("billing", "read"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
 
@@ -199,7 +214,7 @@ router.get(
  */
 router.post(
   "/checkout",
-  ...requireWorkspaceMember("admin"),
+  ...requirePermission("billing", "write"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const { priceId, mode, extraReps } = req.body as {
       priceId?: string;
@@ -366,7 +381,7 @@ router.post(
  */
 router.post(
   "/extra-reps",
-  ...requireWorkspaceMember("admin"),
+  ...requirePermission("billing", "write"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
     const { quantity } = req.body as { quantity?: unknown };
@@ -491,7 +506,7 @@ router.post(
  */
 router.post(
   "/portal",
-  ...requireWorkspaceMember("admin"),
+  ...requirePermission("billing", "write"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
 

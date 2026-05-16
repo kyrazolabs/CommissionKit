@@ -15,7 +15,7 @@ export function HelpTooltip({ content }: HelpTooltipProps) {
     <TooltipProvider delayDuration={200}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help hover:text-primary transition-colors" />
+          <Info className="size-3.5 text-muted-foreground cursor-help hover:text-primary transition-colors" />
         </TooltipTrigger>
         <TooltipContent className="max-w-[200px] text-center leading-relaxed">
           <p>{content}</p>

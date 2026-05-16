@@ -7,7 +7,7 @@ import {
   NOTIFICATION_TYPES,
   type NotificationType,
 } from "@workspace/db";
-import { requireAuth, requireWorkspaceMember, type AuthenticatedRequest } from "../middleware/auth";
+import { requireAuth, requireWorkspaceMember, requirePermission, type AuthenticatedRequest } from "../middleware/auth";
 
 const router = Router();
 
@@ -18,7 +18,7 @@ const router = Router();
  * Returns the current user's notifications for the active workspace.
  * Supports ?unreadOnly=true and ?limit=N
  */
-router.get("/notifications", ...requireWorkspaceMember("member"), async (req: AuthenticatedRequest, res): Promise<void> => {
+router.get("/notifications", ...requirePermission("notifications", "read"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const userId = req.userId!;
   const workspaceId = req.workspaceId!;
   const unreadOnly = req.query.unreadOnly === "true";
@@ -77,7 +77,7 @@ router.patch("/notifications/:id/read", requireAuth, async (req: AuthenticatedRe
  * PATCH /notifications/read-all
  * Mark all of the user's notifications in this workspace as read.
  */
-router.patch("/notifications/read-all", ...requireWorkspaceMember("member"), async (req: AuthenticatedRequest, res): Promise<void> => {
+router.patch("/notifications/read-all", ...requirePermission("notifications", "read"), async (req: AuthenticatedRequest, res): Promise<void> => {
   await Notification.updateMany(
     { userId: req.userId!, workspaceId: new Types.ObjectId(req.workspaceId!), read: false },
     { read: true },
@@ -176,7 +176,7 @@ const VALID_MONTHS = ["January", "February", "March", "April", "May", "June", "J
  * GET /workspaces/:id/settings
  * Returns the workspace's editable settings.
  */
-router.get("/workspaces/:id/settings", ...requireWorkspaceMember("member"), async (req: AuthenticatedRequest, res): Promise<void> => {
+router.get("/workspaces/:id/settings", ...requirePermission("workspace", "read"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = String(req.params.id);
   const ws = await Workspace.findById(workspaceId);
   if (!ws) { res.status(404).json({ error: "Workspace not found" }); return; }
@@ -191,7 +191,7 @@ router.get("/workspaces/:id/settings", ...requireWorkspaceMember("member"), asyn
  * PATCH /workspaces/:id/settings
  * Update currency and/or fiscalYearStart. Requires admin.
  */
-router.patch("/workspaces/:id/settings", ...requireWorkspaceMember("admin"), async (req: AuthenticatedRequest, res): Promise<void> => {
+router.patch("/workspaces/:id/settings", ...requirePermission("workspace", "edit"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = String(req.params.id);
   const { currency, fiscalYearStart } = req.body as { currency?: string; fiscalYearStart?: string };
 

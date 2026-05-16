@@ -10,22 +10,26 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { HelpTooltip } from "@/components/help-tooltip";
+import { RunCalculationDialog } from "@/components/run-calculation-dialog";
 import { useWorkspace } from "@/hooks/use-workspace";
+
+import { useRole } from "@/hooks/use-role";
 
 export function Dashboard() {
   const { activeWorkspace } = useWorkspace();
+  const { hasPermission, isLoading: roleLoading } = useRole();
   const currency = activeWorkspace?.currency || "USD";
   const currentPeriod = format(new Date(), "yyyy-MM");
-  const { data: summary, isLoading } = useGetDashboardSummary(
+  const { data: summary, isLoading: summaryLoading } = useGetDashboardSummary(
     { query: { queryKey: getGetDashboardSummaryQueryKey() } }
   );
 
-  if (isLoading) return <DashboardSkeleton />;
+  if (summaryLoading || roleLoading) return <DashboardSkeleton />;
 
   if (!summary || (summary as any).error) {
     return (
       <div className="flex flex-col items-center justify-center h-96 text-center">
-        <Activity className="h-10 w-10 text-muted-foreground mb-4" />
+        <Activity className="size-10 text-muted-foreground mb-4" />
         <h2 className="text-lg font-semibold">No data yet</h2>
         <p className="text-muted-foreground mt-1 text-sm">Import deals to get started.</p>
       </div>
@@ -47,17 +51,17 @@ export function Dashboard() {
       {/* Page header */}
       <div>
         <p className="text-[12px] font-semibold text-primary mb-1">Overview</p>
-        <h1 className="text-[28px] font-bold tracking-tight text-foreground leading-tight">Dashboard</h1>
+        <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">Dashboard</h1>
         <p className="text-[14px] text-muted-foreground mt-1 leading-relaxed">
           Commission performance for{" "}
           <strong className="text-foreground/80">
             {format(new Date(currentPeriod + "-01"), "MMMM yyyy")}
           </strong>{" "}
-          — all plans and reps included.
+          : all plans and reps included.
         </p>
       </div>
 
-      {/* Stat cards — 4 columns, all teal icon badges */}
+      {/* Stat cards : 4 columns, all teal icon badges */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {statCards.map(({ label, value, delta, icon: Icon }) => (
           <div
@@ -75,11 +79,11 @@ export function Dashboard() {
                   "Total number of sales reps in the system."
                 } />
               </div>
-              <div className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-secondary">
-                <Icon className="h-3.5 w-3.5 text-primary" />
+              <div className="flex size-7 items-center justify-center rounded-[10px] bg-secondary">
+                <Icon className="size-3.5 text-primary" />
               </div>
             </div>
-            <div className="text-[26px] font-bold tracking-tight text-foreground leading-none">{value}</div>
+            <div className="text-[26px] font-semibold tracking-tight text-foreground leading-none">{value}</div>
             <p className="text-[12px] text-primary font-medium mt-1.5">{delta}</p>
           </div>
         ))}
@@ -88,18 +92,18 @@ export function Dashboard() {
       {/* Lower grid: earners table (3fr) + right column (2fr) */}
       <div className="grid gap-5" style={{ gridTemplateColumns: "3fr 2fr" }}>
 
-        {/* Top Earners — table style */}
+        {/* Top Earners : table style */}
         <div className="bg-card border border-card-border rounded-2xl overflow-hidden" style={{ boxShadow: "var(--shadow-card)" }}>
           <div className="flex items-center justify-between px-[22px] py-[18px] border-b border-border">
             <div>
               <div className="flex items-center gap-1.5">
-                <p className="text-[14.5px] font-bold text-foreground">Top Earners</p>
+                <p className="text-[14.5px] font-semibold text-foreground">Top Earners</p>
                 <HelpTooltip content="Sales reps ranked by their total earned commission for the current period." />
               </div>
               <p className="text-[12px] text-muted-foreground mt-0.5">Ranked by commission earned</p>
             </div>
             <Link href="/reps" className="flex items-center gap-1 text-[12px] font-semibold text-primary hover:opacity-80 transition-opacity">
-              View all <ArrowUpRight className="h-3 w-3" />
+              View all <ArrowUpRight className="size-3" />
             </Link>
           </div>
 
@@ -110,7 +114,7 @@ export function Dashboard() {
               <thead>
                 <tr className="bg-muted/60">
                   {["Rep", "Plan", "Deals", "Revenue", "Commission"].map((h) => (
-                    <th key={h} className="px-4 py-2.5 text-left text-[11.5px] font-semibold uppercase tracking-[0.03em] text-muted-foreground">
+                    <th key={h} className="p-4 text-left text-[11.5px] font-semibold uppercase tracking-[0.03em] text-muted-foreground">
                       {h}
                     </th>
                   ))}
@@ -119,10 +123,10 @@ export function Dashboard() {
               <tbody>
                 {repEarnings.map((rep, i) => (
                   <tr key={rep.repId} className="border-t border-muted/60 hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-3">
+                    <td className="p-4">
                       <div className="flex items-center gap-2.5">
                         <div
-                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10.5px] font-bold"
+                          className="flex size-7 shrink-0 items-center justify-center rounded-full text-[10.5px] font-semibold"
                           style={{
                             background: i === 0 ? "hsl(var(--primary))" : "hsl(var(--muted))",
                             color: i === 0 ? "#fff" : "hsl(var(--muted-foreground))",
@@ -145,12 +149,12 @@ export function Dashboard() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-[12.5px] text-muted-foreground">—</td>
-                    <td className="px-4 py-3 text-[13px] font-medium text-foreground">{rep.totalDeals}</td>
-                    <td className="px-4 py-3 text-[13px] font-medium text-foreground">
+                    <td className="p-4 text-[12.5px] text-muted-foreground">:</td>
+                    <td className="p-4 text-[13px] font-medium text-foreground">{rep.totalDeals}</td>
+                    <td className="p-4 text-[13px] font-medium text-foreground">
                       {formatCurrency(rep.totalRevenue, currency)}
                     </td>
-                    <td className="px-4 py-3 text-[13.5px] font-bold text-primary">
+                    <td className="p-4 text-[13.5px] font-semibold text-primary">
                       {formatCurrency(rep.totalCommission, currency)}
                     </td>
                   </tr>
@@ -163,27 +167,31 @@ export function Dashboard() {
         {/* Right column */}
         <div className="flex flex-col gap-4">
           {/* Quick action */}
-          <div
-            className="rounded-2xl border px-[22px] py-5"
-            style={{
-              background: "hsl(var(--secondary))",
-              borderColor: "hsl(var(--primary) / 0.2)",
-              boxShadow: "var(--shadow-card)",
-            }}
-          >
-            <div className="flex items-center gap-2 mb-2.5">
-              <Zap className="h-4 w-4 text-primary" />
-              <p className="text-[14px] font-bold text-foreground">Run Calculation</p>
+          {hasPermission("calculations", "create") && (
+            <div
+              className="rounded-2xl border px-[22px] py-5"
+              style={{
+                background: "hsl(var(--secondary))",
+                borderColor: "hsl(var(--primary) / 0.2)",
+                boxShadow: "var(--shadow-card)",
+              }}
+            >
+              <div className="flex items-center gap-2 mb-2.5">
+                <Zap className="size-4 text-primary" />
+                <p className="text-[14px] font-semibold text-foreground">Run Calculation</p>
+              </div>
+              <p className="text-[12.5px] text-muted-foreground leading-relaxed mb-4">
+                Trigger a commission run for the current period across all active reps and plans.</p>
+              <RunCalculationDialog 
+                isProcessing={recentRuns.some((r: any) => r.status === "pending" || r.status === "processing")} 
+                trigger={
+                  <Button className="w-full rounded-xl text-[13px] font-semibold">
+                    Run {format(new Date(currentPeriod + "-01"), "MMM yyyy")}
+                  </Button>
+                }
+              />
             </div>
-            <p className="text-[12.5px] text-muted-foreground leading-relaxed mb-4">
-              Trigger a commission run for the current period across all active reps and plans.
-            </p>
-            <Link href="/runs">
-              <Button className="w-full rounded-xl text-[13px] font-semibold">
-                Run {format(new Date(currentPeriod + "-01"), "MMM yyyy")}
-              </Button>
-            </Link>
-          </div>
+          )}
 
           {/* Recent Runs */}
           <div
@@ -191,7 +199,7 @@ export function Dashboard() {
             style={{ boxShadow: "var(--shadow-card)" }}
           >
             <div className="flex items-center gap-1.5 mb-0.5">
-              <p className="text-[14.5px] font-bold text-foreground">Recent Runs</p>
+              <p className="text-[14.5px] font-semibold text-foreground">Recent Runs</p>
               <HelpTooltip content="Historical calculation snapshots. Each run locks the commission data for that period." />
             </div>
             <p className="text-[12px] text-muted-foreground mb-4">Previous calculation jobs</p>
@@ -202,8 +210,8 @@ export function Dashboard() {
               <div className="space-y-0">
                 {recentRuns.map((run) => (
                   <div key={run.id} className="flex items-center gap-3 py-3 border-b border-muted/60 last:border-0">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-muted">
-                      <Play className="h-3.5 w-3.5 text-primary" />
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-muted">
+                      <Play className="size-3.5 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-semibold text-foreground">{run.period}</p>
@@ -213,7 +221,7 @@ export function Dashboard() {
                     </div>
                     <Link
                       href={`/runs/${run.id}`}
-                      className="flex items-center gap-0.5 text-[11px] font-semibold text-primary bg-secondary border border-primary/20 rounded-md px-2 py-0.5 hover:opacity-80 transition-opacity"
+                      className="flex items-center gap-0.5 text-[11px] font-semibold text-primary bg-secondary border border-primary/20 rounded-md px-2.5 py-0.5 hover:opacity-80 transition-opacity"
                     >
                       Completed
                     </Link>

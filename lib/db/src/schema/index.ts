@@ -6,3 +6,6 @@ export * from "./workspaces";
 export * from "./notifications";
 export * from "./subscriptions";
 export * from "./exchangeRate";
+export * from "./payouts";
+export * from "./disputes";
+export * from "./roles";

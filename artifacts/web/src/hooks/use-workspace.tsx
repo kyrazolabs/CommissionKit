@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { setWorkspaceId } from "@workspace/api-client-react";
 import { useAuth } from "./use-auth";
 
@@ -105,17 +105,17 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     [session, setActiveWorkspace]
   );
 
+  const contextValue = useMemo(() => ({
+    workspaces,
+    activeWorkspace,
+    loading,
+    setActiveWorkspace,
+    createWorkspace,
+    refreshWorkspaces: fetchWorkspaces,
+  }), [workspaces, activeWorkspace, loading, setActiveWorkspace, createWorkspace, fetchWorkspaces]);
+
   return (
-    <WorkspaceContext.Provider
-      value={{
-        workspaces,
-        activeWorkspace,
-        loading,
-        setActiveWorkspace,
-        createWorkspace,
-        refreshWorkspaces: fetchWorkspaces,
-      }}
-    >
+    <WorkspaceContext.Provider value={contextValue}>
       {children}
     </WorkspaceContext.Provider>
   );

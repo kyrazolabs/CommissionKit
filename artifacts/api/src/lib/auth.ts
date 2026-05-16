@@ -3,6 +3,7 @@ import { mongodbAdapter } from "@better-auth/mongo-adapter";
 import { organization } from "better-auth/plugins";
 import { connectDB } from "@workspace/db";
 import { dash, sentinel } from "@better-auth/infra";
+import { admin } from "better-auth/plugins";
 import { logger } from "./logger";
 import { sendHighPriorityEmail, sendMediumPriorityEmail } from "@workspace/queue";
 import { invitationTemplate, welcomeTemplate, passwordResetTemplate } from "@workspace/email-templates";
@@ -21,6 +22,18 @@ const APP_URL = process.env.APP_URL || "http://localhost:3000";
 export const auth = betterAuth({
   database: mongodbAdapter(db),
 
+  user: {
+    additionalFields: {
+      mustChangePassword: {
+        type: "boolean",
+        defaultValue: false,
+      },
+      repId: {
+        type: "string",
+        required: false,
+      },
+    },
+  },
   emailAndPassword: {
     enabled: true,
     sendResetPassword: async ({ user, url }) => {
@@ -45,6 +58,7 @@ export const auth = betterAuth({
   plugins: [
     dash(),
     sentinel(),
+    admin(),
     organization({
       allowUserToCreateOrganization: true,
       organizationLimit: 10,
@@ -129,6 +143,7 @@ export const auth = betterAuth({
           }
         };
       }
+      return { context };
     },
   },
 });
