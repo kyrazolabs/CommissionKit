@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, envDir, "");
 
   // const stripePublishableKey =
-  //   env.VITE_STRIPE_PUBLISHABLE_KEY || env.STRIPE_PUBLISHABLE_KEY || "";
+  //   env.STRIPE_PUBLISHABLE_KEY || env.STRIPE_PUBLISHABLE_KEY || "";
 
   const plugins = [
     react(),
@@ -43,7 +43,7 @@ export default defineConfig(({ mode }) => {
     envDir,
     base: basePath,
     // define: {
-    //   "import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY":
+    //   "import.meta.env.STRIPE_PUBLISHABLE_KEY":
     //     JSON.stringify(stripePublishableKey),
     // },
     plugins,

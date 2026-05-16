@@ -6,7 +6,8 @@ const WorkspaceSubscriptionSchema = new Schema({
   stripeSubscriptionId: { type: String },       // null for lifetime
   stripePriceId:        { type: String },
   stripeProductId:      { type: String },
-  plan:                 { type: String, enum: ["lite", "starter", "growth", "flex", "annual", "free"], default: "free" },
+  plan:                 { type: String, enum: ["starter", "growth", "pro", "flex", "free"], default: "free" },
+  billingInterval:      { type: String, enum: ["month", "year"], default: "month" },
   status:               { type: String, default: "active" }, // active | past_due | canceled | trialing
   /** true for legacy lifetime (one-time payment) */
   isLifetime:           { type: Boolean, default: false },
@@ -14,6 +15,8 @@ const WorkspaceSubscriptionSchema = new Schema({
   cancelAtPeriodEnd:    { type: Boolean, default: false },
   /** Purchased add-on seats from Stripe (monthly or yearly extra-rep line item quantity). */
   extraRepSeats:        { type: Number, default: 0, min: 0 },
+  /** true if this workspace has ever used a trial. Trials are one-time per workspace. */
+  trialUsed:            { type: Boolean, default: false },
 }, { timestamps: true });
 
 WorkspaceSubscriptionSchema.index({ stripeCustomerId: 1 });
@@ -28,12 +31,14 @@ export type WorkspaceSubscription = mongoose.Document & {
   stripeSubscriptionId?: string;
   stripePriceId?: string;
   stripeProductId?: string;
-  plan: "lite" | "starter" | "growth" | "flex" | "annual" | "free";
+  plan: "starter" | "growth" | "pro" | "flex" | "free";
+  billingInterval: "month" | "year";
   status: string;
   isLifetime: boolean;
   currentPeriodEnd?: Date;
   cancelAtPeriodEnd: boolean;
   extraRepSeats: number;
+  trialUsed: boolean;
   createdAt: Date;
   updatedAt: Date;
 };

@@ -5,21 +5,21 @@ import { apiFetch } from "@/lib/api";
 
 export const PLAN_LIMITS = {
   free: { reps: 3, plans: 1, members: 1 },
-  lite: { reps: 5, plans: 2, members: 3 },
   starter: { reps: 10, plans: 3, members: 3 },
-  growth: { reps: 50, plans: -1, members: 15 },
-  annual: { reps: 50, plans: -1, members: 15 },
-  flex: { reps: -1, plans: -1, members: -1 }, // Flex is per-rep, effectively unlimited
+  growth: { reps: 30, plans: -1, members: 15 },
+  pro: { reps: 100, plans: -1, members: 50 },
+  flex: { reps: -1, plans: -1, members: -1 }, // Flex is effectively unlimited
 };
 
 export interface SubscriptionStatus {
-  plan: "lite" | "starter" | "growth" | "flex" | "annual" | "free";
+  plan: "starter" | "growth" | "pro" | "flex" | "free";
   status: string;
   isLifetime: boolean;
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
   /** Add-on rep seats from Stripe (included in effective `limits.reps`). */
   extraRepSeats?: number;
+  trialUsed: boolean;
 }
 
 export function useBillingStatus() {
@@ -45,6 +45,7 @@ export function useBillingStatus() {
           currentPeriodEnd: null,
           cancelAtPeriodEnd: false,
           extraRepSeats: 0,
+          trialUsed: false,
         })
       )
       .finally(() => setLoading(false));
@@ -71,6 +72,7 @@ export function useBillingStatus() {
           currentPeriodEnd: null,
           cancelAtPeriodEnd: false,
           extraRepSeats: 0,
+          trialUsed: false,
         }),
       )
       .finally(() => setLoading(false));

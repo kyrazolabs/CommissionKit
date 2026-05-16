@@ -43,7 +43,6 @@ Required/commonly used variables:
 - `SUPABASE_URL`, `SUPABASE_ANON_KEY`: Supabase client config (used by API and mapped into the UI at build time)
 - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`: optional explicit Vite vars for the UI (takes precedence if set)
 - `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`: Stripe config (API and UI)
-- `VITE_STRIPE_PUBLISHABLE_KEY`: optional explicit Vite var for the UI (takes precedence if set)
 
 ## Install
 

@@ -22,46 +22,31 @@ import { useBillingStatus, type SubscriptionStatus } from "@/hooks/use-billing-s
 import { useRole } from "@/hooks/use-role";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const EXTRA_REP_UNIT_MONTHLY_USD = 4;
-const EXTRA_REP_UNIT_YEARLY_USD = 40;
+const EXTRA_REP_UNIT_MONTHLY_USD = 8;
+const EXTRA_REP_UNIT_YEARLY_USD = 80;
 
-// ─── Stripe price IDs (mirror API env: STRIPE_* → VITE_STRIPE_* for Vite) ───
+// ─── Stripe price IDs (mirror API env: STRIPE_* → STRIPE_* for Vite) ───
 const STRIPE_PRICE = {
-  starter: import.meta.env.VITE_STRIPE_STARTER_PRICE_ID ?? "price_1TSwQIBA7ra9J8VO3P4tgtLi",
-  lite: import.meta.env.VITE_STRIPE_LITE_PRICE_ID ?? "",
-  growth: import.meta.env.VITE_STRIPE_GROWTH_PRICE_ID ?? "price_1TSwQHBA7ra9J8VOxFgWrEHg",
-  annual: import.meta.env.VITE_STRIPE_ANNUAL_PRICE_ID ?? "price_1TVwbbBA7ra9J8VOok7hEjEG",
+  starter: {
+    monthly: import.meta.env.STRIPE_STARTER_PRICE_ID ?? "price_1TSwQIBA7ra9J8VO3P4tgtLi",
+    yearly: import.meta.env.STRIPE_STARTER_ANNUAL_PRICE_ID ?? "",
+  },
+  growth: {
+    monthly: import.meta.env.STRIPE_GROWTH_PRICE_ID ?? "price_1TSwQHBA7ra9J8VOxFgWrEHg",
+    yearly: import.meta.env.STRIPE_GROWTH_ANNUAL_PRICE_ID ?? "price_1TVwbbBA7ra9J8VOok7hEjEG",
+  },
+  pro: {
+    monthly: import.meta.env.STRIPE_PRO_PRICE_ID ?? "",
+    yearly: import.meta.env.STRIPE_PRO_ANNUAL_PRICE_ID ?? "",
+  },
 };
 
 const plans = [
   {
-    id: "lite",
-    name: "Lite",
-    priceUsd: 19,
-    price: "$19",
-    period: "/month",
-    description: "Cheaper plan for small teams that need the basics.",
-    icon: InfinityIcon,
-    iconBg: "bg-amber-50 dark:bg-amber-900/20",
-    iconColor: "text-amber-600 dark:text-amber-400",
-    features: [
-      "Up to 5 sales reps",
-      "Up to 2 commission plans",
-      "Deal & commission tracking",
-      "Unlimited calculation runs",
-      "Email support",
-    ],
-    priceId: STRIPE_PRICE.lite,
-    highlighted: false,
-    badge: "Lowest Price",
-    mode: "subscription" as const,
-  },
-  {
     id: "starter",
     name: "Starter",
-    priceUsd: 49,
-    price: "$49",
-    period: "/month",
+    priceMonthlyUsd: 49,
+    priceYearlyUsd: 490,
     description: "Perfect for testing the product or tiny teams.",
     icon: Zap,
     iconBg: "bg-blue-50 dark:bg-blue-900/20",
@@ -73,23 +58,22 @@ const plans = [
       "Unlimited calculation runs",
       "Email support (48h response)",
     ],
-    priceId: STRIPE_PRICE.starter,
+    priceIdMonthly: STRIPE_PRICE.starter.monthly,
+    priceIdYearly: STRIPE_PRICE.starter.yearly,
     highlighted: false,
     badge: null as string | null,
-    mode: "subscription" as const,
   },
   {
     id: "growth",
     name: "Growth",
-    priceUsd: 99,
-    price: "$99",
-    period: "/month",
+    priceMonthlyUsd: 99,
+    priceYearlyUsd: 990,
     description: "For stable teams of 8+ reps.",
     icon: Building2,
     iconBg: "bg-primary/10",
     iconColor: "text-primary",
     features: [
-      "Up to 50 sales reps",
+      "Up to 30 sales reps",
       "Unlimited commission plans",
       "Advanced tiered plans",
       "Accelerator & clawback rules",
@@ -97,31 +81,32 @@ const plans = [
       "Priority support (24h)",
       "CSV export",
     ],
-    priceId: STRIPE_PRICE.growth,
+    priceIdMonthly: STRIPE_PRICE.growth.monthly,
+    priceIdYearly: STRIPE_PRICE.growth.yearly,
     highlighted: true,
     badge: "Most Popular",
-    mode: "subscription" as const,
   },
   {
-    id: "annual",
-    name: "Growth Annual",
-    priceUsd: 990,
-    price: "$990",
-    period: "/year",
-    description: "Committed teams saving 17% vs monthly.",
+    id: "pro",
+    name: "Pro",
+    priceMonthlyUsd: 249,
+    priceYearlyUsd: 2490,
+    description: "For serious sales organizations with advanced needs.",
     icon: Crown,
     iconBg: "bg-purple-50 dark:bg-purple-900/20",
     iconColor: "text-purple-600 dark:text-purple-400",
     features: [
+      "Up to 100 sales reps",
       "Everything in Growth",
-      "2 months free vs monthly",
-      "Quarterly commission audit",
-      "Dedicated onboarding call",
+      "SAML/SSO Authentication",
+      "Custom API limits",
+      "Dedicated account manager",
+      "Custom legal terms",
     ],
-    priceId: STRIPE_PRICE.annual,
+    priceIdMonthly: STRIPE_PRICE.pro.monthly,
+    priceIdYearly: STRIPE_PRICE.pro.yearly,
     highlighted: false,
-    badge: "Save 17%",
-    mode: "subscription" as const,
+    badge: "Best Value",
   },
 ];
 
@@ -364,7 +349,7 @@ export function BillingPage() {
      // Default to growth if not subscribed, otherwise use current plan
      const currentPlan = sub?.plan ?? "free";
      if (currentPlan === "free") return "growth";
-     return currentPlan === "annual" ? "annual" : currentPlan;
+     return currentPlan;
   });
 
   const [payYearly, setPayYearly] = useState(false);
@@ -381,13 +366,8 @@ export function BillingPage() {
 
   // Monthly tiers + optional Growth Annual swap (yearly is Growth-only)
   const displayPlans = useMemo(() => {
-    const filtered = plans.filter((p) => {
-      if (p.id === "lite" && !p.priceId) return false;
-      if (payYearly) return p.id !== "growth";
-      return p.id !== "annual";
-    });
-    return filtered;
-  }, [payYearly, plans]);
+    return plans;
+  }, []);
 
   if (roleLoading) {
     return (
@@ -479,18 +459,13 @@ export function BillingPage() {
 
   const handlePayYearlyChange = (checked: boolean) => {
     setPayYearly(checked);
-    setSelectedPlanId((prev) => {
-      if (checked && prev === "growth") return "annual";
-      if (!checked && prev === "annual") return "growth";
-      return prev;
-    });
   };
 
 
   const selectedPlan = displayPlans.find((p) => p.id === selectedPlanId) ?? null;
   const extraRepsQty = Math.max(0, Math.floor(Number(extraReps || 0)));
-  const isAnnualGrowth = selectedPlan?.id === "annual";
-  const extraRepUnitDisplayUsd = isAnnualGrowth
+  
+  const extraRepUnitDisplayUsd = payYearly
     ? EXTRA_REP_UNIT_YEARLY_USD
     : EXTRA_REP_UNIT_MONTHLY_USD;
   const extraRepsAddonTotalUsd = extraRepsQty * extraRepUnitDisplayUsd;
@@ -508,6 +483,20 @@ export function BillingPage() {
           </p>
         </div>
       </div>
+      
+      {!alreadySubscribed && sub?.trialUsed === false && (
+        <div className="flex items-start gap-4 rounded-xl border border-blue-200 bg-blue-50/50 p-4 dark:border-blue-900/30 dark:bg-blue-900/10">
+          <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+            <Zap className="size-4" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">14-Day Free Trial Available</p>
+            <p className="text-xs text-blue-800/80 dark:text-blue-200/60 mt-0.5">
+              Start any plan today and you won't be charged for the first 14 days. This is a one-time offer for your workspace.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Growth yearly upsell : only for workspaces not already on a paid subscription */}
       {!alreadySubscribed && (
@@ -527,7 +516,7 @@ export function BillingPage() {
             <div>
               <p className="text-sm font-semibold text-foreground">Pay yearly, get 2 months free</p>
               <p className="text-xs text-muted-foreground mt-0.5 max-w-xl">
-                Applies to <strong className="text-foreground">Growth</strong> only: see <strong className="text-foreground">Growth Annual</strong> below with the same features and a lower effective monthly rate.
+                Annual billing is now available for <strong className="text-foreground">Starter, Growth, and Pro</strong>. Save up to 17% on your total subscription costs.
               </p>
             </div>
             <div className="flex items-center gap-2.5 sm:shrink-0">
@@ -547,7 +536,7 @@ export function BillingPage() {
           </div>
           {payYearly && (
             <p className="text-[11px] text-primary font-medium">
-              You’re viewing yearly pricing : the Growth card is replaced by Growth Annual.
+              You’re viewing yearly pricing across all plans.
             </p>
           )}
         </div>
@@ -697,8 +686,8 @@ export function BillingPage() {
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className={cn(
                     "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold border whitespace-nowrap",
-                    plan.id === "annual" || plan.id === "lite"
-                      ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/40"
+                    plan.id === "pro"
+                      ? "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800/40"
                       : "bg-primary text-primary-foreground border-primary",
                   )}>
                     {isCurrent ? "✓ Current Plan" : plan.badge}
@@ -718,13 +707,13 @@ export function BillingPage() {
                     {showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] ? (
                       <span className="flex items-baseline gap-1">
                         <span className="text-xl text-muted-foreground font-normal">≈</span>
-                        {formatCurrency(plan.priceUsd * rates[workspaceCurrency], workspaceCurrency)}
+                        {formatCurrency((payYearly ? plan.priceYearlyUsd : plan.priceMonthlyUsd) * rates[workspaceCurrency], workspaceCurrency)}
                       </span>
                     ) : (
-                      plan.price
+                      "$" + (payYearly ? plan.priceYearlyUsd : plan.priceMonthlyUsd)
                     )}
                   </span>
-                  <span className="text-sm text-muted-foreground">{plan.period}</span>
+                  <span className="text-sm text-muted-foreground">{payYearly ? "/year" : "/month"}</span>
                 </div>
                 <CardDescription className="mt-1 text-[13px]">{plan.description}</CardDescription>
               </CardHeader>
@@ -777,7 +766,9 @@ export function BillingPage() {
           <CardDescription className="text-xs">
             {alreadySubscribed
               ? "Checkout is only for new subscriptions. Use Manage subscription above for plan or add-on changes."
-              : "Select a plan above, choose add-ons, then pay securely with Stripe."}
+              : sub?.trialUsed === false 
+                ? "Start your 14-day free trial. Select a plan above, choose add-ons, then pay securely with Stripe."
+                : "Select a plan above, choose add-ons, then pay securely with Stripe."}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -810,16 +801,15 @@ export function BillingPage() {
                 ) : (
                   formatCurrency(extraRepUnitDisplayUsd)
                 )} per extra rep
-                {isAnnualGrowth ? " / year" : " / month"}
+                {payYearly ? " / year" : " / month"}
               </p>
             </div>
             <p className="text-xs text-muted-foreground">
               Enter how many additional reps you want to add.
-              {isAnnualGrowth ? (
+              {payYearly ? (
                 <>
                   {" "}
-                  With <strong className="text-foreground">Growth Annual</strong>, the add-on uses your{" "}
-                  <strong className="text-foreground">yearly</strong> extra-rep Stripe price.
+                  Your add-on will be billed <strong className="text-foreground">yearly</strong> to match your plan.
                 </>
               ) : null}
             </p>
@@ -852,7 +842,7 @@ export function BillingPage() {
                     formatCurrency(extraRepsAddonTotalUsd)
                   )}
                   <span className="text-xs font-normal text-muted-foreground ml-1">
-                    {isAnnualGrowth ? " / year" : " / month"}
+                    {payYearly ? " / year" : " / month"}
                   </span>
                 </span>
               </div>
@@ -872,7 +862,7 @@ export function BillingPage() {
                         ? `≈${formatCurrency(extraRepsAddonTotalUsd * rates[workspaceCurrency], workspaceCurrency)}` 
                         : formatCurrency(extraRepsAddonTotalUsd)}
                     </strong>
-                    {isAnnualGrowth ? " / year" : " / month"} (
+                    {payYearly ? " / year" : " / month"} (
                     {showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] 
                       ? `≈${formatCurrency(extraRepUnitDisplayUsd * rates[workspaceCurrency], workspaceCurrency)}` 
                       : formatCurrency(extraRepUnitDisplayUsd)} each).
@@ -892,11 +882,12 @@ export function BillingPage() {
                 toast({ title: "Select a plan", description: "Pick a plan above to continue.", variant: "destructive" });
                 return;
               }
-              if (!selectedPlan.priceId) {
-                toast({ title: "Plan not configured", description: "This plan is missing a Stripe price ID.", variant: "destructive" });
+              const priceId = payYearly ? selectedPlan.priceIdYearly : selectedPlan.priceIdMonthly;
+              if (!priceId) {
+                toast({ title: "Plan not configured", description: "This billing period is missing a Stripe price ID.", variant: "destructive" });
                 return;
               }
-              handleCheckout(selectedPlan.priceId, selectedPlan.id, selectedPlan.mode, extraRepsQty);
+              handleCheckout(priceId, selectedPlan.id, "subscription", extraRepsQty);
             }}
             disabled={loadingPlan !== null || !selectedPlan || alreadySubscribed}
           >
@@ -911,21 +902,6 @@ export function BillingPage() {
         </CardFooter>
       </Card>
 
-      {/* Positioning Note */}
-      <Card className="bg-primary/5 border-primary/20">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Zap className="size-4 text-primary" />
-            Choosing between Lite and Growth?
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            <strong>Lite</strong> fits small teams that want core tracking with tight limits.
-            <strong> Growth</strong> is built for larger teams that need advanced commission structures and exports.
-          </p>
-        </CardContent>
-      </Card>
 
       <p className="text-xs text-muted-foreground">
         Payments processed securely by Stripe. Subscriptions renew automatically and can be cancelled any time via the billing portal.
