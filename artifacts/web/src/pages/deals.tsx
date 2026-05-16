@@ -125,6 +125,7 @@ export function DealsPage() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
             <div className="w-40">
               <MonthPicker 
                 value={period} 
@@ -791,7 +792,7 @@ function ExportDealsButton() {
 
       if (!res.ok) throw new Error("Export failed");
 
-      const blob = await response.blob();
+      const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;

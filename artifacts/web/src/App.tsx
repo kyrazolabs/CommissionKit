@@ -1,4 +1,4 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,8 +18,12 @@ import { SettingsPage } from "@/pages/settings";
 import { TeamPage } from "@/pages/team";
 import { BillingPage } from "@/pages/billing";
 import { LoginPage } from "@/pages/login";
+import { LandingPage } from "@/pages/landing";
 import { PayoutsPage } from "@/pages/payouts";
 import { DisputesPage } from "@/pages/disputes";
+import { PrivacyPage } from "@/pages/privacy";
+import { TermsPage } from "@/pages/terms";
+import { SecurityPage } from "@/pages/security";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { WorkspaceProvider, useWorkspace } from "@/hooks/use-workspace";
@@ -124,9 +128,18 @@ function AppLoader() {
 function ProtectedRouter() {
   const { session, loading: authLoading } = useAuth();
   const { activeWorkspace, loading: wsLoading } = useWorkspace();
+  const [location] = useLocation();
 
   if (authLoading) return <AppLoader />;
-  if (!session) return <LoginPage />;
+  if (!session) {
+    if (location === "/" || location === "" || location === "/home") return <LandingPage />;
+    if (location === "/register") return <LoginPage initialMode="signup" />;
+    return <LoginPage initialMode="login" />;
+  }
+  
+  if (location === "/login" || location === "/register" || location === "/home") {
+    return <Layout><Dashboard /></Layout>;
+  }
   if (wsLoading) return <AppLoader />;
   if (!activeWorkspace) return <CreateWorkspaceScreen />;
 
@@ -164,6 +177,20 @@ function App() {
             <Switch>
               <Route path="/portal/:accessCode" component={PublicRepPortal} />
               <Route path="/accept-invite" component={AcceptInvite} />
+              <Route path="/home" component={LandingPage} />
+              <Route path="/privacy" component={PrivacyPage} />
+              <Route path="/terms" component={TermsPage} />
+              <Route path="/security" component={SecurityPage} />
+              <Route path="/login" component={() => (
+                <AuthProvider>
+                  <ProtectedRouter />
+                </AuthProvider>
+              )} />
+              <Route path="/register" component={() => (
+                <AuthProvider>
+                  <ProtectedRouter />
+                </AuthProvider>
+              )} />
               {/* All other routes go through the authenticated provider stack */}
               <Route>
                 <AuthProvider>

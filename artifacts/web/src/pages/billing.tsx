@@ -1,12 +1,10 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
-import { Check, Zap, Building2, Infinity as InfinityIcon, Loader2, ExternalLink, Crown, AlertTriangle, CheckCircle2, Gift, Users, FileText, UserRound } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
-import {
-  useListReps,
-  getListRepsQueryKey,
-  useListPlans,
-  getListPlansQueryKey,
-} from "@workspace/api-client-react";
+import { 
+  Check, Zap, Building2, Infinity as InfinityIcon, Loader2, 
+  ExternalLink, Crown, AlertTriangle, CheckCircle2, Gift, 
+  Users, FileText, UserRound 
+} from "lucide-react";
+import * as TanStackReactQuery from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,10 +19,9 @@ import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
 import { apiFetch } from "@/lib/api";
 import { useBillingStatus, type SubscriptionStatus } from "@/hooks/use-billing-status";
+import { useRole } from "@/hooks/use-role";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
-
-/** Shown add-on math in UI. Stripe uses your price IDs at checkout. */
 const EXTRA_REP_UNIT_MONTHLY_USD = 4;
 const EXTRA_REP_UNIT_YEARLY_USD = 40;
 
@@ -309,11 +306,10 @@ function BillingUsageCard({
   );
 }
 
-import { useRole } from "@/hooks/use-role";
-import { Skeleton } from "@/components/ui/skeleton";
+
 
 export function BillingPage() {
-  const queryClient = useQueryClient();
+  const queryClient = TanStackReactQuery.useQueryClient();
   const { session } = useAuth();
   const { activeWorkspace } = useWorkspace();
   const { toast } = useToast();
@@ -331,17 +327,16 @@ export function BillingPage() {
       .catch((err) => console.error("Failed to fetch rates", err));
   }, [activeWorkspace?.id]);
 
-  const { data: reps, isLoading: repsLoading } = useListReps({
-    query: {
-      queryKey: getListRepsQueryKey(),
-      enabled: Boolean(activeWorkspace?.id),
-    },
+  const { data: reps = [], isLoading: repsLoading } = TanStackReactQuery.useQuery({
+    queryKey: ["reps", activeWorkspace?.id],
+    queryFn: () => apiFetch(`/api/reps`),
+    enabled: Boolean(activeWorkspace?.id),
   });
-  const { data: commissionPlans, isLoading: plansLoading } = useListPlans({
-    query: {
-      queryKey: getListPlansQueryKey(),
-      enabled: Boolean(activeWorkspace?.id),
-    },
+  
+  const { data: commissionPlans = [], isLoading: plansLoading } = TanStackReactQuery.useQuery({
+    queryKey: ["commission-plans", activeWorkspace?.id],
+    queryFn: () => apiFetch(`/api/plans`),
+    enabled: Boolean(activeWorkspace?.id),
   });
 
   const [membersCount, setMembersCount] = useState<number | null>(null);

@@ -15,8 +15,9 @@ import { useWorkspace } from "@/hooks/use-workspace";
 import { useBillingStatus } from "@/hooks/use-billing-status";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/lib/api";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
+
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Payout {
@@ -68,17 +69,10 @@ function DisputeModal({
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`${API_URL}/api/disputes`, {
+      return apiFetch(`/api/disputes`, {
         method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json", "x-workspace-id": workspaceId },
         body: JSON.stringify({ payoutId: payout.id, reason }),
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Failed to submit dispute");
-      }
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-payouts", workspaceId] });
@@ -161,12 +155,7 @@ export function MyPayoutsPage() {
   const { data: payouts = [], isLoading } = useQuery<Payout[]>({
     queryKey: ["my-payouts", workspaceId],
     queryFn: async () => {
-      const res = await fetch(`${API_URL}/api/payouts`, {
-        credentials: "include",
-        headers: { "x-workspace-id": workspaceId },
-      });
-      if (!res.ok) throw new Error("Failed to load payouts");
-      return res.json();
+      return apiFetch(`/api/payouts`);
     },
     enabled: Boolean(workspaceId),
   });
