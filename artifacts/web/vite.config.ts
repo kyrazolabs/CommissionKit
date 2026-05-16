@@ -21,8 +21,8 @@ const envDir = path.resolve(import.meta.dirname);
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, envDir, "");
 
-  const stripePublishableKey =
-    env.VITE_STRIPE_PUBLISHABLE_KEY || env.STRIPE_PUBLISHABLE_KEY || "";
+  // const stripePublishableKey =
+  //   env.VITE_STRIPE_PUBLISHABLE_KEY || env.STRIPE_PUBLISHABLE_KEY || "";
 
   const plugins = [
     react(),
@@ -42,10 +42,10 @@ export default defineConfig(({ mode }) => {
   return {
     envDir,
     base: basePath,
-    define: {
-      "import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY":
-        JSON.stringify(stripePublishableKey),
-    },
+    // define: {
+    //   "import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY":
+    //     JSON.stringify(stripePublishableKey),
+    // },
     plugins,
     resolve: {
       alias: {
