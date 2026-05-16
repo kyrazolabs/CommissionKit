@@ -1,11 +1,11 @@
-import { auth } from "./src/lib/auth.js";
+import { auth } from "../src/lib/auth.js";
 import mongoose from "mongoose";
 import "dotenv/config";
 
 async function run() {
   await mongoose.connect(process.env.MONGO_URL!);
   const db = mongoose.connection.db;
-  
+
   const portalEmail = "testcode@portal.commissionkit.io";
   const tempPassword = "testpassword123";
   const repId = "6a05f0ddef8a9cd236453242"; // some rep ID
@@ -13,14 +13,13 @@ async function run() {
   try {
     console.log("Looking for existing user by repId or email...");
     const existingUser = await db?.collection("user").findOne({
-      $or: [
-        { repId: repId },
-        { email: portalEmail }
-      ]
+      $or: [{ repId: repId }, { email: portalEmail }],
     });
 
     if (existingUser) {
-      console.log("Found existing user! Deleting old user, accounts, and sessions...");
+      console.log(
+        "Found existing user! Deleting old user, accounts, and sessions...",
+      );
       const userId = existingUser._id.toString(); // Better auth stores ID as string
       // Wait, let's check what ID format better auth uses in mongo
       const actualId = existingUser.id || existingUser._id.toString();
@@ -39,7 +38,7 @@ async function run() {
         name: "Test Rep",
         mustChangePassword: true,
         repId: repId,
-      }
+      },
     });
     console.log("Success! New user:", res.user.email);
   } catch (err: any) {
