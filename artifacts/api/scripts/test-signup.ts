@@ -1,12 +1,12 @@
-import { auth } from "./src/lib/auth";
+import { auth } from "../src/lib/auth";
 import { connectDB } from "@workspace/db";
 
 async function run() {
   await connectDB();
-  
+
   const email = `test-signup-${Date.now()}@portal.commissionkit.io`;
   const password = "testpassword123";
-  
+
   try {
     const result = await auth.api.signUpEmail({
       body: {
@@ -14,8 +14,8 @@ async function run() {
         password,
         name: "Test Rep",
         mustChangePassword: true,
-        repId: "dummy-id"
-      }
+        repId: "dummy-id",
+      },
     });
     console.log("Success:", result);
   } catch (err: any) {
