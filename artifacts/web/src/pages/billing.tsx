@@ -348,7 +348,7 @@ export function BillingPage() {
   const [selectedPlanId, setSelectedPlanId] = useState<string>(() => {
      // Default to growth if not subscribed, otherwise use current plan
      const currentPlan = sub?.plan ?? "free";
-     if (currentPlan === "free" || currentPlan === "annual") return "growth";
+     if (currentPlan === "free") return "growth";
      return currentPlan;
   });
 
