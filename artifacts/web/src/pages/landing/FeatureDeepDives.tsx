@@ -144,54 +144,16 @@ export function FeatureDeepDives() {
           </ul>
         </div>
 
-        {/* Custom CSS Mockup for Payouts */}
         <div style={fadeIn(inView, 700)}>
-          <div className="transition-transform hover:scale-[1.02] duration-500 bg-white/80 backdrop-blur-md rounded-xl border p-8 shadow-lg flex flex-col gap-6">
-            <div className="flex items-center justify-between border-b pb-4">
-            <div className="flex items-center gap-3">
-              <div className="size-10 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700">
-                <Clock className="size-5" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-foreground">Pending Payouts</h4>
-                <p className="text-xs text-muted-foreground">3 Reps • Q3 Period</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-xl font-semibold text-foreground tabular-nums">$12,450.00</div>
-              <div className="text-xs text-amber-600 font-medium">Awaiting Approval</div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between border-b pb-4">
-            <div className="flex items-center gap-3">
-              <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                <CheckCircle2 className="size-5" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-foreground">Approved Payouts</h4>
-                <p className="text-xs text-muted-foreground">12 Reps • Q3 Period</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-xl font-semibold text-foreground tabular-nums">$45,200.00</div>
-              <div className="text-xs text-primary font-medium">Ready for Payroll</div>
-            </div>
-          </div>
-
-          <div className="bg-rose-50 rounded-lg p-4 border border-rose-100 mt-2">
-            <div className="flex items-start gap-3">
-              <Flag className="size-5 text-rose-600" />
-              <div>
-                <h4 className="text-sm font-bold text-rose-900">1 Active Dispute</h4>
-                <p className="text-xs text-rose-700 mt-1">Sarah J. flagged missing deal "Acme Corp Expansion".</p>
-                <Button size="sm" variant="outline" className="mt-3 text-xs font-bold text-rose-700 bg-white border-rose-200 hover:bg-rose-50 hover:text-rose-800">
-                  Review Dispute
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+          <video 
+            className="rounded-xl shadow-lg w-full border border-border/30 transition-transform hover:scale-[1.02] duration-500" 
+            autoPlay 
+            loop 
+            muted 
+            playsInline
+          >
+            <source src="/payouts-disputes-zoom.mp4" type="video/mp4" />
+          </video>
         </div>
       </div>
     </section>
