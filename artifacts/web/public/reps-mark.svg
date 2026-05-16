@@ -1,0 +1,10 @@
+<svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="56" height="56" rx="14" fill="#111827"/>
+  <!-- Stylized Rep Silhouette -->
+  <circle cx="24" cy="22" r="6" stroke="#0D9488" stroke-width="3.5"/>
+  <path d="M12 42C12 36 17 32 24 32C31 32 36 36 36 42" stroke="#0D9488" stroke-width="3.5" stroke-linecap="round"/>
+  
+  <!-- Add/Plus Accent -->
+  <line x1="44" y1="24" x2="44" y2="36" stroke="#0D9488" stroke-width="4" stroke-linecap="round"/>
+  <line x1="38" y1="30" x2="50" y2="30" stroke="#0D9488" stroke-width="4" stroke-linecap="round"/>
+</svg>
