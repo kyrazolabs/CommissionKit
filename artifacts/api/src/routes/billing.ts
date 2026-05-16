@@ -212,6 +212,7 @@ router.get(
         status: "active",
         isLifetime: false,
         extraRepSeats: 0,
+        trialUsed: sub?.trialUsed ?? false,
       });
       return;
     }
@@ -226,6 +227,7 @@ router.get(
       extraRepSeats: Number(
         (sub as { extraRepSeats?: number }).extraRepSeats ?? 0,
       ),
+      trialUsed: sub.trialUsed ?? false,
     });
   },
 );
@@ -344,6 +346,7 @@ router.post(
 
     const checkoutMode: "subscription" | "payment" =
       mode === "payment" ? "payment" : "subscription";
+    const applyTrial = checkoutMode === "subscription" && !existing?.trialUsed;
     const appUrl = getAppUrl();
 
     try {
@@ -368,6 +371,7 @@ router.post(
           plan,
           interval,
           extraReps: String(extraRepsQty),
+          isTrial: String(applyTrial),
           ...(extraRepsStripePriceId && {
             extraRepsPriceId: extraRepsStripePriceId,
           }),
@@ -387,6 +391,7 @@ router.post(
                 extraRepsPriceId: extraRepsStripePriceId,
               }),
             },
+            ...(applyTrial && { trial_period_days: 14 }),
           },
         }),
       });
@@ -669,9 +674,19 @@ router.post("/webhook", async (req, res): Promise<void> => {
                 isLifetime: false,
                 extraRepSeats,
               },
+              $setOnInsert: {
+                trialUsed: session.metadata?.isTrial === "true",
+              },
             },
             { upsert: true, new: true },
           );
+          
+          if (session.metadata?.isTrial === "true") {
+             await WorkspaceSubscription.findOneAndUpdate(
+               { workspaceId: new Types.ObjectId(workspaceId) },
+               { $set: { trialUsed: true } }
+             );
+          }
           logger.info({ workspaceId, plan }, "Subscription activated");
         }
         break;

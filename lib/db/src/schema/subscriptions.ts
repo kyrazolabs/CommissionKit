@@ -15,6 +15,8 @@ const WorkspaceSubscriptionSchema = new Schema({
   cancelAtPeriodEnd:    { type: Boolean, default: false },
   /** Purchased add-on seats from Stripe (monthly or yearly extra-rep line item quantity). */
   extraRepSeats:        { type: Number, default: 0, min: 0 },
+  /** true if this workspace has ever used a trial. Trials are one-time per workspace. */
+  trialUsed:            { type: Boolean, default: false },
 }, { timestamps: true });
 
 WorkspaceSubscriptionSchema.index({ stripeCustomerId: 1 });
@@ -36,6 +38,7 @@ export type WorkspaceSubscription = mongoose.Document & {
   currentPeriodEnd?: Date;
   cancelAtPeriodEnd: boolean;
   extraRepSeats: number;
+  trialUsed: boolean;
   createdAt: Date;
   updatedAt: Date;
 };

@@ -483,6 +483,20 @@ export function BillingPage() {
           </p>
         </div>
       </div>
+      
+      {!alreadySubscribed && sub?.trialUsed === false && (
+        <div className="flex items-start gap-4 rounded-xl border border-blue-200 bg-blue-50/50 p-4 dark:border-blue-900/30 dark:bg-blue-900/10">
+          <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+            <Zap className="size-4" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">14-Day Free Trial Available</p>
+            <p className="text-xs text-blue-800/80 dark:text-blue-200/60 mt-0.5">
+              Start any plan today and you won't be charged for the first 14 days. This is a one-time offer for your workspace.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Growth yearly upsell : only for workspaces not already on a paid subscription */}
       {!alreadySubscribed && (
@@ -752,7 +766,9 @@ export function BillingPage() {
           <CardDescription className="text-xs">
             {alreadySubscribed
               ? "Checkout is only for new subscriptions. Use Manage subscription above for plan or add-on changes."
-              : "Select a plan above, choose add-ons, then pay securely with Stripe."}
+              : sub?.trialUsed === false 
+                ? "Start your 14-day free trial. Select a plan above, choose add-ons, then pay securely with Stripe."
+                : "Select a plan above, choose add-ons, then pay securely with Stripe."}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

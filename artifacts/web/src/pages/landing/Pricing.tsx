@@ -70,7 +70,7 @@ export function Pricing() {
             Simple, predictable pricing
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Choose the perfect plan for your revenue team.
+            Choose the perfect plan for your revenue team. <br /> <span className="text-primary font-medium">Includes a 14-day free trial.</span>
           </p>
         </div>
 
