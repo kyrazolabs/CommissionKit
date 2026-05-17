@@ -1,7 +1,10 @@
 import { Navbar } from "./landing/Navbar";
 import { Footer } from "./landing/Footer";
+import { usePageMeta } from "@/hooks/use-page-meta";
+
 
 export function TermsPage() {
+  usePageMeta({ title: "Terms of Service", description: "CommissionKit terms of service and usage agreement.", robots: "index, follow" });
   return (
     <div className="min-h-screen flex flex-col bg-sidebar selection:bg-primary/20 selection:text-primary">
       <Navbar />

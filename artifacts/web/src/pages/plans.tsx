@@ -19,8 +19,11 @@ import { useRole } from "@/hooks/use-role";
 import { useBillingStatus } from "@/hooks/use-billing-status";
 
 import { useWorkspace } from "@/hooks/use-workspace";
+import { usePageMeta } from "@/hooks/use-page-meta";
+
 
 export function PlansPage() {
+  usePageMeta({ title: "Plans", description: "Create and manage commission plans for your sales team.", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const currency = activeWorkspace?.currency || "USD";
   const { data: plans, isLoading } = useListPlans({ query: { queryKey: getListPlansQueryKey() } });

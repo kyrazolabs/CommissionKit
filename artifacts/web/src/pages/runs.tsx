@@ -27,8 +27,11 @@ import { useBillingStatus } from "@/hooks/use-billing-status";
 import { RunCalculationDialog } from "@/components/run-calculation-dialog";
 import { Download } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { usePageMeta } from "@/hooks/use-page-meta";
+
 
 export function RunsPage() {
+  usePageMeta({ title: "Commission Runs", description: "View and manage commission calculation runs.", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const currency = activeWorkspace?.currency || "USD";
   const { data: runs, isLoading } = useListRuns({ 

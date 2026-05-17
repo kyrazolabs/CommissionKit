@@ -18,6 +18,8 @@ import { cn } from "@/lib/utils";
 const COLORS = ['#0D9488', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'];
 
 import { useRole } from "@/hooks/use-role";
+import { usePageMeta } from "@/hooks/use-page-meta";
+
 
 const CustomTooltip = ({ active, payload, label, currency }: any) => {
   if (active && payload && payload.length) {
@@ -40,6 +42,7 @@ const CustomTooltip = ({ active, payload, label, currency }: any) => {
 };
 
 export function ReportsPage() {
+  usePageMeta({ title: "Reports", description: "Detailed commission reports and analytics for your workspace.", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const { hasPermission, isLoading: roleLoading } = useRole();
   const currency = activeWorkspace?.currency || "USD";
