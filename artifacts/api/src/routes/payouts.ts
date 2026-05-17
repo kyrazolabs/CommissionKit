@@ -248,7 +248,7 @@ router.get(
     const workspaceId = req.workspaceId!;
     const hasEditPermission = req.permissions?.has("payouts:edit") || req.permissions?.has("payouts:*") || req.permissions?.has("*");
 
-    const payout = await Payout.findOne({ _id: new Types.ObjectId(req.params.id), workspaceId: new Types.ObjectId(workspaceId) }).populate("repId");
+    const payout = await Payout.findOne({ _id: new Types.ObjectId(req.params.id as string), workspaceId: new Types.ObjectId(workspaceId) }).populate("repId");
     if (!payout) { res.status(404).json({ error: "Payout not found" }); return; }
 
     if (!hasEditPermission) {
@@ -285,7 +285,7 @@ router.patch(
       return;
     }
 
-    const payout = await Payout.findOne({ _id: new Types.ObjectId(req.params.id), workspaceId: new Types.ObjectId(workspaceId) }).populate("repId");
+    const payout = await Payout.findOne({ _id: new Types.ObjectId(req.params.id as string), workspaceId: new Types.ObjectId(workspaceId) }).populate("repId");
     if (!payout) { res.status(404).json({ error: "Payout not found" }); return; }
 
     if (payout.status === "paid") {
@@ -326,7 +326,7 @@ router.patch(
       res.status(400).json({ error: "amount (number) is required" }); return;
     }
 
-    const payout = await Payout.findOne({ _id: new Types.ObjectId(req.params.id), workspaceId: new Types.ObjectId(workspaceId) });
+    const payout = await Payout.findOne({ _id: new Types.ObjectId(req.params.id as string), workspaceId: new Types.ObjectId(workspaceId) });
     if (!payout) { res.status(404).json({ error: "Payout not found" }); return; }
 
     if (payout.status === "paid") {

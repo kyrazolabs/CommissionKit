@@ -59,12 +59,14 @@ export function DateRangePicker({
   onRangeChange,
   placeholder = "Pick a date range",
   className,
+  numberOfMonths = 2
 }: {
   from?: Date
   to?: Date
   onRangeChange?: (range: { from?: Date; to?: Date } | undefined) => void
   placeholder?: string
   className?: string
+  numberOfMonths?: number
 }) {
   const range = React.useMemo(() => ({ from, to }), [from, to])
 
@@ -101,7 +103,7 @@ export function DateRangePicker({
           defaultMonth={from}
           selected={range}
           onSelect={(r) => onRangeChange?.(r as any)}
-          numberOfMonths={2}
+          numberOfMonths={numberOfMonths}
         />
       </PopoverContent>
     </Popover>

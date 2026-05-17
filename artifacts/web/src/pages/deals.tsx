@@ -768,7 +768,7 @@ function ExportDealsButton() {
   const { toast } = useToast();
   const [isExporting, setIsExporting] = useState(false);
 
-  const isGrowth = sub?.plan === "growth" || sub?.plan === "annual" || sub?.isLifetime;
+  const isGrowth = sub?.plan === "growth" || sub?.plan === "pro" || sub?.isLifetime;
 
   const handleExport = async () => {
     if (!isGrowth) {

@@ -57,7 +57,7 @@ function AnimatedBorder({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function Hero({ containerRef }: { containerRef: React.RefObject<HTMLDivElement> }) {
+export function Hero({ containerRef }: { containerRef: React.RefObject<HTMLDivElement | null> }) {
   const { ref: inViewRef, inView } = useInView();
   const mockupRef = useRef<HTMLDivElement>(null);
 
