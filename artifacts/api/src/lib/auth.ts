@@ -54,6 +54,19 @@ export const auth = betterAuth({
       }
     },
   },
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID || "placeholder",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "placeholder",
+    },
+  },
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google"],
+      allowDifferentEmails: true,
+    },
+  },
 
   plugins: [
     dash(),
@@ -127,23 +140,5 @@ export const auth = betterAuth({
       }
     }
   },
-  hooks: {
-    before: async (context) => {
-      if (context.body && "email" in (context.body as any) && typeof (context.body as any).email === "string") {
-        const body = context.body as any;
-        const normalized = body.email.trim().toLowerCase();
-        
-        return {
-          context: {
-            ...context,
-            body: {
-              ...body,
-              email: normalized
-            }
-          }
-        };
-      }
-      return { context };
-    },
-  },
+
 });
