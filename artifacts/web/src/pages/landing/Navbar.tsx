@@ -28,7 +28,7 @@ export function Navbar({ containerRef }: { containerRef?: React.RefObject<HTMLDi
         <div className="flex justify-between items-center w-full px-6 max-w-[1440px] mx-auto">
           <div className="flex items-center gap-8">
             <a href="/home" className="flex items-center gap-2">
-              <img src="/logo-symbol.svg" alt="CommissionKit Logo" className="h-6" />
+              <img src="/brand/logo-symbol.svg" alt="CommissionKit Logo" className="h-6" />
               <span className="text-xl font-bold text-foreground tracking-tight">Commission<span className="text-primary">Kit</span></span>
             </a>
 

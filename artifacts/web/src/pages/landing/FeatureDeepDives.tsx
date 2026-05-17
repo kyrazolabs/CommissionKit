@@ -18,7 +18,7 @@ export function FeatureDeepDives() {
             muted 
             playsInline
           >
-            <source src="/commission-runs-zoom.mp4" type="video/mp4" />
+            <source src="/videos/commission-runs-zoom.mp4" type="video/mp4" />
           </video>
         </div>
         <div className="order-1 lg:order-2 space-y-6" style={fadeIn(inView, 0)}>
@@ -77,7 +77,7 @@ export function FeatureDeepDives() {
             muted 
             playsInline
           >
-            <source src="/rep-portal-zoom.mp4" type="video/mp4" />
+            <source src="/videos/rep-portal-zoom.mp4" type="video/mp4" />
           </video>
         </div>
       </div>
@@ -92,7 +92,7 @@ export function FeatureDeepDives() {
             muted 
             playsInline
           >
-            <source src="/deals-zoom.mp4" type="video/mp4" />
+            <source src="/videos/deals-zoom.mp4" type="video/mp4" />
           </video>
         </div>
         <div className="order-1 lg:order-2 space-y-6" style={fadeIn(inView, 400)}>
@@ -152,7 +152,7 @@ export function FeatureDeepDives() {
             muted 
             playsInline
           >
-            <source src="/payouts-disputes-zoom.mp4" type="video/mp4" />
+            <source src="/videos/payouts-disputes-zoom.mp4" type="video/mp4" />
           </video>
         </div>
       </div>
