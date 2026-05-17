@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/hooks/use-theme";
 import { useRole } from "@/hooks/use-role";
 import { useWorkspace } from "@/hooks/use-workspace";
@@ -11,8 +12,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { CurrencyCombobox } from "@/components/currency-combobox";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
@@ -101,8 +100,10 @@ export function SettingsPage() {
     setLoadingAccounts(true);
     try {
       const res = await authClient.listAccounts();
-      if (res && Array.isArray(res)) {
-        setLinkedAccounts(res);
+      // Better Auth returns { data: [...], error } — not a raw array
+      const accounts = (res as any)?.data ?? res;
+      if (Array.isArray(accounts)) {
+        setLinkedAccounts(accounts);
       }
     } catch (err) {
       console.error("Failed to load linked accounts:", err);
@@ -244,15 +245,20 @@ export function SettingsPage() {
         <p className="text-[14px] text-muted-foreground mt-1">Manage your workspace and personal preferences.</p>
       </div>
 
-      <Tabs defaultValue="general" className="w-full">
+      <Tabs defaultValue="account" className="w-full">
         <TabsList className="mb-6 bg-muted/50 w-full sm:w-auto overflow-x-auto justify-start flex">
-          <TabsTrigger value="general" className="min-w-fit px-4">General</TabsTrigger>
+          <TabsTrigger value="account" className="min-w-fit px-4">Account</TabsTrigger>
+          <TabsTrigger value="appearance" className="min-w-fit px-4">Appearance</TabsTrigger>
+          <TabsTrigger value="workspace" className="min-w-fit px-4">Workspace</TabsTrigger>
+          <TabsTrigger value="notifications" className="min-w-fit px-4">Notifications</TabsTrigger>
+          <TabsTrigger value="security" className="min-w-fit px-4">Security</TabsTrigger>
           {hasPermission("roles", "read") && (
             <TabsTrigger value="roles" className="min-w-fit px-4">Roles & Permissions</TabsTrigger>
           )}
         </TabsList>
 
-        <TabsContent value="general" className="space-y-7 outline-none">
+        <TabsContent value="account" className="outline-none">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-7">
           {/* Account */}
       <Card>
         <CardHeader>
@@ -321,7 +327,7 @@ export function SettingsPage() {
               </svg>
               <div>
                 <p className="text-sm font-medium">Google</p>
-                {linkedAccounts.some(acc => acc.provider === "google" || acc.providerId === "google") ? (
+                {linkedAccounts.some(acc => acc.providerId === "google") ? (
                   <p className="text-xs text-emerald-500 flex items-center gap-1 font-medium mt-0.5">
                     <Check className="size-3" /> Connected
                   </p>
@@ -332,7 +338,7 @@ export function SettingsPage() {
             </div>
             {loadingAccounts ? (
               <Loader2 className="size-4 animate-spin text-muted-foreground" />
-            ) : linkedAccounts.some(acc => acc.provider === "google" || acc.providerId === "google") ? (
+            ) : linkedAccounts.some(acc => acc.providerId === "google") ? (
               <Button
                 variant="outline"
                 size="sm"
@@ -358,7 +364,11 @@ export function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+          </motion.div>
+        </TabsContent>
 
+        <TabsContent value="appearance" className="outline-none">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-7">
       {/* Appearance */}
       <Card>
         <CardHeader>
@@ -377,7 +387,11 @@ export function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+          </motion.div>
+        </TabsContent>
 
+        <TabsContent value="workspace" className="outline-none">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-7">
       {/* Workspace settings */}
       <Card>
         <CardHeader>
@@ -416,7 +430,11 @@ export function SettingsPage() {
           )}
         </CardContent>
       </Card>
+          </motion.div>
+        </TabsContent>
 
+        <TabsContent value="notifications" className="outline-none">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-7">
       {/* Notifications */}
       <Card>
         <CardHeader>
@@ -464,7 +482,11 @@ export function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+          </motion.div>
+        </TabsContent>
 
+        <TabsContent value="security" className="outline-none">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-7">
       {/* Security */}
       <Card>
         <CardHeader>
@@ -481,11 +503,14 @@ export function SettingsPage() {
           </div>
         </CardContent>
       </Card>
-      </TabsContent>
+          </motion.div>
+        </TabsContent>
 
       {isAdmin && (
         <TabsContent value="roles" className="outline-none mt-0">
-          <SettingsRoles />
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-7">
+            <SettingsRoles />
+          </motion.div>
         </TabsContent>
       )}
       </Tabs>
