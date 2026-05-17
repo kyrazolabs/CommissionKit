@@ -34,11 +34,10 @@ export function LandingPage() {
   const isMobile = useIsMobile();
   
   // Map scroll position (0px to 400px) to padding and border radius
-  const targetPadding = isMobile ? "12px" : "56px";
   const paddingLeft = useTransform(scrollY, [0, 400], ["0px", isMobile ? "12px" : "56px"]);
   const paddingRight = useTransform(scrollY, [0, 400], ["0px", isMobile ? "12px" : "56px"]);
   const paddingTop = useTransform(scrollY, [0, 400], ["0px", isMobile ? "56px" : "56px"]);
-  const paddingBottom = useTransform(scrollY, [0, 400], ["0px", isMobile ? "56px" : "56px"]);
+  const paddingBottom = useTransform(scrollY, [0, 400], ["0px", isMobile ? "90px" : "50px"]);
   const borderRadius = useTransform(scrollY, [0, 400], ["0px", "16px"]);
   const borderWidth = useTransform(scrollY, [0, 400], ["0px", "1px"]);
   const maxWidth = useTransform(scrollY, [0, 800], ["2560px", isMobile ? "100%" : "1400px"]);
@@ -46,13 +45,13 @@ export function LandingPage() {
   // Force smooth scroll behaviour
   useEffect(() => {
     document.documentElement.style.scrollBehavior = "smooth";
-    return () => { document.documentElement.style.scrollBehavior = ""; };
+    return () => { document.documentElement.style.scrollBehavior = "smooth"; };
   }, []);
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-sidebar selection:bg-primary/20 selection:text-primary">
       <Navbar containerRef={containerRef} />
-      <motion.div style={{ paddingLeft, paddingRight, paddingTop }} className="flex flex-1 overflow-hidden justify-center items-start w-full">
+      <motion.div style={{ paddingLeft, paddingRight, paddingTop, paddingBottom }} className="flex flex-1 overflow-hidden justify-center items-start w-full">
         <motion.div 
           ref={containerRef}
           style={{ borderRadius, borderWidth, maxWidth }}
@@ -68,7 +67,7 @@ export function LandingPage() {
           <FinalCTA />
         </motion.div>
       </motion.div>
-      <Footer />
+      <Footer scrollY={scrollY} />
     </div>
   );
 }
