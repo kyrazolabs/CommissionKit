@@ -173,7 +173,7 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
                 <form onSubmit={handleSubmit}>
                   <motion.div layout className="space-y-4">
                     <CardContent className="space-y-4">
-                      <AnimatePresence mode="popLayout" initial={false}>
+                      <AnimatePresence initial={false}>
                         {mode === "signup" && (
                           <motion.div
                             key="signup-field"
