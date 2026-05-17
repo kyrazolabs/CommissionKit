@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "NODE_ENV=development bun --watch src/index.ts",
-    "build": "bun build ./src/index.ts --outdir ./dist --target node --sourcemap=external",
+    "build": "bun build ./src/index.ts --outdir ./dist --target node --sourcemap=external && sentry-cli sourcemaps inject ./dist && (sentry-cli sourcemaps upload --org kyrazo --project ckserver ./dist || echo 'Sentry sourcemap upload skipped (auth token not found)')",
     "start": "NODE_ENV=production bun ./dist/index.js",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
@@ -36,6 +36,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@sentry/cli": "^3.4.2",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",

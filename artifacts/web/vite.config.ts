@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 import { cartographer } from "@replit/vite-plugin-cartographer";
@@ -37,6 +38,11 @@ export default defineConfig(({ mode }) => {
           devBanner(),
         ]
       : []),
+    sentryVitePlugin({
+      org: "kyrazo",
+      project: "ckweb",
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+    }),
   ];
 
   return {
@@ -63,6 +69,7 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: path.resolve(import.meta.dirname, "dist/public"),
       emptyOutDir: true,
+      sourcemap: "hidden",
     },
     server: {
       port,

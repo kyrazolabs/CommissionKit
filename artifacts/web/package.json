@@ -41,6 +41,7 @@
     "@replit/vite-plugin-cartographer": "^0.5.5",
     "@replit/vite-plugin-dev-banner": "^0.1.2",
     "@replit/vite-plugin-runtime-error-modal": "^0.0.6",
+    "@sentry/vite-plugin": "^5.3.0",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.2.4",
     "@tanstack/react-query": "^5.100.9",
@@ -76,6 +77,7 @@
   },
   "dependencies": {
     "@better-auth/infra": "^0.2.6",
+    "@sentry/react": "^10.53.1",
     "@types/papaparse": "^5.5.2",
     "better-auth": "^1.6.9",
     "papaparse": "^5.5.3",
