@@ -97,28 +97,44 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           className="w-full mx-auto h-full bg-background overflow-y-auto overflow-x-hidden border border-card-border relative flex flex-col justify-between py-6 px-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         >
-          {/* TOP ROW: Accent lines and branding logo */}
-          <div className="flex items-end gap-16 mb-4 w-full max-w-[1440px] mx-auto select-none pointer-events-none">
-            {/* Left curves */}
-            <div 
-              className="flex-1 relative hidden md:block h-[132px] [&_stop]:[stop-color:hsl(var(--border))]"
-              dangerouslySetInnerHTML={{ __html: leftCurves }}
-            />
+          {/* STATIC BACKGROUND DECORATIVE LAYER (Always locked at edges) */}
+          <div className="absolute inset-0 pointer-events-none select-none z-0 overflow-hidden">
+            {/* Top Curve Frame */}
+            <div className="absolute top-0 left-0 right-0 flex items-end gap-16 px-6 w-full max-w-[1440px] mx-auto">
+              <div 
+                className="flex-1 relative hidden md:block h-[132px] [&_stop]:[stop-color:hsl(var(--border))]"
+                dangerouslySetInnerHTML={{ __html: leftCurves }}
+              />
+              <div className="w-20 flex-shrink-0" />
+              <div 
+                className="flex-1 relative hidden md:block h-[130px] [&_stop]:[stop-color:hsl(var(--border))]"
+                dangerouslySetInnerHTML={{ __html: rightCurves }}
+              />
+            </div>
 
-            {/* Logo circle button */}
-            <a href="/" className="mx-auto md:mx-0 pointer-events-auto">
-              <div className="translate-y-4 p-2 rounded-full bg-sidebar border border-border">
+            {/* Bottom Curve Frame */}
+            <div className="absolute bottom-0 left-0 right-0 flex items-end gap-12 px-6 w-full max-w-[1440px] mx-auto">
+              <div 
+                className="flex-1 relative hidden md:block h-[137px] [&_stop]:[stop-color:hsl(var(--border))]"
+                dangerouslySetInnerHTML={{ __html: bleftCurves }}
+              />
+              <div className="w-56 flex-shrink-0" />
+              <div 
+                className="flex-1 relative hidden md:block h-[137px] [&_stop]:[stop-color:hsl(var(--border))]"
+                dangerouslySetInnerHTML={{ __html: trightCurves }}
+              />
+            </div>
+          </div>
+
+          {/* TOP ROW: Branding logo (Static in z-10 interactive layer) */}
+          <div className="w-full flex justify-center z-10 pt-4">
+            <a href="/" className="pointer-events-auto">
+              <div className="p-2 rounded-full bg-sidebar border border-border">
                 <div className="w-20 h-20 rounded-full flex items-center justify-center bg-card shadow-[0px_12px_24px_rgba(0,0,0,0.03)] hover:scale-105 hover:border-primary/30 transition-all duration-300">
                   <img src="/brand/logo-symbol.svg" alt="CommissionKit Logo" className="w-10 h-10" />
                 </div>
               </div>
             </a>
-
-            {/* Right curves */}
-            <div 
-              className="flex-1 relative hidden md:block h-[130px] [&_stop]:[stop-color:hsl(var(--border))]"
-              dangerouslySetInnerHTML={{ __html: rightCurves }}
-            />
           </div>
 
           {/* MIDDLE CONTENT: CENTERED FORM CARD */}
@@ -251,15 +267,8 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
             </div>
           </div>
 
-          {/* BOTTOM ROW: Accent curves and centered social footer */}
-          <div className="flex items-end gap-12 w-full max-w-[1440px] mx-auto mt-4 pointer-events-none select-none">
-            {/* Bottom Left curves */}
-            <div 
-              className="flex-1 relative hidden md:block h-[137px] [&_stop]:[stop-color:hsl(var(--border))]"
-              dangerouslySetInnerHTML={{ __html: bleftCurves }}
-            />
-
-            {/* Center content (Social links & copyright) */}
+          {/* BOTTOM ROW: Centered social footer (Static in z-10 interactive layer) */}
+          <div className="w-full flex justify-center pb-4 z-10">
             <div className="mx-auto flex flex-col items-center gap-4 pb-4 pointer-events-auto">
               <div className="rounded-full border border-border p-2 bg-sidebar">
                 <div className="rounded-full flex items-center gap-2 p-1.5 bg-card shadow-[0px_4px_12px_rgba(0,0,0,0.03)] border border-border/45">
@@ -329,12 +338,6 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
                 © {new Date().getFullYear()} COMMISSIONKIT. ALL RIGHTS RESERVED.
               </p>
             </div>
-
-            {/* Bottom Right curves */}
-            <div 
-              className="flex-1 relative hidden md:block h-[137px] [&_stop]:[stop-color:hsl(var(--border))]"
-              dangerouslySetInnerHTML={{ __html: trightCurves }}
-            />
           </div>
         </motion.div>
       </motion.div>
