@@ -41,7 +41,7 @@ export default defineConfig(({ mode }) => {
     sentryVitePlugin({
       org: "kyrazo",
       project: "ckweb",
-      authToken: process.env.SENTRY_AUTH_TOKEN,
+      authToken: env.SENTRY_AUTH_TOKEN,
     }),
   ];
 
