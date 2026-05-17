@@ -126,13 +126,11 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
             </div>
           </div>
 
-          {/* TOP ROW: Branding logo (Static in z-10 interactive layer) */}
+          {/* TOP ROW: Branding logo (Clean, transparent, no card background) */}
           <div className="w-full flex justify-center z-10 pt-4">
             <a href="/" className="pointer-events-auto">
-              <div className="p-2 rounded-full bg-sidebar border border-border">
-                <div className="w-20 h-20 rounded-full flex items-center justify-center bg-card shadow-[0px_12px_24px_rgba(0,0,0,0.03)] hover:scale-105 hover:border-primary/30 transition-all duration-300">
-                  <img src="/brand/logo-symbol.svg" alt="CommissionKit Logo" className="w-10 h-10" />
-                </div>
+              <div className="hover:scale-105 active:scale-95 transition-all duration-300">
+                <img src="/brand/logo-symbol.svg" alt="CommissionKit Logo" className="w-14 h-14" />
               </div>
             </a>
           </div>
@@ -269,74 +267,73 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
           </div>
         </div>
 
-          {/* BOTTOM ROW: Centered social footer (Static in z-10 interactive layer) */}
+          {/* BOTTOM ROW: Centered social footer (Clean, flat, transparent, no background badges) */}
           <div className="w-full flex justify-center pb-4 z-10">
-            <div className="mx-auto flex flex-col items-center gap-4 pb-4 pointer-events-auto">
-              <div className="rounded-full border border-border p-2 bg-sidebar">
-                <div className="rounded-full flex items-center gap-2 p-1.5 bg-card shadow-[0px_4px_12px_rgba(0,0,0,0.03)] border border-border/45">
-                  <a
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    href="https://www.youtube.com"
-                    className="p-2.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200"
+            <div className="mx-auto flex flex-col items-center gap-3 pb-2 pointer-events-auto">
+              {/* Clean social icons row */}
+              <div className="flex items-center gap-4">
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href="https://youtube.com"
+                  className="text-muted-foreground hover:text-foreground hover:scale-105 active:scale-95 transition-all duration-200"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="size-4.5"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="size-4.5"
-                    >
-                      <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17" />
-                      <path d="m10 15 5-3-5-3z" />
-                    </svg>
-                  </a>
-                  <a
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    href="https://www.twitter.com"
-                    className="p-2.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200"
+                    <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17" />
+                    <path d="m10 15 5-3-5-3z" />
+                  </svg>
+                </a>
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href="https://twitter.com"
+                  className="text-muted-foreground hover:text-foreground hover:scale-105 active:scale-95 transition-all duration-200"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="size-4.5"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="size-4.5"
-                    >
-                      <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
-                    </svg>
-                  </a>
-                  <a
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    href="https://discord.com"
-                    className="p-2.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200"
+                    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
+                  </svg>
+                </a>
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href="https://discord.com"
+                  className="text-muted-foreground hover:text-foreground hover:scale-105 active:scale-95 transition-all duration-200"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 127.14 96.36"
+                    fill="currentColor"
+                    className="size-4.5"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 127.14 96.36"
-                      fill="currentColor"
-                      className="size-4.5"
-                    >
-                      <path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,52.88,6.83,77.19,77.19,0,0,0,49.58,0,105.15,105.15,0,0,0,19.14,8.07C-3.41,41.76-3.41,75,19.14,96.36a107,107,0,0,0,32.22,16.3,82.49,82.49,0,0,0,6.83-11.12,68.86,68.86,0,0,1-10.74-5.18c.9-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,73.66,0c.86.71,1.76,1.39,2.66,2a68.86,68.86,0,0,1-10.74,5.18,82.49,82.49,0,0,0,6.83,11.12,107,107,0,0,0,32.22-16.3C130.55,75,130.55,41.76,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.23,60,73.23,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z" />
-                    </svg>
-                  </a>
-                </div>
+                    <path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,52.88,6.83,77.19,77.19,0,0,0,49.58,0,105.15,105.15,0,0,0,19.14,8.07C-3.41,41.76-3.41,75,19.14,96.36a107,107,0,0,0,32.22,16.3,82.49,82.49,0,0,0,6.83-11.12,68.86,68.86,0,0,1-10.74-5.18c.9-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,73.66,0c.86.71,1.76,1.39,2.66,2a68.86,68.86,0,0,1-10.74,5.18,82.49,82.49,0,0,0,6.83,11.12,107,107,0,0,0,32.22-16.3C130.55,75,130.55,41.76,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.23,60,73.23,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z" />
+                  </svg>
+                </a>
               </div>
-              <p className="text-[10px] tracking-wide text-muted-foreground/80 font-medium">
+              <p className="text-[10px] tracking-widest text-muted-foreground/50 font-bold uppercase mt-1">
                 © {new Date().getFullYear()} COMMISSIONKIT. ALL RIGHTS RESERVED.
               </p>
             </div>
