@@ -100,7 +100,7 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
           {/* STATIC BACKGROUND DECORATIVE LAYER (Always locked at edges) */}
           <div className="absolute inset-0 pointer-events-none select-none z-0 overflow-hidden">
             {/* Top Curve Frame */}
-            <div className="absolute top-0 left-0 right-0 flex items-end gap-16 px-6 w-full max-w-[1440px] mx-auto">
+            <div className="absolute -top-1 left-0 right-0 flex items-end gap-16 px-6 w-full max-w-[1440px] mx-auto">
               <div 
                 className="flex-1 relative hidden md:block h-[132px] [&_stop]:[stop-color:hsl(var(--border))]"
                 dangerouslySetInnerHTML={{ __html: leftCurves }}
@@ -113,7 +113,7 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
             </div>
 
             {/* Bottom Curve Frame */}
-            <div className="absolute bottom-0 left-0 right-0 flex items-end gap-12 px-6 w-full max-w-[1440px] mx-auto">
+            <div className="absolute -bottom-1 left-0 right-0 flex items-end gap-12 px-6 w-full max-w-[1440px] mx-auto">
               <div 
                 className="flex-1 relative hidden md:block h-[137px] [&_stop]:[stop-color:hsl(var(--border))]"
                 dangerouslySetInnerHTML={{ __html: bleftCurves }}
@@ -142,9 +142,6 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
                 <h1 className="text-[22px] font-semibold tracking-tight text-foreground">
                   Commission<span className="text-primary">Kit</span>
                 </h1>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  Sales Commission Platform
-                </p>
               </div>
 
               <motion.div layout className="overflow-hidden rounded-2xl border border-border/50 bg-card/45 backdrop-blur-md shadow-xl shadow-black/[0.03] dark:shadow-white/[0.01]">
@@ -159,12 +156,12 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
                       transition={{ duration: 0.2, ease: "easeInOut" }}
                     >
                       <CardTitle className="text-lg">
-                        {mode === "login" ? "Sign in" : "Create account"}
+                        {mode === "login" ? "Welcome back" : "Start your 14-day free trial"}
                       </CardTitle>
                       <CardDescription className="mt-1">
                         {mode === "login"
-                          ? "Enter your credentials to access your workspace."
-                          : "Start tracking commissions for your team."}
+                          ? "Your team's commissions are waiting."
+                          : "No credit card required · Setup in 30 minutes"}
                       </CardDescription>
                     </motion.div>
                   </AnimatePresence>
@@ -245,6 +242,25 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
                           </motion.span>
                         </AnimatePresence>
                       </Button>
+
+                      {/* Trust Signals (Only on register mode) */}
+                      <AnimatePresence>
+                        {mode === "signup" && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -5 }}
+                            transition={{ duration: 0.2 }}
+                            className="flex items-center justify-center gap-1 text-[11px] text-muted-foreground/80 font-medium tracking-wide mt-1"
+                          >
+                            <span>🔒 No credit card required</span>
+                            <span className="text-muted-foreground/30">•</span>
+                            <span>14-day free trial</span>
+                            <span className="text-muted-foreground/30">•</span>
+                            <span>Cancel anytime</span>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                       <p className="text-sm text-muted-foreground text-center">
                         {mode === "login"
                           ? "Don't have an account?"
