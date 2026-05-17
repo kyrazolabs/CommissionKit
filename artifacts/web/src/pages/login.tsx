@@ -149,8 +149,9 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
                 </p>
               </div>
 
-              <Card className="border-none shadow-none bg-transparent">
-                <CardHeader className="pb-4">
+              <motion.div layout className="overflow-hidden rounded-2xl border border-border/50 bg-card/45 backdrop-blur-md shadow-xl shadow-black/[0.03] dark:shadow-white/[0.01]">
+                <Card className="border-none shadow-none bg-transparent">
+                  <CardHeader className="pb-4">
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.div
                       key={mode}
@@ -228,7 +229,7 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
                       <Button
                         type="submit"
                         className="w-full font-bold shadow-sm relative overflow-hidden"
-                        disabled={loading}
+                        disabled={loading} size={'sm'}
                       >
                         <AnimatePresence mode="wait" initial={false}>
                           <motion.span
@@ -264,8 +265,9 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
                   </motion.div>
                 </form>
               </Card>
-            </div>
+            </motion.div>
           </div>
+        </div>
 
           {/* BOTTOM ROW: Centered social footer (Static in z-10 interactive layer) */}
           <div className="w-full flex justify-center pb-4 z-10">
