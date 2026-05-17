@@ -7,6 +7,7 @@ import {
   MAIL_SEND_QUEUE,
   COMMISSION_CALC_QUEUE,
   EXCHANGE_RATE_QUEUE,
+  LOGS_FLUSH_QUEUE,
 } from "./constants.js";
 import type { MailSendPayload, CommissionCalcPayload, ExchangeRatePayload } from "./schemas.js";
 
@@ -65,6 +66,12 @@ export const commissionCalcQueue = new Queue<CommissionCalcPayload>(
 export const exchangeRateQueue = new Queue<ExchangeRatePayload>(
   EXCHANGE_RATE_QUEUE,
   buildOptions({ defaultJobOptions: { attempts: 5, backoff: { type: "exponential", delay: 60_000 } } }),
+);
+
+/** Logs flush and S3 upload queue. */
+export const logsFlushQueue = new Queue<{ force?: boolean }>(
+  LOGS_FLUSH_QUEUE,
+  buildOptions({ defaultJobOptions: { attempts: 3, backoff: { type: "exponential", delay: 30_000 } } }),
 );
 
 /** Helper map from priority to routing queue */

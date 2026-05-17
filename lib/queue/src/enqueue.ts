@@ -8,6 +8,7 @@ import {
   PRIORITY_QUEUE_MAP,
   commissionCalcQueue,
   exchangeRateQueue,
+  logsFlushQueue,
 } from "./queues.js";
 
 /**
@@ -97,3 +98,29 @@ export async function enqueueExchangeRateSync(
 
   console.info("[Queue] Exchange rate periodic sync scheduled (hourly)");
 }
+
+/**
+ * Enqueue a logs flush and S3 upload job.
+ */
+export async function enqueueLogsFlush(
+  payload: { force?: boolean } = { force: false },
+): Promise<void> {
+  // 1. Add the repeatable job
+  const cronPattern = process.env.LOGS_FLUSH_CRON ?? "0 0 * * *";
+  await logsFlushQueue.add("flush-periodic", { force: false }, {
+    jobId: "logs-flush-periodic", // Fixed ID for repeatable template
+    removeOnComplete: true,
+    repeat: { pattern: cronPattern },
+  });
+
+  // 2. If force is true, add a one-off job to run IMMEDIATELY
+  if (payload.force) {
+    await logsFlushQueue.add("flush-immediate", payload, {
+      removeOnComplete: true,
+    });
+    console.info("[Queue] Enqueued immediate logs flush");
+  }
+
+  console.info(`[Queue] Logs flush periodic sync scheduled (cron: ${cronPattern})`);
+}
+

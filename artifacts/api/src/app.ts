@@ -42,4 +42,34 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api", router);
 
+// Global Error Handling Middleware
+// Express requires all 4 arguments (err, req, res, next) to recognize it as an error-handling middleware
+app.use((err: any, req: any, res: any, next: any) => {
+  // Handle Zod Validation Schema Validation Errors
+  if (err.name === "ZodError" || err.issues) {
+    logger.warn(
+      { err: err.message, issues: err.issues, url: req.url, method: req.method },
+      "[Express] Validation failed"
+    );
+    res.status(400).json({
+      error: "ValidationError",
+      message: "The request payload or parameters failed validation.",
+      details: err.issues || err.message,
+    });
+    return;
+  }
+
+  // Handle all other unexpected server runtime exceptions
+  logger.error(
+    { err, url: req.url, method: req.method },
+    `[Express] Unhandled error during request execution: ${err.message || String(err)}`
+  );
+
+  res.status(err.status || err.statusCode || 500).json({
+    error: err.name || "InternalServerError",
+    message: err.message || "An unexpected error occurred on the server.",
+  });
+});
+
 export default app;
+
