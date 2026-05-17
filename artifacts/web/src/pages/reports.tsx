@@ -141,7 +141,13 @@ export function ReportsPage() {
               <DateRangePicker 
                 from={dateRange?.from} 
                 to={dateRange?.to} 
-                onRangeChange={setDateRange} 
+                onRangeChange={(range) => {
+                  if (range && range.from) {
+                    setDateRange(range as DateRange);
+                  } else {
+                    setDateRange(undefined);
+                  }
+                }} 
                 className="w-[260px] border-none bg-transparent shadow-none h-8 text-sm" 
               />
 

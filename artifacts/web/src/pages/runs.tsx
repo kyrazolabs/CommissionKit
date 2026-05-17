@@ -194,7 +194,7 @@ function ExportCommissionsButton() {
   const { toast } = useToast();
   const [isExporting, setIsExporting] = useState(false);
 
-  const isGrowth = sub?.plan === "growth" || sub?.plan === "annual" || sub?.isLifetime;
+  const isGrowth = sub?.plan === "growth" || sub?.plan === "pro" || sub?.isLifetime;
 
   const handleExport = async () => {
     if (!isGrowth) {
@@ -218,7 +218,7 @@ function ExportCommissionsButton() {
 
       if (!res.ok) throw new Error("Export failed");
 
-      const blob = await response.blob();
+      const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;

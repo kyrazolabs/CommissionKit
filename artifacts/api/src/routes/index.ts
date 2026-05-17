@@ -33,4 +33,10 @@ router.use("/payouts", payoutsRouter);
 router.use("/disputes", disputesRouter);
 router.use(rolesRouter);
 
+// Sentry integration test route
+router.get("/debug-sentry", (req, res) => {
+  throw new Error("My first Sentry error!");
+});
+
 export default router;
+

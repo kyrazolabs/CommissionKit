@@ -15,6 +15,7 @@ export {
   mailLowQueue,
   mailSendQueue,
   commissionCalcQueue,
+  logsFlushQueue,
   PRIORITY_QUEUE_MAP,
 } from "./queues.js";
 
@@ -29,6 +30,7 @@ export {
   sendLowPriorityEmail,
   enqueueCommissionCalc,
   enqueueExchangeRateSync,
+  enqueueLogsFlush,
 } from "./enqueue.js";
 
 // Services

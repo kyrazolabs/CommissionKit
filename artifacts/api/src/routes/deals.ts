@@ -148,7 +148,7 @@ router.put(
     const body = CreateDealBody.parse(req.body);
 
     const deal = await Deal.findOneAndUpdate(
-      { _id: new Types.ObjectId(id), workspaceId: new Types.ObjectId(workspaceId) },
+      { _id: new Types.ObjectId(id as string), workspaceId: new Types.ObjectId(workspaceId) },
       {
         repId: new Types.ObjectId(body.repId),
         name: body.name,

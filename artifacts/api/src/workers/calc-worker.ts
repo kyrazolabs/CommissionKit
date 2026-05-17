@@ -19,6 +19,7 @@ import { commissionRunTemplate } from "@workspace/email-templates";
 import { createNotification } from "../lib/notify";
 import type { CommissionCalcPayload } from "@workspace/queue";
 import { convertCurrency, convertCurrencyAt } from "../lib/exchange";
+import { logger } from "../lib/logger";
 
 const WORKER_OPTS = {
   connection: getRedisClient(),
@@ -111,7 +112,7 @@ export const calcWorker = new Worker<CommissionCalcPayload>(
     const { workspaceId, runId, period } = job.data;
     const { connectDB } = await import("@workspace/db");
     await connectDB();
-    console.info(
+    logger.info(
       `[Worker:Calc] Processing run ${runId} for workspace ${workspaceId}`,
     );
 
@@ -120,7 +121,7 @@ export const calcWorker = new Worker<CommissionCalcPayload>(
 
     try {
       await CommissionRun.findByIdAndUpdate(runId, { status: "processing" });
-      console.info(`[Worker:Calc] Run ${runId} status set to processing`);
+      logger.info(`[Worker:Calc] Run ${runId} status set to processing`);
 
       // 1. Fetch all required data
       const deals = await Deal.find({
@@ -128,7 +129,7 @@ export const calcWorker = new Worker<CommissionCalcPayload>(
         period,
         stage: { $in: ["closed_won", "Closed Won", "Won", "won"] },
       });
-      console.info(
+      logger.info(
         `[Worker:Calc] Found ${deals.length} deals for period ${period}`,
       );
 
@@ -173,13 +174,13 @@ export const calcWorker = new Worker<CommissionCalcPayload>(
       for (const deal of deals) {
         const rep = repMap.get(deal.repId.toString());
         if (!rep) {
-          console.warn(`[Worker:Calc] Deal ${deal._id} has no rep found`);
+          logger.warn(`[Worker:Calc] Deal ${deal._id} has no rep found`);
           skippedDeals++;
           continue;
         }
 
         if (!rep.planId) {
-          console.warn(
+          logger.warn(
             `[Worker:Calc] Rep ${rep.name} has no plan assigned. Skipping deal ${deal.name}`,
           );
           skippedDeals++;
@@ -188,7 +189,7 @@ export const calcWorker = new Worker<CommissionCalcPayload>(
 
         const plan = planMap.get(rep.planId.toString());
         if (!plan) {
-          console.warn(
+          logger.warn(
             `[Worker:Calc] Plan ${rep.planId} not found for rep ${rep.name}`,
           );
           skippedDeals++;
@@ -254,7 +255,7 @@ export const calcWorker = new Worker<CommissionCalcPayload>(
         status: "completed",
         error: null,
       });
-      console.info(
+      logger.info(
         `[Worker:Calc] Saved completed run ${runId} with ${resultRows.length} results`,
       );
 
@@ -302,7 +303,7 @@ export const calcWorker = new Worker<CommissionCalcPayload>(
               topEarner,
               runUrl,
             }),
-          }).catch((e) => console.error("[Worker:Calc] Email error:", e));
+          }).catch((e) => logger.error({ err: e }, "[Worker:Calc] Email error"));
 
           if (member.userId) {
             await createNotification({
@@ -314,18 +315,18 @@ export const calcWorker = new Worker<CommissionCalcPayload>(
               href: runUrl,
               meta: { runId: String(run._id), period },
             }).catch((e) =>
-              console.error("[Worker:Calc] Notification error:", e),
+              logger.error({ err: e }, "[Worker:Calc] Notification error"),
             );
           }
         }
       } catch (notifyErr) {
-        console.error("[Worker:Calc] Notification loop error:", notifyErr);
+        logger.error({ err: notifyErr }, "[Worker:Calc] Notification loop error");
         // Don't rethrow, the calculation itself is finished and saved
       }
 
-      console.info(`[Worker:Calc] Completed run ${runId}`);
+      logger.info(`[Worker:Calc] Completed run ${runId}`);
     } catch (err: any) {
-      console.error(`[Worker:Calc] Failed run ${runId}:`, err);
+      logger.error({ err }, `[Worker:Calc] Failed run ${runId}`);
       await CommissionRun.findByIdAndUpdate(runId, {
         status: "failed",
         error: err.message || "Unknown error during calculation",

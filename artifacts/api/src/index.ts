@@ -1,8 +1,9 @@
 import "dotenv/config";
 
+import "./instrument";
 import app from "./app";
 import { logger } from "./lib/logger";
-import { getRedisClient, verifySmtp, enqueueExchangeRateSync } from "@workspace/queue";
+import { getRedisClient, verifySmtp, enqueueExchangeRateSync, enqueueLogsFlush } from "@workspace/queue";
 import { connectDB } from "@workspace/db";
 
 // ─── Boot workers (moved to boot() function) ──────────────────────────────────
@@ -32,6 +33,7 @@ async function boot() {
     // Register BullMQ workers only AFTER DB is connected.
     await import("@workspace/queue/worker");
     await import("./workers/calc-worker");
+    await import("./workers/logs-worker");
     
     const server = app.listen(port, (err) => {
       if (err) {
@@ -44,6 +46,9 @@ async function boot() {
       enqueueExchangeRateSync({ force: true }).catch((err) => {
         logger.error({ err }, "[Queue] Failed to schedule exchange rate sync on startup");
       });
+      enqueueLogsFlush({ force: false }).catch((err) => {
+        logger.error({ err }, "[Queue] Failed to schedule logs flush on startup");
+      });
     });
 
     // Handle shutdown
@@ -53,6 +58,11 @@ async function boot() {
         try {
           const { closeWorkers } = await import("@workspace/queue/worker");
           await closeWorkers();
+          
+          // Close local logs worker
+          const { logsWorker } = await import("./workers/logs-worker");
+          await logsWorker.close();
+
           await getRedisClient().quit();
           logger.info("Shutdown complete");
           process.exit(0);

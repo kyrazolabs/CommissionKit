@@ -158,7 +158,7 @@ router.patch("/:id", ...requirePermission("disputes", "edit"), async (req: Authe
   const workspaceId = req.workspaceId!;
   const body = updateDisputeSchema.parse(req.body);
 
-  const dispute = await Dispute.findOne({ _id: new Types.ObjectId(req.params.id), workspaceId: new Types.ObjectId(workspaceId) })
+  const dispute = await Dispute.findOne({ _id: new Types.ObjectId(req.params.id as string), workspaceId: new Types.ObjectId(workspaceId) })
     .populate("repId").populate("payoutId");
   if (!dispute) { res.status(404).json({ error: "Dispute not found" }); return; }
 

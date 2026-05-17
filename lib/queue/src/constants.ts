@@ -21,3 +21,5 @@ export const MAIL_SEND_QUEUE = "{ck-mail-send}";
 export const COMMISSION_CALC_QUEUE = "{ck-commission-calc}";
 export const EXCHANGE_RATE_QUEUE = "{ck-exchange-rate}";
 export const WEBHOOK_QUEUE = "{ck-webhook}";
+export const LOGS_FLUSH_QUEUE = "{ck-logs-flush}";
+

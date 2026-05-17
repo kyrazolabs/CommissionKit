@@ -269,6 +269,7 @@ function CreatePayoutModal({ workspaceId, onClose }: { workspaceId: string; onCl
               setPeriodEnd(range?.to);
             }} 
             placeholder="Select period range"
+            numberOfMonths={2}
           />
         </div>
         <div className="grid gap-2">
@@ -380,7 +381,7 @@ export function PayoutsPage() {
     );
   }
 
-  const filtered = payouts.filter(p =>
+  const filtered = payouts.filter((p: Payout) =>
     p.repName.toLowerCase().includes(search.toLowerCase()),
   );
 
@@ -456,8 +457,8 @@ export function PayoutsPage() {
   };
 
   const toggleAll = () => {
-    const pendingIds = filtered.filter(p => p.status === "pending").map(p => p.id);
-    if (pendingIds.every(id => selectedIds.has(id))) {
+    const pendingIds = filtered.filter((p: Payout) => p.status === "pending").map((p: Payout) => p.id);
+    if (pendingIds.every((id: string) => selectedIds.has(id))) {
       setSelectedIds(new Set());
     } else {
       setSelectedIds(new Set(pendingIds));
@@ -557,8 +558,8 @@ export function PayoutsPage() {
                   <TableHead className="w-10">
                     <Checkbox
                       checked={
-                        filtered.filter(p => p.status === "pending").length > 0 &&
-                        filtered.filter(p => p.status === "pending").every(p => selectedIds.has(p.id))
+                        filtered.filter((p: Payout) => p.status === "pending").length > 0 &&
+                        filtered.filter((p: Payout) => p.status === "pending").every((p: Payout) => selectedIds.has(p.id))
                       }
                       onCheckedChange={toggleAll}
                     />
@@ -574,7 +575,7 @@ export function PayoutsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map(payout => {
+                {filtered.map((payout: Payout) => {
                   const isPaid = payout.status === "paid";
                   return (
                     <TableRow key={payout.id} className={cn(selectedIds.has(payout.id) ? "bg-primary/5" : "", isPaid && "opacity-80 bg-muted/20")}>
@@ -589,7 +590,7 @@ export function PayoutsPage() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <div className="size-7 rounded-full bg-primary/10 text-primary text-[10px] font-semibold flex items-center justify-center shrink-0">
-                            {payout.repName.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                            {payout.repName.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
                           </div>
                           <span className="text-sm font-medium">{payout.repName}</span>
                         </div>

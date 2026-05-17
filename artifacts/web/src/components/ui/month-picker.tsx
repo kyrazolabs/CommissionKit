@@ -99,7 +99,7 @@ export function MonthPicker({
             return (
               <Button
                 key={month}
-                variant={isSelected ? "primary" : "ghost"}
+                variant={isSelected ? "default" : "ghost"}
                 className={cn(
                   "h-9 w-full text-sm font-normal",
                   isSelected && "bg-primary text-primary-foreground hover:bg-primary/90"

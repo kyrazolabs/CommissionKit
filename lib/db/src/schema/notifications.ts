@@ -10,6 +10,11 @@ export const NOTIFICATION_TYPES = [
   "member_role_changed",
   "plan_created",
   "plan_updated",
+  "dispute_submitted",
+  "dispute_resolved",
+  "dispute_updated",
+  "payout_approved",
+  "payout_paid",
 ] as const;
 
 export type NotificationType = typeof NOTIFICATION_TYPES[number];

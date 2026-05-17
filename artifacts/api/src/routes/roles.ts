@@ -84,7 +84,7 @@ router.put("/roles/:id", ...requirePermission("roles", "edit"), async (req: Auth
   const body = UpdateRoleBody.parse(req.body);
 
   const role = await Role.findOne({ 
-    _id: new Types.ObjectId(roleId),
+    _id: new Types.ObjectId(roleId as string),
     workspaceId: new Types.ObjectId(workspaceId) 
   });
 
@@ -141,7 +141,7 @@ router.delete("/roles/:id", ...requirePermission("roles", "delete"), async (req:
   const roleId = req.params.id;
 
   const role = await Role.findOne({ 
-    _id: new Types.ObjectId(roleId),
+    _id: new Types.ObjectId(roleId as string),
     workspaceId: new Types.ObjectId(workspaceId) 
   });
 

@@ -104,7 +104,6 @@ router.post("/reps", ...requirePermission("reps", "create"), async (req: Authent
       email: rep.email, 
       portalAccessCode: accessCode,
       portalUsername: rep.portalUsername ?? accessCode,
-      portalPassword: rep.portalPassword ?? undefined
     },
     workspaceName
   );

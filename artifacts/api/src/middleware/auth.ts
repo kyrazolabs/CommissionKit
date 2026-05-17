@@ -196,7 +196,7 @@ export async function requireGrowthPlan(
   });
 
   const plan = sub?.plan || "free";
-  const isGrowth = plan === "growth" || plan === "annual";
+  const isGrowth = plan === "growth" || plan === "pro";
   const isLifetime = sub?.isLifetime || false;
 
   if (!isGrowth && !isLifetime) {

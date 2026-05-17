@@ -1,129 +1,135 @@
-# CommissionKit
+# 🪙 CommissionKit
 
-Dead-simple commission tracking for small B2B sales teams (5–30 reps). Import deals via CSV, model flat/tiered/accelerator plans, run calculations, and give reps a clean earnings dashboard with an audit trail.
+**CommissionKit** is a robust, premium SaaS platform for modern sales teams to track commissions, manage sales quotas, and handle payouts. It helps B2B sales teams (5–100+ reps) import deals via CSV, model flat/tiered/accelerator commission plans, execute calculation runs, and provide representatives with an elegant personal earnings dashboard and audit trail.
 
-## Monorepo layout
+---
 
-- `artifacts/web`: React + Vite web app (UI)
-- `artifacts/api`: Express API server
-- `lib/db`: Drizzle ORM schema + migrations/push scripts
-- `lib/api-spec`: OpenAPI + Orval codegen entrypoint
-- `lib/api-zod`: Zod schemas generated from the API spec
-- `lib/api-client-react`: React Query client helpers
-- `scripts`: small workspace scripts (dev utilities)
+## 🏗️ Monorepo Architecture
 
-## Tech stack
+This project is organized as a high-performance monorepo using **Bun Workspaces**:
 
-- **Runtime / package manager**: Bun
-- **Node.js**: 24 (used by some tooling/build scripts)
-- **Frontend**: React 19 + Vite + Tailwind
-- **Backend**: Express 5
-- **DB**: PostgreSQL + Drizzle ORM
-- **Validation**: Zod (v4) + `drizzle-zod`
-- **API codegen**: Orval
+### 📱 Applications & Services (`artifacts/`)
+*   **[web](file:///home/nxion/The%20Forge/Projects/SaaS/CommissionKit/artifacts/web)**: Beautiful, responsive React 19 + Vite single-page application. Features a state-of-the-art landing page, dynamic annual/monthly pricing calculator, interactive billing portal, and clean analytics interfaces.
+*   **[api](file:///home/nxion/The%20Forge/Projects/SaaS/CommissionKit/artifacts/api)**: High-throughput Express 5 backend server. Handles Stripe checkout/billing flows, 14-day free trials, webhooks, analytics, calculations, and secure token-less authentication via Better Auth.
 
-## Prerequisites
+### 📦 Shared Libraries (`lib/`)
+*   **[db](file:///home/nxion/The%20Forge/Projects/SaaS/CommissionKit/lib/db)**: Database layer using **MongoDB** & **Mongoose** schemas for workspaces, user subscriptions, commission runs, deals, and payouts.
+*   **[queue](file:///home/nxion/The%20Forge/Projects/SaaS/CommissionKit/lib/queue)**: Asynchronous job queue powered by **BullMQ** and **Redis** for worker tasks (e.g. SMTP email delivery, background commission calculation, and exchange rate syncing).
+*   **[email-templates](file:///home/nxion/The%20Forge/Projects/SaaS/CommissionKit/lib/email-templates)**: Clean, professional React-based SMTP transactional email templates.
+*   **[api-spec](file:///home/nxion/The%20Forge/Projects/SaaS/CommissionKit/lib/api-spec)**: OpenAPI specs and [Orval](https://orval.dev/) code generation configuration.
+*   **[api-zod](file:///home/nxion/The%20Forge/Projects/SaaS/CommissionKit/lib/api-zod)**: Shared Zod validators parsed directly from OpenAPI specifications.
+*   **[api-client-react](file:///home/nxion/The%20Forge/Projects/SaaS/CommissionKit/lib/api-client-react)**: Auto-generated React Query fetchers used by the React SPA.
 
-- Bun installed (`bun --version`)
-- Node.js 24 available on your machine (some scripts/tools run on Node)
-- PostgreSQL database (local or hosted)
+---
 
-## Environment variables
+## ⚡ Tech Stack
 
-Create a `.env` file at the repo root:
+*   **Runtime / Package Manager**: [Bun](https://bun.sh/)
+*   **Frontend**: React 19 + Vite + Tailwind CSS + TanStack React Query + Lucide Icons + Wouter
+*   **Backend**: Express 5 + Better Auth
+*   **Database**: MongoDB + Mongoose
+*   **Background Jobs & Queues**: Redis + BullMQ
+*   **API Validation & Codegen**: OpenAPI 3.0 + Zod + Orval
+*   **Email Dispatch**: SMTP-compatible configurations with BullMQ queue dispatch
+
+---
+
+## ⚙️ Prerequisites & Infrastructure
+
+Before running the application, make sure you have the following services active on your system:
+
+1.  **Bun**: Ensure you have Bun installed (`bun --version`).
+2.  **Node.js 24**: Required for certain background dev scripts and build tooling.
+3.  **MongoDB**: A local MongoDB database instance (defaulting to `mongodb://localhost:27017/commissionkit`) or a hosted connection string.
+4.  **Redis**: A running Redis instance (`redis://localhost:6379`) to host job queues.
+
+---
+
+## 🔑 Environment Variables
+
+To get started, duplicate the `.env.example` file in the root directory:
 
 ```bash
-cp .env.example .env
+cp artifacts/api/.env.example artifacts/api/.env
+cp artifacts/web/.env.example artifacts/web/.env
 ```
 
-Required/commonly used variables:
+### Essential Backend Configuration (`artifacts/api/.env`)
+*   `MONGO_URL`: Your MongoDB connection string (e.g., `mongodb://localhost:27017/commissionkit`).
+*   `REDIS_URL`: Redis server URL (e.g., `redis://localhost:6379`).
+*   `SESSION_SECRET` & `BETTER_AUTH_SECRET`: Strong secret keys used to secure user sessions.
+*   `STRIPE_SECRET_KEY` & `STRIPE_WEBHOOK_SECRET`: Secure integrations for SaaS payment logic.
+*   `STRIPE_STARTER_PRICE_ID`, `STRIPE_GROWTH_PRICE_ID`, `STRIPE_PRO_PRICE_ID` (and respective `_ANNUAL_` variants): Standard Stripe pricing IDs.
 
-- `SUPABASE_DB_URL`: Postgres connection string (used by Drizzle)
-- `SESSION_SECRET`: API session/auth secret
-- `SUPABASE_URL`, `SUPABASE_ANON_KEY`: Supabase client config (used by API and mapped into the UI at build time)
-- `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`: optional explicit Vite vars for the UI (takes precedence if set)
-- `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`: Stripe config (API and UI)
+### Essential Frontend Configuration (`artifacts/web/.env`)
+*   `VITE_API_URL`: Path to the local API service (default: `http://localhost:8088`).
+*   `VITE_BETTER_AUTH_URL`: Path matching the Better Auth router (default: `http://localhost:8088`).
+*   Plan Price IDs (`VITE_STRIPE_STARTER_PRICE_ID`, etc.) reflecting the corresponding Stripe configuration.
 
-## Install
+---
 
+## 🚀 Getting Started (Local Development)
+
+### 1. Install Dependencies
+Run the install script from the repository root:
 ```bash
 bun install
 ```
 
-## Develop
+### 2. Startup Application Services
+Run the following commands in separate terminal sessions or use a process runner:
 
-This repo is a multi-service monorepo. Run the pieces you need in separate terminals.
-
-### API server (Express)
-
+#### Start API Server & Job Workers
 ```bash
 bun run --filter @workspace/api dev
 ```
+*   This initiates the Express backend on port `8088`, connects to MongoDB, boots the BullMQ workers, and initiates the initial exchange rate sync.
 
-Default port: `8080` (health: `/api/healthz`).
-
-### Web app (React + Vite)
-
+#### Start Vite Web App
 ```bash
 bun run --filter @workspace/web dev
 ```
+*   This starts the React frontend server on port `3000`.
 
-Default port: `21889`
+---
 
-## Build
+## 📈 Multi-Tier Subscription & Trial Model
 
-Build everything (typecheck + build across workspaces):
+CommissionKit operates a premium, multi-tier pricing architecture with the following specifications:
 
-```bash
-bun run build
-```
+*   **Tiers**:
+    *   **Starter ($49/mo)**: Ideal for small teams (up to 10 sales reps).
+    *   **Growth ($99/mo)**: Designed for stable, expanding teams (up to 30 sales reps).
+    *   **Pro ($249/mo)**: Best for serious sales organizations (up to 100 sales reps).
+*   **Annual Savings**: Users can toggle to annual billing to save **17% (2 months free)**:
+    *   Starter: `$490/year`
+    *   Growth: `$990/year`
+    *   Pro: `$2490/year`
+*   **Extra Reps**: Organizations can dynamically purchase extra reps at **$8/rep/month** (or **$80/rep/year**) based on their billing interval.
+*   **14-Day Trial**: All new workspaces are eligible for a **strictly one-time 14-day free trial** upon checkout. The database schema uses a permanent `trialUsed` audit flag per workspace to prevent trial abuse.
 
-Typecheck only:
+---
 
-```bash
-bun run typecheck
-```
+## 🔨 Code Generation & Maintenance
 
-## Database workflows (Drizzle)
-
-Push schema changes to your dev database:
-
-```bash
-bun run --filter @workspace/db push
-```
-
-Force push (destructive; dev only):
-
-```bash
-bun run --filter @workspace/db push-force
-```
-
-## API code generation (Orval)
-
-Regenerate client hooks / schemas from the OpenAPI spec:
-
+### Codegen Client & Hooks
+If you modify the OpenAPI spec in `lib/api-spec`, you can regenerate all TypeScript types, Zod schemas, and React Query hooks using:
 ```bash
 bun run --filter @workspace/api-spec codegen
 ```
 
-Note: `lib/api-zod/src/index.ts` is intended to only export `./generated/api`. If codegen rewrites exports, fix it before committing.
+### Build & Typecheck
+Ensure the entire repository builds successfully:
+```bash
+bun run build
+```
 
-## Common commands
+Verify type safety across all libraries and application workspaces:
+```bash
+bun run typecheck
+```
 
-- `bun install`: install all workspace dependencies
-- `bun run typecheck`: typecheck across packages
-- `bun run build`: typecheck + build all packages
-- `bun run --workspaces --if-present <script>`: run a script across all workspaces that define it
-- `bun run --filter <pattern> <script>`: run a script in matching workspaces (name or path patterns)
+---
 
-## Deployment notes (Replit)
-
-The repo includes Replit service definitions under `artifacts/*/.replit-artifact/`.
-
-- Web build output: `artifacts/web/dist/public`
-- API production entry: `artifacts/api/dist/index.mjs`
-
-## License
-
-MIT
-
+## 📄 License
+This project is licensed under the MIT License.
