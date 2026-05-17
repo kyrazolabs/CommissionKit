@@ -21,6 +21,8 @@ import { apiFetch } from "@/lib/api";
 import { useBillingStatus, type SubscriptionStatus } from "@/hooks/use-billing-status";
 import { useRole } from "@/hooks/use-role";
 import { Skeleton } from "@/components/ui/skeleton";
+import { usePageMeta } from "@/hooks/use-page-meta";
+
 
 const EXTRA_REP_UNIT_MONTHLY_USD = 8;
 const EXTRA_REP_UNIT_YEARLY_USD = 80;
@@ -294,6 +296,7 @@ function BillingUsageCard({
 
 
 export function BillingPage() {
+  usePageMeta({ title: "Billing", description: "Manage your CommissionKit subscription and billing details.", robots: "noindex, nofollow" });
   const queryClient = TanStackReactQuery.useQueryClient();
   const { session } = useAuth();
   const { activeWorkspace } = useWorkspace();

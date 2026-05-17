@@ -28,6 +28,8 @@ const ROLE_META = {
 };
 
 import { CURRENCIES } from "@/lib/currencies";
+import { usePageMeta } from "@/hooks/use-page-meta";
+
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 const NOTIFICATION_TYPES: { key: string; label: string; description: string }[] = [
@@ -78,6 +80,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
 
 
 export function SettingsPage() {
+  usePageMeta({ title: "Settings", description: "Configure your workspace and personal preferences.", robots: "noindex, nofollow" });
   const { theme, toggle } = useTheme();
   const { role, hasPermission, isLoading: roleLoading } = useRole();
   const { activeWorkspace } = useWorkspace();

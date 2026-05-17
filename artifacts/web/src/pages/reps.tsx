@@ -24,10 +24,13 @@ import { useRole } from "@/hooks/use-role";
 import { useBillingStatus } from "@/hooks/use-billing-status";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { apiFetch } from "@/lib/api";
+import { usePageMeta } from "@/hooks/use-page-meta";
+
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 
 export function RepsPage() {
+  usePageMeta({ title: "Reps", description: "Manage your sales representatives and their commission assignments.", robots: "noindex, nofollow" });
   const { data: reps, isLoading } = useListReps({ query: { queryKey: getListRepsQueryKey() } });
   const { data: plans } = useListPlans({ query: { queryKey: getListPlansQueryKey() } });
   const [searchTerm, setSearchTerm] = useState("");

@@ -14,8 +14,11 @@ import { RunCalculationDialog } from "@/components/run-calculation-dialog";
 import { useWorkspace } from "@/hooks/use-workspace";
 
 import { useRole } from "@/hooks/use-role";
+import { usePageMeta } from "@/hooks/use-page-meta";
+
 
 export function Dashboard() {
+  usePageMeta({ title: "Dashboard", description: "Overview of your workspace commissions and performance.", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const { hasPermission, isLoading: roleLoading } = useRole();
   const currency = activeWorkspace?.currency || "USD";

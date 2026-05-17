@@ -33,8 +33,11 @@ import { CurrencyCombobox } from "@/components/currency-combobox";
 import { useBillingStatus } from "@/hooks/use-billing-status";
 import { Download } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { usePageMeta } from "@/hooks/use-page-meta";
+
 
 export function DealsPage() {
+  usePageMeta({ title: "Deals", description: "Track deals and calculate commissions across your team.", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const currency = activeWorkspace?.currency || "USD";
   const [period, setPeriod] = useState<string>(format(new Date(), "yyyy-MM"));

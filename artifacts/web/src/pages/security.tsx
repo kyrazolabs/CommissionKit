@@ -1,8 +1,11 @@
 import { Navbar } from "./landing/Navbar";
 import { Footer } from "./landing/Footer";
 import { Shield, Lock, Eye, Cloud } from "lucide-react";
+import { usePageMeta } from "@/hooks/use-page-meta";
+
 
 export function SecurityPage() {
+  usePageMeta({ title: "Security", description: "CommissionKit security practices and data protection information.", robots: "index, follow" });
   const features = [
     {
       title: "Data Encryption",

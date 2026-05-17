@@ -19,6 +19,8 @@ import { useBillingStatus } from "@/hooks/use-billing-status";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/lib/api";
+import { usePageMeta } from "@/hooks/use-page-meta";
+
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 
@@ -225,6 +227,7 @@ function DisputeRow({ dispute, onAction }: { dispute: Dispute; onAction: (d: Dis
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export function DisputesPage() {
+  usePageMeta({ title: "Disputes", description: "Review and resolve commission disputes.", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const { hasPermission, isLoading: roleLoading } = useRole();
   const { sub } = useBillingStatus();

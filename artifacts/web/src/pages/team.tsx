@@ -25,6 +25,8 @@ import { useBillingStatus } from "@/hooks/use-billing-status";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import { Checkbox } from "@/components/ui/checkbox";
+import { usePageMeta } from "@/hooks/use-page-meta";
+
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 
@@ -419,6 +421,7 @@ function RoleReference() {
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
 export function TeamPage() {
+  usePageMeta({ title: "Team", description: "Manage team members, roles, and workspace access.", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const { user } = useAuth();
   const { role, can, is, hasPermission, isLoading: roleLoading } = useRole();
