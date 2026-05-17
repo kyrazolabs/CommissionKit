@@ -1,5 +1,6 @@
 import "dotenv/config";
 
+import "./instrument";
 import app from "./app";
 import { logger } from "./lib/logger";
 import { getRedisClient, verifySmtp, enqueueExchangeRateSync, enqueueLogsFlush } from "@workspace/queue";

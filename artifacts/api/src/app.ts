@@ -1,4 +1,5 @@
 import express, { type Express } from "express";
+import * as Sentry from "@sentry/bun";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import { toNodeHandler } from "better-auth/node";
@@ -41,6 +42,9 @@ app.all(/\/api\/auth\/.*/, toNodeHandler(auth));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api", router);
+
+// Sentry error handler registered after all controllers and before other error middleware
+Sentry.setupExpressErrorHandler(app);
 
 // Global Error Handling Middleware
 // Express requires all 4 arguments (err, req, res, next) to recognize it as an error-handling middleware
