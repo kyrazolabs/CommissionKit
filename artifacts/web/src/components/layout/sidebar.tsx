@@ -7,9 +7,19 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useWorkspace, type Workspace } from "@/hooks/use-workspace";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRole } from "@/hooks/use-role";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navGroups = [
   {
@@ -52,19 +62,6 @@ function WorkspaceSwitcher() {
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-        setShowCreate(false);
-        setNewName("");
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,117 +82,117 @@ function WorkspaceSwitcher() {
   const initial = activeWorkspace.name.slice(0, 1).toUpperCase();
 
   return (
-    <div ref={ref} className="relative px-3 pt-3 pb-2 ">
-      <button
-        onClick={() => { setOpen((o) => !o); setShowCreate(false); }}
-        className="w-full flex items-center gap-2 p-2 rounded-[10px] hover:bg-muted text-left transition-colors group"
-      >
-        <div className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground text-[11px] font-semibold shrink-0">
-          {initial}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-semibold text-foreground truncate leading-none">{activeWorkspace.name}</p>
-          <div className="flex items-center gap-1 mt-0.5">
-            {(() => {
-              const RoleIcon = ROLE_ICONS[activeWorkspace.role] ?? Users;
-              return <RoleIcon className="size-2.5 text-muted-foreground" />;
-            })()}
-            <p className="text-[10px] text-muted-foreground capitalize">{activeWorkspace.role}</p>
-          </div>
-        </div>
-        <ChevronsUpDown className="size-3.5 text-muted-foreground shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
-      </button>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: -4, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -4, scale: 0.95 }}
-            transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute left-3 right-3 top-full mt-1 z-50 bg-card border border-border rounded-xl shadow-lg overflow-hidden origin-top"
-          >
-            <AnimatePresence mode="wait">
-              {!showCreate ? (
-                <motion.div
-                  key="list"
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 8 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <div className="px-2 pt-2 pb-1">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1.5 pb-1">
-                      Workspaces
-                    </p>
-                    <div className="space-y-0.5">
-                      {workspaces.map((ws) => (
-                        <button
-                          key={ws.id}
-                          onClick={() => { setActiveWorkspace(ws); setOpen(false); }}
-                          className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-muted text-left transition-colors"
-                        >
-                          <div className="flex size-5 items-center justify-center rounded bg-primary/10 text-primary text-[10px] font-semibold shrink-0">
-                            {ws.name.slice(0, 1).toUpperCase()}
-                          </div>
-                          <span className="flex-1 text-[13px] text-foreground truncate">{ws.name}</span>
-                          {activeWorkspace.id === ws.id && (
-                            <Check className="size-3.5 text-primary shrink-0" />
-                          )}
-                        </button>
-                      ))}
-                    </div>
+    <div className="px-3 pt-3 pb-2">
+      <Popover open={open} onOpenChange={(isOpen) => {
+        setOpen(isOpen);
+        if (!isOpen) {
+          setShowCreate(false);
+          setNewName("");
+        }
+      }}>
+        <PopoverTrigger asChild>
+          <button className="w-full flex items-center gap-2 p-2 rounded-[10px] hover:bg-muted text-left transition-colors group outline-none">
+            <div className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground text-[11px] font-semibold shrink-0">
+              {initial}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-semibold text-foreground truncate leading-none">{activeWorkspace.name}</p>
+              <div className="flex items-center gap-1 mt-0.5">
+                {(() => {
+                  const RoleIcon = ROLE_ICONS[activeWorkspace.role] ?? Users;
+                  return <RoleIcon className="size-2.5 text-muted-foreground" />;
+                })()}
+                <p className="text-[10px] text-muted-foreground capitalize">{activeWorkspace.role}</p>
+              </div>
+            </div>
+            <ChevronsUpDown className="size-3.5 text-muted-foreground shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[196px] p-0 rounded-xl overflow-hidden" align="start" sideOffset={8}>
+          <AnimatePresence mode="wait">
+            {!showCreate ? (
+              <motion.div
+                key="list"
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 8 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="px-2 pt-2 pb-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1.5 pb-1">
+                    Workspaces
+                  </p>
+                  <div className="space-y-0.5 max-h-[200px] overflow-y-auto">
+                    {workspaces.map((ws) => (
+                      <button
+                        key={ws.id}
+                        onClick={() => { setActiveWorkspace(ws); setOpen(false); }}
+                        className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-muted text-left transition-colors"
+                      >
+                        <div className="flex size-5 items-center justify-center rounded bg-primary/10 text-primary text-[10px] font-semibold shrink-0">
+                          {ws.name.slice(0, 1).toUpperCase()}
+                        </div>
+                        <span className="flex-1 text-[13px] text-foreground truncate">{ws.name}</span>
+                        {activeWorkspace.id === ws.id && (
+                          <Check className="size-3.5 text-primary shrink-0" />
+                        )}
+                      </button>
+                    ))}
                   </div>
-                  <div className="border-t border-border p-2">
-                    <button
-                      onClick={() => setShowCreate(true)}
-                      className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-muted text-left transition-colors"
+                </div>
+                <div className="border-t border-border p-2">
+                  <button
+                    onClick={() => setShowCreate(true)}
+                    className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-muted text-left transition-colors"
+                  >
+                    <Plus className="size-3.5 text-muted-foreground" />
+                    <span className="text-[12.5px] text-muted-foreground">New workspace</span>
+                  </button>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="create"
+                initial={{ opacity: 0, x: 8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -8 }}
+                transition={{ duration: 0.2 }}
+              >
+                <form onSubmit={handleCreate} className="p-3 space-y-3">
+                  <p className="text-[11px] font-semibold text-foreground">New workspace</p>
+                  <Input
+                    autoFocus
+                    type="text"
+                    placeholder="Workspace name"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    className="h-8! text-[12.5px]"
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="xs"
+                      onClick={() => { setShowCreate(false); setNewName(""); }}
+                      className="flex-1 h-7 text-[12px]"
                     >
-                      <Plus className="size-3.5 text-muted-foreground" />
-                      <span className="text-[12.5px] text-muted-foreground">New workspace</span>
-                    </button>
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      size="xs"
+                      disabled={!newName.trim() || creating}
+                      className="flex-1 h-7 text-[12px]"
+                    >
+                      {creating ? "…" : "Create"}
+                    </Button>
                   </div>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="create"
-                  initial={{ opacity: 0, x: 8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -8 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <form onSubmit={handleCreate} className="p-3 space-y-2">
-                    <p className="text-[11px] font-semibold text-foreground">New workspace</p>
-                    <input
-                      type="text"
-                      placeholder="Workspace name"
-                      value={newName}
-                      onChange={(e) => setNewName(e.target.value)}
-                      className="w-full rounded-lg border border-border bg-background p-2.5 text-[12.5px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => { setShowCreate(false); setNewName(""); }}
-                        className="flex-1 rounded-lg border border-border p-2 text-[12px] text-muted-foreground hover:bg-muted transition-colors"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={!newName.trim() || creating}
-                        className="flex-1 rounded-lg bg-primary text-primary-foreground p-2 text-[12px] font-semibold hover:bg-primary/90 disabled:opacity-50 transition-colors"
-                      >
-                        {creating ? "…" : "Create"}
-                      </button>
-                    </div>
-                  </form>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
@@ -254,23 +251,63 @@ export function Sidebar() {
         ))}
       </div>
 
-      {/* Bottom: user info + sign out */}
-      <div className="px-3 pb-4 pt-2 space-y-2 border-t border-border mt-2">
+      {/* Bottom: user profile menu */}
+      <div className="p-3 border-t border-border mt-2">
         {user && (
-          <div className="flex items-center gap-2.5 p-2">
-            <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-semibold">
-              {initials}
-            </div>
-            <span className="flex-1 text-[12px] text-muted-foreground truncate">{user.email}</span>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="w-full flex items-center gap-2 p-2 rounded-[10px] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-left transition-colors outline-none group">
+                <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-semibold overflow-hidden">
+                  {user.image ? (
+                    <img src={user.image} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    initials
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-semibold text-foreground truncate leading-none">
+                    {user.name || user.email.split("@")[0]}
+                  </p>
+                </div>
+                <ChevronsUpDown className="size-3.5 text-muted-foreground shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[200px] rounded-xl" align="start" side="top" sideOffset={8}>
+              <div className="flex items-center gap-2.5 p-2">
+                <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary text-[12px] font-semibold shrink-0 overflow-hidden">
+                  {user.image ? (
+                    <img src={user.image} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    initials
+                  )}
+                </div>
+                <div className="flex-1 min-w-0 justify-center items-center">
+                  <p className="text-[13px] font-semibold text-foreground truncate leading-none">
+                    {user.name || user.email.split("@")[0]}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground truncate">
+                    {user.email}
+                  </p>
+                </div>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/settings" className="w-full cursor-pointer flex items-center gap-2.5 rounded-lg py-2">
+                  <Settings className="size-[15px] opacity-70" />
+                  Account Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={signOut}
+                className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer flex items-center gap-2.5 rounded-lg py-2"
+              >
+                <LogOut className="size-[15px] opacity-70" />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
-        <button
-          onClick={signOut}
-          className="w-full flex items-center gap-2.5 rounded-[10px] px-2.5 py-[7px] text-[13.5px] text-sidebar-foreground border border-transparent hover:bg-destructive/10 hover:text-destructive transition-colors"
-        >
-          <LogOut className="h-[15px] w-[15px] shrink-0 opacity-70" />
-          Sign out
-        </button>
       </div>
     </div>
   );

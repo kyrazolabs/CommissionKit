@@ -5,16 +5,25 @@ import { connectDB } from "@workspace/db";
 import { dash, sentinel } from "@better-auth/infra";
 import { admin } from "better-auth/plugins";
 import { logger } from "./logger";
-import { sendHighPriorityEmail, sendMediumPriorityEmail } from "@workspace/queue";
-import { invitationTemplate, welcomeTemplate, passwordResetTemplate } from "@workspace/email-templates";
+import {
+  sendHighPriorityEmail,
+  sendMediumPriorityEmail,
+} from "@workspace/queue";
+import {
+  invitationTemplate,
+  welcomeTemplate,
+  passwordResetTemplate,
+} from "@workspace/email-templates";
 
 // Better Auth requires a database connection.
 // We use our existing Mongoose connection for consistency.
-const conn = await connectDB() as any;
+const conn = (await connectDB()) as any;
 const db = conn?.connection?.db ?? conn?.db;
 
 if (!db) {
-  throw new Error("MongoDB database connection failed. Ensure connectDB() is called before initializing auth.");
+  throw new Error(
+    "MongoDB database connection failed. Ensure connectDB() is called before initializing auth.",
+  );
 }
 
 const APP_URL = process.env.APP_URL || "http://localhost:3000";
@@ -107,7 +116,10 @@ export const auth = betterAuth({
             },
           });
 
-          logger.info({ email, orgId: org.id }, "Workspace invitation email enqueued");
+          logger.info(
+            { email, orgId: org.id },
+            "Workspace invitation email enqueued",
+          );
         } catch (err) {
           logger.error({ err, email }, "Failed to enqueue invitation email");
         }
@@ -116,19 +128,28 @@ export const auth = betterAuth({
       hooks: {
         organization: {
           afterCreate: async ({ organization: org, member }: any) => {
-            logger.info({ orgId: org.id, name: org.name }, "Organization created");
+            logger.info(
+              { orgId: org.id, name: org.name },
+              "Organization created",
+            );
           },
         },
         member: {
           afterCreate: async ({ member, organization: org }: any) => {
-            logger.info({ memberId: member.id, orgId: org.id }, "Member added to organization");
+            logger.info(
+              { memberId: member.id, orgId: org.id },
+              "Member added to organization",
+            );
           },
         },
       },
     }),
   ],
 
-  trustedOrigins: process.env.ALLOWED_ORIGINS?.split(",") || ["http://localhost:3000"],
+  // @ts-ignore
+  trustedOrigins: process.env.ALLOWED_ORIGINS?.split(",") || [
+    "http://localhost:3000",
+  ],
   advanced: {
     useSecureCookies: process.env.NODE_ENV === "production",
   },
@@ -136,11 +157,16 @@ export const auth = betterAuth({
     if (context.response.status >= 400) {
       try {
         const body = await context.response.clone().json();
-        logger.error({ authError: body }, `Better Auth Error [${context.response.status}]`);
+        logger.error(
+          { authError: body },
+          `Better Auth Error [${context.response.status}]`,
+        );
       } catch {
-        logger.error({ status: context.response.status }, "Better Auth Error Response");
+        logger.error(
+          { status: context.response.status },
+          "Better Auth Error Response",
+        );
       }
     }
   },
-
 });

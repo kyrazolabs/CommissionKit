@@ -30,12 +30,12 @@ const EXTRA_REP_UNIT_YEARLY_USD = 80;
 // ─── Stripe price IDs (mirror API env: STRIPE_* → STRIPE_* for Vite) ───
 const STRIPE_PRICE = {
   starter: {
-    monthly: import.meta.env.STRIPE_STARTER_PRICE_ID ?? "price_1TSwQIBA7ra9J8VO3P4tgtLi",
+    monthly: import.meta.env.STRIPE_STARTER_PRICE_ID ?? "",
     yearly: import.meta.env.STRIPE_STARTER_ANNUAL_PRICE_ID ?? "",
   },
   growth: {
-    monthly: import.meta.env.STRIPE_GROWTH_PRICE_ID ?? "price_1TSwQHBA7ra9J8VOxFgWrEHg",
-    yearly: import.meta.env.STRIPE_GROWTH_ANNUAL_PRICE_ID ?? "price_1TVwbbBA7ra9J8VOok7hEjEG",
+    monthly: import.meta.env.STRIPE_GROWTH_PRICE_ID ?? "",
+    yearly: import.meta.env.STRIPE_GROWTH_ANNUAL_PRICE_ID ?? "",
   },
   pro: {
     monthly: import.meta.env.STRIPE_PRO_PRICE_ID ?? "",

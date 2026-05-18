@@ -8,10 +8,10 @@ import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Import decorative SVGs from public/decorative as raw strings
-import leftCurves from "../../public/decorative/left-curves.svg?raw";
-import rightCurves from "../../public/decorative/right-curves.svg?raw";
-import bleftCurves from "../../public/decorative/bleft.curves.svg?raw";
-import trightCurves from "../../public/decorative/tright-curves.svg?raw";
+import leftCurves from "@/decorative/left-curves.svg?raw";
+import rightCurves from "@/decorative/right-curves.svg?raw";
+import bleftCurves from "@/decorative/bleft.curves.svg?raw";
+import trightCurves from "@/decorative/tright-curves.svg?raw";
 
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false);
@@ -48,6 +48,7 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
           callbackURL: redirect,
         });
         if (error) throw error;
+        window.location.href = redirect;
       } else {
         const { error } = await authClient.signUp.email({ 
           email, 
@@ -60,6 +61,7 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
           title: "Account created",
           description: "Your account has been created successfully.",
         });
+        window.location.href = redirect;
       }
     } catch (err: any) {
       console.error("Auth error:", err);

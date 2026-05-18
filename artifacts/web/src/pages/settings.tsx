@@ -11,6 +11,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CurrencyCombobox } from "@/components/currency-combobox";
 import { Link } from "wouter";
@@ -93,6 +94,83 @@ export function SettingsPage() {
     saving: false,
     saved: false
   });
+
+  const [profileState, setProfileState] = useState({
+    name: "",
+    image: "",
+    saving: false,
+    saved: false,
+  });
+
+  useEffect(() => {
+    if (user) {
+      setProfileState(prev => ({
+        ...prev,
+        name: user.name || "",
+        image: user.image || "",
+      }));
+    }
+  }, [user]);
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { // Increased to 5MB since we compress it anyway
+      toast({ title: "Image too large", description: "Max size is 5MB", variant: "destructive" });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_SIZE = 250;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height = Math.round((height * MAX_SIZE) / width);
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width = Math.round((width * MAX_SIZE) / height);
+            height = MAX_SIZE;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        // Compress to highly optimized webp base64 (usually <15kb)
+        const compressedBase64 = canvas.toDataURL("image/webp", 0.8);
+        setProfileState(prev => ({ ...prev, image: compressedBase64 }));
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const saveProfile = async () => {
+    setProfileState(prev => ({ ...prev, saving: true }));
+    try {
+      const { error } = await authClient.updateUser({
+        name: profileState.name,
+        image: profileState.image,
+      });
+      if (error) throw error;
+      setProfileState(prev => ({ ...prev, saving: false, saved: true }));
+      toast({ title: "Profile updated successfully" });
+      setTimeout(() => setProfileState(prev => ({ ...prev, saved: false })), 2000);
+      setTimeout(() => window.location.reload(), 500); // Reload to update auth context across app
+    } catch (err: any) {
+      toast({ title: "Failed to update profile", description: err.message, variant: "destructive" });
+      setProfileState(prev => ({ ...prev, saving: false }));
+    }
+  };
 
   const [linkedAccounts, setLinkedAccounts] = useState<any[]>([]);
   const [loadingAccounts, setLoadingAccounts] = useState(false);
@@ -268,14 +346,54 @@ export function SettingsPage() {
           <CardTitle className="flex items-center gap-2 text-base"><Users className="size-4 text-primary" /> Account</CardTitle>
           <CardDescription>Your identity in this workspace.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between py-1">
-            <div>
-              <p className="text-sm font-medium">Email</p>
-              <p className="text-sm text-muted-foreground mt-0.5">{user?.email ?? ":"}</p>
+        <CardContent className="space-y-6">
+          <div className="flex flex-col md:flex-row gap-8 pb-4 border-b border-border">
+            <div className="flex flex-col items-center gap-3 shrink-0">
+              <div className="relative group size-20 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center text-primary text-xl font-semibold border border-border">
+                {profileState.image ? (
+                  <img src={profileState.image} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  user?.email?.slice(0, 2).toUpperCase() || "??"
+                )}
+                <div 
+                  className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer" 
+                  onClick={() => document.getElementById('avatar-upload')?.click()}
+                >
+                  <span className="text-white text-[11px] font-semibold">Upload</span>
+                </div>
+              </div>
+              <input type="file" id="avatar-upload" className="hidden" accept="image/*" onChange={handleAvatarUpload} />
+              {profileState.image && (
+                <button type="button" onClick={() => setProfileState(prev => ({...prev, image: ""}))} className="text-[11px] font-medium text-destructive hover:underline">Remove</button>
+              )}
+            </div>
+            
+            <div className="flex-1 space-y-4">
+              <div className="grid gap-2">
+                <Label htmlFor="profile-name">Full Name</Label>
+                <Input 
+                  id="profile-name" 
+                  value={profileState.name} 
+                  onChange={e => setProfileState(prev => ({ ...prev, name: e.target.value }))} 
+                  placeholder="Your name" 
+                  className="max-w-md"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>Email</Label>
+                <Input value={user?.email || ""} disabled className="bg-muted max-w-md" />
+                <p className="text-[11px] text-muted-foreground">Email address cannot be changed here.</p>
+              </div>
+              <div className="pt-2">
+                <Button size="sm" onClick={saveProfile} disabled={profileState.saving} className="gap-2">
+                  {profileState.saving ? <Loader2 className="size-3.5 animate-spin" /> : profileState.saved ? <Check className="size-3.5" /> : <Save className="size-3.5" />}
+                  {profileState.saved ? "Saved!" : "Save Profile"}
+                </Button>
+              </div>
             </div>
           </div>
-          <div className="flex items-center justify-between py-1 border-t border-border">
+
+          <div className="flex items-center justify-between py-1 border-t border-border mt-4">
             <div>
               <p className="text-sm font-medium">Your role</p>
               <p className="text-sm text-muted-foreground mt-0.5">Access level in <span className="font-medium text-foreground">{activeWorkspace?.name}</span></p>
