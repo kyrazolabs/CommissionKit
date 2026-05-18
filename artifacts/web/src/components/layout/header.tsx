@@ -15,18 +15,10 @@ export function Header() {
   return (
     <header className="flex h-14 shrink-0 items-center bg-header px-5 z-10">
       {/* Logo : width matches sidebar */}
-      <div className="flex w-[220px] shrink-0 items-center gap-2.5">
-        <svg width="28" height="28" viewBox="0 0 56 56" fill="none" className="shrink-0">
-          <rect width="56" height="56" rx="14" fill="#111827" />
-          <line x1="16" y1="40" x2="40" y2="16" stroke="#0D9488" strokeWidth="3.5" strokeLinecap="round" />
-          <circle cx="20" cy="20" r="5" fill="#0D9488" />
-          <circle cx="36" cy="36" r="7" fill="none" stroke="#0D9488" strokeWidth="3" />
-          <circle cx="36" cy="36" r="2.5" fill="#0D9488" />
-        </svg>
-        <span className="text-[14.5px] font-semibold tracking-tight text-foreground">
-          Commission<span className="text-primary">Kit</span>
-        </span>
-      </div>
+      <a href="/home" className="flex items-center gap-2">
+        <img src="/brand/logo-symbol.svg" alt="CommissionKit Logo" className="h-6" />
+        <span className="text-lg font-bold text-foreground tracking-tight">Commission<span className="text-primary">Kit</span></span>
+      </a>
 
       <div className="flex-1" />
 
@@ -45,21 +37,6 @@ export function Header() {
 
         {/* Live notification bell */}
         <NotificationBell />
-
-        {/* Divider */}
-        <div className="h-6 w-px bg-border mx-2" />
-
-        {/* User avatar */}
-        <div className="flex items-center gap-2 rounded-lg p-2">
-          <div className="flex size-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-semibold">
-            {initials}
-          </div>
-          {displayName && (
-            <span className="text-[13px] font-medium text-foreground max-w-[160px] truncate">
-              {displayName}
-            </span>
-          )}
-        </div>
       </div>
     </header>
   );

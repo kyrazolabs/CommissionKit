@@ -40,6 +40,9 @@ router.get(
       .sort({ createdAt: -1 })
       .limit(5);
 
+    const plans = await Plan.find({ workspaceId });
+    const planMap = new Map(plans.map((p) => [p._id.toString(), p.name]));
+
     let totalCommission = 0;
     let totalDeals = 0;
     let totalRevenue = 0;
@@ -48,6 +51,7 @@ router.get(
       {
         repId: string;
         repName: string;
+        planName: string;
         totalCommission: number;
         totalDeals: number;
         totalRevenue: number;
@@ -88,6 +92,7 @@ router.get(
           repEarningsMap.set(repIdStr, {
             repId: repIdStr,
             repName: rep?.name || "Unknown",
+            planName: rep?.planId ? planMap.get(rep.planId.toString()) || "None" : "None",
             totalCommission: 0,
             totalDeals: 0,
             totalRevenue: 0,
