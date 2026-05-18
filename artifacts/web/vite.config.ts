@@ -85,5 +85,6 @@ export default defineConfig(({ mode }) => {
       host: "0.0.0.0",
       allowedHosts: true,
     },
+    envPrefix: ["VITE_", "STRIPE_"],
   };
 });
