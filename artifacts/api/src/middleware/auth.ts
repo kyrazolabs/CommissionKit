@@ -195,7 +195,8 @@ export async function requireGrowthPlan(
     workspaceId: new Types.ObjectId(workspaceId),
   });
 
-  const plan = sub?.plan || "free";
+  const isActive = sub?.isLifetime || (sub?.status && ["active", "trialing", "past_due", "paused"].includes(sub.status));
+  const plan = isActive ? (sub?.plan || "free") : "free";
   const isGrowth = plan === "growth" || plan === "pro";
   const isLifetime = sub?.isLifetime || false;
 
