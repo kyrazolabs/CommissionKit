@@ -24,3 +24,6 @@ export type { PayoutUpdateTemplateProps } from "./payout-update.js";
 
 export { disputeUpdateTemplate } from "./dispute-update.js";
 export type { DisputeUpdateTemplateProps } from "./dispute-update.js";
+
+export { verificationCodeTemplate } from "./verification-code.js";
+export type { VerificationCodeTemplateProps } from "./verification-code.js";
