@@ -13,6 +13,7 @@ import {
   invitationTemplate,
   welcomeTemplate,
   passwordResetTemplate,
+  emailVerificationTemplate,
 } from "@workspace/email-templates";
 
 // Better Auth requires a database connection.
@@ -45,9 +46,34 @@ export const auth = betterAuth({
       },
     },
   },
+  emailVerification: {
+    sendOnSignUp: true,
+    sendVerificationEmail: async ({ user, token }) => {
+      const betterAuthUrl = process.env.BETTER_AUTH_URL || "http://localhost:8088";
+      const verificationUrl = `${betterAuthUrl}/api/auth/verify-email?token=${token}&callbackURL=${encodeURIComponent(APP_URL + "/email-verified")}`;
+      try {
+        await sendHighPriorityEmail({
+          to: user.email,
+          toName: user.name || undefined,
+          subject: "Verify your email address",
+          html: emailVerificationTemplate({
+            name: user.name || undefined,
+            verificationUrl,
+            expiresIn: "24 hours",
+          }),
+          meta: { userId: user.id, event: "email_verification" },
+        });
+        logger.info({ email: user.email }, "Verification email enqueued");
+      } catch (err) {
+        logger.error({ err, email: user.email }, "Failed to enqueue verification email");
+      }
+    },
+  },
   emailAndPassword: {
     enabled: true,
-    sendResetPassword: async ({ user, url }) => {
+    requireEmailVerification: true,
+    sendResetPassword: async ({ user, url, token }) => {
+      const resetUrl = `${APP_URL}/reset-password?token=${token}`;
       try {
         await sendHighPriorityEmail({
           to: user.email,
@@ -55,7 +81,7 @@ export const auth = betterAuth({
           subject: "Reset your CommissionKit password",
           html: passwordResetTemplate({
             name: user.name || undefined,
-            resetUrl: url,
+            resetUrl,
             expiresIn: "1 hour",
           }),
           meta: { userId: user.id, event: "password_reset" },

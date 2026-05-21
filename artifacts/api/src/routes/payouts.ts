@@ -28,7 +28,8 @@ async function getPlan(workspaceId: string): Promise<PlanName> {
   const sub = await WorkspaceSubscription.findOne({
     workspaceId: new Types.ObjectId(workspaceId),
   });
-  return (sub?.plan ?? "free") as PlanName;
+  const isActive = sub?.isLifetime || (sub?.status && ["active", "trialing", "past_due", "paused"].includes(sub.status));
+  return (isActive ? (sub?.plan ?? "free") : "free") as PlanName;
 }
 
 async function requireGrowthPlan(workspaceId: string, res: any): Promise<boolean> {

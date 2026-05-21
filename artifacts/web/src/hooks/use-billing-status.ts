@@ -51,13 +51,20 @@ export function useBillingStatus() {
       .finally(() => setLoading(false));
   }, [activeWorkspace?.id]);
 
-  const planType = sub?.plan || "free";
+  const isActive = sub?.isLifetime || ["active", "trialing", "past_due", "paused"].includes(sub?.status ?? "");
+  const planType = isActive ? (sub?.plan || "free") : "free";
   const planBaseLimits = PLAN_LIMITS[planType] || PLAN_LIMITS.free;
-  const extra = sub?.extraRepSeats ?? 0;
+  const extra = isActive ? (sub?.extraRepSeats ?? 0) : 0;
   const limits = {
     ...planBaseLimits,
     reps: planBaseLimits.reps === -1 ? -1 : planBaseLimits.reps + extra,
   };
+
+  const effectiveSub = sub ? {
+    ...sub,
+    plan: isActive ? sub.plan : "free",
+    extraRepSeats: isActive ? (sub.extraRepSeats ?? 0) : 0,
+  } : null;
 
   const refetch = useCallback(() => {
     if (!activeWorkspace?.id) return;
@@ -78,5 +85,5 @@ export function useBillingStatus() {
       .finally(() => setLoading(false));
   }, [activeWorkspace?.id]);
 
-  return { sub, loading, limits, planBaseLimits, refetch };
+  return { sub: effectiveSub, loading, limits, planBaseLimits, refetch };
 }

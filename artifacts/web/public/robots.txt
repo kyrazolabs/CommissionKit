@@ -1,0 +1,38 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+Allow: /home
+Allow: /login
+Allow: /register
+Allow: /forgot-password
+Allow: /reset-password
+Allow: /email-verified
+Allow: /privacy
+Allow: /terms
+Allow: /security
+
+# Disallow API and authenticated routes
+Disallow: /api/
+Disallow: /reps
+Disallow: /reps/
+Disallow: /plans
+Disallow: /plans/
+Disallow: /deals
+Disallow: /deals/
+Disallow: /runs
+Disallow: /runs/
+Disallow: /reports
+Disallow: /reports/
+Disallow: /team
+Disallow: /team/
+Disallow: /settings
+Disallow: /settings/
+Disallow: /billing
+Disallow: /billing/
+Disallow: /payouts
+Disallow: /payouts/
+Disallow: /disputes
+Disallow: /disputes/
+Disallow: /portal/
+
+Sitemap: https://commissionk.it/sitemap.xml

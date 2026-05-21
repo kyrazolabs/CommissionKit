@@ -154,7 +154,7 @@ export function Dashboard() {
                     </td>
                     <td className="p-4 text-[12.5px] text-muted-foreground">
                       <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-foreground">
-                        {rep.planName || "None"}
+                        {(rep as any).planName || "None"}
                       </span>
                     </td>
                     <td className="p-4 text-[13px] font-medium text-foreground">{rep.totalDeals}</td>
