@@ -139,7 +139,7 @@ export function EmailVerifiedPage() {
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col items-center justify-center py-4 text-center space-y-4">
-                          <div className="rounded-full bg-primary/10 p-3 text-primary animate-bounce">
+                          <div className="rounded-full bg-primary/10 p-3 text-primary">
                             <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
