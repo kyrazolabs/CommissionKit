@@ -32,6 +32,7 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
   const { toast } = useToast();
 
   const searchParams = new URLSearchParams(window.location.search);
@@ -59,10 +60,10 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
         });
         if (error) throw error;
         toast({
-          title: "Account created",
-          description: "Your account has been created successfully.",
+          title: "Verification email sent",
+          description: "Please check your inbox to verify your email address.",
         });
-        window.location.href = redirect;
+        setVerificationSent(true);
       } else if (mode === "forgot") {
         const { error } = await authClient.requestPasswordReset({
           email,
@@ -77,11 +78,24 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
       }
     } catch (err: any) {
       console.error("Auth error:", err);
-      toast({
-        title: "Authentication error",
-        description: err.message ?? "Something went wrong.",
-        variant: "destructive",
-      });
+      const isUnverified = 
+        err.status === 403 || 
+        err.code === "EMAIL_NOT_VERIFIED" || 
+        (err.message && err.message.toLowerCase().includes("verify"));
+
+      if (isUnverified) {
+        setVerificationSent(true);
+        toast({
+          title: "Verification Required",
+          description: "Your email is not verified yet. We have sent a verification link to your inbox.",
+        });
+      } else {
+        toast({
+          title: "Authentication error",
+          description: err.message ?? "Something went wrong.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -178,25 +192,29 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
                   <CardHeader className="pb-4">
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.div
-                      key={mode}
+                      key={verificationSent ? "verification" : mode}
                       initial={{ opacity: 0, x: -15 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 15 }}
                       transition={{ duration: 0.2, ease: "easeInOut" }}
                     >
                       <CardTitle className="text-lg">
-                        {mode === "login"
-                          ? "Welcome back"
-                          : mode === "signup"
-                          ? "Start your 14-day free trial"
-                          : "Reset your password"}
+                        {verificationSent
+                          ? "Verify your email"
+                          : mode === "login"
+                            ? "Welcome back"
+                            : mode === "signup"
+                              ? "Start your 14-day free trial"
+                              : "Reset your password"}
                       </CardTitle>
                       <CardDescription className="mt-1">
-                        {mode === "login"
-                          ? "Your team's commissions are waiting."
-                          : mode === "signup"
-                          ? "No credit card required · Setup in 30 minutes"
-                          : "Enter your email to receive a password reset link."}
+                        {verificationSent
+                          ? "We sent an activation link to your email."
+                          : mode === "login"
+                            ? "Your team's commissions are waiting."
+                            : mode === "signup"
+                              ? "No credit card required · Setup in 30 minutes"
+                              : "Enter your email to receive a password reset link."}
                       </CardDescription>
                     </motion.div>
                   </AnimatePresence>
@@ -205,7 +223,27 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
                   <motion.div layout className="space-y-4">
                     <CardContent className="space-y-4">
                       <AnimatePresence mode="wait" initial={false}>
-                        {mode === "forgot" && emailSent ? (
+                        {verificationSent ? (
+                          <motion.div
+                            key="verification-sent-success"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="flex flex-col items-center justify-center text-center py-4 space-y-4"
+                          >
+                            <div className="rounded-full bg-primary/10 p-3 text-primary animate-pulse">
+                              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                              </svg>
+                            </div>
+                            <div className="space-y-2">
+                              <h3 className="font-semibold text-foreground">Check your inbox</h3>
+                              <p className="text-sm text-muted-foreground max-w-[280px]">
+                                Please click the verification link we sent to <span className="font-medium text-foreground">{email}</span> to activate your account.
+                              </p>
+                            </div>
+                          </motion.div>
+                        ) : mode === "forgot" && emailSent ? (
                           <motion.div
                             key="email-sent-success"
                             initial={{ opacity: 0, scale: 0.95 }}
@@ -354,7 +392,19 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
                       </AnimatePresence>
                     </CardContent>
                     <CardFooter className="flex flex-col gap-3 mt-2">
-                      {mode === "forgot" && emailSent ? (
+                      {verificationSent ? (
+                        <Button
+                          type="button"
+                          className="w-full font-bold shadow-sm relative overflow-hidden"
+                          size={'sm'}
+                          onClick={() => {
+                            setVerificationSent(false);
+                            setMode("login");
+                          }}
+                        >
+                          Back to sign in
+                        </Button>
+                      ) : mode === "forgot" && emailSent ? (
                         <Button
                           type="button"
                           className="w-full font-bold shadow-sm relative overflow-hidden"
@@ -392,9 +442,9 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
                         </Button>
                       )}
 
-                      {/* Trust Signals (Only on register mode) */}
+                      {/* Trust Signals (Only on register mode, and when not verified sent) */}
                       <AnimatePresence>
-                        {mode === "signup" && (
+                        {mode === "signup" && !verificationSent && (
                           <motion.div
                             initial={{ opacity: 0, y: -5 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -411,7 +461,7 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
                         )}
                       </AnimatePresence>
 
-                      {!emailSent && (
+                      {!emailSent && !verificationSent && (
                         <p className="text-sm text-muted-foreground text-center">
                           {mode === "login" ? (
                             <>
@@ -419,7 +469,10 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
                               <button
                                 type="button"
                                 className="text-primary font-medium hover:underline focus:outline-none cursor-pointer"
-                                onClick={() => setMode("signup")}
+                                onClick={() => {
+                                  setMode("signup");
+                                  setVerificationSent(false);
+                                }}
                               >
                                 Sign up
                               </button>
@@ -430,7 +483,10 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
                               <button
                                 type="button"
                                 className="text-primary font-medium hover:underline focus:outline-none cursor-pointer"
-                                onClick={() => setMode("login")}
+                                onClick={() => {
+                                  setMode("login");
+                                  setVerificationSent(false);
+                                }}
                               >
                                 Sign in
                               </button>
@@ -444,6 +500,7 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
                                 onClick={() => {
                                   setMode("login");
                                   setEmailSent(false);
+                                  setVerificationSent(false);
                                 }}
                               >
                                 Sign in

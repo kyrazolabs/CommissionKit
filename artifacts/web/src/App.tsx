@@ -19,6 +19,7 @@ import { TeamPage } from "@/pages/team";
 import { BillingPage } from "@/pages/billing";
 import { LoginPage } from "@/pages/login";
 import { ResetPasswordPage } from "@/pages/reset-password";
+import { EmailVerifiedPage } from "@/pages/email-verified";
 import { LandingPage } from "@/pages/landing";
 import { PayoutsPage } from "@/pages/payouts";
 import { DisputesPage } from "@/pages/disputes";
@@ -190,6 +191,11 @@ function App() {
               <Route path="/reset-password" component={() => (
                 <AuthProvider>
                   <ResetPasswordPage />
+                </AuthProvider>
+              )} />
+              <Route path="/email-verified" component={() => (
+                <AuthProvider>
+                  <EmailVerifiedPage />
                 </AuthProvider>
               )} />
               <Route path="/login" component={() => (

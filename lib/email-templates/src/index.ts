@@ -27,3 +27,6 @@ export type { DisputeUpdateTemplateProps } from "./dispute-update.js";
 
 export { verificationCodeTemplate } from "./verification-code.js";
 export type { VerificationCodeTemplateProps } from "./verification-code.js";
+
+export { emailVerificationTemplate } from "./email-verification.js";
+export type { EmailVerificationTemplateProps } from "./email-verification.js";
