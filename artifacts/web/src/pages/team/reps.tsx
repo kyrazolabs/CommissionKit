@@ -167,7 +167,7 @@ export function RepsPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuItem asChild>
-                            <Link href={`/reps/${rep.id}`} className="cursor-pointer w-full flex items-center">
+                            <Link href={`/dash/reps/${rep.id}`} className="cursor-pointer w-full flex items-center">
                               <ChevronRight className="mr-2 size-4" />
                               View Portal
                             </Link>

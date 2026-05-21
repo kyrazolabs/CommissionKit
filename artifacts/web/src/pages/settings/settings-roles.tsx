@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, memo, useMemo } from "react";
 import { Plus, Settings, Shield, Trash, Edit, Check } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiFetch } from "../lib/api";
-import { cn } from "../lib/utils";
+import { apiFetch } from "../../lib/api";
+import { cn } from "../../lib/utils";
 import { useRole } from "@/hooks/use-role";
 import {
   Card,
@@ -10,12 +10,12 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import { Textarea } from "../components/ui/textarea";
-import { Checkbox } from "../components/ui/checkbox";
+} from "../../components/ui/card";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
+import { Textarea } from "../../components/ui/textarea";
+import { Checkbox } from "../../components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -23,8 +23,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../components/ui/dialog";
-import { Badge } from "../components/ui/badge";
+} from "../../components/ui/dialog";
+import { Badge } from "../../components/ui/badge";
 
 const PERMISSION_RESOURCES = [
   { id: "deals", name: "Deals", actions: ["read", "create", "edit", "delete", "export"] },
@@ -111,7 +111,7 @@ export default function SettingsRoles() {
                   <span>{role.permissions.length} permissions granted</span>
                 )}
               </div>
-              
+
               <div className="flex items-center gap-2 mt-auto pt-4 border-t border-border/50">
                 {hasPermission("roles", "edit") && (
                   <Button
@@ -127,7 +127,7 @@ export default function SettingsRoles() {
                     {role.name === "Owner" ? "View" : "Edit"}
                   </Button>
                 )}
-                
+
                 {!role.isSystem && hasPermission("roles", "delete") && (
                   <Button
                     variant="destructive"
@@ -167,7 +167,7 @@ export default function SettingsRoles() {
 function RoleDialog({ role, open, onOpenChange, onSuccess }: any) {
   const isSystem = role?.isSystem;
   const isOwner = role?.name === "Owner";
-  
+
   const [name, setName] = useState(role?.name || "");
   const [description, setDescription] = useState(role?.description || "");
   const [permissions, setPermissions] = useState<string[]>(role?.permissions || []);
@@ -186,7 +186,7 @@ function RoleDialog({ role, open, onOpenChange, onSuccess }: any) {
     if (isOwner) return;
     const resourceActions = PERMISSION_RESOURCES.find(r => r.id === resource)?.actions || [];
     const resourcePerms = resourceActions.map(a => `${resource}:${a}`);
-    
+
     setPermissions(prev => {
       const allSelected = resourcePerms.every(p => prev.includes(p));
       if (allSelected) {
@@ -278,7 +278,7 @@ function RoleDialog({ role, open, onOpenChange, onSuccess }: any) {
 
           <div className="space-y-4">
             <h4 className="text-sm font-semibold border-b pb-2">Permissions Matrix</h4>
-            
+
             {isOwner ? (
               <div className="flex items-center justify-center p-8 bg-muted/50 rounded-lg border border-dashed">
                 <p className="text-muted-foreground flex items-center gap-2">
@@ -287,12 +287,12 @@ function RoleDialog({ role, open, onOpenChange, onSuccess }: any) {
                 </p>
               </div>
             ) : (
-            <PermissionMatrix 
-              permissions={permissions} 
-              onTogglePermission={togglePermission} 
-              onToggleResource={toggleResource}
-              isOwner={isOwner}
-            />
+              <PermissionMatrix
+                permissions={permissions}
+                onTogglePermission={togglePermission}
+                onToggleResource={toggleResource}
+                isOwner={isOwner}
+              />
             )}
           </div>
         </form>
@@ -339,14 +339,14 @@ const PermissionMatrix = memo(({ permissions, onTogglePermission, onToggleResour
               return (
                 <tr key={resource.id} className="hover:bg-primary/5 transition-all duration-200 group">
                   <td className="p-4">
-                    <div 
+                    <div
                       className="flex items-center gap-3 cursor-pointer select-none"
                       onClick={() => !isOwner && onToggleResource(resource.id)}
                     >
                       <div className={cn(
                         "size-4.5 rounded-md border flex items-center justify-center transition-all duration-300",
-                        isFullAccess 
-                          ? "bg-primary border-primary text-primary-foreground shadow-[0_0_10px_rgba(var(--primary),0.3)]" 
+                        isFullAccess
+                          ? "bg-primary border-primary text-primary-foreground shadow-[0_0_10px_rgba(var(--primary),0.3)]"
                           : "bg-background border-muted-foreground/30 group-hover:border-primary/60"
                       )}>
                         {isFullAccess && <Check className="size-3 stroke-[3.5]" />}
@@ -367,11 +367,11 @@ const PermissionMatrix = memo(({ permissions, onTogglePermission, onToggleResour
                     return (
                       <td key={action} className="p-4 text-center">
                         {isSupported ? (
-                          <div 
+                          <div
                             className={cn(
                               "inline-flex size-5.5 items-center justify-center rounded-md border transition-all duration-200 cursor-pointer mx-auto",
-                              isChecked 
-                                ? "bg-primary/10 border-primary/40 text-primary shadow-inner" 
+                              isChecked
+                                ? "bg-primary/10 border-primary/40 text-primary shadow-inner"
                                 : "border-muted-foreground/20 hover:border-primary/40 bg-background/50",
                               (isOwner || hasGlobalWildcard || hasResourceWildcard) && "opacity-40 cursor-not-allowed"
                             )}

@@ -1,5 +1,5 @@
-import { Navbar } from "./landing/Navbar";
-import { Footer } from "./landing/Footer";
+import { Navbar } from "../landing/Navbar";
+import { Footer } from "../landing/Footer";
 import { Shield, Lock, Eye, Cloud } from "lucide-react";
 import { usePageMeta } from "@/hooks/use-page-meta";
 

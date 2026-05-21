@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { DollarSign, Calendar, TrendingUp, Clock, AlertTriangle, Loader2, MessageSquare } from "lucide-react";
@@ -199,7 +200,7 @@ export function MyPayoutsPage() {
           </CardHeader>
           <CardContent>
             <Button asChild>
-              <a href="/billing">Upgrade to Growth</a>
+              <Link href="/dash/billing">Upgrade to Growth</Link>
             </Button>
           </CardContent>
         </Card>

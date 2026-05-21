@@ -408,7 +408,7 @@ export function SettingsPage() {
               <p className="text-sm text-muted-foreground mt-0.5">Invite members, manage roles and access.</p>
             </div>
             <Button variant="outline" size="sm" asChild className="gap-1.5">
-              <Link href="/team">Manage <ArrowRight className="size-3.5" /></Link>
+              <Link href="/dash/team">Manage <ArrowRight className="size-3.5" /></Link>
             </Button>
           </div>
         </CardContent>

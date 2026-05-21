@@ -33,10 +33,44 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const { toast } = useToast();
 
+  // Count down the resend cooldown every second
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
+
   const searchParams = new URLSearchParams(window.location.search);
-  const redirect = searchParams.get("redirect") || "/";
+  const redirect = searchParams.get("redirect") || "/dash";
+
+  const handleResendVerification = async () => {
+    if (resendCooldown > 0 || resendLoading || !email) return;
+    setResendLoading(true);
+    try {
+      const { error } = await authClient.sendVerificationEmail({
+        email,
+        callbackURL: window.location.origin + "/email-verified",
+      });
+      if (error) throw error;
+      setResendCooldown(60);
+      toast({
+        title: "Verification email sent",
+        description: "Please check your inbox for a new verification link.",
+      });
+    } catch (err: any) {
+      toast({
+        title: "Failed to resend",
+        description: err.message ?? "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setResendLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,9 +119,21 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
 
       if (isUnverified) {
         setVerificationSent(true);
+        // Automatically dispatch a fresh verification link so the user
+        // doesn't have to click anything extra — failures are silent here
+        // because the resend button lets them retry manually.
+        authClient
+          .sendVerificationEmail({
+            email,
+            callbackURL: window.location.origin + "/email-verified",
+          })
+          .then(({ error: sendErr }) => {
+            if (sendErr) console.warn("Auto-resend failed:", sendErr);
+          });
+        setResendCooldown(60);
         toast({
-          title: "Verification Required",
-          description: "Your email is not verified yet. We have sent a verification link to your inbox.",
+          title: "Verification required",
+          description: "We've sent a new verification link to your inbox. Please check your email.",
         });
       } else {
         toast({
@@ -214,7 +260,7 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                               exit={{ opacity: 0, scale: 0.95 }}
                               className="flex flex-col items-center justify-center text-center py-4 space-y-4"
                             >
-                              <div className="rounded-full bg-primary/10 p-3 text-primary animate-pulse">
+                              <div className="rounded-full bg-primary/10 p-3 text-primary">
                                 <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
@@ -330,7 +376,7 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
 
                         {/* Google Sign In Divider & Button (Only on login mode) */}
                         <AnimatePresence>
-                          {mode === "login" && (
+                          {mode === "login" && !verificationSent && (
                             <motion.div
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: "auto" }}
@@ -376,17 +422,44 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                       </CardContent>
                       <CardFooter className="flex flex-col gap-3 mt-2">
                         {verificationSent ? (
-                          <Button
-                            type="button"
-                            className="w-full font-bold shadow-sm relative overflow-hidden"
-                            size={'sm'}
-                            onClick={() => {
-                              setVerificationSent(false);
-                              setMode("login");
-                            }}
-                          >
-                            Back to sign in
-                          </Button>
+                          <div className="flex flex-col gap-2 w-full">
+                            <Button
+                              type="button"
+                              className="w-full font-bold shadow-sm relative overflow-hidden"
+                              size="sm"
+                              disabled={resendLoading || resendCooldown > 0}
+                              onClick={handleResendVerification}
+                            >
+                              <AnimatePresence mode="wait" initial={false}>
+                                <motion.span
+                                  key={resendLoading ? "resending" : resendCooldown > 0 ? "cooldown" : "idle"}
+                                  initial={{ opacity: 0, y: 6 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -6 }}
+                                  transition={{ duration: 0.15 }}
+                                >
+                                  {resendLoading
+                                    ? "Sending…"
+                                    : resendCooldown > 0
+                                      ? `Resend in ${resendCooldown}s`
+                                      : "Resend verification email"}
+                                </motion.span>
+                              </AnimatePresence>
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              className="w-full font-medium text-muted-foreground hover:text-foreground"
+                              size="sm"
+                              onClick={() => {
+                                setVerificationSent(false);
+                                setResendCooldown(0);
+                                setMode("login");
+                              }}
+                            >
+                              Back to sign in
+                            </Button>
+                          </div>
                         ) : mode === "forgot" && emailSent ? (
                           <Button
                             type="button"

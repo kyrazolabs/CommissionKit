@@ -25,27 +25,27 @@ const navGroups = [
   {
     label: "Main",
     items: [
-      { name: "Dashboard", href: "/",      icon: LayoutDashboard },
-      { name: "Reports",   href: "/reports",icon: PieChart },
-      { name: "Reps",      href: "/reps",   icon: Users },
-      { name: "Plans",     href: "/plans",  icon: FileText },
+      { name: "Dashboard", href: "/dash",          icon: LayoutDashboard },
+      { name: "Reports",   href: "/dash/reports",  icon: PieChart },
+      { name: "Reps",      href: "/dash/reps",     icon: Users },
+      { name: "Plans",     href: "/dash/plans",    icon: FileText },
     ],
   },
   {
     label: "Operations",
     items: [
-      { name: "Deals",    href: "/deals",    icon: Briefcase },
-      { name: "Runs",     href: "/runs",     icon: PlayCircle },
-      { name: "Payouts",  href: "/payouts",  icon: Wallet },
-      { name: "Disputes", href: "/disputes", icon: AlertOctagon },
+      { name: "Deals",    href: "/dash/deals",    icon: Briefcase },
+      { name: "Runs",     href: "/dash/runs",     icon: PlayCircle },
+      { name: "Payouts",  href: "/dash/payouts",  icon: Wallet },
+      { name: "Disputes", href: "/dash/disputes", icon: AlertOctagon },
     ],
   },
   {
     label: "Account",
     items: [
-      { name: "Team",     href: "/team",     icon: Users },
-      { name: "Billing",  href: "/billing",  icon: CreditCard },
-      { name: "Settings", href: "/settings", icon: Settings },
+      { name: "Team",     href: "/dash/team",     icon: Users },
+      { name: "Billing",  href: "/dash/billing",  icon: CreditCard },
+      { name: "Settings", href: "/dash/settings", icon: Settings },
     ],
   },
 ];
@@ -292,7 +292,7 @@ export function Sidebar() {
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/settings" className="w-full cursor-pointer flex items-center gap-2.5 rounded-lg py-2">
+                <Link href="/dash/settings" className="w-full cursor-pointer flex items-center gap-2.5 rounded-lg py-2">
                   <Settings className="size-[15px] opacity-70" />
                   Account Settings
                 </Link>

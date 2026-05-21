@@ -1,35 +1,49 @@
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
+
 import { Dashboard } from "@/pages/dashboard";
-import { RepsPage } from "@/pages/reps";
-import { PlansPage } from "@/pages/plans";
-import { DealsPage } from "@/pages/deals";
-import { RunsPage } from "@/pages/runs";
-import { ReportsPage } from "@/pages/reports";
-import { RunDetailsPage } from "@/pages/run-details";
-import { RepPortal } from "@/pages/rep-portal";
-import { PublicRepPortal } from "@/pages/public-portal";
-import { SettingsPage } from "@/pages/settings";
-import { TeamPage } from "@/pages/team";
-import { BillingPage } from "@/pages/billing";
+import { ReportsPage } from "@/pages/reports/reports";
+
+import { PlansPage } from "@/pages/commission/plans";
+import { DealsPage } from "@/pages/commission/deals";
+import { RunsPage } from "@/pages/commission/runs";
+import { RunDetailsPage } from "@/pages/commission/run-details";
+
+import { RepPortal } from "@/pages/portal/rep-portal";
+import { PublicRepPortal } from "@/pages/portal/public-portal";
+
+import { SettingsPage } from "@/pages/settings/settings";
+import { BillingPage } from "@/pages/settings/billing";
+
+import { TeamPage } from "@/pages/team/team";
+import { RepsPage } from "@/pages/team/reps";
+import { AcceptInvite } from "@/pages/team/accept-invite";
+
+
 import { AuthPage } from "@/pages/auth/auth";
 import { ResetPasswordPage } from "@/pages/auth/reset-password";
 import { EmailVerifiedPage } from "@/pages/auth/email-verified";
+
 import { LandingPage } from "@/pages/landing";
-import { PayoutsPage } from "@/pages/payouts";
-import { DisputesPage } from "@/pages/disputes";
-import { PrivacyPage } from "@/pages/privacy";
-import { TermsPage } from "@/pages/terms";
-import { SecurityPage } from "@/pages/security";
+
+import { PayoutsPage } from "@/pages/payouts/payouts";
+import { DisputesPage } from "@/pages/payouts/disputes";
+
+import { PrivacyPage } from "@/pages/legal/privacy";
+import { TermsPage } from "@/pages/legal/terms";
+import { SecurityPage } from "@/pages/legal/security";
+
 import { ThemeProvider } from "@/hooks/use-theme";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { WorkspaceProvider, useWorkspace } from "@/hooks/use-workspace";
-import { useState } from "react";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -145,10 +159,34 @@ function AppLoader() {
   );
 }
 
+function PublicOrRedirectLanding() {
+  const { session, loading } = useAuth();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!loading && session) {
+      setLocation("/dash");
+    }
+  }, [session, loading, setLocation]);
+
+  if (loading) return <AppLoader />;
+  if (session) return <AppLoader />;
+
+  return <LandingPage />;
+}
+
 function ProtectedRouter() {
   const { session, loading: authLoading } = useAuth();
   const { activeWorkspace, loading: wsLoading } = useWorkspace();
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!authLoading && session) {
+      if (location === "/" || location === "" || location === "/home" || location === "/login" || location === "/register") {
+        setLocation("/dash");
+      }
+    }
+  }, [session, authLoading, location, setLocation]);
 
   if (authLoading) return <AppLoader />;
   if (!session) {
@@ -157,8 +195,8 @@ function ProtectedRouter() {
     return <AuthPage initialMode="login" />;
   }
 
-  if (location === "/login" || location === "/register" || location === "/home") {
-    return <Layout><Dashboard /></Layout>;
+  if (location === "/login" || location === "/register" || location === "/home" || location === "/" || location === "") {
+    return <AppLoader />;
   }
   if (wsLoading) return <AppLoader />;
   if (!activeWorkspace) return <CreateWorkspaceScreen />;
@@ -166,26 +204,25 @@ function ProtectedRouter() {
   return (
     <Layout>
       <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/reps" component={RepsPage} />
-        <Route path="/plans" component={PlansPage} />
-        <Route path="/deals" component={DealsPage} />
-        <Route path="/runs" component={RunsPage} />
-        <Route path="/runs/:id" component={RunDetailsPage} />
-        <Route path="/reports" component={ReportsPage} />
-        <Route path="/reps/:id" component={RepPortal} />
-        <Route path="/team" component={TeamPage} />
-        <Route path="/settings" component={SettingsPage} />
-        <Route path="/billing" component={BillingPage} />
-        <Route path="/payouts" component={PayoutsPage} />
-        <Route path="/disputes" component={DisputesPage} />
+        <Route path="/dash" component={Dashboard} />
+        <Route path="/dash/reps" component={RepsPage} />
+        <Route path="/dash/plans" component={PlansPage} />
+        <Route path="/dash/deals" component={DealsPage} />
+        <Route path="/dash/runs" component={RunsPage} />
+        <Route path="/dash/runs/:id" component={RunDetailsPage} />
+        <Route path="/dash/reports" component={ReportsPage} />
+        <Route path="/dash/reps/:id" component={RepPortal} />
+        <Route path="/dash/team" component={TeamPage} />
+        <Route path="/dash/settings" component={SettingsPage} />
+        <Route path="/dash/billing" component={BillingPage} />
+        <Route path="/dash/payouts" component={PayoutsPage} />
+        <Route path="/dash/disputes" component={DisputesPage} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
   );
 }
 
-import { AcceptInvite } from "@/pages/accept-invite";
 
 function App() {
   return (
@@ -197,7 +234,11 @@ function App() {
             <Switch>
               <Route path="/portal/:accessCode" component={PublicRepPortal} />
               <Route path="/accept-invite" component={AcceptInvite} />
-              <Route path="/home" component={LandingPage} />
+              <Route path="/home" component={() => (
+                <AuthProvider>
+                  <PublicOrRedirectLanding />
+                </AuthProvider>
+              )} />
               <Route path="/privacy" component={PrivacyPage} />
               <Route path="/terms" component={TermsPage} />
               <Route path="/security" component={SecurityPage} />
@@ -224,6 +265,11 @@ function App() {
               <Route path="/register" component={() => (
                 <AuthProvider>
                   <ProtectedRouter />
+                </AuthProvider>
+              )} />
+              <Route path="/" component={() => (
+                <AuthProvider>
+                  <PublicOrRedirectLanding />
                 </AuthProvider>
               )} />
               {/* All other routes go through the authenticated provider stack */}
