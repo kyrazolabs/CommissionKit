@@ -17,9 +17,9 @@ import { PublicRepPortal } from "@/pages/public-portal";
 import { SettingsPage } from "@/pages/settings";
 import { TeamPage } from "@/pages/team";
 import { BillingPage } from "@/pages/billing";
-import { LoginPage } from "@/pages/login";
-import { ResetPasswordPage } from "@/pages/reset-password";
-import { EmailVerifiedPage } from "@/pages/email-verified";
+import { AuthPage } from "@/pages/auth/auth";
+import { ResetPasswordPage } from "@/pages/auth/reset-password";
+import { EmailVerifiedPage } from "@/pages/auth/email-verified";
 import { LandingPage } from "@/pages/landing";
 import { PayoutsPage } from "@/pages/payouts";
 import { DisputesPage } from "@/pages/disputes";
@@ -30,6 +30,11 @@ import { ThemeProvider } from "@/hooks/use-theme";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { WorkspaceProvider, useWorkspace } from "@/hooks/use-workspace";
 import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { CurrencyCombobox } from "@/components/currency-combobox";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +61,7 @@ function Layout({ children }: { children: React.ReactNode }) {
 function CreateWorkspaceScreen() {
   const { createWorkspace } = useWorkspace();
   const [name, setName] = useState("");
+  const [currency, setCurrency] = useState("USD");
   const [error, setError] = useState("");
   const [creating, setCreating] = useState(false);
 
@@ -65,7 +71,7 @@ function CreateWorkspaceScreen() {
     setCreating(true);
     setError("");
     try {
-      await createWorkspace(name.trim());
+      await createWorkspace(name.trim(), currency);
     } catch {
       setError("Failed to create workspace. Please try again.");
       setCreating(false);
@@ -74,38 +80,50 @@ function CreateWorkspaceScreen() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-sidebar px-4">
-      <div className="bg-card border border-card-border rounded-2xl shadow-sm w-full max-w-sm p-8">
-        <div className="flex justify-center mb-6">
-          <svg width="40" height="40" viewBox="0 0 56 56" fill="none">
-            <rect width="56" height="56" rx="14" fill="#111827" />
-            <line x1="16" y1="40" x2="40" y2="16" stroke="#0D9488" strokeWidth="3.5" strokeLinecap="round" />
-            <circle cx="20" cy="20" r="5" fill="#0D9488" />
-            <circle cx="36" cy="36" r="7" fill="none" stroke="#0D9488" strokeWidth="3" />
-            <circle cx="36" cy="36" r="2.5" fill="#0D9488" />
-          </svg>
-        </div>
-        <h1 className="text-[18px] font-semibold text-foreground text-center mb-1">Create your workspace</h1>
-        <p className="text-[13px] text-muted-foreground text-center mb-6">
-          A workspace holds your team's reps, plans, and deals.
-        </p>
-        <form onSubmit={handleCreate} className="space-y-4">
-          <input
-            type="text"
-            placeholder="e.g. Acme Sales"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-lg border border-border bg-background p-3 text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
-          />
-          {error && <p className="text-[12px] text-destructive">{error}</p>}
-          <button
-            type="submit"
-            disabled={!name.trim() || creating}
-            className="w-full rounded-lg bg-primary text-primary-foreground p-4 text-[14px] font-semibold hover:bg-primary/90 disabled:opacity-50 transition-colors"
-          >
-            {creating ? "Creating…" : "Create workspace"}
-          </button>
-        </form>
-      </div>
+      <Card className="w-full max-w-sm border border-card-border rounded-2xl shadow-sm">
+        <CardHeader className="pb-4">
+          <div className="flex justify-center mb-4">
+            <svg width="40" height="40" viewBox="0 0 56 56" fill="none">
+              <rect width="56" height="56" rx="14" fill="#111827" />
+              <line x1="16" y1="40" x2="40" y2="16" stroke="#0D9488" strokeWidth="3.5" strokeLinecap="round" />
+              <circle cx="20" cy="20" r="5" fill="#0D9488" />
+              <circle cx="36" cy="36" r="7" fill="none" stroke="#0D9488" strokeWidth="3" />
+              <circle cx="36" cy="36" r="2.5" fill="#0D9488" />
+            </svg>
+          </div>
+          <CardTitle className="text-[18px] font-semibold text-center mb-1">Create your workspace</CardTitle>
+          <CardDescription className="text-[13px] text-center">
+            A workspace holds your team's reps, plans, and deals.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleCreate} className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Workspace Name</Label>
+              <Input
+                type="text"
+                placeholder="e.g. Acme Sales"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Currency</Label>
+              <CurrencyCombobox value={currency} onChange={setCurrency} />
+              <p className="text-xs text-muted-foreground">Used for all amount formatting.</p>
+            </div>
+            {error && <p className="text-[12px] text-destructive">{error}</p>}
+            <Button
+              type="submit"
+              disabled={!name.trim() || creating}
+              className="w-full font-semibold"
+            >
+              {creating ? "Creating…" : "Create workspace"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -135,10 +153,10 @@ function ProtectedRouter() {
   if (authLoading) return <AppLoader />;
   if (!session) {
     if (location === "/" || location === "" || location === "/home") return <LandingPage />;
-    if (location === "/register") return <LoginPage initialMode="signup" />;
-    return <LoginPage initialMode="login" />;
+    if (location === "/register") return <AuthPage initialMode="signup" />;
+    return <AuthPage initialMode="login" />;
   }
-  
+
   if (location === "/login" || location === "/register" || location === "/home") {
     return <Layout><Dashboard /></Layout>;
   }
@@ -185,7 +203,7 @@ function App() {
               <Route path="/security" component={SecurityPage} />
               <Route path="/forgot-password" component={() => (
                 <AuthProvider>
-                  <LoginPage initialMode="forgot" />
+                  <AuthPage initialMode="forgot" />
                 </AuthProvider>
               )} />
               <Route path="/reset-password" component={() => (

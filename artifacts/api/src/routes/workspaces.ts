@@ -55,7 +55,7 @@ router.get("/workspaces", requireAuth, async (req: AuthenticatedRequest, res): P
 });
 
 router.post("/workspaces", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const { name } = req.body as { name?: string };
+  const { name, currency } = req.body as { name?: string; currency?: string };
   if (!name?.trim()) {
     res.status(400).json({ error: "Workspace name is required" });
     return;
@@ -72,7 +72,12 @@ router.post("/workspaces", requireAuth, async (req: AuthenticatedRequest, res): 
     slug = `${baseSlug}-${i}`;
   }
 
-  const workspace = await Workspace.create({ slug, name: name.trim(), ownerId: userId });
+  const workspace = await Workspace.create({
+    slug,
+    name: name.trim(),
+    ownerId: userId,
+    currency: currency || "USD",
+  });
 
   const { ownerRole } = await seedWorkspaceRoles(workspace._id);
 

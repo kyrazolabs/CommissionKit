@@ -20,7 +20,7 @@ interface WorkspaceContextValue {
   activeWorkspace: Workspace | null;
   loading: boolean;
   setActiveWorkspace: (ws: Workspace) => void;
-  createWorkspace: (name: string) => Promise<Workspace>;
+  createWorkspace: (name: string, currency?: string) => Promise<Workspace>;
   refreshWorkspaces: () => Promise<void>;
 }
 
@@ -86,7 +86,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const createWorkspace = useCallback(
-    async (name: string): Promise<Workspace> => {
+    async (name: string, currency?: string): Promise<Workspace> => {
       if (!session) throw new Error("Not authenticated");
       const res = await fetch(`${API_URL}/api/workspaces`, {
         method: "POST",
@@ -94,7 +94,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ name, currency }),
       });
       if (!res.ok) throw new Error(await res.text());
       const ws: Workspace = await res.json();

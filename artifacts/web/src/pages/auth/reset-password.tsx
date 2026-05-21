@@ -93,27 +93,16 @@ export function ResetPasswordPage() {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-sidebar selection:bg-primary/20 selection:text-primary select-none">
-      <motion.div
-        initial={{
-          paddingLeft: "0px",
-          paddingRight: "0px",
-          paddingTop: "0px",
-          paddingBottom: "0px"
-        }}
-        animate={{
-          paddingLeft: isMobile ? "12px" : "56px",
-          paddingRight: isMobile ? "12px" : "56px",
-          paddingTop: "56px",
-          paddingBottom: isMobile ? "90px" : "50px"
-        }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="flex flex-1 overflow-hidden justify-center items-stretch w-full"
+      <div
+        className={`flex flex-1 overflow-hidden justify-center items-stretch w-full ${
+          isMobile ? "px-3 pt-14 pb-[90px]" : "px-14 pt-14 pb-12"
+        }`}
       >
         <motion.div
-          initial={{ borderRadius: "0px", borderWidth: "0px", opacity: 0, scale: 0.99 }}
-          animate={{ borderRadius: "16px", borderWidth: "1px", opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full mx-auto h-full bg-background overflow-y-auto overflow-x-hidden border border-card-border relative flex flex-col justify-between py-6 px-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
+          className="w-full mx-auto h-full bg-background overflow-y-auto overflow-x-hidden border border-card-border rounded-2xl relative flex flex-col justify-between py-6 px-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         >
           {/* STATIC BACKGROUND DECORATIVE LAYER */}
           <div className="absolute inset-0 pointer-events-none select-none z-0 overflow-hidden">
@@ -156,12 +145,6 @@ export function ResetPasswordPage() {
           {/* MIDDLE CONTENT: CENTERED FORM CARD */}
           <div className="flex-1 flex items-center justify-center z-10 py-6">
             <div className="w-full max-w-sm space-y-6">
-              <div className="text-center">
-                <h1 className="text-[22px] font-semibold tracking-tight text-foreground">
-                  Commission<span className="text-primary">Kit</span>
-                </h1>
-              </div>
-
               <motion.div
                 layout
                 className="overflow-hidden rounded-2xl border border-border/50 bg-card/45 backdrop-blur-md shadow-xl shadow-black/[0.03] dark:shadow-white/[0.01]"
@@ -351,7 +334,7 @@ export function ResetPasswordPage() {
             </div>
           </div>
         </motion.div>
-      </motion.div>
+      </div>
     </div>
   );
 }
