@@ -24,13 +24,14 @@ const useIsMobile = () => {
   return isMobile;
 };
 
-export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "signup" }) {
+export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "signup" | "forgot" }) {
   const isMobile = useIsMobile();
-  const [mode, setMode] = useState<"login" | "signup">(initialMode);
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">(initialMode);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const { toast } = useToast();
 
   const searchParams = new URLSearchParams(window.location.search);
@@ -49,7 +50,7 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
         });
         if (error) throw error;
         window.location.href = redirect;
-      } else {
+      } else if (mode === "signup") {
         const { error } = await authClient.signUp.email({ 
           email, 
           password,
@@ -62,6 +63,17 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
           description: "Your account has been created successfully.",
         });
         window.location.href = redirect;
+      } else if (mode === "forgot") {
+        const { error } = await authClient.requestPasswordReset({
+          email,
+          redirectTo: window.location.origin + "/reset-password",
+        });
+        if (error) throw error;
+        setEmailSent(true);
+        toast({
+          title: "Reset email sent",
+          description: "If an account with that email exists, you will receive a password reset link.",
+        });
       }
     } catch (err: any) {
       console.error("Auth error:", err);
@@ -173,12 +185,18 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
                       transition={{ duration: 0.2, ease: "easeInOut" }}
                     >
                       <CardTitle className="text-lg">
-                        {mode === "login" ? "Welcome back" : "Start your 14-day free trial"}
+                        {mode === "login"
+                          ? "Welcome back"
+                          : mode === "signup"
+                          ? "Start your 14-day free trial"
+                          : "Reset your password"}
                       </CardTitle>
                       <CardDescription className="mt-1">
                         {mode === "login"
                           ? "Your team's commissions are waiting."
-                          : "No credit card required · Setup in 30 minutes"}
+                          : mode === "signup"
+                          ? "No credit card required · Setup in 30 minutes"
+                          : "Enter your email to receive a password reset link."}
                       </CardDescription>
                     </motion.div>
                   </AnimatePresence>
@@ -186,56 +204,108 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
                 <form onSubmit={handleSubmit}>
                   <motion.div layout className="space-y-4">
                     <CardContent className="space-y-4">
-                      <AnimatePresence initial={false}>
-                        {mode === "signup" && (
+                      <AnimatePresence mode="wait" initial={false}>
+                        {mode === "forgot" && emailSent ? (
                           <motion.div
-                            key="signup-field"
-                            initial={{ opacity: 0, y: -15, height: 0, marginBottom: 0 }}
-                            animate={{ opacity: 1, y: 0, height: "auto", marginBottom: 16 }}
-                            exit={{ opacity: 0, y: -15, height: 0, marginBottom: 0 }}
-                            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                            className="space-y-2 overflow-hidden"
+                            key="email-sent-success"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="flex flex-col items-center justify-center text-center py-4 space-y-4"
                           >
-                            <Label htmlFor="name">Full Name</Label>
-                            <Input
-                              id="name"
-                              type="text"
-                              placeholder="John Doe"
-                              value={name}
-                              onChange={(e) => setName(e.target.value)}
-                              required={mode === "signup"}
-                            />
+                            <div className="rounded-full bg-primary/10 p-3 text-primary">
+                              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                            </div>
+                            <div className="space-y-2">
+                              <h3 className="font-semibold text-foreground">Check your inbox</h3>
+                              <p className="text-sm text-muted-foreground max-w-[280px]">
+                                We have sent a password reset link to <span className="font-medium text-foreground">{email}</span>.
+                              </p>
+                            </div>
+                          </motion.div>
+                        ) : (
+                          <motion.div key="form-fields" className="space-y-4">
+                            <AnimatePresence initial={false}>
+                              {mode === "signup" && (
+                                <motion.div
+                                  key="signup-field"
+                                  initial={{ opacity: 0, y: -15, height: 0, marginBottom: 0 }}
+                                  animate={{ opacity: 1, y: 0, height: "auto", marginBottom: 16 }}
+                                  exit={{ opacity: 0, y: -15, height: 0, marginBottom: 0 }}
+                                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                                  className="space-y-2 overflow-hidden"
+                                >
+                                  <Label htmlFor="name">Full Name</Label>
+                                  <Input
+                                    id="name"
+                                    type="text"
+                                    placeholder="John Doe"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    required={mode === "signup"}
+                                  />
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+
+                            <motion.div layout className="space-y-2">
+                              <Label htmlFor="email">Email</Label>
+                              <Input
+                                id="email"
+                                type="email"
+                                placeholder="you@company.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                                autoComplete="email"
+                              />
+                            </motion.div>
+
+                            <AnimatePresence initial={false}>
+                              {mode !== "forgot" && (
+                                <motion.div
+                                  key="password-field"
+                                  initial={{ opacity: 0, y: -15, height: 0, marginBottom: 0 }}
+                                  animate={{ opacity: 1, y: 0, height: "auto", marginBottom: 0 }}
+                                  exit={{ opacity: 0, y: -15, height: 0, marginBottom: 0 }}
+                                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                                  className="space-y-2 overflow-hidden"
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <Label htmlFor="password">Password</Label>
+                                    {mode === "login" && (
+                                      <button
+                                        type="button"
+                                        className="text-[12px] text-primary hover:underline font-medium focus:outline-none cursor-pointer"
+                                        onClick={() => {
+                                          setMode("forgot");
+                                          setEmailSent(false);
+                                        }}
+                                      >
+                                        Forgot password?
+                                      </button>
+                                    )}
+                                  </div>
+                                  <Input
+                                    id="password"
+                                    type="password"
+                                    placeholder="••••••••"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                    autoComplete={
+                                      mode === "login" ? "current-password" : "new-password"
+                                    }
+                                    minLength={8}
+                                  />
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                           </motion.div>
                         )}
                       </AnimatePresence>
-
-                      <motion.div layout className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="you@company.com"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          required
-                          autoComplete="email"
-                        />
-                      </motion.div>
-                      <motion.div layout className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
-                        <Input
-                          id="password"
-                          type="password"
-                          placeholder="••••••••"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          required
-                          autoComplete={
-                            mode === "login" ? "current-password" : "new-password"
-                          }
-                          minLength={8}
-                        />
-                      </motion.div>
 
                       {/* Google Sign In Divider & Button (Only on login mode) */}
                       <AnimatePresence>
@@ -284,27 +354,43 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
                       </AnimatePresence>
                     </CardContent>
                     <CardFooter className="flex flex-col gap-3 mt-2">
-                      <Button
-                        type="submit"
-                        className="w-full font-bold shadow-sm relative overflow-hidden"
-                        disabled={loading} size={'sm'}
-                      >
-                        <AnimatePresence mode="wait" initial={false}>
-                          <motion.span
-                            key={mode + (loading ? "-loading" : "")}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.15 }}
-                          >
-                            {loading
-                              ? "Please wait…"
-                              : mode === "login"
-                                ? "Sign in"
-                                : "Create account"}
-                          </motion.span>
-                        </AnimatePresence>
-                      </Button>
+                      {mode === "forgot" && emailSent ? (
+                        <Button
+                          type="button"
+                          className="w-full font-bold shadow-sm relative overflow-hidden"
+                          size={'sm'}
+                          onClick={() => {
+                            setMode("login");
+                            setEmailSent(false);
+                          }}
+                        >
+                          Back to sign in
+                        </Button>
+                      ) : (
+                        <Button
+                          type="submit"
+                          className="w-full font-bold shadow-sm relative overflow-hidden"
+                          disabled={loading} size={'sm'}
+                        >
+                          <AnimatePresence mode="wait" initial={false}>
+                            <motion.span
+                              key={mode + (loading ? "-loading" : "")}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              transition={{ duration: 0.15 }}
+                            >
+                              {loading
+                                ? "Please wait…"
+                                : mode === "login"
+                                  ? "Sign in"
+                                  : mode === "signup"
+                                    ? "Create account"
+                                    : "Send reset link"}
+                            </motion.span>
+                          </AnimatePresence>
+                        </Button>
+                      )}
 
                       {/* Trust Signals (Only on register mode) */}
                       <AnimatePresence>
@@ -324,20 +410,48 @@ export function LoginPage({ initialMode = "login" }: { initialMode?: "login" | "
                           </motion.div>
                         )}
                       </AnimatePresence>
-                      <p className="text-sm text-muted-foreground text-center">
-                        {mode === "login"
-                          ? "Don't have an account?"
-                          : "Already have an account?"}{" "}
-                        <button
-                          type="button"
-                          className="text-primary font-medium hover:underline focus:outline-none"
-                          onClick={() =>
-                            setMode(mode === "login" ? "signup" : "login")
-                          }
-                        >
-                          {mode === "login" ? "Sign up" : "Sign in"}
-                        </button>
-                      </p>
+
+                      {!emailSent && (
+                        <p className="text-sm text-muted-foreground text-center">
+                          {mode === "login" ? (
+                            <>
+                              Don't have an account?{" "}
+                              <button
+                                type="button"
+                                className="text-primary font-medium hover:underline focus:outline-none cursor-pointer"
+                                onClick={() => setMode("signup")}
+                              >
+                                Sign up
+                              </button>
+                            </>
+                          ) : mode === "signup" ? (
+                            <>
+                              Already have an account?{" "}
+                              <button
+                                type="button"
+                                className="text-primary font-medium hover:underline focus:outline-none cursor-pointer"
+                                onClick={() => setMode("login")}
+                              >
+                                Sign in
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              Remembered your password?{" "}
+                              <button
+                                type="button"
+                                className="text-primary font-medium hover:underline focus:outline-none cursor-pointer"
+                                onClick={() => {
+                                  setMode("login");
+                                  setEmailSent(false);
+                                }}
+                              >
+                                Sign in
+                              </button>
+                            </>
+                          )}
+                        </p>
+                      )}
                     </CardFooter>
                   </motion.div>
                 </form>

@@ -18,6 +18,7 @@ import { SettingsPage } from "@/pages/settings";
 import { TeamPage } from "@/pages/team";
 import { BillingPage } from "@/pages/billing";
 import { LoginPage } from "@/pages/login";
+import { ResetPasswordPage } from "@/pages/reset-password";
 import { LandingPage } from "@/pages/landing";
 import { PayoutsPage } from "@/pages/payouts";
 import { DisputesPage } from "@/pages/disputes";
@@ -181,6 +182,16 @@ function App() {
               <Route path="/privacy" component={PrivacyPage} />
               <Route path="/terms" component={TermsPage} />
               <Route path="/security" component={SecurityPage} />
+              <Route path="/forgot-password" component={() => (
+                <AuthProvider>
+                  <LoginPage initialMode="forgot" />
+                </AuthProvider>
+              )} />
+              <Route path="/reset-password" component={() => (
+                <AuthProvider>
+                  <ResetPasswordPage />
+                </AuthProvider>
+              )} />
               <Route path="/login" component={() => (
                 <AuthProvider>
                   <ProtectedRouter />
