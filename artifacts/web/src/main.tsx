@@ -1,13 +1,20 @@
 import "./instrument"; // MUST be first
 
-import { createRoot } from "react-dom/client";
+import { hydrateRoot, createRoot } from "react-dom/client";
 import { reactErrorHandler } from "@sentry/react";
 import App from "./App";
 import "./index.css";
 
-createRoot(document.getElementById("root")!, {
+const container = document.getElementById("root")!;
+const rootOptions = {
   onUncaughtError: reactErrorHandler(),
   onCaughtError: reactErrorHandler(),
   onRecoverableError: reactErrorHandler(),
-}).render(<App />);
+};
+
+if (container.hasChildNodes()) {
+  hydrateRoot(container, <App />, rootOptions);
+} else {
+  createRoot(container, rootOptions).render(<App />);
+}
 
