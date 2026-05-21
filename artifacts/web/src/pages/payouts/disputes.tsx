@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { Link } from "wouter";
 import {
   AlertTriangle, CheckCircle2, Clock, MessageSquare, Loader2,
   ChevronDown, ChevronRight,
@@ -283,7 +284,7 @@ export function DisputesPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button asChild><a href="/billing">Upgrade to Growth</a></Button>
+            <Button asChild><Link href="/dash/billing">Upgrade to Growth</Link></Button>
           </CardContent>
         </Card>
       </div>

@@ -36,7 +36,7 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
   const { toast } = useToast();
 
   const searchParams = new URLSearchParams(window.location.search);
-  const redirect = searchParams.get("redirect") || "/";
+  const redirect = searchParams.get("redirect") || "/dash";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

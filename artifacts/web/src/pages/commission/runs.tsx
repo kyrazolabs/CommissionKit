@@ -174,7 +174,7 @@ export function RunsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/runs/${run.id}`}>
+                        <Link href={`/dash/runs/${run.id}`}>
                           View Details <ArrowRight className="ml-2 size-4" />
                         </Link>
                       </Button>

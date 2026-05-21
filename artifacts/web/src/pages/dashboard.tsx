@@ -105,7 +105,7 @@ export function Dashboard() {
               </div>
               <p className="text-[12px] text-muted-foreground mt-0.5">Ranked by commission earned</p>
             </div>
-            <Link href="/reps" className="flex items-center gap-1 text-[12px] font-semibold text-primary hover:opacity-80 transition-opacity">
+            <Link href="/dash/reps" className="flex items-center gap-1 text-[12px] font-semibold text-primary hover:opacity-80 transition-opacity">
               View all <ArrowUpRight className="size-3" />
             </Link>
           </div>
@@ -139,7 +139,7 @@ export function Dashboard() {
                         </div>
                         <div>
                           <Link
-                            href={`/reps/${rep.repId}`}
+                            href={`/dash/reps/${rep.repId}`}
                             className="text-[13.5px] font-semibold text-foreground hover:text-primary transition-colors"
                           >
                             {rep.repName}
@@ -227,7 +227,7 @@ export function Dashboard() {
                       </p>
                     </div>
                     <Link
-                      href={`/runs/${run.id}`}
+                      href={`/dash/runs/${run.id}`}
                       className="flex items-center gap-0.5 text-[11px] font-semibold text-primary bg-secondary border border-primary/20 rounded-md px-2.5 py-0.5 hover:opacity-80 transition-opacity"
                     >
                       Completed

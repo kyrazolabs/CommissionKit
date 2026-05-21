@@ -15,7 +15,7 @@ export function Header() {
   return (
     <header className="flex h-14 shrink-0 items-center bg-header px-5 z-10">
       {/* Logo : width matches sidebar */}
-      <a href="/home" className="flex items-center gap-2">
+      <a href="/dash" className="flex items-center gap-2">
         <img src="/brand/logo-symbol.svg" alt="CommissionKit Logo" className="h-6" />
         <span className="text-lg font-bold text-foreground tracking-tight">Commission<span className="text-primary">Kit</span></span>
       </a>
