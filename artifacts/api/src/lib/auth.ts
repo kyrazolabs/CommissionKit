@@ -47,7 +47,8 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    sendResetPassword: async ({ user, url }) => {
+    sendResetPassword: async ({ user, url, token }) => {
+      const resetUrl = `${APP_URL}/reset-password?token=${token}`;
       try {
         await sendHighPriorityEmail({
           to: user.email,
@@ -55,7 +56,7 @@ export const auth = betterAuth({
           subject: "Reset your CommissionKit password",
           html: passwordResetTemplate({
             name: user.name || undefined,
-            resetUrl: url,
+            resetUrl,
             expiresIn: "1 hour",
           }),
           meta: { userId: user.id, event: "password_reset" },
