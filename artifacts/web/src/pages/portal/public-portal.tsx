@@ -13,7 +13,6 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import {
-  CalendarDays,
   DollarSign,
   Activity,
   Briefcase,
@@ -32,8 +31,6 @@ import {
   Tooltip as RechartsTooltip,
 } from "recharts";
 import { MonthPicker } from "@/components/ui/month-picker";
-import { DatePicker } from "@/components/ui/date-picker";
-import { parseISO } from "date-fns";
 import { CurrencyCell } from "@/components/currency-cell";
 
 // Note: authClient is NOT used in this file.

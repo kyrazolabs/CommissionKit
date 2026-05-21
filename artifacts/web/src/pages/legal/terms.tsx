@@ -1,5 +1,5 @@
-import { Navbar } from "./landing/Navbar";
-import { Footer } from "./landing/Footer";
+import { Navbar } from "../landing/Navbar";
+import { Footer } from "../landing/Footer";
 import { usePageMeta } from "@/hooks/use-page-meta";
 
 
