@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../../lib/api";
 import { cn } from "../../lib/utils";
 import { useRole } from "@/hooks/use-role";
+import { useSyncStore } from "@/hooks/use-sync-store";
 import {
   Card,
   CardContent,
@@ -46,6 +47,7 @@ export default function SettingsRoles() {
   const queryClient = useQueryClient();
   const [selectedRole, setSelectedRole] = useState<any>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { setSyncError } = useSyncStore();
 
   const { data: roles = [], isLoading } = useQuery({
     queryKey: ["roles"],
@@ -55,7 +57,22 @@ export default function SettingsRoles() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) =>
       apiFetch(`/api/roles/${id}`, { method: "DELETE" }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["roles"] }),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ["roles"] });
+      const previous = queryClient.getQueryData(["roles"]);
+      queryClient.setQueryData(["roles"], (old: any) => {
+        if (!Array.isArray(old)) return old;
+        return old.filter((r: any) => r.id !== id);
+      });
+      return { previous };
+    },
+    onError: (err, variables, context: any) => {
+      setSyncError(true);
+      queryClient.setQueryData(["roles"], context?.previous);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["roles"] });
+    }
   });
 
   if (isLoading) {
@@ -148,23 +165,17 @@ export default function SettingsRoles() {
         ))}
       </div>
 
-      {isDialogOpen && (
-        <RoleDialog
-          key={selectedRole?.id || "new"}
-          role={selectedRole}
-          open={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-          onSuccess={() => {
-            setIsDialogOpen(false);
-            queryClient.invalidateQueries({ queryKey: ["roles"] });
-          }}
-        />
-      )}
+      <RoleDialog
+        key={selectedRole?.id || "new"}
+        role={selectedRole}
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+      />
     </div>
   );
 }
 
-function RoleDialog({ role, open, onOpenChange, onSuccess }: any) {
+function RoleDialog({ role, open, onOpenChange }: any) {
   const isSystem = role?.isSystem;
   const isOwner = role?.name === "Owner";
 
@@ -172,8 +183,56 @@ function RoleDialog({ role, open, onOpenChange, onSuccess }: any) {
   const [description, setDescription] = useState(role?.description || "");
   const [permissions, setPermissions] = useState<string[]>(role?.permissions || []);
 
-  const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState("");
+  const queryClient = useQueryClient();
+  const { setSyncError } = useSyncStore();
+  
+  const mutation = useMutation({
+    mutationFn: async (payload: any) => {
+      if (role) {
+        return apiFetch(`/api/roles/${role.id}`, {
+          method: "PUT",
+          body: JSON.stringify(payload),
+        });
+      } else {
+        return apiFetch("/api/roles", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+      }
+    },
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({ queryKey: ["roles"] });
+      const previous = queryClient.getQueryData(["roles"]);
+      
+      const optimisticRole = {
+        id: role ? role.id : `temp-${Date.now()}`,
+        name: payload.name,
+        description: payload.description,
+        permissions: payload.permissions,
+        isSystem: role?.isSystem || false,
+      };
+      
+      queryClient.setQueryData(["roles"], (old: any) => {
+        if (!Array.isArray(old)) return old;
+        if (role) {
+          return old.map((r: any) => r.id === role.id ? optimisticRole : r);
+        } else {
+          return [optimisticRole, ...old];
+        }
+      });
+      return { previous };
+    },
+    onError: (err: any, variables, context: any) => {
+      setSyncError(true);
+      queryClient.setQueryData(["roles"], context?.previous);
+      setError(err.message || "Failed to save role. Recovering your input...");
+      onOpenChange(true);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["roles"] });
+    }
+  });
 
   const togglePermission = useCallback((perm: string) => {
     if (isOwner) return;
@@ -201,37 +260,28 @@ function RoleDialog({ role, open, onOpenChange, onSuccess }: any) {
     });
   }, [isOwner]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isOwner) return;
 
-    setIsPending(true);
     setError("");
 
-    try {
-      const payload = {
-        name,
-        description,
-        permissions: permissions.includes("*") ? ["*"] : permissions,
-      };
+    const payload = {
+      name,
+      description,
+      permissions: permissions.includes("*") ? ["*"] : permissions,
+    };
 
-      if (role) {
-        await apiFetch(`/api/roles/${role.id}`, {
-          method: "PUT",
-          body: JSON.stringify(payload),
-        });
-      } else {
-        await apiFetch("/api/roles", {
-          method: "POST",
-          body: JSON.stringify(payload),
-        });
+    mutation.mutate(payload, {
+      onSuccess: () => {
+        if (!role) {
+          setName("");
+          setDescription("");
+          setPermissions([]);
+        }
       }
-      onSuccess();
-    } catch (err: any) {
-      setError(err.message || "Failed to save role");
-    } finally {
-      setIsPending(false);
-    }
+    });
+    onOpenChange(false);
   };
 
   return (
@@ -302,8 +352,8 @@ function RoleDialog({ role, open, onOpenChange, onSuccess }: any) {
             {isOwner ? "Close" : "Cancel"}
           </Button>
           {!isOwner && (
-            <Button type="submit" form="role-form" disabled={isPending}>
-              {isPending ? "Saving…" : role ? "Save Changes" : "Create Role"}
+            <Button type="submit" form="role-form">
+              {role ? "Save Changes" : "Create Role"}
             </Button>
           )}
         </DialogFooter>

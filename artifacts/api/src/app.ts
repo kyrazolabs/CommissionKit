@@ -36,6 +36,9 @@ app.use(
     credentials: true,
   }),
 );
+import { secureBullBoard, serverAdapter } from "./lib/bull-board";
+app.use("/admin/queues", secureBullBoard, serverAdapter.getRouter());
+
 // Raw body for Stripe webhook signature verification
 app.use("/api/billing/webhook", express.raw({ type: "application/json" }));
 app.all(/\/api\/auth\/.*/, toNodeHandler(auth));

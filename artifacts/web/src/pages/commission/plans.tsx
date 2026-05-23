@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSyncStore } from "@/hooks/use-sync-store";
 import { 
   useListPlans, getListPlansQueryKey, 
   useCreatePlan, useUpdatePlan, useDeletePlan 
@@ -58,6 +59,7 @@ export function PlansPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
+          <p className="text-[12px] font-semibold text-primary mb-1">Operations</p>
           <h1 className="text-3xl font-semibold tracking-tight">Commission Plans</h1>
           <p className="text-muted-foreground">Design and manage compensation structures.</p>
         </div>
@@ -119,16 +121,44 @@ function PlanCard({ plan, sub, currency }: { plan: any, sub: any, currency: stri
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { can, hasPermission } = useRole();
-  const deleteMutation = useDeletePlan();
+  const deleteMutation = useDeletePlan({
+    mutation: {
+      onMutate: async (variables) => {
+        const { id } = variables;
+        await queryClient.cancelQueries({ queryKey: ['/api/plans'] });
+        const previousPlans = queryClient.getQueryData<any[]>(['/api/plans']);
+
+        queryClient.setQueryData<any[]>(['/api/plans'], (old) => {
+          if (!old) return [];
+          return old.filter(p => p.id !== id);
+        });
+
+        return { previousPlans };
+      },
+      onError: (err, variables, context: any) => {
+        if (context?.previousPlans) {
+          queryClient.setQueryData(['/api/plans'], context.previousPlans);
+        }
+        useSyncStore.getState().setSyncError(true);
+        toast({
+          title: "Sync Error",
+          description: "Failed to delete plan. Reverted changes.",
+          variant: "destructive",
+        });
+      },
+      onSuccess: () => {
+        useSyncStore.getState().setSyncError(false);
+        toast({ title: "Plan deleted", description: "The commission plan has been removed." });
+      },
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: getListPlansQueryKey() });
+      }
+    }
+  });
 
   const handleDelete = () => {
-    deleteMutation.mutate({ id: plan.id }, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListPlansQueryKey() });
-        toast({ title: "Plan deleted", description: "The commission plan has been removed." });
-        setIsDeleteOpen(false);
-      }
-    });
+    deleteMutation.mutate({ id: plan.id });
+    setIsDeleteOpen(false);
   };
 
   const getPlanIcon = () => {
@@ -237,9 +267,7 @@ function PlanCard({ plan, sub, currency }: { plan: any, sub: any, currency: stri
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={deleteMutation.isPending}>
-              {deleteMutation.isPending ? "Deleting…" : "Delete"}
-            </Button>
+            <Button variant="destructive" onClick={handleDelete}>Delete</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -266,17 +294,87 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const createMutation = useCreatePlan();
-  const updateMutation = useUpdatePlan();
+  const createMutation = useCreatePlan({
+    mutation: {
+      onMutate: async (variables) => {
+        const newPlan = variables.data;
+        await queryClient.cancelQueries({ queryKey: ['/api/plans'] });
+        const previousPlans = queryClient.getQueryData<any[]>(['/api/plans']);
+
+        const tempId = `temp-plan-${Date.now()}`;
+        const optimisticPlan = {
+          id: tempId,
+          ...newPlan,
+        };
+
+        queryClient.setQueryData<any[]>(['/api/plans'], (old) => {
+          if (!old) return [optimisticPlan];
+          return [optimisticPlan, ...old];
+        });
+
+        return { previousPlans };
+      },
+      onError: (err, variables, context: any) => {
+        if (context?.previousPlans) {
+          queryClient.setQueryData(['/api/plans'], context.previousPlans);
+        }
+        useSyncStore.getState().setSyncError(true);
+        toast({
+          title: "Failed to create plan",
+          description: "Recovering your input...",
+          variant: "destructive",
+        });
+        onOpenChange(true);
+      },
+      onSuccess: () => {
+        useSyncStore.getState().setSyncError(false);
+        toast({ title: "Plan created" });
+      },
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: getListPlansQueryKey() });
+      }
+    }
+  });
+
+  const updateMutation = useUpdatePlan({
+    mutation: {
+      onMutate: async (variables) => {
+        const { id, data } = variables;
+        await queryClient.cancelQueries({ queryKey: ['/api/plans'] });
+        const previousPlans = queryClient.getQueryData<any[]>(['/api/plans']);
+
+        queryClient.setQueryData<any[]>(['/api/plans'], (old) => {
+          if (!old) return [];
+          return old.map(plan => plan.id === id ? { ...plan, ...data } : plan);
+        });
+
+        return { previousPlans };
+      },
+      onError: (err, variables, context: any) => {
+        if (context?.previousPlans) {
+          queryClient.setQueryData(['/api/plans'], context.previousPlans);
+        }
+        useSyncStore.getState().setSyncError(true);
+        toast({
+          title: "Failed to update plan",
+          description: "Recovering your input...",
+          variant: "destructive",
+        });
+        onOpenChange(true);
+      },
+      onSuccess: () => {
+        useSyncStore.getState().setSyncError(false);
+        toast({ title: "Plan updated" });
+      },
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: getListPlansQueryKey() });
+      }
+    }
+  });
 
   // Reset form when dialog opens
   useEffect(() => {
-    if (open && !isEditing) {
-      setName("");
-      setType("flat");
-      setFlatRate("5");
-      setClawbackDays("");
-    } else if (open && isEditing && initialData) {
+    if (open && isEditing && initialData) {
       setName(initialData.name || "");
       setType(initialData.type || "flat");
       setFlatRate(initialData.flatRate ? (initialData.flatRate * 100).toString() : "5");
@@ -313,26 +411,20 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
     }
 
     if (isEditing) {
-      updateMutation.mutate({ id: initialData.id, data: payload as any }, {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListPlansQueryKey() });
-          toast({ title: "Plan updated" });
-          onOpenChange(false);
-        }
-      });
+      updateMutation.mutate({ id: initialData.id, data: payload as any });
+      onOpenChange(false);
     } else {
       createMutation.mutate({ data: payload as any }, {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListPlansQueryKey() });
-          toast({ title: "Plan created" });
-          onOpenChange(false);
           setName("");
+          setType("flat");
+          setFlatRate("5");
+          setClawbackDays("");
         }
       });
+      onOpenChange(false);
     }
   };
-
-  const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -474,7 +566,7 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
           
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={isPending}>{isPending ? "Saving…" : "Save Plan"}</Button>
+            <Button type="submit">Save Plan</Button>
           </DialogFooter>
         </form>
       </DialogContent>

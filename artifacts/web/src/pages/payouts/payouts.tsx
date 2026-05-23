@@ -35,6 +35,7 @@ import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/lib/api";
 import { usePageMeta } from "@/hooks/use-page-meta";
+import { useSyncStore } from "@/hooks/use-sync-store";
 
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
@@ -92,6 +93,8 @@ function useFetchPayouts(workspaceId: string, filters: any) {
 
 function usePayoutMutation(workspaceId: string) {
   const queryClient = useQueryClient();
+  const { setSyncError } = useSyncStore();
+  
   return useMutation({
     mutationFn: async ({ id, action, body }: { id: string; action: string; body: any }) => {
       return apiFetch(`/api/payouts/${id}/${action}`, {
@@ -99,7 +102,37 @@ function usePayoutMutation(workspaceId: string) {
         body: JSON.stringify(body),
       });
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["payouts", workspaceId] }),
+    onMutate: async ({ id, action, body }) => {
+      await queryClient.cancelQueries({ queryKey: ["payouts", workspaceId] });
+      const previousQueries = queryClient.getQueriesData({ queryKey: ["payouts", workspaceId] });
+
+      queryClient.setQueriesData({ queryKey: ["payouts", workspaceId] }, (old: any) => {
+        if (!Array.isArray(old)) return old;
+        return old.map(p => {
+          if (p.id !== id) return p;
+          let updated = { ...p };
+          if (action === "status") {
+            updated.status = body.status;
+          } else if (action === "adjust") {
+            updated.adjustments = (updated.adjustments || 0) + (body.amount || 0);
+            updated.finalAmount = updated.commissionAmount + updated.adjustments;
+          }
+          return updated;
+        });
+      });
+      return { previousQueries };
+    },
+    onError: (err: any, variables, context: any) => {
+      setSyncError(true);
+      if (context?.previousQueries) {
+        context.previousQueries.forEach(([queryKey, oldData]: [any, any]) => {
+          queryClient.setQueryData(queryKey, oldData);
+        });
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["payouts", workspaceId] });
+    }
   });
 }
 
@@ -156,10 +189,11 @@ function AdjustModal({ payout, workspaceId, onClose }: { payout: Payout; workspa
     mutation.mutate(
       { id: payout.id, action: "adjust", body: { amount: num, note } },
       {
-        onSuccess: () => { toast({ title: "Adjustment applied" }); onClose(); },
+        onSuccess: () => toast({ title: "Adjustment applied" }),
         onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
-      },
+      }
     );
+    onClose();
   };
 
   return (
@@ -188,10 +222,7 @@ function AdjustModal({ payout, workspaceId, onClose }: { payout: Payout; workspa
         </div>
         <DialogFooter>
           <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-          <Button type="submit" disabled={mutation.isPending}>
-            {mutation.isPending ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
-            Apply
-          </Button>
+          <Button type="submit">Apply</Button>
         </DialogFooter>
       </form>
     </DialogContent>
@@ -199,7 +230,7 @@ function AdjustModal({ payout, workspaceId, onClose }: { payout: Payout; workspa
 }
 
 // ─── Create Payout Modal ──────────────────────────────────────────────────────
-function CreatePayoutModal({ workspaceId, onClose }: { workspaceId: string; onClose: () => void }) {
+function CreatePayoutModal({ workspaceId, open, setOpen }: { workspaceId: string; open: boolean; setOpen: (v: boolean) => void }) {
   const [repId, setRepId] = useState("");
   const [periodStart, setPeriodStart] = useState<Date | undefined>(undefined);
   const [periodEnd, setPeriodEnd] = useState<Date | undefined>(undefined);
@@ -215,6 +246,7 @@ function CreatePayoutModal({ workspaceId, onClose }: { workspaceId: string; onCl
     },
   });
 
+  const { setSyncError } = useSyncStore();
   const mutation = useMutation({
     mutationFn: async (body: any) => {
       return apiFetch(`/api/payouts`, {
@@ -222,12 +254,43 @@ function CreatePayoutModal({ workspaceId, onClose }: { workspaceId: string; onCl
         body: JSON.stringify(body),
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["payouts", workspaceId] });
-      toast({ title: "Payout created" });
-      onClose();
+    onMutate: async (body) => {
+      await queryClient.cancelQueries({ queryKey: ["payouts", workspaceId] });
+      const previousQueries = queryClient.getQueriesData({ queryKey: ["payouts", workspaceId] });
+      
+      const optimisticPayout = {
+        id: `temp-${Date.now()}`,
+        repId: body.repId,
+        repName: reps?.find((r: any) => r.id === body.repId)?.name || "Unknown",
+        periodStart: body.periodStart,
+        periodEnd: body.periodEnd,
+        commissionAmount: body.commissionAmount,
+        adjustments: 0,
+        finalAmount: body.commissionAmount,
+        currency: "USD",
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      
+      queryClient.setQueriesData({ queryKey: ["payouts", workspaceId] }, (old: any) => {
+        return Array.isArray(old) ? [optimisticPayout, ...old] : [optimisticPayout];
+      });
+      return { previousQueries };
     },
-    onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+    onError: (err: any, variables, context: any) => {
+      setSyncError(true);
+      if (context?.previousQueries) {
+        context.previousQueries.forEach(([queryKey, oldData]: [any, any]) => {
+          queryClient.setQueryData(queryKey, oldData);
+        });
+      }
+      toast({ title: "Failed to create payout", description: "Recovering your input...", variant: "destructive" });
+      setOpen(true);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["payouts", workspaceId] });
+    }
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -239,7 +302,13 @@ function CreatePayoutModal({ workspaceId, onClose }: { workspaceId: string; onCl
       periodEnd: format(periodEnd, "yyyy-MM-dd"), 
       commissionAmount: parseFloat(amount), 
       notes 
+    }, {
+      onSuccess: () => {
+        toast({ title: "Payout created" });
+        setRepId(""); setPeriodStart(undefined); setPeriodEnd(undefined); setAmount(""); setNotes("");
+      }
     });
+    setOpen(false);
   };
 
   return (
@@ -282,11 +351,8 @@ function CreatePayoutModal({ workspaceId, onClose }: { workspaceId: string; onCl
           <Textarea rows={2} value={notes} onChange={e => setNotes(e.target.value)} />
         </div>
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-          <Button type="submit" disabled={mutation.isPending}>
-            {mutation.isPending ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
-            Create Payout
-          </Button>
+          <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button type="submit">Create Payout</Button>
         </DialogFooter>
       </form>
     </DialogContent>
@@ -298,14 +364,12 @@ function StatusConfirmModal({
   payout,
   targetStatus,
   onConfirm,
-  onClose,
-  isPending
+  onClose
 }: {
   payout: Payout;
   targetStatus: string;
   onConfirm: () => void;
   onClose: () => void;
-  isPending: boolean;
 }) {
   const isFinal = targetStatus === "paid";
   return (
@@ -325,9 +389,8 @@ function StatusConfirmModal({
         </DialogDescription>
       </DialogHeader>
       <DialogFooter>
-        <Button variant="outline" onClick={onClose} disabled={isPending}>Cancel</Button>
-        <Button onClick={onConfirm} disabled={isPending} variant={isFinal ? "destructive" : "default"}>
-          {isPending ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+        <Button variant="outline" onClick={onClose}>Cancel</Button>
+        <Button onClick={onConfirm} variant={isFinal ? "destructive" : "default"}>
           Confirm
         </Button>
       </DialogFooter>
@@ -393,11 +456,11 @@ export function PayoutsPage() {
       {
         onSuccess: () => {
           toast({ title: "Status updated" });
-          setConfirmTarget(null);
         },
         onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
       },
     );
+    setConfirmTarget(null);
   };
 
   const handleBulkApprove = async () => {
@@ -480,17 +543,17 @@ export function PayoutsPage() {
         </div>
         <div className="flex items-center gap-3">
           {isGrowthPlus ? (
-            <Button variant="outline" onClick={handleExport} className="h-10 px-4 shadow-sm gap-2">
+            <Button variant="outline" onClick={handleExport} className="px-4 shadow-sm gap-2">
               <Download className="size-4" />
               Export CSV
             </Button>
           ) : (
-            <Button variant="outline" disabled title="Growth plan required" className="h-10 px-4 shadow-sm gap-2 opacity-60">
+            <Button variant="outline" disabled title="Growth plan required" className="px-4 shadow-sm gap-2 opacity-60">
               <Download className="size-4" />
               Export CSV
             </Button>
           )}
-          <Button className="h-10 px-4 shadow-sm gap-2" onClick={() => setCreateOpen(true)}>
+          <Button className="px-4 shadow-sm gap-2" onClick={() => setCreateOpen(true)}>
             <Plus className="size-4" />
             New Payout
           </Button>
@@ -673,7 +736,6 @@ export function PayoutsPage() {
           <StatusConfirmModal
             payout={confirmTarget.payout}
             targetStatus={confirmTarget.status}
-            isPending={mutation.isPending}
             onConfirm={() => executeStatusChange(confirmTarget.payout, confirmTarget.status, confirmTarget.extra)}
             onClose={() => setConfirmTarget(null)}
           />
@@ -681,9 +743,7 @@ export function PayoutsPage() {
       </Dialog>
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        {createOpen && (
-          <CreatePayoutModal workspaceId={workspaceId} onClose={() => setCreateOpen(false)} />
-        )}
+        <CreatePayoutModal workspaceId={workspaceId} open={createOpen} setOpen={setCreateOpen} />
       </Dialog>
     </div>
   );

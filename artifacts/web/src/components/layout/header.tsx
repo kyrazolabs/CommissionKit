@@ -1,7 +1,54 @@
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, Cloud } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/hooks/use-auth";
 import { NotificationBell } from "@/components/notification-bell";
+import { useIsMutating } from "@tanstack/react-query";
+import { useSyncStore } from "@/hooks/use-sync-store";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
+function SyncIndicator() {
+  const isMutating = useIsMutating();
+  const { hasSyncError, setSyncError } = useSyncStore();
+
+  if (hasSyncError) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={() => setSyncError(false)}
+            className="flex size-8 items-center justify-center rounded-lg text-destructive hover:bg-destructive/10 transition-colors relative"
+          >
+            <Cloud className="size-4" />
+            <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+            </span>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" align="end">
+          Sync error. Click to clear notification.
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  if (isMutating > 0) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="flex size-8 items-center justify-center text-primary/80">
+            <Cloud className="size-4 animate-pulse text-amber-500 dark:text-amber-400" />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" align="end">
+          Syncing in background...
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return null;
+}
 
 export function Header() {
   const { theme, toggle } = useTheme();
@@ -24,6 +71,9 @@ export function Header() {
 
       {/* Right actions */}
       <div className="flex items-center gap-2">
+        {/* Sync Status Indicator */}
+        <SyncIndicator />
+
         {/* Theme toggle */}
         <button
           onClick={toggle}

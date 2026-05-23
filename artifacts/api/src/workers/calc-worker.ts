@@ -24,6 +24,24 @@ import { logger } from "../lib/logger";
 const WORKER_OPTS = {
   connection: getRedisClient(),
   prefix: "ck",
+  defaultJobOptions: {
+    removeOnComplete: {
+      age: 60 * 60 * 24 * 7, // 7 days
+      count: 10000,
+    },
+
+    removeOnFail: {
+      age: 60 * 60 * 24 * 30, // 30 days
+      count: 5000,
+    },
+
+    attempts: 5,
+
+    backoff: {
+      type: "exponential",
+      delay: 5000,
+    },
+  }
 };
 
 /**
@@ -334,5 +352,5 @@ export const calcWorker = new Worker<CommissionCalcPayload>(
       throw err;
     }
   },
-  { ...WORKER_OPTS, concurrency: 2 },
+  { ...WORKER_OPTS, concurrency: 5 },
 );

@@ -37,10 +37,10 @@ export function RunsPage() {
   const { data: runs, isLoading } = useListRuns({ 
     query: { 
       queryKey: getListRunsQueryKey(),
-      refetchInterval: (query: any) => {
+    refetchInterval: (query: any) => {
         const data = query?.state?.data;
-        const hasActiveRuns = Array.isArray(data) && data.some((r: any) => r.status === "pending" || r.status === "processing");
-        return hasActiveRuns ? 2000 : false;
+      const hasActiveRuns = Array.isArray(data) && data.some((r: any) => r.status === "pending" || r.status === "processing");
+      return hasActiveRuns ? 2000 : false;
       }
     } 
   });
@@ -71,6 +71,7 @@ export function RunsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
+          <p className="text-[12px] font-semibold text-primary mb-1">Operations</p>
           <h1 className="text-3xl font-semibold tracking-tight">Calculation Runs</h1>
           <p className="text-muted-foreground">Execute and audit commission calculations.</p>
         </div>
