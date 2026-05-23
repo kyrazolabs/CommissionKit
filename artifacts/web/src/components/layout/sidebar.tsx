@@ -172,7 +172,7 @@ function WorkspaceSwitcher() {
                     <Button
                       type="button"
                       variant="outline"
-                      size="xs"
+                      size="sm"
                       onClick={() => { setShowCreate(false); setNewName(""); }}
                       className="flex-1 h-7 text-[12px]"
                     >
@@ -180,7 +180,7 @@ function WorkspaceSwitcher() {
                     </Button>
                     <Button
                       type="submit"
-                      size="xs"
+                      size="sm"
                       disabled={!newName.trim() || creating}
                       className="flex-1 h-7 text-[12px]"
                     >
