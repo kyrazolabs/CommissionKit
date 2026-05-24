@@ -15,9 +15,6 @@ services:
     expose:
       - "8088"
     restart: always
-    depends_on:
-      - redis
-      - mongo
     networks:
       - commissionkit-network
     labels:
