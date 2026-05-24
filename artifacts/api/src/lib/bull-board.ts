@@ -1,6 +1,5 @@
 // src/lib/bull-board.ts
 
-import { createRequire } from "node:module";
 import path from "path";
 
 import { createBullBoard } from "@bull-board/api";
@@ -16,9 +15,8 @@ import {
 } from "@workspace/queue";
 import { logger } from "./logger";
 
-const _require = createRequire(import.meta.url);
 const bullBoardUiPath = path.dirname(
-  _require.resolve("@bull-board/ui/package.json"),
+  new URL(import.meta.resolve("@bull-board/ui/package.json")).pathname,
 );
 
 const BULL_BOARD_USERNAME = process.env.BULL_BOARD_USERNAME;
