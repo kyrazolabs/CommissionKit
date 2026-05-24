@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSyncStore } from "@/hooks/use-sync-store";
 import {
   useListReps, getListRepsQueryKey,
   useCreateRep,
   useUpdateRep,
   useDeleteRep,
-  useListPlans, getListPlansQueryKey
+  useListPlans as orvalUseListPlans, getListPlansQueryKey
 } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,16 +28,22 @@ import { apiFetch } from "@/lib/api";
 import { usePageMeta } from "@/hooks/use-page-meta";
 
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 
 export function RepsPage() {
   usePageMeta({ title: "Reps", description: "Manage your sales representatives and their commission assignments.", robots: "noindex, nofollow" });
-  const { data: reps, isLoading } = useListReps({ query: { queryKey: getListRepsQueryKey() } });
-  const { data: plans } = useListPlans({ query: { queryKey: getListPlansQueryKey() } });
+  const { data: plans } = orvalUseListPlans({ query: { queryKey: getListPlansQueryKey() } });
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const { can, hasPermission, isLoading: roleLoading } = useRole();
   const { limits } = useBillingStatus();
+  const {
+  data: reps,
+  isLoading,
+} = useListReps({
+  query: {
+    queryKey: ["/api/reps"],
+  },
+});
 
   if (roleLoading) {
     return (
@@ -73,10 +80,10 @@ export function RepsPage() {
           <p className="text-[14px] text-muted-foreground mt-1">Manage your sales team and their commission plans.</p>
         </div>
         {hasPermission("reps", "create") && (
-          <RepFormDialog 
-            open={isCreateOpen} 
-            onOpenChange={setIsCreateOpen} 
-            plans={plans || []} 
+          <RepFormDialog
+            open={isCreateOpen}
+            onOpenChange={setIsCreateOpen}
+            plans={plans || []}
             isLimitReached={limits.reps !== -1 && Array.isArray(reps) && reps.length >= limits.reps}
           />
         )}
@@ -135,7 +142,7 @@ export function RepsPage() {
                     <TableCell>
                       <div className="flex items-center gap-2.5">
                         <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary text-primary text-[11px] font-semibold">
-                          {rep.name.split(" ").map(n => n[0]).join("")}
+                          {rep.name.split(" ").map((n: string) => n[0]).join("")}
                         </div>
                         <div>
                           <p className="font-medium text-sm">{rep.name}</p>
@@ -203,9 +210,89 @@ function RepFormDialog({ open, onOpenChange, plans, initialData, isLimitReached 
   const [planId, setPlanId] = useState<string>(initialData?.planId?.toString() || "none");
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { setSyncError } = useSyncStore();
 
-  const createMutation = useCreateRep();
-  const updateMutation = useUpdateRep();
+  const createMutation = useCreateRep({
+    mutation: {
+      onMutate: async ({ data }) => {
+        await queryClient.cancelQueries({ queryKey: ["/api/reps"] });
+        const previousQueries = queryClient.getQueriesData({ queryKey: ["/api/reps"] });
+
+        let planName = null;
+        if (data.planId && Array.isArray(plans)) {
+          const plan = plans.find(p => p.id.toString() === data.planId?.toString());
+          if (plan) planName = plan.name;
+        }
+
+        const optimisticRep = {
+          id: `temp-${Date.now()}`,
+          name: data.name,
+          email: data.email,
+          role: data.role,
+          planId: data.planId,
+          planName: planName,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        queryClient.setQueriesData({ queryKey: ["/api/reps"] }, (old: any) => {
+          return Array.isArray(old) ? [optimisticRep, ...old] : [optimisticRep];
+        });
+
+        return { previousQueries };
+      },
+      onError: (err, newRep, context) => {
+        setSyncError(true);
+        if (context?.previousQueries) {
+          context.previousQueries.forEach(([queryKey, oldData]: [any, any]) => {
+            queryClient.setQueryData(queryKey, oldData);
+          });
+        }
+        toast({ title: "Failed to create rep", description: "Recovering your input...", variant: "destructive" });
+        onOpenChange(true);
+      },
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: ["/api/reps"] });
+      }
+    }
+  });
+
+  const updateMutation = useUpdateRep({
+    mutation: {
+      onMutate: async ({ id, data }) => {
+        await queryClient.cancelQueries({ queryKey: ["/api/reps"] });
+        const previousQueries = queryClient.getQueriesData({ queryKey: ["/api/reps"] });
+
+        let planName = initialData?.planName || null;
+        if (data.planId && Array.isArray(plans)) {
+          const plan = plans.find(p => p.id.toString() === data.planId?.toString());
+          if (plan) planName = plan.name;
+        } else if (!data.planId) {
+          planName = null;
+        }
+
+        queryClient.setQueriesData({ queryKey: ["/api/reps"] }, (old: any) => {
+          if (!Array.isArray(old)) return old;
+          return old.map(rep => rep.id === id ? { ...rep, ...data, planName } : rep);
+        });
+
+        return { previousQueries };
+      },
+      onError: (err, variables, context) => {
+        setSyncError(true);
+        if (context?.previousQueries) {
+          context.previousQueries.forEach(([queryKey, oldData]: [any, any]) => {
+            queryClient.setQueryData(queryKey, oldData);
+          });
+        }
+        toast({ title: "Failed to update rep", description: "Recovering your input...", variant: "destructive" });
+        onOpenChange(true);
+      },
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: ["/api/reps"] });
+      }
+    }
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -216,25 +303,19 @@ function RepFormDialog({ open, onOpenChange, plans, initialData, isLimitReached 
 
     if (isEditing) {
       updateMutation.mutate({ id: initialData.id, data }, {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListRepsQueryKey() });
-          toast({ title: "Rep updated", description: "The sales rep has been successfully updated." });
-          onOpenChange(false);
-        }
+        onSuccess: () => toast({ title: "Rep updated successfully" })
       });
+      onOpenChange(false);
     } else {
       createMutation.mutate({ data }, {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListRepsQueryKey() });
-          toast({ title: "Rep created", description: "The new sales rep has been added." });
-          onOpenChange(false);
+          toast({ title: "Rep created successfully" });
           setName(""); setEmail(""); setRole("Account Executive"); setPlanId("none");
         }
       });
+      onOpenChange(false);
     }
   };
-
-  const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -282,7 +363,7 @@ function RepFormDialog({ open, onOpenChange, plans, initialData, isLimitReached 
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={isPending}>{isPending ? "Saving…" : "Save"}</Button>
+            <Button type="submit">Save</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -306,16 +387,16 @@ function SendPortalLinkAction({ rep }: { rep: any }) {
   const { toast } = useToast();
   const [sending, setSending] = useState(false);
   const { activeWorkspace } = useWorkspace();
-  
+
   const queryClient = useQueryClient();
 
   const handleSend = async () => {
     setSending(true);
     try {
-      await apiFetch(`/api/reps/${rep.id}/send-portal-link`, { 
+      await apiFetch(`/api/reps/${rep.id}/send-portal-link`, {
         method: "POST",
-       });
-      queryClient.invalidateQueries({ queryKey: getListRepsQueryKey() });
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/reps"] });
       toast({
         title: "Portal link sent",
         description: `A new portal link has been emailed to ${rep.email}.`,
@@ -346,16 +427,39 @@ function RepDeleteAction({ rep }: { rep: any }) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const deleteMutation = useDeleteRep();
+  const { setSyncError } = useSyncStore();
+
+  const deleteMutation = useDeleteRep({
+    mutation: {
+      onMutate: async ({ id }) => {
+        await queryClient.cancelQueries({ queryKey: ["/api/reps"] });
+        const previousQueries = queryClient.getQueriesData({ queryKey: ["/api/reps"] });
+
+        queryClient.setQueriesData({ queryKey: ["/api/reps"] }, (old: any) => {
+          if (!Array.isArray(old)) return old;
+          return old.filter((r: any) => r.id !== id);
+        });
+
+        return { previousQueries };
+      },
+      onError: (err, variables, context) => {
+        setSyncError(true);
+        if (context?.previousQueries) {
+          context.previousQueries.forEach(([queryKey, oldData]: [any, any]) => {
+            queryClient.setQueryData(queryKey, oldData);
+          });
+        }
+        toast({ title: "Failed to delete rep", description: "The server encountered an error.", variant: "destructive" });
+      },
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: ["/api/reps"] });
+      }
+    }
+  });
 
   const handleDelete = () => {
-    deleteMutation.mutate({ id: rep.id }, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListRepsQueryKey() });
-        toast({ title: "Rep deleted", description: "The sales rep has been removed." });
-        setOpen(false);
-      }
-    });
+    setOpen(false);
+    deleteMutation.mutate({ id: rep.id });
   };
 
   return (
@@ -376,8 +480,8 @@ function RepDeleteAction({ rep }: { rep: any }) {
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={deleteMutation.isPending}>
-              {deleteMutation.isPending ? "Deleting…" : "Delete Representative"}
+            <Button variant="destructive" onClick={handleDelete}>
+              Delete Representative
             </Button>
           </DialogFooter>
         </DialogContent>

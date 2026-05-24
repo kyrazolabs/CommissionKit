@@ -26,21 +26,24 @@ router.get(
   ...requirePermission("reports", "read"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
-    const workspace = await Workspace.findById(workspaceId);
-    const wsCurrency = (workspace as any)?.currency || "USD";
     const period = currentPeriod();
 
-    const totalReps = await Rep.countDocuments({ workspaceId });
+     // Run independent queries in parallel
+    const [workspace, totalReps, latestRun, recentRuns, plans] =
+      await Promise.all([
+        Workspace.findById(workspaceId).select("currency").lean(),
+        Rep.countDocuments({ workspaceId }),
+        CommissionRun.findOne({ workspaceId, period })
+          .sort({ createdAt: -1 })
+          .lean(),
+        CommissionRun.find({ workspaceId })
+          .sort({ createdAt: -1 })
+          .limit(5)
+          .lean(),
+        Plan.find({ workspaceId }).select("_id name").lean(),
+      ]);
+    const wsCurrency = (workspace as any)?.currency || "USD";
 
-    const latestRun = await CommissionRun.findOne({ workspaceId, period }).sort(
-      { createdAt: -1 },
-    );
-
-    const recentRuns = await CommissionRun.find({ workspaceId })
-      .sort({ createdAt: -1 })
-      .limit(5);
-
-    const plans = await Plan.find({ workspaceId });
     const planMap = new Map(plans.map((p) => [p._id.toString(), p.name]));
 
     let totalCommission = 0;

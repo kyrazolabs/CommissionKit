@@ -86,11 +86,9 @@ export function RunDetailsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
+        <p className="text-[12px] font-semibold text-primary mb-1">Operations</p>
         <div className="flex items-center gap-3">
           <h1 className="text-3xl font-semibold tracking-tight">Run Details</h1>
-          <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium border border-primary/20">
-            {runData.period}
-          </span>
           <Badge
             variant="outline"
             className={
@@ -105,7 +103,10 @@ export function RunDetailsPage() {
           </Badge>
         </div>
         <p className="text-muted-foreground mt-1">
-          Executed on {format(new Date(runData.createdAt), "MMMM d, yyyy 'at' h:mm a")}
+          Executed on {format(new Date(runData.createdAt), "MMMM d, yyyy 'at' h:mm a")} for 
+          <span className="text-primary px-1 text-base font-medium">
+            {runData.period}
+          </span> Period
         </p>
       </div>
 

@@ -50,7 +50,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CurrencyCombobox } from "@/components/currency-combobox";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 10,   // 10 minutes
+      refetchOnWindowFocus: false, // Prevents distracting background refetch on refocus
+    },
+  },
+});
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -144,16 +152,59 @@ function CreateWorkspaceScreen() {
 
 function AppLoader() {
   return (
+
     <div className="min-h-screen flex items-center justify-center bg-sidebar">
+      <style>{`
+      @keyframes textShimmer {
+    0% {
+        background-position: 200% center;
+    }
+    100% {
+        background-position: -200% center;
+    }
+}
+
+.animate-shimmer-text {
+    background: linear-gradient(
+        90deg,
+        currentColor 0%,
+        color-mix(in srgb, currentColor, transparent 60%) 50%,
+        currentColor 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: textShimmer 2s linear infinite;
+}
+@keyframes fadeInUpSmall {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-message-fade {
+    animation: fadeInUpSmall 0.3s ease-out forwards;
+}
+
+.loader-container {
+    interpolate-size: allow-keywords;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+      `}</style>
       <div className="flex flex-col items-center gap-3">
-        <svg width="40" height="40" viewBox="0 0 56 56" fill="none">
-          <rect width="56" height="56" rx="14" fill="#111827" />
-          <line x1="16" y1="40" x2="40" y2="16" stroke="#0D9488" strokeWidth="3.5" strokeLinecap="round" />
-          <circle cx="20" cy="20" r="5" fill="#0D9488" />
-          <circle cx="36" cy="36" r="7" fill="none" stroke="#0D9488" strokeWidth="3" />
-          <circle cx="36" cy="36" r="2.5" fill="#0D9488" />
-        </svg>
-        <p className="text-sm text-muted-foreground animate-pulse">Loading…</p>
+        {/* <svg width="24" height="24" viewBox="11 11 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="16" y1="40" x2="40" y2="16" stroke="#0D9488" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="20" cy="20" r="5" fill="#0D9488"/>
+          <circle cx="36" cy="36" r="7" fill="none" stroke="#0D9488" stroke-width="3"/>
+          <circle cx="36" cy="36" r="2.5" fill="#0D9488"/>
+        </svg> */}
+        <p className="text-base font-semibold animate-shimmer-text animate-pulse">Loading…</p>
       </div>
     </div>
   );

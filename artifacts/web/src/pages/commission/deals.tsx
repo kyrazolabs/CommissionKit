@@ -2,7 +2,8 @@ import { useState, useRef } from "react";
 import * as XLSX from 'xlsx';
 import { downloadTemplate } from "@/lib/templates";
 import { useQueryClient } from "@tanstack/react-query";
-import { 
+import { useSyncStore } from "@/hooks/use-sync-store";
+import {
   useListDeals, getListDealsQueryKey,
   useDeleteDeal,
   useUpdateDeal,
@@ -88,6 +89,7 @@ export function DealsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
+          <p className="text-[12px] font-semibold text-primary mb-1">Operations</p>
           <h1 className="text-3xl font-semibold tracking-tight">Deals</h1>
           <p className="text-muted-foreground">Manage revenue events for commission calculation.</p>
         </div>
@@ -216,7 +218,54 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const updateMutation = useUpdateDeal();
+  const updateMutation = useUpdateDeal({
+    mutation: {
+      onMutate: async (variables) => {
+        const { id, data } = variables;
+        await queryClient.cancelQueries({ queryKey: ['/api/deals'] });
+        const previousDealsQueries = queryClient.getQueriesData<any[]>({ queryKey: ['/api/deals'] });
+
+        const rep = reps?.find((r: any) => String(r.id || r._id) === String(data.repId));
+        const repName = rep ? rep.name : "Unknown Rep";
+
+        queryClient.setQueriesData<any[]>({ queryKey: ['/api/deals'] }, (old) => {
+          if (!old) return [];
+          return old.map(dealItem => {
+            if (dealItem.id === id) {
+              return {
+                ...dealItem,
+                ...data,
+                repName,
+              };
+            }
+            return dealItem;
+          });
+        });
+
+        return { previousDealsQueries };
+      },
+      onError: (err, variables, context: any) => {
+        if (context?.previousDealsQueries) {
+          context.previousDealsQueries.forEach(([queryKey, value]: any) => {
+            queryClient.setQueryData(queryKey, value);
+          });
+        }
+        useSyncStore.getState().setSyncError(true);
+        toast({
+          title: "Sync Error",
+          description: "Failed to update deal. Reverted changes.",
+          variant: "destructive",
+        });
+      },
+      onSuccess: () => {
+        useSyncStore.getState().setSyncError(false);
+        toast({ title: "Deal updated successfully" });
+      },
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
+      }
+    }
+  });
 
   const [formData, setFormData] = useState({
     repId: String(deal.repId?._id ?? deal.repId ?? ""),
@@ -231,13 +280,8 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    updateMutation.mutate({ id: deal.id, data: formData }, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListDealsQueryKey(queryParams) });
-        toast({ title: "Deal updated successfully" });
-        setOpen(false);
-      }
-    });
+    updateMutation.mutate({ id: deal.id, data: formData });
+    setOpen(false);
   };
 
   const isEditable = deal.stage === 'pending';
@@ -329,16 +373,46 @@ function DealDeleteAction({ deal, queryParams, currency }: { deal: any, queryPar
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const deleteMutation = useDeleteDeal();
+  const deleteMutation = useDeleteDeal({
+    mutation: {
+      onMutate: async (variables) => {
+        const { id } = variables;
+        await queryClient.cancelQueries({ queryKey: ['/api/deals'] });
+        const previousDealsQueries = queryClient.getQueriesData<any[]>({ queryKey: ['/api/deals'] });
+
+        queryClient.setQueriesData<any[]>({ queryKey: ['/api/deals'] }, (old) => {
+          if (!old) return [];
+          return old.filter(dealItem => dealItem.id !== id);
+        });
+
+        return { previousDealsQueries };
+      },
+      onError: (err, variables, context: any) => {
+        if (context?.previousDealsQueries) {
+          context.previousDealsQueries.forEach(([queryKey, value]: any) => {
+            queryClient.setQueryData(queryKey, value);
+          });
+        }
+        useSyncStore.getState().setSyncError(true);
+        toast({
+          title: "Sync Error",
+          description: "Failed to delete deal. Reverted changes.",
+          variant: "destructive",
+        });
+      },
+      onSuccess: () => {
+        useSyncStore.getState().setSyncError(false);
+        toast({ title: "Deal deleted" });
+      },
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
+      }
+    }
+  });
 
   const handleDelete = () => {
-    deleteMutation.mutate({ id: deal.id }, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListDealsQueryKey(queryParams) });
-        toast({ title: "Deal deleted" });
-        setOpen(false);
-      }
-    });
+    deleteMutation.mutate({ id: deal.id });
+    setOpen(false);
   };
 
   return (
@@ -665,9 +739,68 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
 function CreateDealDialog({ period, workspaceCurrency }: { period: string, workspaceCurrency: string }) {
   const [open, setOpen] = useState(false);
   const { data: reps } = useListReps({ query: { queryKey: getListRepsQueryKey() } });
-  const { mutate: createDeal, isPending } = useImportDeals();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const createMutation = useImportDeals({
+    mutation: {
+      onMutate: async (variables) => {
+        const dealsToImport = variables.data.deals;
+        if (dealsToImport.length !== 1) return;
+
+        const newDeal = dealsToImport[0];
+        await queryClient.cancelQueries({ queryKey: ['/api/deals'] });
+        const previousDealsQueries = queryClient.getQueriesData<any[]>({ queryKey: ['/api/deals'] });
+
+        const rep = reps?.find((r: any) => String(r.id || r._id) === String(newDeal.repId));
+        const repName = rep ? rep.name : "Unknown Rep";
+
+        const tempId = `temp-deal-${Date.now()}`;
+        const optimisticDeal = {
+          id: tempId,
+          name: newDeal.name,
+          repId: newDeal.repId,
+          repName,
+          amount: newDeal.amount,
+          currency: newDeal.currency,
+          closeDate: newDeal.closeDate,
+          period: newDeal.period || period,
+          stage: newDeal.stage || 'closed_won',
+          notes: newDeal.notes || null,
+        };
+
+        queryClient.setQueriesData<any[]>({ queryKey: ['/api/deals'] }, (old) => {
+          if (!old) return [optimisticDeal];
+          return [optimisticDeal, ...old];
+        });
+
+        return { previousDealsQueries };
+      },
+      onError: (err, variables, context: any) => {
+        if (context?.previousDealsQueries) {
+          context.previousDealsQueries.forEach(([queryKey, value]: any) => {
+            queryClient.setQueryData(queryKey, value);
+          });
+        }
+        useSyncStore.getState().setSyncError(true);
+        toast({
+          title: "Failed to create deal",
+          description: "Recovering your input...",
+          variant: "destructive",
+        });
+        setOpen(true);
+      },
+      onSuccess: () => {
+        useSyncStore.getState().setSyncError(false);
+        toast({ title: "Deal created successfully" });
+      },
+      onSettled: (data, error, variables) => {
+        const dealsToImport = variables.data.deals;
+        if (dealsToImport.length === 1) {
+          queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
+        }
+      }
+    }
+  });
 
   const [formData, setFormData] = useState({
     repId: "",
@@ -684,13 +817,21 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
     e.preventDefault();
     if (!formData.repId || !formData.name) return;
 
-    createDeal({ data: { period, deals: [formData] } }, {
+    createMutation.mutate({ data: { period, deals: [formData] } }, {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListDealsQueryKey({ period }) });
-        toast({ title: "Deal created successfully" });
-        setOpen(false);
+        setFormData({
+          repId: "",
+          name: "",
+          amount: 0,
+          currency: workspaceCurrency,
+          closeDate: format(new Date(), "yyyy-MM-dd"),
+          period: period,
+          stage: "closed_won" as any,
+          notes: ""
+        });
       }
     });
+    setOpen(false);
   };
 
   return (
@@ -757,7 +898,7 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={isPending}>{isPending ? "Saving…" : "Save Deal"}</Button>
+            <Button type="submit">Save Deal</Button>
           </DialogFooter>
         </form>
       </DialogContent>

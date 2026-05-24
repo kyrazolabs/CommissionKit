@@ -21,6 +21,7 @@ import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/lib/api";
 import { usePageMeta } from "@/hooks/use-page-meta";
+import { useSyncStore } from "@/hooks/use-sync-store";
 
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
@@ -77,6 +78,7 @@ function ResolveModal({
   const [adminNotes, setAdminNotes] = useState(dispute.adminNotes ?? "");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { setSyncError } = useSyncStore();
 
   const mutation = useMutation({
     mutationFn: async (body: any) => {
@@ -85,13 +87,44 @@ function ResolveModal({
         body: JSON.stringify(body),
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["disputes", workspaceId] });
-      toast({ title: "Dispute updated" });
-      onClose();
+    onMutate: async (body) => {
+      await queryClient.cancelQueries({ queryKey: ["/api/disputes"] });
+      const previous = queryClient.getQueriesData({ queryKey: ["/api/disputes"] });
+
+      queryClient.setQueriesData({ queryKey: ["/api/disputes"] }, (old: any) => {
+        if (!Array.isArray(old)) return old;
+        return old.map(d => {
+          if (d.id !== dispute.id) return d;
+          return {
+            ...d,
+            status: body.status,
+            adminNotes: body.adminNotes,
+            resolvedAt: body.status === "resolved" ? new Date().toISOString() : d.resolvedAt,
+          };
+        });
+      });
+      return { previous };
     },
-    onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+    onError: (err: any, variables, context: any) => {
+      setSyncError(true);
+      if (context?.previous) {
+        context.previous.forEach(([queryKey, oldData]: [any, any]) => {
+          queryClient.setQueryData(queryKey, oldData);
+        });
+      }
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/disputes"] });
+    }
   });
+
+  const handleAction = (status: string) => {
+    mutation.mutate({ status, adminNotes }, {
+      onSuccess: () => toast({ title: "Dispute updated" })
+    });
+    onClose();
+  };
 
   return (
     <DialogContent className="sm:max-w-lg">
@@ -141,16 +174,14 @@ function ResolveModal({
         <Button variant="outline" onClick={onClose}>Cancel</Button>
         <Button
           variant="outline"
-          onClick={() => mutation.mutate({ status: "under_review", adminNotes })}
-          disabled={mutation.isPending}
+          onClick={() => handleAction("under_review")}
         >
           <Clock className="mr-2 size-4" />Mark Under Review
         </Button>
         <Button
-          onClick={() => mutation.mutate({ status: "resolved", adminNotes })}
-          disabled={mutation.isPending}
+          onClick={() => handleAction("resolved")}
         >
-          {mutation.isPending ? <Loader2 className="mr-2 size-4 animate-spin" /> : <CheckCircle2 className="mr-2 size-4" />}
+          <CheckCircle2 className="mr-2 size-4" />
           Resolve
         </Button>
       </DialogFooter>
