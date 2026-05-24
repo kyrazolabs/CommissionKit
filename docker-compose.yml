@@ -15,6 +15,7 @@ services:
       - "8088"
     depends_on:
       - redis
+      - mongo
     restart: always
 
   web:
@@ -47,8 +48,6 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=Dw5EDE7vj87jTKBdzbT7jxc8SJisdTqYNORxMgFV2GJfLQ1lI1UQN515M6RF7V3f
       - MONGO_INITDB_DATABASE=default
     restart: unless-stopped
-    networks:
-      - coolify
     labels:
       - coolify.managed=true
       - coolify.type=database
