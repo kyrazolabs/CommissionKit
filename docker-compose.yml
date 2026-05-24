@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.api
+    container_name: api
     environment:
       - NODE_ENV=production
       - PORT=8088
@@ -17,24 +18,68 @@ services:
       - redis
       - mongo
     restart: always
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0
+      - coolify.serviceId=1
+      - coolify.type=service
+      - coolify.name=api
+      - coolify.resourceName=api
+      - coolify.projectName=the-forge
+      - coolify.serviceName=api
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=1
+      - coolify.service.subType=application
+      - coolify.service.subName=api
 
   web:
     build:
       context: .
       dockerfile: Dockerfile.web
+    container_name: web
     expose:
       - "80"
     depends_on:
       - api
     restart: always
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0
+      - coolify.serviceId=1
+      - coolify.type=service
+      - coolify.name=web
+      - coolify.resourceName=web
+      - coolify.projectName=the-forge
+      - coolify.serviceName=web
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=2
+      - coolify.service.subType=application
+      - coolify.service.subName=web
 
   redis:
     image: redis:7-alpine
+    container_name: redis
     expose:
       - "6379"
     volumes:
       - redis_data:/data
     restart: always
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0
+      - coolify.serviceId=1
+      - coolify.type=service
+      - coolify.name=redis
+      - coolify.resourceName=redis
+      - coolify.projectName=the-forge
+      - coolify.serviceName=redis
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=3
+      - coolify.service.subType=database
+      - coolify.service.subName=redis
 
   mongo:
     image: "mongo:7.0"
@@ -50,13 +95,18 @@ services:
     restart: unless-stopped
     labels:
       - coolify.managed=true
-      - coolify.type=database
-      - coolify.databaseId=1
-      - coolify.resourceName=database
-      - coolify.serviceName=database
+      - coolify.version=4.0.0
+      - coolify.serviceId=1
+      - coolify.type=service
+      - coolify.name=mongo
+      - coolify.resourceName=mongo
       - coolify.projectName=the-forge
+      - coolify.serviceName=mongo
       - coolify.environmentName=production
-      - coolify.database.subType=standalone-mongodb
+      - coolify.pullRequestId=0
+      - coolify.service.subId=4
+      - coolify.service.subType=database
+      - coolify.service.subName=mongo
     healthcheck:
       test:
         - CMD
