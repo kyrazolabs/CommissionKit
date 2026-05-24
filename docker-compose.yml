@@ -14,9 +14,6 @@ services:
       # Other variables (MONGO_URL, BETTER_AUTH_SECRET, etc.) will be injected by Coolify
     expose:
       - "8088"
-    depends_on:
-      - redis
-      - mongo
     restart: always
     labels:
       - coolify.managed=true
@@ -57,28 +54,3 @@ services:
       - coolify.service.subId=2
       - coolify.service.subType=application
       - coolify.service.subName=web
-
-  redis:
-    image: redis:7-alpine
-    container_name: redis
-    expose:
-      - "6379"
-    volumes:
-      - redis_data:/data
-    restart: always
-    labels:
-      - coolify.managed=true
-      - coolify.version=4.0.0
-      - coolify.serviceId=1
-      - coolify.type=service
-      - coolify.name=redis
-      - coolify.resourceName=redis
-      - coolify.projectName=the-forge
-      - coolify.serviceName=redis
-      - coolify.environmentName=production
-      - coolify.pullRequestId=0
-      - coolify.service.subId=3
-      - coolify.service.subType=database
-      - coolify.service.subName=redis
-volumes:
-  redis_data:
