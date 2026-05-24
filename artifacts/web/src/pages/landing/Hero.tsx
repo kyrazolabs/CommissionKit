@@ -91,7 +91,7 @@ export function Hero({ containerRef }: { containerRef: React.RefObject<HTMLDivEl
             className="text-4xl md:text-5xl lg:text-[64px] font-bold tracking-tight text-foreground mb-6 leading-[1.1] mt-8"
           >
             Your reps close deals. <br />
-            <span className="text-primary">CK handles the rest.</span>
+            <span className="text-primary">CKit handles the rest.</span>
           </h1>
 
           <p
