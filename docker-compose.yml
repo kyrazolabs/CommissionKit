@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   api:
@@ -35,5 +35,58 @@ services:
       - redis_data:/data
     restart: always
 
+  mongo:
+    image: "mongo:7.0"
+    command:
+      - mongod
+      - "--config"
+      - /etc/mongo/mongod.conf
+    container_name: mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=Dw5EDE7vj87jTKBdzbT7jxc8SJisdTqYNORxMgFV2GJfLQ1lI1UQN515M6RF7V3f
+      - MONGO_INITDB_DATABASE=default
+    restart: unless-stopped
+    networks:
+      - coolify
+    labels:
+      - coolify.managed=true
+      - coolify.type=database
+      - coolify.databaseId=1
+      - coolify.resourceName=database
+      - coolify.serviceName=database
+      - coolify.projectName=the-forge
+      - coolify.environmentName=production
+      - coolify.database.subType=standalone-mongodb
+    healthcheck:
+      test:
+        - CMD
+        - echo
+        - ok
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    mem_limit: "0"
+    memswap_limit: "0"
+    mem_swappiness: 60
+    mem_reservation: "0"
+    cpus: 0.0
+    cpu_shares: 1024
+    volumes:
+      - mongo_configdb:/data/configdb
+      - mongo_data:/data/db
+      - type: bind
+        source: ./infra/mongod.conf
+        target: /etc/mongo/mongod.conf
+        read_only: true
+
 volumes:
   redis_data:
+
+  mongo_configdb:
+    name: mongo_configdb
+    external: false
+  mongo_data:
+    name: mongo_data
+    external: false
