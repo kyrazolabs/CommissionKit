@@ -15,6 +15,11 @@ services:
     expose:
       - "8088"
     restart: always
+    depends_on:
+      - redis
+      - mongo
+    networks:
+      - commissionkit-network
     labels:
       - coolify.managed=true
       - coolify.version=4.0.0
@@ -40,6 +45,8 @@ services:
     depends_on:
       - api
     restart: always
+    networks:
+      - commissionkit-network
     labels:
       - coolify.managed=true
       - coolify.version=4.0.0
@@ -54,3 +61,8 @@ services:
       - coolify.service.subId=2
       - coolify.service.subType=application
       - coolify.service.subName=web
+
+networks:
+  commissionkit-network:
+    name: commissionkit-network
+    external: false

@@ -11,6 +11,8 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=Dw5EDE7vj87jTKBdzbT7jxc8SJisdTqYNORxMgFV2GJfLQ1lI1UQN515M6RF7V3f
       - MONGO_INITDB_DATABASE=default
     restart: unless-stopped
+    networks:
+      - commissionkit-network
     labels:
       - coolify.managed=true
       - coolify.version=4.0.0
@@ -52,6 +54,8 @@ services:
     volumes:
       - redis_data:/data
     restart: always
+    networks:
+      - commissionkit-network
     labels:
       - coolify.managed=true
       - coolify.version=4.0.0
@@ -75,4 +79,9 @@ volumes:
     external: false
   mongo_data:
     name: mongo_data
+    external: false
+
+networks:
+  commissionkit-network:
+    name: commissionkit-network
     external: false
