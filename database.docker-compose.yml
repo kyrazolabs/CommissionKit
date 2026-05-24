@@ -1,0 +1,78 @@
+services:
+  mongo:
+    image: 'mongo:7.0'
+    command:
+      - mongod
+      - '--bind_ip_all'
+      - '--auth'
+    container_name: mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=Dw5EDE7vj87jTKBdzbT7jxc8SJisdTqYNORxMgFV2GJfLQ1lI1UQN515M6RF7V3f
+      - MONGO_INITDB_DATABASE=default
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0
+      - coolify.serviceId=1
+      - coolify.type=service
+      - coolify.name=mongo
+      - coolify.resourceName=mongo
+      - coolify.projectName=the-forge
+      - coolify.serviceName=mongo
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=4
+      - coolify.service.subType=database
+      - coolify.service.subName=mongo
+    healthcheck:
+      test:
+        - CMD
+        - echo
+        - ok
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    mem_limit: '0'
+    memswap_limit: '0'
+    mem_swappiness: 60
+    mem_reservation: '0'
+    cpus: 0.0
+    cpu_shares: 1024
+    volumes:
+      - 'mongo_configdb:/data/configdb'
+      - 'mongo_data:/data/db'
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
+    restart: always
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0
+      - coolify.serviceId=1
+      - coolify.type=service
+      - coolify.name=redis
+      - coolify.resourceName=redis
+      - coolify.projectName=the-forge
+      - coolify.serviceName=redis
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=3
+      - coolify.service.subType=database
+      - coolify.service.subName=redis
+
+volumes:
+  redis_data:
+
+  mongo_configdb:
+    name: mongo_configdb
+    external: false
+  mongo_data:
+    name: mongo_data
+    external: false
