@@ -1,5 +1,8 @@
 // src/lib/bull-board.ts
 
+import { createRequire } from "node:module";
+import path from "path";
+
 import { createBullBoard } from "@bull-board/api";
 import { ExpressAdapter } from "@bull-board/express";
 import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
@@ -12,6 +15,11 @@ import {
   getRedisClient,
 } from "@workspace/queue";
 import { logger } from "./logger";
+
+const _require = createRequire(import.meta.url);
+const bullBoardUiPath = path.dirname(
+  _require.resolve("@bull-board/ui/package.json"),
+);
 
 const BULL_BOARD_USERNAME = process.env.BULL_BOARD_USERNAME;
 const BULL_BOARD_PASSWORD = process.env.BULL_BOARD_PASSWORD;
@@ -38,6 +46,9 @@ createBullBoard({
     }),
   ],
   serverAdapter,
+  options: {
+    uiBasePath: bullBoardUiPath,
+  },
 });
 
 /**

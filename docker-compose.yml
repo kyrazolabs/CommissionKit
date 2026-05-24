@@ -85,8 +85,8 @@ services:
     image: "mongo:7.0"
     command:
       - mongod
-      - "--config"
-      - /etc/mongo/mongod.conf
+      - --bind_ip_all
+      - --auth
     container_name: mongo
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
@@ -125,10 +125,6 @@ services:
     volumes:
       - mongo_configdb:/data/configdb
       - mongo_data:/data/db
-      - type: bind
-        source: ./infra/mongod.conf
-        target: /etc/mongo/mongod.conf
-        read_only: true
 
 volumes:
   redis_data:
