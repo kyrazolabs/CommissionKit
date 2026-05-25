@@ -1,4 +1,4 @@
-import { baseTemplate, btn, h1, p, divider, infoBox } from "./base.js";
+import { baseTemplate, btn, h1, p, divider, infoBox, cardSection } from "./base.js";
 
 export interface DisputeUpdateTemplateProps {
   repName: string;
@@ -24,19 +24,19 @@ export function disputeUpdateTemplate(props: DisputeUpdateTemplateProps): string
     ${p(`Hi ${repName},`)}
     ${p(`An administrator from <strong>${workspaceName}</strong> has reviewed the dispute you submitted for the <strong>${payoutPeriod}</strong> payout period.`)}
 
-    <div style="background-color:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:20px;margin:24px 0;">
-      <p style="margin:0;font-size:12px;color:#6B7280;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">Current Status</p>
-      <div style="margin:8px 0 16px;">
+    ${cardSection(`
+      <p style="margin:0 0 8px;font-size:12px;color:#6B7280;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">Current Status</p>
+      <div style="margin:0 0 16px;">
         <span style="background-color:${color};color:#fff;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:700;text-transform:uppercase;">
           ${status.replace("_", " ")}
         </span>
       </div>
 
-      <p style="margin:0;font-size:12px;color:#6B7280;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">Resolution Notes</p>
-      <div style="margin:8px 0 0;padding:12px;background-color:#fff;border:1px solid #E5E7EB;border-radius:8px;font-size:14px;color:#374151;line-height:1.5;">
+      <p style="margin:0 0 8px;font-size:12px;color:#6B7280;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">Resolution Notes</p>
+      <div style="padding:12px;background-color:#fff;border:1px solid #E5E7EB;border-radius:8px;font-size:14px;color:#374151;line-height:1.5;">
         ${adminNotes || "<em>No notes provided.</em>"}
       </div>
-    </div>
+    `)}
 
     ${btn(portalUrl, "View Resolution in Portal")}
 

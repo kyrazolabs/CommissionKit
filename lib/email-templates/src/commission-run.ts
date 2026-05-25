@@ -1,4 +1,4 @@
-import { baseTemplate, btn, h1, p, muted, divider, statRow, infoBox } from "./base.js";
+import { baseTemplate, btn, h1, p, muted, divider, statRow, infoBox, cardSection } from "./base.js";
 
 export interface CommissionRunTemplateProps {
   recipientName: string;
@@ -28,13 +28,13 @@ export function commissionRunTemplate(props: CommissionRunTemplateProps): string
     ${p(`Hi ${recipientName},`)}
     ${p(`The commission calculation for <strong>${workspaceName}</strong> for <strong>${periodLabel}</strong> has finished. Here's a quick summary:`)}
 
-    <div style="background-color:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:18px 22px;margin:20px 0;">
+    ${cardSection(`
       ${statRow("Period", periodLabel)}
       ${statRow("Total commissions paid", totalPaid)}
       ${statRow("Deals processed", String(totalDeals))}
       ${statRow("Reps paid", String(totalReps))}
       ${topEarner ? statRow("Top earner", `${topEarner.name} — ${topEarner.amount}`) : ""}
-    </div>
+    `)}
 
     ${infoBox("All commissions have been calculated. Review the full breakdown and export payroll in the Runs page.")}
 

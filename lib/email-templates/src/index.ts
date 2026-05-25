@@ -1,4 +1,4 @@
-export { baseTemplate, btn, h1, h2, p, muted, divider, infoBox, warningBox, statRow } from "./base.js";
+export { baseTemplate, btn, h1, h2, p, muted, divider, infoBox, warningBox, statRow, cardSection } from "./base.js";
 export type { BaseTemplateProps } from "./base.js";
 
 export { invitationTemplate } from "./invitation.js";

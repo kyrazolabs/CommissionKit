@@ -1,4 +1,4 @@
-import { baseTemplate, h1, p, divider, warningBox } from "./base.js";
+import { baseTemplate, h1, p, muted, divider, warningBox, cardSection } from "./base.js";
 
 export interface VerificationCodeTemplateProps {
   code: string;
@@ -10,11 +10,14 @@ export function verificationCodeTemplate(props: VerificationCodeTemplateProps): 
 
   const body = `
     ${h1("Verify your email address")}
-    ${p("To finish setting up your account, please verify your email address by entering the 6-digit verification code below:")}
+    ${p("To finish setting up your account, please enter the 6-digit verification code below:")}
 
-    <div style="font-size: 32px; font-weight: bold; text-align: center; letter-spacing: 4px; padding: 20px; background-color: #f3f4f6; border-radius: 8px; margin: 20px 0; color: #0f172a; border: 1px solid #e2e8f0;">
-      ${code}
-    </div>
+    ${cardSection(`
+      <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;text-align:center;">Verification code</p>
+      <div style="font-size:36px;font-weight:700;text-align:center;letter-spacing:6px;color:#111827;font-family:monospace;">
+        ${code}
+      </div>
+    `)}
 
     ${warningBox(`This verification code is valid for <strong>${expiresIn}</strong>. If you did not create a CommissionKit account, you can safely ignore this email.`)}
 

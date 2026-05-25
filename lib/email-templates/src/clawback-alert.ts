@@ -1,4 +1,4 @@
-import { baseTemplate, btn, h1, p, muted, divider, warningBox, statRow } from "./base.js";
+import { baseTemplate, btn, h1, p, muted, divider, warningBox, statRow, cardSection } from "./base.js";
 
 export interface ClawbackAlertTemplateProps {
   recipientName: string;
@@ -24,13 +24,13 @@ export function clawbackAlertTemplate(props: ClawbackAlertTemplateProps): string
 
     ${warningBox("A clawback means a previously paid commission is being reversed due to a deal cancellation or refund within the clawback window.")}
 
-    <div style="background-color:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:18px 22px;margin:20px 0;">
+    ${cardSection(`
       ${statRow("Rep", repName)}
       ${statRow("Deal", dealName)}
       ${statRow("Original commission", originalAmount)}
       ${statRow("Clawback amount", clawbackAmount)}
       ${reason ? statRow("Reason", reason) : ""}
-    </div>
+    `)}
 
     ${btn(detailsUrl, "View Deal Details")}
 
