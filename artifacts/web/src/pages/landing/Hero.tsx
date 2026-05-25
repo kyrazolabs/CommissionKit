@@ -102,10 +102,10 @@ export function Hero({ containerRef }: { containerRef: React.RefObject<HTMLDivEl
           </p>
 
           <div style={fadeIn(inView, 300)} className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button asChild className="w-full sm:w-auto font-bold shadow-md rounded-lg px-8">
+            <Button asChild className="w-full sm:w-auto font-bold shadow-md rounded-lg px-8" size={'md'}>
               <a href="/register">Get Started</a>
             </Button>
-            <Button variant="outline" asChild className="w-full sm:w-auto font-bold bg-background/50 backdrop-blur-sm rounded-lg px-8">
+            <Button variant="outline" asChild className="w-full sm:w-auto font-bold bg-background/50 backdrop-blur-sm rounded-lg px-8" size={'md'}>
               <a href="#features">Explore Features</a>
             </Button>
           </div>

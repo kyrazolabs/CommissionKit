@@ -1,4 +1,4 @@
-import { baseTemplate, btn, h1, p, muted, divider } from "./base.js";
+import { baseTemplate, btn, h1, p, muted, divider, cardSection } from "./base.js";
 
 export interface InvitationTemplateProps {
   /** Name of the person being invited */
@@ -47,11 +47,11 @@ export function invitationTemplate(props: InvitationTemplateProps): string {
     ${p(greeting)}
     ${p(`<strong>${inviterName}</strong> has invited you to join <strong>${workspaceName}</strong> on CommissionKit as a <strong>${roleMeta.label}</strong>.`)}
 
-    <div style="background-color:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:18px 22px;margin:20px 0;">
+    ${cardSection(`
       <p style="margin:0 0 4px;font-size:13px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;">Your role</p>
       <p style="margin:0 0 4px;font-size:15px;font-weight:700;color:#111827;">${roleMeta.label}</p>
       <p style="margin:0;font-size:13px;color:#6B7280;">${roleMeta.description}</p>
-    </div>
+    `)}
 
     ${btn(acceptUrl, "Accept Invitation")}
 

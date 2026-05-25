@@ -1,4 +1,4 @@
-import { baseTemplate, btn, h1, p, divider, infoBox, badge } from "./base.js";
+import { baseTemplate, btn, h1, p, divider, infoBox, badge, cardSection } from "./base.js";
 
 export interface PayoutUpdateTemplateProps {
   repName: string;
@@ -27,7 +27,7 @@ export function payoutUpdateTemplate(props: PayoutUpdateTemplateProps): string {
     ${p(`Hi ${repName},`)}
     ${p(`Your commission payout for <strong>${period}</strong> has been updated by <strong>${workspaceName}</strong>.`)}
 
-    <div style="background-color:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:20px;margin:24px 0;">
+    ${cardSection(`
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
           <td style="padding-bottom:12px;">
@@ -46,7 +46,7 @@ export function payoutUpdateTemplate(props: PayoutUpdateTemplateProps): string {
           <p style="margin:6px 0 0;font-size:14px;color:#374151;font-style:italic;">"${notes}"</p>
         </div>
       ` : ""}
-    </div>
+    `)}
 
     ${btn(portalUrl, "View Portal Details")}
 
