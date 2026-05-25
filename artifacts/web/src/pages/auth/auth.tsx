@@ -426,7 +426,7 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                             <Button
                               type="button"
                               className="w-full font-bold shadow-sm relative overflow-hidden"
-                              size="sm"
+                              
                               disabled={resendLoading || resendCooldown > 0}
                               onClick={handleResendVerification}
                             >
@@ -450,7 +450,6 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                               type="button"
                               variant="ghost"
                               className="w-full font-medium text-muted-foreground hover:text-foreground"
-                              size="sm"
                               onClick={() => {
                                 setVerificationSent(false);
                                 setResendCooldown(0);
@@ -464,7 +463,7 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                           <Button
                             type="button"
                             className="w-full font-bold shadow-sm relative overflow-hidden"
-                            size={'sm'}
+                            
                             onClick={() => {
                               setMode("login");
                               setEmailSent(false);
@@ -476,7 +475,7 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                           <Button
                             type="submit"
                             className="w-full font-bold shadow-sm relative overflow-hidden"
-                            disabled={loading} size={'sm'}
+                            disabled={loading}
                           >
                             <AnimatePresence mode="wait" initial={false}>
                               <motion.span
