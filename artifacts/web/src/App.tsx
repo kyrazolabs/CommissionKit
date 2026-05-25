@@ -1,6 +1,7 @@
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -275,12 +276,27 @@ function ProtectedRouter() {
 }
 
 
+/**
+ * Sets the per-page <link rel="canonical"> via react-helmet-async.
+ * Normalises /home → / to avoid duplicate-canonical issues in search consoles.
+ */
+function CanonicalTag() {
+  const [location] = useLocation();
+  const canonicalPath = location === "/home" ? "/" : location;
+  return (
+    <Helmet>
+      <link rel="canonical" href={`https://commissionk.it${canonicalPath}`} />
+    </Helmet>
+  );
+}
+
 function App() {
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <CanonicalTag />
             {/* Public routes : no auth required directly here */}
             <Switch>
               <Route path="/portal/:accessCode" component={PublicRepPortal} />

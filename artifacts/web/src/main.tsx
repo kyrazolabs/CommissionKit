@@ -2,6 +2,7 @@ import "./instrument"; // MUST be first
 
 import { hydrateRoot, createRoot } from "react-dom/client";
 import { reactErrorHandler } from "@sentry/react";
+import { HelmetProvider } from "react-helmet-async";
 import App from "./App";
 import "./index.css";
 
@@ -13,8 +14,18 @@ const rootOptions = {
 };
 
 if (container.hasChildNodes()) {
-  hydrateRoot(container, <App />, rootOptions);
+  hydrateRoot(
+    container,
+    <HelmetProvider>
+      <App />
+    </HelmetProvider>,
+    rootOptions,
+  );
 } else {
-  createRoot(container, rootOptions).render(<App />);
+  createRoot(container, rootOptions).render(
+    <HelmetProvider>
+      <App />
+    </HelmetProvider>,
+  );
 }
 
