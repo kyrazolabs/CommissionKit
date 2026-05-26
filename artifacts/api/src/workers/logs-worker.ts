@@ -82,7 +82,7 @@ export const logsWorker = new Worker(
 
       // Generate a structured key name using ISO timestamp
       const timestamp = new Date().toISOString().replace(/:/g, "-");
-      const key = `commissionkit/logs/app-${timestamp}.log`;
+      const key = `logs/app-${timestamp}.log`;
 
       logger.info(`[Worker:Logs] Uploading logs to S3 bucket "${bucketName}" under key "${key}"...`);
 
@@ -104,7 +104,7 @@ export const logsWorker = new Worker(
       return { status: "completed", key };
     } catch (err: any) {
       logger.error({ err }, "[Worker:Logs] Failed to flush and upload logs to S3");
-      
+
       // Clean up temp file on failure if it exists
       if (fs.existsSync(tempFilePath)) {
         try {
