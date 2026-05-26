@@ -14,7 +14,7 @@ export function verificationCodeTemplate(props: VerificationCodeTemplateProps): 
 
     ${cardSection(`
       <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;text-align:center;">Verification code</p>
-      <div style="font-size:36px;font-weight:700;text-align:center;letter-spacing:6px;color:#111827;font-family:monospace;">
+      <div class="ck-code" style="font-size:36px;font-weight:700;text-align:center;letter-spacing:6px;color:#111827;font-family:monospace;">
         ${code}
       </div>
     `)}

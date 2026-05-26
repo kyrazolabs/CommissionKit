@@ -43,6 +43,23 @@ export function baseTemplate({
     body { margin: 0 !important; padding: 0 !important; width: 100% !important; }
     a { color: ${BRAND_COLOR}; text-decoration: none; }
     a:hover { text-decoration: underline; }
+
+    @media only screen and (max-width: 480px) {
+      .ck-wrap { padding: 24px 12px !important; }
+      .ck-body { padding: 16px 20px 24px !important; }
+      .ck-foot { padding: 0 20px 20px !important; }
+      .ck-h1 { font-size: 20px !important; }
+      .ck-btn { width: 100% !important; }
+      .ck-btn a { display: block !important; width: 100% !important; text-align: center !important; box-sizing: border-box !important; }
+      .ck-stack td { display: block !important; width: 100% !important; box-sizing: border-box !important; }
+      .ck-stack td[style*="text-align:right"] { text-align: left !important; padding-top: 10px !important; }
+      .ck-code { font-size: 28px !important; letter-spacing: 4px !important; }
+    }
+
+    @media only screen and (min-width: 481px) and (max-width: 768px) {
+      .ck-wrap { padding: 28px 16px !important; }
+      .ck-body { padding: 20px 28px 28px !important; }
+    }
   </style>
 </head>
 <body style="margin:0;padding:0;background-color:${BG_COLOR};font-family:'Outfit','Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
@@ -53,7 +70,7 @@ export function baseTemplate({
   <!-- Wrapper -->
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:${BG_COLOR};">
     <tr>
-      <td align="center" style="padding:32px 16px;">
+      <td align="center" class="ck-wrap" style="padding:32px 16px;">
 
         <!-- Card -->
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;background-color:${CARD_COLOR};border-radius:14px;border:1px solid ${BORDER_COLOR};box-shadow:0 1px 3px 0 rgba(0,0,0,0.05);">
@@ -67,14 +84,14 @@ export function baseTemplate({
 
           <!-- Body -->
           <tr>
-            <td style="padding:24px 32px 32px;color:${TEXT_COLOR};font-size:15px;line-height:1.6;">
+            <td class="ck-body" style="padding:24px 32px 32px;color:${TEXT_COLOR};font-size:15px;line-height:1.6;">
               ${body}
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td style="padding:0 32px 24px;color:${MUTED_COLOR};font-size:12px;line-height:1.5;">
+            <td class="ck-foot" style="padding:0 32px 24px;color:${MUTED_COLOR};font-size:12px;line-height:1.5;">
               <hr style="border:none;border-top:1px solid ${BORDER_COLOR};margin:0 0 16px;" />
               ${footerNote}<br />
               <span style="color:${BRAND_COLOR};">CommissionKit</span> &middot; Commission tracking made simple
@@ -92,16 +109,16 @@ export function baseTemplate({
 // ─── Shared primitive components ──────────────────────────────────────────────
 
 export const btn = (href: string, label: string) => `
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" class="ck-btn" style="margin:20px 0;">
     <tr>
-      <td style="background-color:${BRAND_COLOR};border-radius:8px;">
-        <a href="${href}" target="_blank" style="display:inline-block;padding:12px 24px;color:#FFFFFF;font-size:14px;font-weight:600;text-decoration:none;border-radius:8px;">${label}</a>
+      <td style="background-color:${BRAND_COLOR};border-radius:6px;">
+        <a href="${href}" target="_blank" style="display:inline-block;padding:10px 20px;color:#FFFFFF;font-size:13px;font-weight:600;text-decoration:none;border-radius:6px;">${label}</a>
       </td>
     </tr>
   </table>`;
 
 export const h1 = (text: string) =>
-  `<h1 style="margin:0 0 8px;font-size:24px;font-weight:700;color:#111827;letter-spacing:-0.4px;">${text}</h1>`;
+  `<h1 class="ck-h1" style="margin:0 0 8px;font-size:24px;font-weight:700;color:#111827;letter-spacing:-0.4px;">${text}</h1>`;
 
 export const h2 = (text: string) =>
   `<h2 style="margin:0 0 6px;font-size:16px;font-weight:600;color:#111827;">${text}</h2>`;

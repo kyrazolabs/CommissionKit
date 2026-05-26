@@ -25,7 +25,7 @@ export function repPortalTemplate(props: RepPortalTemplateProps): string {
     ${infoBox(`Bookmark this link — it's your personal portal and is always up to date with your latest commissions.`)}
 
     ${cardSection(`
-      <table width="100%" cellpadding="0" cellspacing="0">
+      <table width="100%" cellpadding="0" cellspacing="0" class="ck-stack">
         <tr>
           <td>
             <p style="margin:0 0 4px;font-size:12px;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Your username</p>
