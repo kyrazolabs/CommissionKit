@@ -58,7 +58,7 @@ export function SecurityPage() {
 
           <h2 className="text-2xl font-semibold text-foreground mt-12 mb-4">Responsible Disclosure</h2>
           <p>
-            If you believe you have found a security vulnerability in CommissionKit, please contact our security team immediately at security@commissionkit.com. We appreciate your help in keeping our community safe.
+            If you believe you have found a security vulnerability in CommissionKit, please contact our security team immediately at security@commissionk.it. We appreciate your help in keeping our community safe.
           </p>
 
           <p className="mt-12 text-sm italic">

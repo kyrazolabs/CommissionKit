@@ -16,9 +16,8 @@ export function Footer({ scrollY }: FooterProps) {
   return (
     <motion.div
       style={{ y: footerY, opacity: footerOpacity }}
-      className={`${
-        scrollY ? "fixed bottom-0 left-0 right-0 z-50" : "w-full mt-auto"
-      } flex justify-center pointer-events-none`}
+      className={`${scrollY ? "fixed bottom-0 left-0 right-0 z-50" : "w-full mt-auto"
+        } flex justify-center pointer-events-none`}
     >
       <footer className="pointer-events-auto md:w-[calc(100%-60px)] w-[calc(100%)] max-w-[1440px] shrink-0 bg-transparent border-transparent">
         <div className="flex flex-col md:flex-row justify-between items-center w-full px-6 py-4 max-w-[1440px] mx-auto gap-4">
@@ -32,7 +31,7 @@ export function Footer({ scrollY }: FooterProps) {
             <a href="/privacy" className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors">Privacy</a>
             <a href="/terms" className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors">Terms</a>
             <a href="/security" className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors">Security</a>
-            <a href="mailto:sales@commissionkit.com" className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors">Contact</a>
+            <a href="mailto:sales@commissionk.it" className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors">Contact</a>
           </nav>
 
           <p className="md:hidden text-[10px] text-muted-foreground/70 font-medium tracking-wide">
