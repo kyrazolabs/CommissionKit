@@ -222,7 +222,7 @@ export function Sidebar() {
               {group.items.map((item) => {
                 const isActive =
                   location === item.href ||
-                  (item.href !== "/" && location.startsWith(item.href));
+                  (item.href !== "/dash" && location.startsWith(item.href));
                 return (
                   <Link
                     key={item.name}
