@@ -179,7 +179,6 @@ export function ResetPasswordPage() {
                           <Button
                             type="button"
                             className="w-full font-bold shadow-sm"
-                            size="sm"
                             onClick={() => setLocation("/forgot-password")}
                           >
                             Request new reset link
@@ -217,7 +216,6 @@ export function ResetPasswordPage() {
                           <Button
                             type="button"
                             className="w-full font-bold shadow-sm"
-                            size="sm"
                             onClick={() => setLocation("/login")}
                           >
                             Go to login page
@@ -297,7 +295,6 @@ export function ResetPasswordPage() {
                               type="submit"
                               className="w-full font-bold shadow-sm relative overflow-hidden"
                               disabled={loading || !isFormValid}
-                              size="sm"
                             >
                               <AnimatePresence mode="wait" initial={false}>
                                 <motion.span

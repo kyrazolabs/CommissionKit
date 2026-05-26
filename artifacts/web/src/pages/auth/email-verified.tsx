@@ -117,7 +117,6 @@ export function EmailVerifiedPage() {
                           <Button
                             type="button"
                             className="w-full font-bold shadow-sm"
-                            size="sm"
                             onClick={() => setLocation("/login")}
                           >
                             Go to login
@@ -152,7 +151,6 @@ export function EmailVerifiedPage() {
                           <Button
                             type="button"
                             className="w-full font-bold shadow-sm"
-                            size="sm"
                             onClick={() => setLocation("/login")}
                           >
                             Go to dashboard
