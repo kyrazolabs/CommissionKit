@@ -28,7 +28,7 @@ export function payoutUpdateTemplate(props: PayoutUpdateTemplateProps): string {
     ${p(`Your commission payout for <strong>${period}</strong> has been updated by <strong>${workspaceName}</strong>.`)}
 
     ${cardSection(`
-      <table width="100%" cellpadding="0" cellspacing="0">
+      <table width="100%" cellpadding="0" cellspacing="0" class="ck-stack">
         <tr>
           <td style="padding-bottom:12px;">
             <p style="margin:0;font-size:12px;color:#6B7280;text-transform:uppercase;font-weight:600;">Status</p>
