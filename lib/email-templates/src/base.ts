@@ -11,11 +11,11 @@ export interface BaseTemplateProps {
   footerNote?: string;
 }
 
-const BRAND_COLOR  = "#0D9488";
-const BG_COLOR     = "#F9FAFB";
-const CARD_COLOR   = "#FFFFFF";
-const TEXT_COLOR   = "#111827";
-const MUTED_COLOR  = "#6B7280";
+const BRAND_COLOR = "#0D9488";
+const BG_COLOR = "#F9FAFB";
+const CARD_COLOR = "#FFFFFF";
+const TEXT_COLOR = "#111827";
+const MUTED_COLOR = "#6B7280";
 const BORDER_COLOR = "#E5E7EB";
 const SECONDARY_BG = "#F0FDFA";
 
@@ -78,20 +78,7 @@ export function baseTemplate({
           <!-- Header -->
           <tr>
             <td style="padding:24px 32px 0;">
-              <!--[if mso]>
-              <span style="font-size:17px;font-weight:700;color:#111827;">Commission<span style="color:${BRAND_COLOR};">Kit</span></span>
-              <![endif]-->
-              <!--[if !mso]><!-->
-              <svg width="200" height="40" viewBox="0 0 200 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;max-width:200px;height:auto;" role="img" aria-label="CommissionKit">
-                <rect width="40" height="40" rx="10" fill="#111827"/>
-                <line x1="11.4" y1="28.6" x2="28.6" y2="11.4" stroke="#0D9488" stroke-width="2.5" stroke-linecap="round"/>
-                <circle cx="14.3" cy="14.3" r="3.6" fill="#0D9488"/>
-                <circle cx="25.7" cy="25.7" r="5" fill="none" stroke="#0D9488" stroke-width="2.1"/>
-                <circle cx="25.7" cy="25.7" r="1.8" fill="#0D9488"/>
-                <text x="50" y="27" font-family="system-ui,-apple-system,sans-serif" font-weight="700" font-size="18" fill="#111827" letter-spacing="-0.5">Commission</text>
-                <text x="155" y="27" font-family="system-ui,-apple-system,sans-serif" font-weight="700" font-size="18" fill="#0D9488" letter-spacing="-0.5">Kit</text>
-              </svg>
-              <!--<![endif]-->
+              <span style="font-size:17px;font-weight:700;letter-spacing:-0.3px;color:#111827;">Commission<span style="color:${BRAND_COLOR};">Kit</span></span>
             </td>
           </tr>
 
