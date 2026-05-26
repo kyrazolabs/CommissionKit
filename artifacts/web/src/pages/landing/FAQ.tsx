@@ -42,9 +42,8 @@ function FAQItem({ q, a }: { q: string; a: string }) {
           {q}
         </span>
         <ChevronDown
-          className={`size-5 text-slate-400 shrink-0 transition-transform duration-300 ${
-            open ? "rotate-180" : "rotate-0"
-          }`}
+          className={`size-5 text-slate-400 shrink-0 transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"
+            }`}
         />
       </button>
       <div
@@ -83,7 +82,7 @@ export function FAQ() {
         <div className="text-center mt-12">
           <p className="text-[15px] text-slate-600 font-medium">
             Still have questions?{" "}
-            <a href="mailto:hello@commissionkit.com" className="text-teal-600 hover:text-teal-700 underline underline-offset-4">
+            <a href="mailto:hello@commissionk.it" className="text-teal-600 hover:text-teal-700 underline underline-offset-4">
               We're here to help.
             </a>
           </p>

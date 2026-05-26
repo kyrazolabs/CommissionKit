@@ -20,7 +20,7 @@ export function FinalCTA() {
             <a href="/register">Get Start Now</a>
           </Button>
           <Button variant="outline" asChild className="font-bold bg-background/60 backdrop-blur-sm shadow-sm" size={'md'}>
-            <a href="mailto:sales@commissionkit.com">Contact Sales</a>
+            <a href="mailto:sales@commissionk.it">Contact Sales</a>
           </Button>
         </div>
       </div>
