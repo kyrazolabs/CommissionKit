@@ -3,7 +3,7 @@ import { useGetDashboardSummary, getGetDashboardSummaryQueryKey } from "@workspa
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   DollarSign, Users, Briefcase, Activity, CalendarDays,
-  ArrowUpRight, TrendingUp, Zap, Play
+  ArrowUpRight, TrendingUp, Zap, Play, LifeBuoy
 } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -239,6 +239,15 @@ export function Dashboard() {
           </div>
         </div>
       </div>
+
+      <a
+        href="mailto:support@commissionk.it"
+        className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl"
+        title="Contact support"
+      >
+        <LifeBuoy className="size-4" />
+        Support
+      </a>
     </div>
   );
 }
