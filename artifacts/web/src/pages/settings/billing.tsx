@@ -55,6 +55,7 @@ const plans = [
     iconColor: "text-blue-600 dark:text-blue-400",
     features: [
       "Up to 10 sales reps",
+      "Up to 3 workspace members",
       "Up to 3 commission plans",
       "Deal & commission tracking",
       "Unlimited calculation runs",
@@ -76,6 +77,7 @@ const plans = [
     iconColor: "text-primary",
     features: [
       "Up to 30 sales reps",
+      "Up to 15 workspace members",
       "Unlimited commission plans",
       "Advanced tiered plans",
       "Accelerator & clawback rules",
@@ -99,6 +101,7 @@ const plans = [
     iconColor: "text-purple-600 dark:text-purple-400",
     features: [
       "Up to 100 sales reps",
+      "Up to 50 workspace members",
       "Everything in Growth",
       "SAML/SSO Authentication",
       "Custom API limits",

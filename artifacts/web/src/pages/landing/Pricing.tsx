@@ -14,6 +14,7 @@ const PLANS = [
     tagline: "Perfect for testing the product or tiny teams.",
     reps: "Includes up to 10 reps",
     features: [
+      "Up to 3 workspace members",
       "Up to 3 commission plans",
       "Deal & commission tracking",
       "Unlimited calculation runs",
@@ -30,6 +31,7 @@ const PLANS = [
     tagline: "For stable teams of 8+ reps.",
     reps: "Includes up to 30 reps",
     features: [
+      "Up to 15 workspace members",
       "Unlimited commission plans",
       "Advanced tiered plans",
       "Accelerator & clawback rules",
@@ -47,6 +49,7 @@ const PLANS = [
     tagline: "For serious sales organizations with advanced needs.",
     reps: "Includes up to 100 reps",
     features: [
+      "Up to 50 workspace members",
       "Everything in Growth",
       "SAML/SSO Authentication",
       "Custom API limits",
