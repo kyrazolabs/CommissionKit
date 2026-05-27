@@ -9,6 +9,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/number-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -207,9 +208,7 @@ function AdjustModal({ payout, workspaceId, onClose }: { payout: Payout; workspa
       <form onSubmit={handleSubmit} className="space-y-4 py-2">
         <div className="grid gap-2">
           <Label>Amount (+ bonus / − clawback)</Label>
-          <Input
-            type="number"
-            step="0.01"
+          <NumberInput
             placeholder="e.g. -150.00"
             value={amount}
             onChange={e => setAmount(e.target.value)}
@@ -344,7 +343,7 @@ function CreatePayoutModal({ workspaceId, open, setOpen }: { workspaceId: string
         </div>
         <div className="grid gap-2">
           <Label>Commission Amount</Label>
-          <Input type="number" step="0.01" min="0" placeholder="0.00" value={amount} onChange={e => setAmount(e.target.value)} required />
+          <NumberInput placeholder="0.00" value={amount} onChange={e => setAmount(e.target.value)} required />
         </div>
         <div className="grid gap-2">
           <Label>Notes (optional)</Label>

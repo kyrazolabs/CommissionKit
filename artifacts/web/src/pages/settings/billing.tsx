@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/number-input";
 import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
@@ -611,10 +612,9 @@ export function BillingPage() {
             <div className="flex-1 space-y-1 w-full">
               <Label htmlFor="addon-reps" className="text-xs font-medium">Extra rep seats</Label>
               <div className="flex items-center gap-3">
-                <Input
+                <NumberInput
                   id="addon-reps"
-                  type="number"
-                  min={0}
+                  decimals={0}
                   value={extraReps}
                   onChange={(e) => setExtraReps(e.target.value)}
                   className="max-w-[120px]"
@@ -820,10 +820,8 @@ export function BillingPage() {
               ) : null}
             </p>
             <div className="flex flex-wrap items-center gap-3">
-              <Input
-                type="number"
-                min={0}
-                step={1}
+              <NumberInput
+                decimals={0}
                 value={extraReps}
                 onChange={(e) => setExtraReps(e.target.value)}
                 className="max-w-[140px]"
