@@ -36,7 +36,7 @@ export function Navbar({ containerRef }: { containerRef?: React.RefObject<HTMLDi
               <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Features</a>
               <a href="#solutions" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Solutions</a>
               <a href="#pricing" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Pricing</a>
-              <a href="#resources" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Resources</a>
+              {/* <a href="#resources" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Resources</a> */}
             </nav>
           </div>
 

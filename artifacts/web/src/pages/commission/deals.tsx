@@ -13,6 +13,7 @@ import {
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/number-input";
 import { MonthPicker } from "@/components/ui/month-picker";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DatePicker, DateRangePicker } from "@/components/ui/date-picker";
@@ -329,7 +330,7 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="edit-amount">Amount</Label>
-              <Input id="edit-amount" type="number" value={formData.amount} onChange={(e) => setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))} required />
+              <NumberInput id="edit-amount" value={formData.amount} onChange={(e) => setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-currency">Currency</Label>
@@ -670,8 +671,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
                             />
                           </TableCell>
                           <TableCell>
-                            <Input 
-                              type="number" 
+                            <NumberInput
                               value={row.amount} 
                               onChange={(e) => updateRow(row.id, 'amount', parseFloat(e.target.value) || 0)}
                               className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent"
@@ -866,7 +866,7 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="amount">Amount</Label>
-              <Input id="amount" type="number" value={formData.amount} onChange={(e) => setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))} required />
+              <NumberInput id="amount" value={formData.amount} onChange={(e) => setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="currency">Currency</Label>

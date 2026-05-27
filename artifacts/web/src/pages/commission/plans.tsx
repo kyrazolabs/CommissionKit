@@ -8,6 +8,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/number-input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -463,9 +464,9 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
 
             <div className="grid gap-2">
               <Label htmlFor="clawbackDays">Clawback Period (Days) {!isGrowthPlus && <span className="text-[10px] text-primary ml-1">(Growth feature)</span>}</Label>
-              <Input 
+              <NumberInput 
                 id="clawbackDays" 
-                type="number" 
+                decimals={0}
                 placeholder="e.g. 30" 
                 value={clawbackDays} 
                 onChange={e => setClawbackDays(e.target.value)}
@@ -479,7 +480,7 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
                 <div className="grid gap-2">
                   <Label>Commission Rate (%)</Label>
                   <div className="relative">
-                    <Input type="number" step="0.01" min="0" value={flatRate} onChange={e => setFlatRate(e.target.value)} required />
+                    <NumberInput decimals={2} value={flatRate} onChange={e => setFlatRate(e.target.value)} required />
                     <span className="absolute right-3 top-2.5 text-muted-foreground">%</span>
                   </div>
                 </div>
@@ -490,7 +491,7 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
                   <div className="grid gap-2">
                     <Label>Base Rate (%)</Label>
                     <div className="relative">
-                      <Input type="number" step="0.01" min="0" value={flatRate} onChange={e => setFlatRate(e.target.value)} required />
+                      <NumberInput decimals={2} value={flatRate} onChange={e => setFlatRate(e.target.value)} required />
                       <span className="absolute right-3 top-2.5 text-muted-foreground">%</span>
                     </div>
                   </div>
@@ -498,13 +499,13 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
                     <Label>Accelerator Threshold ({currency})</Label>
                     <div className="relative">
                       <span className="absolute left-3 top-2.5 text-muted-foreground font-mono text-xs">{currency}</span>
-                      <Input type="number" min="0" className="pl-12" value={acceleratorThreshold} onChange={e => setAcceleratorThreshold(e.target.value)} required />
+                      <NumberInput className="pl-12" value={acceleratorThreshold} onChange={e => setAcceleratorThreshold(e.target.value)} required />
                     </div>
                   </div>
                   <div className="grid gap-2">
                     <Label>Accelerator Rate (%)</Label>
                     <div className="relative">
-                      <Input type="number" step="0.01" min="0" value={acceleratorRate} onChange={e => setAcceleratorRate(e.target.value)} required />
+                      <NumberInput decimals={2} value={acceleratorRate} onChange={e => setAcceleratorRate(e.target.value)} required />
                       <span className="absolute right-3 top-2.5 text-muted-foreground">%</span>
                     </div>
                   </div>
@@ -519,7 +520,7 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
                       <div key={index} className="flex gap-2 items-start">
                         <div className="grid flex-1 gap-1">
                           <span className="text-xs text-muted-foreground block">From ({currency})</span>
-                          <Input type="number" min="0" value={tier.fromAmount} onChange={e => {
+                          <NumberInput value={tier.fromAmount} onChange={e => {
                             const newTiers = [...tiers];
                             newTiers[index].fromAmount = e.target.value;
                             setTiers(newTiers);
@@ -527,7 +528,7 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
                         </div>
                         <div className="grid flex-1 gap-1">
                           <span className="text-xs text-muted-foreground block">To ({currency})</span>
-                          <Input type="number" min="0" placeholder="Infinity" value={tier.toAmount} onChange={e => {
+                          <NumberInput placeholder="Infinity" value={tier.toAmount} onChange={e => {
                             const newTiers = [...tiers];
                             newTiers[index].toAmount = e.target.value;
                             setTiers(newTiers);
@@ -535,7 +536,7 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
                         </div>
                         <div className="grid flex-1 gap-1">
                           <span className="text-xs text-muted-foreground block">Rate (%)</span>
-                          <Input type="number" step="0.01" min="0" value={tier.rate} onChange={e => {
+                          <NumberInput decimals={2} value={tier.rate} onChange={e => {
                             const newTiers = [...tiers];
                             newTiers[index].rate = e.target.value;
                             setTiers(newTiers);
@@ -560,7 +561,7 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
 
             <div className="grid gap-2">
               <Label htmlFor="clawback">Clawback Period (Days) <span className="text-muted-foreground font-normal">- Optional</span></Label>
-              <Input id="clawback" type="number" min="0" value={clawbackDays} onChange={e => setClawbackDays(e.target.value)} placeholder="e.g. 90" />
+              <NumberInput id="clawback" decimals={0} value={clawbackDays} onChange={e => setClawbackDays(e.target.value)} placeholder="e.g. 90" />
             </div>
           </div>
           
