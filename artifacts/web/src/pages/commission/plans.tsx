@@ -389,7 +389,7 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
     }
   }, [open, isEditing, initialData]);
 
-  const isGrowthPlus = ["growth", "annual", "flex"].includes(sub?.plan);
+  const isGrowthPlus = ["growth", "annual", "flex", "pro"].includes(sub?.plan);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
