@@ -13,7 +13,7 @@ const FAQS = [
   },
   {
     q: "What happens if I go over my rep limit?",
-    a: "You'll see a clear warning before you hit your limit. You can add extra rep seats any time for $4 per rep/month — no plan upgrade required.",
+    a: "You'll see a clear warning before you hit your limit. You can add extra rep seats any time for $8 per rep/month — no plan upgrade required.",
   },
   {
     q: "Is my data secure?",
