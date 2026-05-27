@@ -1,4 +1,4 @@
-import { Sun, Moon, Cloud } from "lucide-react";
+import { Sun, Moon, Cloud, LifeBuoy } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/hooks/use-auth";
 import { NotificationBell } from "@/components/notification-bell";
@@ -73,6 +73,22 @@ export function Header() {
       <div className="flex items-center gap-2">
         {/* Sync Status Indicator */}
         <SyncIndicator />
+
+        {/* Support */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <a
+              href="mailto:support@commissionk.it"
+              className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              title="Contact support"
+            >
+              <LifeBuoy className="size-4" />
+            </a>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" align="end">
+            Contact support
+          </TooltipContent>
+        </Tooltip>
 
         {/* Theme toggle */}
         <button
