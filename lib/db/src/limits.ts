@@ -22,6 +22,11 @@ export const PLAN_LIMITS = {
     maxReps: 50,
     maxPlans: 1_000_000, // Unlimited
   },
+  pro: {
+    maxMembers: 50,
+    maxReps: 100,
+    maxPlans: 1_000_000, // Unlimited
+  },
   annual: {
     maxMembers: 15,
     maxReps: 50,

@@ -21,8 +21,8 @@ const router = Router();
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-type PlanName = "free" | "lite" | "starter" | "growth" | "annual" | "flex";
-const GROWTH_PLANS = new Set<PlanName>(["growth", "annual", "flex"]);
+type PlanName = "free" | "lite" | "starter" | "growth" | "annual" | "flex" | "pro";
+const GROWTH_PLANS = new Set<PlanName>(["growth", "annual", "flex", "pro"]);
 
 async function getPlan(workspaceId: string): Promise<PlanName> {
   const sub = await WorkspaceSubscription.findOne({

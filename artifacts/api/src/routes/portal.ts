@@ -86,7 +86,7 @@ async function getPlan(workspaceId: string): Promise<string> {
   return (isActive ? (sub?.plan ?? "free") : "free") as string;
 }
 
-const GROWTH_PLANS = new Set(["growth", "annual", "flex"]);
+const GROWTH_PLANS = new Set(["growth", "annual", "flex", "pro"]);
 
 async function sendNotification(workspaceId: string, userId: string, type: string, title: string, message: string, href?: string) {
   try {
