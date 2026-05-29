@@ -267,7 +267,7 @@ export function DisputesPage() {
   const [showResolved, setShowResolved] = useState(false);
 
   const plan = sub?.plan ?? "free";
-  const isGrowthPlus = ["growth", "annual", "flex"].includes(plan);
+  const isGrowthPlus = ["growth", "annual", "pro"].includes(plan);
 
   const { data: disputes = [], isLoading } = useQuery<Dispute[]>({
     queryKey: ["disputes", workspaceId],

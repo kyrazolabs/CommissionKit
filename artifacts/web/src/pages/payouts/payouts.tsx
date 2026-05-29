@@ -410,7 +410,7 @@ export function PayoutsPage() {
 
   const currency = activeWorkspace?.currency ?? "USD";
   const plan = sub?.plan ?? "free";
-  const isGrowthPlus = ["growth", "annual", "flex"].includes(plan);
+  const isGrowthPlus = ["growth", "annual", "pro"].includes(plan);
 
   const [filters, setFilters] = useState({ status: "", repId: "" });
   const [search, setSearch] = useState("");
