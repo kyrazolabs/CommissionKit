@@ -531,6 +531,9 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
                           <NumberInput placeholder="Infinity" value={tier.toAmount} onChange={e => {
                             const newTiers = [...tiers];
                             newTiers[index].toAmount = e.target.value;
+                            if (e.target.value && index < newTiers.length - 1) {
+                              newTiers[index + 1].fromAmount = e.target.value;
+                            }
                             setTiers(newTiers);
                           }} />
                         </div>
@@ -552,7 +555,10 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
                       </div>
                     ))}
                   </div>
-                  <Button type="button" variant="outline" size="sm" onClick={() => setTiers(prev => [...prev, { fromAmount: "", toAmount: "", rate: "" }])}>
+                  <Button type="button" variant="outline" size="sm" onClick={() => setTiers(prev => {
+                    const lastTo = prev.length > 0 ? prev[prev.length - 1].toAmount : "";
+                    return [...prev, { fromAmount: lastTo, toAmount: "", rate: "" }];
+                  })}>
                     <Plus className="size-4 mr-2" /> Add Tier
                   </Button>
                 </div>

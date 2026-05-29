@@ -96,7 +96,10 @@ function calculateCommission(
       if (remaining <= 0) break;
       const tierTop = tier.toAmount !== null ? tier.toAmount : Infinity;
       const tierBottom = tier.fromAmount;
-      const applicable = Math.min(remaining, tierTop - tierBottom);
+      const allocated = amount - remaining;
+      const tierStart = Math.max(tierBottom, allocated);
+      const tierEnd = Math.min(tierTop, amount);
+      const applicable = Math.max(0, tierEnd - tierStart);
       if (applicable <= 0) continue;
       const commission = applicable * tier.rate;
       totalCommission += commission;
