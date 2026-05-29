@@ -57,3 +57,7 @@ Thumbs.db
 .env.prod
 .env.production
 cspell.json
+
+# Electrobun build output
+build/
+*.asar

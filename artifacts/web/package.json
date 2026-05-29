@@ -78,6 +78,11 @@
   "dependencies": {
     "@better-auth/infra": "^0.2.6",
     "@sentry/react": "^10.53.1",
+    "@tiptap/extension-bubble-menu": "^3.23.6",
+    "@tiptap/extension-placeholder": "^3.23.6",
+    "@tiptap/extension-underline": "^3.23.6",
+    "@tiptap/react": "^3.23.6",
+    "@tiptap/starter-kit": "^3.23.6",
     "@types/papaparse": "^5.5.2",
     "better-auth": "^1.6.9",
     "papaparse": "^5.5.3",
