@@ -593,7 +593,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
           </div>
         </DialogHeader>
         
-        <div className="flex-1 overflow-hidden py-4 flex flex-col min-h-0">
+        <div className="flex-1 overflow-y-auto py-4 min-h-0">
           {!parsedData ? (
             <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-12 text-center bg-muted/30">
               <div className="bg-primary/10 p-4 rounded-full mb-4">
@@ -623,7 +623,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
               </div>
             </div>
           ) : (
-            <div className="flex flex-col h-full min-h-0">
+            <>
               <div className="mb-4 flex justify-between items-center bg-muted/40 p-2 rounded-lg border">
                 <div className="text-sm font-medium px-2">
                   <span className="text-primary">{parsedData.length}</span> rows detected
@@ -633,89 +633,87 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
                 </Button>
               </div>
               
-              <div className="flex-1 border rounded-xl overflow-hidden bg-background shadow-sm">
-                <div className="overflow-auto h-full">
-                  <Table className="relative">
-                    <TableHeader className="bg-muted/50 sticky top-0 z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
-                      <TableRow>
-                        <TableHead className="w-[200px]">Sales Rep</TableHead>
-                        <TableHead className="w-[200px]">Deal Name</TableHead>
-                        <TableHead className="w-[120px]">Amount</TableHead>
-                        <TableHead className="w-[160px]">Currency</TableHead>
-                        <TableHead className="w-[150px]">Close Date</TableHead>
-                        <TableHead className="w-[140px]">Stage</TableHead>
-                        <TableHead className="w-[50px]"></TableHead>
+              <div className="border rounded-xl overflow-x-auto bg-background shadow-sm">
+                <Table className="relative">
+                  <TableHeader className="bg-muted/50 sticky top-0 z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
+                    <TableRow>
+                      <TableHead className="w-[200px]">Sales Rep</TableHead>
+                      <TableHead className="w-[200px]">Deal Name</TableHead>
+                      <TableHead className="w-[120px]">Amount</TableHead>
+                      <TableHead className="w-[160px]">Currency</TableHead>
+                      <TableHead className="w-[150px]">Close Date</TableHead>
+                      <TableHead className="w-[140px]">Stage</TableHead>
+                      <TableHead className="w-[50px]"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {parsedData.map((row) => (
+                      <TableRow key={row.id} className={!row.repId ? "bg-red-50/30 dark:bg-red-900/10" : ""}>
+                        <TableCell>
+                          <Select value={row.repId} onValueChange={(val) => updateRow(row.id, 'repId', val)}>
+                            <SelectTrigger className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent">
+                              <SelectValue placeholder="Select rep" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Array.isArray(reps) && reps.map(rep => (
+                                <SelectItem key={rep.id} value={rep.id.toString()}>{rep.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {!row.repId && <p className="text-[10px] text-destructive mt-0.5 ml-2">Unknown email: {row.repEmail}</p>}
+                        </TableCell>
+                        <TableCell>
+                          <Input 
+                            value={row.name} 
+                            onChange={(e) => updateRow(row.id, 'name', e.target.value)}
+                            className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <NumberInput
+                            value={row.amount} 
+                            onChange={(e) => updateRow(row.id, 'amount', parseFloat(e.target.value) || 0)}
+                            className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <CurrencyCombobox 
+                            value={row.currency} 
+                            onChange={(val) => updateRow(row.id, 'currency', val)}
+                            className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent shadow-none hover:bg-muted/50"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input 
+                            type="date" 
+                            value={row.closeDate} 
+                            onChange={(e) => updateRow(row.id, 'closeDate', e.target.value)}
+                            className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Select value={row.stage} onValueChange={(val) => updateRow(row.id, 'stage', val)}>
+                            <SelectTrigger className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="closed_won">CLOSED WON</SelectItem>
+                              <SelectItem value="closed_lost">CLOSED LOST</SelectItem>
+                              <SelectItem value="pending">PENDING</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="icon" className="size-6 text-muted-foreground hover:text-destructive" onClick={() => removeRow(row.id)}>
+                            <Trash className="size-3" />
+                          </Button>
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {parsedData.map((row) => (
-                        <TableRow key={row.id} className={!row.repId ? "bg-red-50/30 dark:bg-red-900/10" : ""}>
-                          <TableCell>
-                            <Select value={row.repId} onValueChange={(val) => updateRow(row.id, 'repId', val)}>
-                              <SelectTrigger className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent">
-                                <SelectValue placeholder="Select rep" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {Array.isArray(reps) && reps.map(rep => (
-                                  <SelectItem key={rep.id} value={rep.id.toString()}>{rep.name}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            {!row.repId && <p className="text-[10px] text-destructive mt-0.5 ml-2">Unknown email: {row.repEmail}</p>}
-                          </TableCell>
-                          <TableCell>
-                            <Input 
-                              value={row.name} 
-                              onChange={(e) => updateRow(row.id, 'name', e.target.value)}
-                              className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <NumberInput
-                              value={row.amount} 
-                              onChange={(e) => updateRow(row.id, 'amount', parseFloat(e.target.value) || 0)}
-                              className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <CurrencyCombobox 
-                              value={row.currency} 
-                              onChange={(val) => updateRow(row.id, 'currency', val)}
-                              className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent shadow-none hover:bg-muted/50"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Input 
-                              type="date" 
-                              value={row.closeDate} 
-                              onChange={(e) => updateRow(row.id, 'closeDate', e.target.value)}
-                              className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Select value={row.stage} onValueChange={(val) => updateRow(row.id, 'stage', val)}>
-                              <SelectTrigger className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="closed_won">CLOSED WON</SelectItem>
-                                <SelectItem value="closed_lost">CLOSED LOST</SelectItem>
-                                <SelectItem value="pending">PENDING</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </TableCell>
-                          <TableCell>
-                            <Button variant="ghost" size="icon" className="size-6 text-muted-foreground hover:text-destructive" onClick={() => removeRow(row.id)}>
-                              <Trash className="size-3" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
-            </div>
+            </>
           )}
         </div>
         
