@@ -71,14 +71,11 @@ function calculateCommission(
       acceleratorRate !== null &&
       amount > acceleratorThreshold
     ) {
-      const baseCommission = acceleratorThreshold * flatRate;
-      const accelCommission = (amount - acceleratorThreshold) * acceleratorRate;
-      const total = baseCommission + accelCommission;
-      const effectiveRate = total / amount;
+      const total = amount * acceleratorRate;
       return {
-        rate: effectiveRate,
+        rate: acceleratorRate,
         commission: total,
-        note: `Base ${(flatRate * 100).toFixed(2)}% up to ${currency} ${acceleratorThreshold}, then ${(acceleratorRate * 100).toFixed(2)}% above`,
+        note: `Accelerated: ${(acceleratorRate * 100).toFixed(2)}% on full ${currency} ${amount.toFixed(2)} (exceeded ${currency} ${acceleratorThreshold} threshold)`,
       };
     }
     const commission = amount * flatRate;
@@ -99,7 +96,10 @@ function calculateCommission(
       if (remaining <= 0) break;
       const tierTop = tier.toAmount !== null ? tier.toAmount : Infinity;
       const tierBottom = tier.fromAmount;
-      const applicable = Math.min(remaining, tierTop - tierBottom);
+      const allocated = amount - remaining;
+      const tierStart = Math.max(tierBottom, allocated);
+      const tierEnd = Math.min(tierTop, amount);
+      const applicable = Math.max(0, tierEnd - tierStart);
       if (applicable <= 0) continue;
       const commission = applicable * tier.rate;
       totalCommission += commission;

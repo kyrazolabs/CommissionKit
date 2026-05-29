@@ -1,0 +1,54 @@
+---
+title: "Running Calculations"
+description: "Execute commission calculations and interpret the results"
+---
+
+## When to run
+
+Run a calculation after:
+
+- Importing or creating deals for a new period
+- Updating deal amounts or stages in an existing period
+- Changing a rep's commission plan
+- Adding a new rep with deals in their period
+
+<Tip>
+  Calculations are period-specific. Running for `2026-05` only processes deals with that period. Deals in other periods are not affected.
+</Tip>
+
+## How to run
+
+1. Go to **Calculations**
+2. Select the period using the month picker
+3. Click **Run Calculation**
+4. The run is queued and processed asynchronously
+
+## What happens during a run
+
+1. Deals with stage `closed_won` and matching period are fetched
+2. Each deal's rep is resolved and their commission plan is loaded
+3. The plan's commission function is applied to the deal amount
+4. Results are stored and aggregated per rep
+5. Admins are notified on completion
+
+## Understanding results
+
+Each calculation run produces:
+
+- **Total commission** per rep
+- **Commission per deal** with the rate applied and calculation note
+- **Effective rate** — the actual percentage earned (may differ from nominal rate for tiered plans)
+
+### Reading calculation notes
+
+The notes explain how each commission was derived:
+
+| Plan type | Note example |
+|-----------|-------------|
+| Flat | `Flat rate 5.00% on USD 50000.00` |
+| Tiered | `Tiered: 5.00% on USD 25000.00, 10.00% on USD 25000.00` |
+| Accelerator | `Accelerated: 10.00% on full USD 50000.00 (exceeded USD 25000 threshold)` |
+
+## Historical runs
+
+Previous calculation runs are preserved. You can view the history of runs for each period, including the timestamp and who triggered the run.

@@ -1,0 +1,48 @@
+---
+title: "Managing Plans"
+description: "Create, edit, and organize commission plans"
+---
+
+## Creating a plan
+
+1. Go to **Settings → Plans**
+2. Click **Create Plan**
+3. Fill in the details:
+
+### Flat rate configuration
+
+- **Name** — A descriptive name
+- **Flat Rate** — The single commission percentage
+
+### Tiered configuration
+
+- **Name** — A descriptive name
+- **Volume Tiers** — Add rows for each tier:
+  - **From** — Lower bound of the tier
+  - **To** — Upper bound (leave blank for infinity)
+  - **Rate** — Commission percentage for this tier
+
+Tiers are continuous — the next tier's **From** auto-fills with the previous tier's **To** value. The first tier should typically start at 0.
+
+### Accelerator configuration
+
+- **Name** — A descriptive name
+- **Base Rate** — The standard rate for deals below the threshold
+- **Threshold** — The revenue amount that triggers the accelerator
+- **Accelerator Rate** — The higher rate applied to the full deal when the threshold is exceeded
+
+## Editing a plan
+
+Click the edit button on any plan card. You can change all fields including the plan type. When switching between plan types, the form shows the relevant configuration fields.
+
+## Deleting a plan
+
+Plans can be deleted if they are not currently assigned to any rep. If a plan is in use, reassign those reps first.
+
+## Plan type comparison
+
+| Type | Behavior | Best for |
+|------|----------|----------|
+| Flat | Single rate on every deal | Simple, predictable commissions |
+| Tiered | Marginal rates per portion of deal | Rewarding higher performance |
+| Accelerator | Higher rate on full deal when threshold crossed | Aggressive performance targets |
