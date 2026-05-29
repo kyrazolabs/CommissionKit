@@ -79,6 +79,9 @@ export default defineConfig(({ mode }) => {
       fs: {
         strict: true,
       },
+      hmr: {
+        timeout: 120000,
+      },
     },
     preview: {
       port,
