@@ -161,8 +161,31 @@ export function Pricing() {
           })}
         </div>
 
+        {/* Business / Enterprise */}
+        <div className="max-w-5xl mx-auto mt-10" style={fadeIn(inView, 500)}>
+          <div className="rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-primary/[0.02] p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div>
+              <h3 className="text-xl font-bold text-foreground mb-1">Business</h3>
+              <p className="text-sm text-muted-foreground mb-4 md:mb-0">
+                Custom features, SSO/SAML, dedicated infrastructure, and priority support for large organizations.
+              </p>
+              <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-foreground">
+                <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> Unlimited reps & members</li>
+                <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> SAML/SSO & SCIM</li>
+                <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> Custom API rate limits</li>
+                <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> Dedicated account manager</li>
+                <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> Custom legal & SLA terms</li>
+                <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> On-premise deployment option</li>
+              </ul>
+            </div>
+            <Button size="md" className="font-bold shadow-sm shrink-0" asChild>
+              <a href="mailto:sales@commissionk.it">Contact Sales</a>
+            </Button>
+          </div>
+        </div>
+
         {/* Extra reps add-on */}
-        <div className="text-center mt-12" style={fadeIn(inView, 500)}>
+        <div className="text-center mt-12" style={fadeIn(inView, 600)}>
           <p className="text-sm text-muted-foreground font-medium bg-muted/50 inline-block px-4 py-2 rounded-lg border">
             <Plus className="size-4 inline-block align-text-bottom mr-1" />
             ${payYearly ? "80" : "8"} per additional rep/{payYearly ? "year" : "month"} on all plans
