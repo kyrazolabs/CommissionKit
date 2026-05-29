@@ -8,8 +8,8 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { MarkdownEditor } from "@/components/markdown-editor";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -161,11 +161,10 @@ function ResolveModal({
 
         <div className="grid gap-2">
           <Label>Admin Notes (sent to rep)</Label>
-          <Textarea
-            placeholder="Explain the resolution…"
+          <MarkdownEditor
             value={adminNotes}
-            onChange={e => setAdminNotes(e.target.value)}
-            rows={3}
+            onChange={setAdminNotes}
+            placeholder="Explain the resolution…"
           />
         </div>
       </div>
@@ -243,7 +242,7 @@ function DisputeRow({ dispute, onAction }: { dispute: Dispute; onAction: (d: Dis
               {dispute.adminNotes && (
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">Admin Notes</p>
-                  <p className="text-muted-foreground">{dispute.adminNotes}</p>
+                  <div className="prose prose-sm max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: dispute.adminNotes }} />
                 </div>
               )}
               {dispute.resolvedAt && (
