@@ -71,14 +71,11 @@ function calculateCommission(
       acceleratorRate !== null &&
       amount > acceleratorThreshold
     ) {
-      const baseCommission = acceleratorThreshold * flatRate;
-      const accelCommission = (amount - acceleratorThreshold) * acceleratorRate;
-      const total = baseCommission + accelCommission;
-      const effectiveRate = total / amount;
+      const total = amount * acceleratorRate;
       return {
-        rate: effectiveRate,
+        rate: acceleratorRate,
         commission: total,
-        note: `Base ${(flatRate * 100).toFixed(2)}% up to ${currency} ${acceleratorThreshold}, then ${(acceleratorRate * 100).toFixed(2)}% above`,
+        note: `Accelerated: ${(acceleratorRate * 100).toFixed(2)}% on full ${currency} ${amount.toFixed(2)} (exceeded ${currency} ${acceleratorThreshold} threshold)`,
       };
     }
     const commission = amount * flatRate;

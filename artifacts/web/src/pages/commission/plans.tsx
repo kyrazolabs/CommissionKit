@@ -182,9 +182,9 @@ function PlanCard({ plan, sub, currency }: { plan: any, sub: any, currency: stri
               <div className="flex items-center gap-1.5">
                 <CardDescription className="capitalize">{plan.type} Plan</CardDescription>
                 <HelpTooltip content={
-                  plan.type === "flat" ? "Standard percentage earned on every deal amount." :
-                  plan.type === "tiered" ? "Progressive rates that increase as volume reaches specific milestones." :
-                  "Higher incentive rate applied only after passing a specific revenue threshold."
+                  plan.type === "flat" ? "A single fixed rate applied to every deal amount." :
+                  plan.type === "tiered" ? "Different marginal rates apply to portions of the deal as it passes each tier boundary (like tax brackets)." :
+                  "A higher rate is applied to the full deal amount when it exceeds the accelerator threshold."
                 } />
               </div>
             </div>
