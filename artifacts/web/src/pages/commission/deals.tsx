@@ -19,7 +19,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DatePicker, DateRangePicker } from "@/components/ui/date-picker";
 import { parseISO } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Trash, UploadCloud, FileDown, Briefcase, Loader2 } from "lucide-react";
+import { Search, Trash, UploadCloud, FileDown, Briefcase, Loader2, ChevronDown, ChevronRight } from "lucide-react";
 import { HelpTooltip } from "@/components/help-tooltip";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/format";
@@ -32,6 +32,7 @@ import Papa from "papaparse";
 import { useRole } from "@/hooks/use-role";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { CurrencyCombobox } from "@/components/currency-combobox";
+import { MarkdownEditor } from "@/components/markdown-editor";
 import { useBillingStatus } from "@/hooks/use-billing-status";
 import { Download } from "lucide-react";
 import { apiFetch } from "@/lib/api";
@@ -45,6 +46,7 @@ export function DealsPage() {
   const [period, setPeriod] = useState<string>(format(new Date(), "yyyy-MM"));
   const [repId, setRepId] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [expandedDealId, setExpandedDealId] = useState<string | null>(null);
 
   const { can, hasPermission, isLoading: roleLoading } = useRole();
   const { data: reps } = useListReps({ query: { queryKey: getListRepsQueryKey() } });
@@ -177,35 +179,65 @@ export function DealsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredDeals.map((deal) => (
-                  <TableRow key={deal.id}>
-                    <TableCell className="font-medium">{deal.name}</TableCell>
-                    <TableCell>{deal.repName}</TableCell>
-                    <TableCell className="font-medium text-primary">
-                      {formatCurrency(deal.amount, deal.currency || currency)}
-                    </TableCell>
-                    <TableCell>{format(new Date(deal.closeDate), "MMM d, yyyy")}</TableCell>
-                    <TableCell>
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
-                        deal.stage === 'closed_won' ? 'bg-primary/10 text-primary border-primary/20' : 
-                        deal.stage === 'closed_lost' ? 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/30' :
-                        'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800/30'
-                      }`}>
-                        {deal.stage.replace('_', ' ').toUpperCase()}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        {hasPermission("deals", "edit") && (
-                          <UpdateDealDialog deal={deal} queryParams={queryParams} reps={reps} workspaceCurrency={currency} />
-                        )}
-                        {hasPermission("deals", "delete") && (
-                          <DealDeleteAction deal={deal} queryParams={queryParams} currency={currency} />
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {filteredDeals.flatMap((deal) => {
+                  const rows: React.ReactNode[] = [
+                    <TableRow key={deal.id}>
+                      <TableCell className="font-medium">
+                        <button
+                          onClick={() => setExpandedDealId(expandedDealId === deal.id ? null : deal.id)}
+                          className="flex items-center gap-1.5 hover:text-primary transition-colors text-left"
+                        >
+                          {deal.notes ? (
+                            expandedDealId === deal.id ? (
+                              <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
+                            ) : (
+                              <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
+                            )
+                          ) : (
+                            <span className="size-3.5 shrink-0" />
+                          )}
+                          {deal.name}
+                        </button>
+                      </TableCell>
+                      <TableCell>{deal.repName}</TableCell>
+                      <TableCell className="font-medium text-primary">
+                        {formatCurrency(deal.amount, deal.currency || currency)}
+                      </TableCell>
+                      <TableCell>{format(new Date(deal.closeDate), "MMM d, yyyy")}</TableCell>
+                      <TableCell>
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
+                          deal.stage === 'closed_won' ? 'bg-primary/10 text-primary border-primary/20' : 
+                          deal.stage === 'closed_lost' ? 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/30' :
+                          'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800/30'
+                        }`}>
+                          {deal.stage.replace('_', ' ').toUpperCase()}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
+                          {hasPermission("deals", "edit") && (
+                            <UpdateDealDialog deal={deal} queryParams={queryParams} reps={reps} workspaceCurrency={currency} />
+                          )}
+                          {hasPermission("deals", "delete") && (
+                            <DealDeleteAction deal={deal} queryParams={queryParams} currency={currency} />
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>,
+                  ];
+                  if (expandedDealId === deal.id && deal.notes) {
+                    rows.push(
+                      <TableRow key={`${deal.id}-notes`} className="hover:bg-transparent">
+                        <TableCell colSpan={6} className="p-0 border-t-0">
+                          <div className="px-6 py-4 bg-muted/20 border-t">
+                            <div className="prose prose-sm max-w-none prose-p:my-0.5" dangerouslySetInnerHTML={{ __html: deal.notes }} />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  }
+                  return rows;
+                })}
               </TableBody>
             </Table>
           )}
@@ -302,7 +334,7 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle>Edit Deal</DialogTitle>
           <DialogDescription>Update deal details.</DialogDescription>
@@ -359,6 +391,14 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
                 </SelectContent>
               </Select>
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="edit-notes">Notes</Label>
+            <MarkdownEditor
+              value={formData.notes}
+              onChange={(val) => setFormData(prev => ({ ...prev, notes: val }))}
+              placeholder="Add notes in Markdown... (optional)"
+            />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
@@ -840,7 +880,7 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
           Add Deal
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle>Add New Deal</DialogTitle>
           <DialogDescription>Enter deal details.</DialogDescription>
@@ -893,6 +933,14 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
                 </SelectContent>
               </Select>
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="notes">Notes</Label>
+            <MarkdownEditor
+              value={formData.notes}
+              onChange={(val) => setFormData(prev => ({ ...prev, notes: val }))}
+              placeholder="Add notes in Markdown... (optional)"
+            />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
