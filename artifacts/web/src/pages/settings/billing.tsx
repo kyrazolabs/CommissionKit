@@ -72,7 +72,7 @@ const plans = [
     name: "Growth",
     priceMonthlyUsd: 99,
     priceYearlyUsd: 990,
-    description: "For stable teams of 8+ reps.",
+    description: "For stable teams of 10+ reps.",
     icon: Building2,
     iconBg: "bg-primary/10",
     iconColor: "text-primary",

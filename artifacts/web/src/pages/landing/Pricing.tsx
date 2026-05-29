@@ -28,7 +28,7 @@ const PLANS = [
     name: "Growth",
     priceMonthly: 99,
     priceYearly: 990,
-    tagline: "For stable teams of 8+ reps.",
+    tagline: "For stable teams of 10+ reps.",
     reps: "Includes up to 30 reps",
     features: [
       "Up to 15 workspace members",
