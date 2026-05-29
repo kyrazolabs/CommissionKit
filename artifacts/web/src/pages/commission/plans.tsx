@@ -290,7 +290,7 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
   
   const [tiers, setTiers] = useState<any[]>(initialData?.tiers ? 
     initialData.tiers.map((t: any) => ({ ...t, rate: (t.rate * 100).toString() })) : 
-    [{ fromAmount: "0", toAmount: "50000", rate: "5" }, { fromAmount: "50000", toAmount: "", rate: "8" }]
+    [{ fromAmount: "0", toAmount: "50000", rate: "5" }, { fromAmount: "50001", toAmount: "", rate: "8" }]
   );
 
   const queryClient = useQueryClient();
@@ -531,6 +531,9 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
                           <NumberInput placeholder="Infinity" value={tier.toAmount} onChange={e => {
                             const newTiers = [...tiers];
                             newTiers[index].toAmount = e.target.value;
+                            if (e.target.value && index < newTiers.length - 1) {
+                              newTiers[index + 1].fromAmount = (Number(e.target.value) + 1).toString();
+                            }
                             setTiers(newTiers);
                           }} />
                         </div>
@@ -552,7 +555,11 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
                       </div>
                     ))}
                   </div>
-                  <Button type="button" variant="outline" size="sm" onClick={() => setTiers(prev => [...prev, { fromAmount: "", toAmount: "", rate: "" }])}>
+                  <Button type="button" variant="outline" size="sm" onClick={() => setTiers(prev => {
+                    const lastTo = prev.length > 0 ? prev[prev.length - 1].toAmount : "";
+                    const nextFrom = lastTo ? (Number(lastTo) + 1).toString() : "";
+                    return [...prev, { fromAmount: nextFrom, toAmount: "", rate: "" }];
+                  })}>
                     <Plus className="size-4 mr-2" /> Add Tier
                   </Button>
                 </div>
