@@ -149,7 +149,7 @@ export function MyPayoutsPage() {
   const currency = activeWorkspace?.currency ?? "USD";
 
   const plan = sub?.plan ?? "free";
-  const isGrowthPlus = ["growth", "annual", "flex"].includes(plan);
+  const isGrowthPlus = ["growth", "annual", "pro"].includes(plan);
 
   const [disputeTarget, setDisputeTarget] = useState<Payout | null>(null);
 
