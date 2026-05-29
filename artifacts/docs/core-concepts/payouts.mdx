@@ -1,0 +1,49 @@
+---
+title: "Payouts"
+description: "Manage commission payouts and resolve disputes"
+---
+
+After a calculation run, commissions are available as payouts. Payouts track the end-to-end lifecycle from approval to payment.
+
+## Payout lifecycle
+
+Each payout goes through these stages:
+
+| Status | Description |
+|--------|-------------|
+| Pending | Calculated but not yet approved |
+| Approved | Approved by an admin, ready for payment |
+| Paid | Payment has been processed |
+| Disputed | The rep has raised a dispute |
+| On Hold | Temporarily held for review |
+
+## Reviewing payouts
+
+1. Go to **Payouts** to see all pending payouts
+2. Review the amounts and adjust if needed
+3. Approve payouts individually or in bulk
+
+## Adjustments
+
+Admins can add adjustments to payouts. Adjustments are recorded separately from the calculated commission, providing full audit transparency.
+
+## Disputes
+
+Reps can dispute a payout through the portal. The dispute process:
+
+1. A rep submits a dispute with a reason (markdown supported)
+2. The dispute appears in **Dispute Management** for admins
+3. Admins review the dispute and the payout details
+4. Admins write resolution notes (markdown supported) and mark as **Under Review** or **Resolved**
+5. When resolved, the payout returns to **Approved** status
+
+### Viewing dispute details
+
+In the disputes table, click the chevron to expand a dispute and see:
+- The rep's reason for the dispute
+- Admin resolution notes
+- Resolution timestamp
+
+## Exporting payouts
+
+CommissionKit supports exporting payouts to CSV for your payroll or accounting system. This requires the Growth plan or above.

@@ -1,0 +1,54 @@
+---
+title: "Commission Calculations"
+description: "How commission calculations work and when to run them"
+---
+
+A commission calculation processes all deals for a given period, applies each rep's commission plan, and produces commission amounts.
+
+## How it works
+
+When you run a calculation for a period (e.g., `2026-05`):
+
+1. CommissionKit fetches all `closed_won` deals with that exact period
+2. For each deal, it looks up the rep's assigned commission plan
+3. It applies the plan's rules to compute the commission
+4. Results are stored as a commission run with full audit trail
+
+### Filtering
+
+- Only deals with stage `closed_won` are included
+- Only deals matching the exact `YYYY-MM` period are included
+- Deals in other periods or stages are excluded
+
+## Running a calculation
+
+1. Go to **Calculations**
+2. Select the target period
+3. Click **Run Calculation**
+
+The calculation runs asynchronously. You can track its progress in the calculations list.
+
+## Re-running calculations
+
+If you add, edit, or delete deals in a period that was already calculated, you need to re-run the calculation to update the results. Each run is stored separately, so you can compare historical runs.
+
+## Calculation detail view
+
+After a run completes, you can view the breakdown:
+
+- Total commission per rep
+- Per-deal commission details with rate applied
+- Calculation notes explaining how each amount was derived
+
+### Example breakdown
+
+For a $50,000 deal with a tiered plan (5% up to $25k, 10% above):
+
+```text
+Rep: Jane Smith
+Deal: Acme Corp Q3 ($50,000)
+5.00% on $25,000.00
+10.00% on $25,000.00
+Total commission: $3,750.00
+Effective rate: 7.50%
+```
