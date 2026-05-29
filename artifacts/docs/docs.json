@@ -7,6 +7,9 @@
     "light": "#14B8A6",
     "dark": "#0F766E"
   },
+  "appearance": {
+    "default": "light"
+  },
   "favicon": "/favicon.svg",
   "navigation": {
     "groups": [
@@ -58,12 +61,6 @@
       "type": "button",
       "label": "Dashboard",
       "href": "https://commissionk.it/dash"
-    }
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/commissionkit",
-      "github": "https://github.com/commissionkit"
     }
   }
 }
