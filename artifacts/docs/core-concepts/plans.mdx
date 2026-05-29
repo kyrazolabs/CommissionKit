@@ -1,0 +1,66 @@
+---
+title: "Commission Plans"
+description: "Define how commissions are calculated for your sales team"
+---
+
+Commission plans define the rules for calculating commissions on deals. Each rep is assigned a plan, and when a calculation run is triggered, the plan determines the commission amount for each deal.
+
+## Plan types
+
+CommissionKit supports three plan types:
+
+### Flat rate
+
+A single fixed percentage applied to every deal amount. The simplest plan type.
+
+```
+$50,000 deal × 5% = $2,500 commission
+```
+
+### Tiered
+
+Different marginal rates apply to portions of the deal as it passes each tier boundary — similar to tax brackets.
+
+Each tier defines a `from` and `to` range with a rate. Tiers are continuous (next tier starts where the previous ends).
+
+```
+Tier 1: $0 – $25,000 at 5%
+Tier 2: $25,000 – Infinity at 10%
+
+$50,000 deal:
+  First $25,000 × 5%  = $1,250
+  Next  $25,000 × 10% = $2,500
+  Total commission     = $3,750
+```
+
+### Accelerator
+
+A higher rate applied to the **full deal amount** when the deal exceeds a threshold. This rewards reps for exceeding targets.
+
+```
+Base rate: 5%
+Threshold: $25,000
+Accelerator rate: 10%
+
+$50,000 deal (exceeds $25,000 threshold):
+  $50,000 × 10% = $5,000 commission
+
+$20,000 deal (below threshold):
+  $20,000 × 5% = $1,000 commission
+```
+
+<Tip>
+  The key difference: **tiered** applies different rates to portions of the deal (marginal), while **accelerator** applies the higher rate to the entire deal when the threshold is crossed.
+</Tip>
+
+## Creating a plan
+
+1. Go to **Settings → Plans**
+2. Click **Create Plan**
+3. Enter a name and select a type
+4. Configure the rates based on the plan type
+5. Save the plan
+
+## Assigning plans to reps
+
+Plans are assigned to reps in the rep management section. Each rep can have one active plan. When you run a calculation, each rep's assigned plan is used to compute their commission.

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "almond",
+  "name": "CommissionKit",
+  "colors": {
+    "primary": "#0D9488",
+    "light": "#14B8A6",
+    "dark": "#0F766E"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Getting Started",
+        "pages": [
+          "index",
+          "quickstart"
+        ]
+      },
+      {
+        "group": "Core Concepts",
+        "pages": [
+          "core-concepts/deals",
+          "core-concepts/plans",
+          "core-concepts/calculations",
+          "core-concepts/payouts"
+        ]
+      },
+      {
+        "group": "Guides",
+        "pages": [
+          "guides/importing-deals",
+          "guides/managing-plans",
+          "guides/running-calculations"
+        ]
+      },
+      {
+        "group": "Portal",
+        "pages": [
+          "portal/rep-portal",
+          "portal/public-portal"
+        ]
+      }
+    ]
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "mailto:support@commissionk.it"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Dashboard",
+      "href": "https://commissionk.it/dash"
+    }
+  },
+  "footer": {
+    "socials": {
+      "x": "https://x.com/commissionkit",
+      "github": "https://github.com/commissionkit"
+    }
+  }
+}

@@ -1,0 +1,47 @@
+---
+title: "Deals"
+description: "Manage revenue events for commission calculation"
+---
+
+Deals are the foundation of commission calculation. Each deal represents a revenue event attributed to a sales rep.
+
+## Deal fields
+
+| Field | Description |
+|-------|-------------|
+| Deal Name | The name of the opportunity or revenue event |
+| Sales Rep | The rep credited for the deal |
+| Amount | The deal value |
+| Currency | The deal currency (multi-currency supported) |
+| Close Date | When the deal closed |
+| Period | The YYYY-MM period this deal belongs to |
+| Stage | `pending`, `closed_won`, or `closed_lost` |
+| Notes | Optional markdown notes visible in the deal row |
+
+## Creating deals
+
+### Manual creation
+
+Click **Add Deal** and fill in the details. The deal is immediately visible in the deals table and eligible for the next calculation run.
+
+### Bulk import
+
+Click **Bulk Import** to upload a CSV or XLSX file. CommissionKit parses the file and displays an editable preview:
+
+- Map columns to deal fields (rep email/name, deal name, amount, close date, stage, currency)
+- Edit any row before importing
+- Rows with unknown reps are highlighted for attention
+
+Download a template from the import dialog to match the expected format.
+
+## Editing deals
+
+Only deals with a `pending` stage can be edited. Click the pencil icon on any pending deal to update its fields — including adding markdown-formatted notes.
+
+## Viewing notes
+
+If a deal has notes, a chevron icon appears next to the deal name. Click it to expand an inline view of the rendered notes.
+
+## Stage and calculations
+
+Only `closed_won` deals are included in commission calculations. Deals in `pending` or `closed_lost` stages are excluded from calculation runs.

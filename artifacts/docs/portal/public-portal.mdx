@@ -1,0 +1,42 @@
+---
+title: "Public Portal"
+description: "Password-protected rep-facing portal for viewing commissions"
+---
+
+The public portal gives your sales reps a secure, password-protected view of their own deals, commissions, and payouts — without needing a dashboard account.
+
+## How it works
+
+Each rep has a unique portal access code. When they visit their portal URL, they are prompted to log in with their portal credentials.
+
+## Features
+
+- **Summary cards** — Estimated commission, total revenue, and deals won
+- **Earnings history chart** — Past 6 months of commission trends
+- **Deal breakdown** — Per-deal commission details with rates and currency conversion
+- **Payout history** — All payouts with status tracking
+- **Dispute submission** — Reps can dispute payouts directly from the portal
+
+## Authentication
+
+Portal authentication is completely isolated from the main dashboard:
+
+1. Each rep is issued portal credentials (username + password)
+2. On first login, reps are prompted to set a new password
+3. A JWT token is stored in the browser for the session
+4. Sessions persist until the token expires or the user logs out
+
+## Dispute workflow
+
+Reps can dispute any payout in `pending` or `approved` status:
+
+1. Click **Dispute** on the payout row
+2. Enter the reason (markdown supported)
+3. Submit the dispute
+4. The dispute appears in the admin **Dispute Management** page
+5. Admins review and resolve with notes
+6. The rep can check the dispute status in their portal
+
+## Setting up
+
+Portal access is configured per-rep in the workspace settings. Generate an access code and share the portal link with your rep along with their initial credentials.

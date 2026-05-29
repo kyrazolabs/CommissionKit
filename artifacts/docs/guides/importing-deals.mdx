@@ -1,0 +1,51 @@
+---
+title: "Importing Deals"
+description: "Bulk import deals from CSV or XLSX files"
+---
+
+The bulk import feature lets you upload multiple deals at once. CommissionKit parses the file, shows a preview, and lets you edit rows before finalizing.
+
+## Supported formats
+
+- **CSV** — Comma-separated values
+- **XLSX** — Excel workbook (first sheet is used)
+
+## File format
+
+Download the template from the import dialog. Expected columns:
+
+| Column | Description | Required |
+|--------|-------------|----------|
+| Rep Email or Rep Name | Email or name to match against your reps | Yes |
+| Deal Name | Name of the deal | Yes |
+| Amount | Deal value (numeric) | Yes |
+| Close Date | Date the deal closed | Optional |
+| Stage | `closed_won`, `closed_lost`, or `pending` | Optional (defaults to closed_won) |
+| Currency | ISO currency code (e.g., USD, EUR) | Optional (uses default) |
+| Notes | Optional notes | Optional |
+
+## Column mapping
+
+CommissionKit auto-detects columns by name. Common variations are recognized:
+
+- **Rep**: `Rep Email`, `email`, `Rep`, `sales_rep`, `Sales Rep`
+- **Deal Name**: `Deal Name`, `Name`, `Deal`, `deal_name`
+- **Amount**: `Amount`, `Price`, `Value`, `Deal Amount`, `deal_amount`
+- **Close Date**: `Close Date`, `Date`, `close_date`
+- **Stage**: `Stage`, `stage`
+- **Currency**: `Currency`, `currency`
+- **Notes**: `Notes`, `Description`, `notes`
+
+## Import process
+
+1. Set the default currency fallback (used when a row has no currency)
+2. Select your file
+3. Review the parsed preview — each row is editable
+4. Rows with unrecognized reps are highlighted in red
+5. Use the dropdowns to assign reps to unknown emails
+6. Click **Finalize Import** to save all deals
+
+## Validation
+
+- Deals without a recognized rep email cannot be imported until you select a rep
+- All deals are assigned to the period you selected when opening the import dialog
