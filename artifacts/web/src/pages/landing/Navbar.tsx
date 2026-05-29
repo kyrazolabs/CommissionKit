@@ -8,7 +8,7 @@ export function Navbar({ containerRef }: { containerRef?: React.RefObject<HTMLDi
 
   useEffect(() => {
     const el = containerRef?.current || window;
-    
+
     const handleScroll = () => {
       const scrollPos = containerRef?.current ? containerRef.current.scrollTop : window.scrollY;
       setScrolled(scrollPos > 20);
@@ -20,11 +20,10 @@ export function Navbar({ containerRef }: { containerRef?: React.RefObject<HTMLDi
 
   return (
     <>
-      <header className={`fixed top-3 left-1/2 -translate-x-1/2 md:w-[calc(100%-60px)] w-[calc(100%)] max-w-[1440px] z-50 transition-all duration-300 ${
-        scrolled 
-          ? "bg-transparent border-transparent " 
+      <header className={`fixed top-3 left-1/2 -translate-x-1/2 md:w-[calc(100%-60px)] w-[calc(100%)] max-w-[1440px] z-50 transition-all duration-300 ${scrolled
+          ? "bg-transparent border-transparent "
           : "bg-transparent border-transparent pt-6 "
-      }`}>
+        }`}>
         <div className="flex justify-between items-center w-full px-6 max-w-[1440px] mx-auto">
           <div className="flex items-center gap-8">
             <a href="/home" className="flex items-center gap-2">
@@ -36,7 +35,7 @@ export function Navbar({ containerRef }: { containerRef?: React.RefObject<HTMLDi
               <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Features</a>
               <a href="#solutions" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Solutions</a>
               <a href="#pricing" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Pricing</a>
-              {/* <a href="#resources" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Resources</a> */}
+              <a href="https://docs.commissionk.it" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Documentations</a>
             </nav>
           </div>
 
@@ -62,16 +61,16 @@ export function Navbar({ containerRef }: { containerRef?: React.RefObject<HTMLDi
 
       {/* Mobile Menu */}
       <div
-        className={`fixed inset-0 z-40 bg-background flex flex-col pt-28 px-6 transition-transform duration-300 md:hidden ${
-          mobileMenuOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed inset-0 z-40 bg-background flex flex-col pt-28 px-6 transition-transform duration-300 md:hidden ${mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         <div className="flex flex-col gap-6 text-lg font-medium text-foreground">
           <a href="#features" onClick={() => setMobileMenuOpen(false)} className="border-b border-border pb-4">Features</a>
           <a href="#solutions" onClick={() => setMobileMenuOpen(false)} className="border-b border-border pb-4">Solutions</a>
           <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="border-b border-border pb-4">Pricing</a>
+          <a href="https://docs.commissionk.it" onClick={() => setMobileMenuOpen(false)} className="border-b border-border pb-4">Docs</a>
         </div>
-        
+
         <div className="mt-8 flex flex-col gap-3">
           <Button variant="outline" size="lg" asChild className="w-full justify-center">
             <a href="/login">Log In</a>
