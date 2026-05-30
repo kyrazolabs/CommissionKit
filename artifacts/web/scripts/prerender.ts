@@ -53,22 +53,27 @@ async function run() {
     throw new Error(`Template index.html not found at: ${templatePath}`);
   }
 
-  // 1. Copy original index.html to app.html (as a clean SPA fallback)
-  fs.copyFileSync(templatePath, appPath);
+  // 1. Read the original Vite-built template into memory
+  const originalTemplate = fs.readFileSync(templatePath, "utf-8");
+
+  // 2. Save a copy as the SPA fallback (app.html) — must be the ORIGINAL template
+  fs.writeFileSync(appPath, originalTemplate, "utf-8");
   console.log("[Prerender] Copied SPA fallback to app.html");
 
-  // 2. Load the compiled SSR entry-server bundle
+  // 3. Load the compiled SSR entry-server bundle
   if (!fs.existsSync(serverEntryPath)) {
     throw new Error(`Compiled server entry not found at: ${serverEntryPath}`);
   }
   const { render } = await import(serverEntryPath);
 
-  // 3. Pre-render indexable routes
+  // 4. Pre-render indexable routes — always base off the ORIGINAL in-memory template
   const routes = ["/", "/home", "/commission-calculator", "/privacy", "/terms", "/security"];
 
   for (const route of routes) {
     const { html, meta } = render(route);
-    let output = fs.readFileSync(templatePath, "utf-8");
+
+    // Start fresh from the original template (never mutate the shared base)
+    let output = originalTemplate;
 
     // Inject route-specific meta tags into <head>
     output = injectMeta(output, meta);
@@ -79,6 +84,7 @@ async function run() {
       `<div id="root">${html}</div>`,
     );
 
+    // Write the pre-rendered HTML to the route path
     const outputPath = route === "/" ? templatePath : path.join(distDir, route.replace(/^\//, ""), "index.html");
     const outputDir = path.dirname(outputPath);
     fs.mkdirSync(outputDir, { recursive: true });
