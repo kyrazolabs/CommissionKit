@@ -1,27 +1,18 @@
-import { lazy, Suspense, useEffect } from "react";
+import { useEffect } from "react";
 import { Navbar } from "./Navbar";
 import { Hero } from "./Hero";
 import { SocialProof } from "./SocialProof";
 import { ValueProps } from "./ValueProps";
+import { FeatureDeepDives } from "./FeatureDeepDives";
+import { GlobalSupport } from "./GlobalSupport";
+import { Pricing } from "./Pricing";
+import { FAQ } from "./FAQ";
+import { FinalCTA } from "./FinalCTA";
+import { Footer } from "./Footer";
 import { useIsMobile } from "./hooks";
 import { Button } from "@/components/ui/button";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
-import { Footer } from "./Footer";
-
-const FeatureDeepDives = lazy(() => import("./FeatureDeepDives").then(m => ({ default: m.FeatureDeepDives })));
-const GlobalSupport = lazy(() => import("./GlobalSupport").then(m => ({ default: m.GlobalSupport })));
-const Pricing = lazy(() => import("./Pricing").then(m => ({ default: m.Pricing })));
-const FAQ = lazy(() => import("./FAQ").then(m => ({ default: m.FAQ })));
-const FinalCTA = lazy(() => import("./FinalCTA").then(m => ({ default: m.FinalCTA })));
-
-function LazySection({ children }: { children: React.ReactNode }) {
-  return (
-    <Suspense fallback={<div className="h-64" />}>
-      {children}
-    </Suspense>
-  );
-}
 
 export function LandingPage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -55,11 +46,11 @@ export function LandingPage() {
           <Hero containerRef={containerRef} />
           <SocialProof />
           <ValueProps />
-          <LazySection><FeatureDeepDives /></LazySection>
-          <LazySection><GlobalSupport /></LazySection>
-          <LazySection><Pricing /></LazySection>
-          <LazySection><FAQ /></LazySection>
-          <LazySection><FinalCTA /></LazySection>
+          <FeatureDeepDives />
+          <GlobalSupport />
+          <Pricing />
+          <FAQ />
+          <FinalCTA />
         </motion.div>
       </motion.div>
       <Footer scrollY={scrollY} />
