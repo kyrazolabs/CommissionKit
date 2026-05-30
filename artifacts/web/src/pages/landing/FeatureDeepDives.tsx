@@ -1,25 +1,17 @@
-import { Settings, User, Database, ShieldCheck, Check, Clock, CheckCircle2, Flag } from "lucide-react";
+import { Settings, User, Database, ShieldCheck, Check } from "lucide-react";
 import { useInView, fadeIn } from "./hooks";
-import { Button } from "@/components/ui/button";
+import { LazyVideo } from "@/components/lazy-video";
 
 export function FeatureDeepDives() {
   const { ref, inView } = useInView();
 
   return (
     <section className="py-24 px-6 md:px-12 max-w-[1440px] mx-auto space-y-32" id="features" ref={ref}>
-      
+
       {/* Feature 1: Automated Runs */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
         <div className="order-2 lg:order-1" style={fadeIn(inView, 100)}>
-          <video 
-            className="rounded-xl shadow-lg w-full border border-border/30 transition-transform hover:scale-[1.02] duration-500" 
-            autoPlay 
-            loop 
-            muted 
-            playsInline
-          >
-            <source src="/videos/commission-runs-zoom.mp4" type="video/mp4" />
-          </video>
+          <LazyVideo src="/videos/commission-runs-zoom.webm" />
         </div>
         <div className="order-1 lg:order-2 space-y-6" style={fadeIn(inView, 0)}>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/60 backdrop-blur-sm border border-border/60 text-xs font-medium text-muted-foreground">
@@ -70,30 +62,14 @@ export function FeatureDeepDives() {
           </ul>
         </div>
         <div style={fadeIn(inView, 300)}>
-          <video 
-            className="rounded-xl shadow-lg w-full border border-border/30 transition-transform hover:scale-[1.02] duration-500" 
-            autoPlay 
-            loop 
-            muted 
-            playsInline
-          >
-            <source src="/videos/rep-portal-zoom.mp4" type="video/mp4" />
-          </video>
+          <LazyVideo src="/videos/rep-portal-zoom.webm" />
         </div>
       </div>
 
       {/* Feature 3: Deal Import */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
         <div className="order-2 lg:order-1" style={fadeIn(inView, 500)}>
-          <video 
-            className="rounded-xl shadow-lg w-full border border-border/30 transition-transform hover:scale-[1.02] duration-500" 
-            autoPlay 
-            loop 
-            muted 
-            playsInline
-          >
-            <source src="/videos/deals-zoom.mp4" type="video/mp4" />
-          </video>
+          <LazyVideo src="/videos/deals-zoom.webm" />
         </div>
         <div className="order-1 lg:order-2 space-y-6" style={fadeIn(inView, 400)}>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/60 backdrop-blur-sm border border-border/60 text-xs font-medium text-muted-foreground">
@@ -145,15 +121,7 @@ export function FeatureDeepDives() {
         </div>
 
         <div style={fadeIn(inView, 700)}>
-          <video 
-            className="rounded-xl shadow-lg w-full border border-border/30 transition-transform hover:scale-[1.02] duration-500" 
-            autoPlay 
-            loop 
-            muted 
-            playsInline
-          >
-            <source src="/videos/payouts-disputes-zoom.mp4" type="video/mp4" />
-          </video>
+          <LazyVideo src="/videos/payouts-disputes-zoom.webm" />
         </div>
       </div>
     </section>
