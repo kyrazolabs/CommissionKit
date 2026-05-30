@@ -43,7 +43,7 @@ const PLANS = [
   },
   {
     id: "pro",
-    name: "Pro",
+    name: "Professional",
     priceMonthly: 249,
     priceYearly: 2490,
     tagline: "For serious sales organizations with advanced needs.",
