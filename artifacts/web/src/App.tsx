@@ -37,6 +37,7 @@ import { LandingPage } from "@/pages/landing";
 import { PayoutsPage } from "@/pages/payouts/payouts";
 import { DisputesPage } from "@/pages/payouts/disputes";
 
+import { CommissionCalculator } from "@/pages/commission-calculator";
 import { PrivacyPage } from "@/pages/legal/privacy";
 import { TermsPage } from "@/pages/legal/terms";
 import { SecurityPage } from "@/pages/legal/security";
@@ -221,9 +222,6 @@ function PublicOrRedirectLanding() {
     }
   }, [session, loading, setLocation]);
 
-  if (loading) return <AppLoader />;
-  if (session) return <AppLoader />;
-
   return <LandingPage />;
 }
 
@@ -240,12 +238,19 @@ function ProtectedRouter() {
     }
   }, [session, authLoading, location, setLocation]);
 
-  if (authLoading) return <AppLoader />;
+  // Render public pages immediately (no auth-wait flash that would replace pre-rendered HTML)
   if (!session) {
+    if (authLoading) {
+      if (location === "/" || location === "" || location === "/home") return <LandingPage />;
+      if (location === "/register") return <AuthPage initialMode="signup" />;
+      if (location === "/login") return <AuthPage initialMode="login" />;
+    }
     if (location === "/" || location === "" || location === "/home") return <LandingPage />;
     if (location === "/register") return <AuthPage initialMode="signup" />;
     return <AuthPage initialMode="login" />;
   }
+
+  if (authLoading) return <AppLoader />;
 
   if (location === "/login" || location === "/register" || location === "/home" || location === "/" || location === "") {
     return <AppLoader />;
@@ -306,6 +311,7 @@ function App() {
                   <PublicOrRedirectLanding />
                 </AuthProvider>
               )} />
+              <Route path="/commission-calculator" component={CommissionCalculator} />
               <Route path="/privacy" component={PrivacyPage} />
               <Route path="/terms" component={TermsPage} />
               <Route path="/security" component={SecurityPage} />

@@ -26,18 +26,25 @@ async function run() {
   }
   const { render } = await import(serverEntryPath);
 
-  // 3. Render the landing page to HTML
-  const appHtml = render();
+  // 3. Pre-render indexable routes
+  const routes = ["/", "/home", "/commission-calculator", "/privacy", "/terms", "/security"];
 
-  // 4. Inject pre-rendered HTML into index.html
-  const template = fs.readFileSync(templatePath, "utf-8");
-  const html = template.replace(
-    `<div id="root"></div>`,
-    `<div id="root">${appHtml}</div>`
-  );
+  for (const route of routes) {
+    const appHtml = render(route);
+    const template = fs.readFileSync(templatePath, "utf-8");
+    const html = template.replace(
+      `<div id="root"></div>`,
+      `<div id="root">${appHtml}</div>`,
+    );
 
-  fs.writeFileSync(templatePath, html, "utf-8");
-  console.log("[Prerender] Pre-rendered HTML successfully written to index.html");
+    const outputPath = route === "/" ? templatePath : path.join(distDir, route.replace(/^\//, ""), "index.html");
+    const outputDir = path.dirname(outputPath);
+    fs.mkdirSync(outputDir, { recursive: true });
+    fs.writeFileSync(outputPath, html, "utf-8");
+    console.log(`[Prerender] Pre-rendered ${route} → ${outputPath}`);
+  }
+
+  console.log("[Prerender] Prerender complete.");
 }
 
 run().catch((err) => {

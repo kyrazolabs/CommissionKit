@@ -12,6 +12,7 @@ function DashboardMockup() {
           src="/imgs/demo.jpg" 
           alt="Platform Demo" 
           className="w-full h-full object-cover"
+          fetchPriority="high"
         />
       </div>
     </div>
