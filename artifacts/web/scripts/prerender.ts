@@ -4,6 +4,43 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+function injectMeta(
+  template: string,
+  meta: { title: string; description: string; robots?: string },
+) {
+  const robots = meta.robots ?? "index, follow";
+
+  return template
+    .replace(
+      /<title>.*?<\/title>/,
+      `<title>${meta.title}</title>`,
+    )
+    .replace(
+      /<meta name="description"[^>]*\/?>/,
+      `<meta name="description" content="${meta.description}" />`,
+    )
+    .replace(
+      /<meta name="robots"[^>]*\/?>/,
+      `<meta name="robots" content="${robots}" />`,
+    )
+    .replace(
+      /<meta property="og:title"[^>]*\/?>/,
+      `<meta property="og:title" content="${meta.title}" />`,
+    )
+    .replace(
+      /<meta property="og:description"[^>]*\/?>/,
+      `<meta property="og:description" content="${meta.description}" />`,
+    )
+    .replace(
+      /<meta name="twitter:title"[^>]*\/?>/,
+      `<meta name="twitter:title" content="${meta.title}" />`,
+    )
+    .replace(
+      /<meta name="twitter:description"[^>]*\/?>/,
+      `<meta name="twitter:description" content="${meta.description}" />`,
+    );
+}
+
 async function run() {
   const distDir = path.resolve(__dirname, "../dist/public");
   const templatePath = path.resolve(distDir, "index.html");
@@ -30,18 +67,24 @@ async function run() {
   const routes = ["/", "/home", "/commission-calculator", "/privacy", "/terms", "/security"];
 
   for (const route of routes) {
-    const appHtml = render(route);
-    const template = fs.readFileSync(templatePath, "utf-8");
-    const html = template.replace(
+    const { html, meta } = render(route);
+    let output = fs.readFileSync(templatePath, "utf-8");
+
+    // Inject route-specific meta tags into <head>
+    output = injectMeta(output, meta);
+
+    // Inject SSR body into <div id="root">
+    output = output.replace(
       `<div id="root"></div>`,
-      `<div id="root">${appHtml}</div>`,
+      `<div id="root">${html}</div>`,
     );
 
     const outputPath = route === "/" ? templatePath : path.join(distDir, route.replace(/^\//, ""), "index.html");
     const outputDir = path.dirname(outputPath);
     fs.mkdirSync(outputDir, { recursive: true });
-    fs.writeFileSync(outputPath, html, "utf-8");
+    fs.writeFileSync(outputPath, output, "utf-8");
     console.log(`[Prerender] Pre-rendered ${route} → ${outputPath}`);
+    console.log(`[Prerender]   title: ${meta.title}, robots: ${meta.robots}`);
   }
 
   console.log("[Prerender] Prerender complete.");

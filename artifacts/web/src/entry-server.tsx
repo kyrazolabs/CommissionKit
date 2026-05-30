@@ -5,21 +5,66 @@ import { PrivacyPage } from "./pages/legal/privacy";
 import { TermsPage } from "./pages/legal/terms";
 import { SecurityPage } from "./pages/legal/security";
 
+interface PageMeta {
+  title: string;
+  description: string;
+  robots?: string;
+}
+
+const APP_NAME = "CommissionKit — Sales Commission Platform";
+const DEFAULT_DESCRIPTION = "Automate sales commissions for your team. Track reps, deals, and payouts — all in one place.";
+
+const routeMeta: Record<string, PageMeta> = {
+  "/": {
+    title: APP_NAME,
+    description: DEFAULT_DESCRIPTION,
+    robots: "index, follow",
+  },
+  "/home": {
+    title: APP_NAME,
+    description: DEFAULT_DESCRIPTION,
+    robots: "index, follow",
+  },
+  "/commission-calculator": {
+    title: "Commission Calculator — CommissionKit",
+    description: "Calculate sales commissions instantly. Try flat, tiered, and accelerator commission structures for free. No login required.",
+    robots: "index, follow",
+  },
+  "/privacy": {
+    title: "Privacy Policy — CommissionKit",
+    description: "Learn how CommissionKit collects and uses your data.",
+    robots: "index, follow",
+  },
+  "/terms": {
+    title: "Terms of Service — CommissionKit",
+    description: "CommissionKit terms of service and usage agreement.",
+    robots: "index, follow",
+  },
+  "/security": {
+    title: "Security — CommissionKit",
+    description: "CommissionKit security practices and data protection information.",
+    robots: "index, follow",
+  },
+};
+
 export function render(url?: string) {
   const path = url ?? "/";
 
+  let element: React.ReactElement;
   if (path.startsWith("/commission-calculator")) {
-    return ReactDOMServer.renderToString(<CommissionCalculator />);
-  }
-  if (path === "/privacy") {
-    return ReactDOMServer.renderToString(<PrivacyPage />);
-  }
-  if (path === "/terms") {
-    return ReactDOMServer.renderToString(<TermsPage />);
-  }
-  if (path === "/security") {
-    return ReactDOMServer.renderToString(<SecurityPage />);
+    element = <CommissionCalculator />;
+  } else if (path === "/privacy") {
+    element = <PrivacyPage />;
+  } else if (path === "/terms") {
+    element = <TermsPage />;
+  } else if (path === "/security") {
+    element = <SecurityPage />;
+  } else {
+    element = <LandingPage />;
   }
 
-  return ReactDOMServer.renderToString(<LandingPage />);
+  const html = ReactDOMServer.renderToString(element);
+  const meta = routeMeta[path] ?? routeMeta["/"];
+
+  return { html, meta };
 }
