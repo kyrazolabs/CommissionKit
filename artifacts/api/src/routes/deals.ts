@@ -3,6 +3,7 @@ import { Deal, Rep } from "@workspace/db";
 import { Types } from "mongoose";
 import {
   CreateDealBody,
+  UpdateDealBody,
   ImportDealsBody,
   ListDealsQueryParams,
   DeleteDealParams,
@@ -24,6 +25,7 @@ function formatDeal(deal: any, repName: string) {
     closeDate: deal.closeDate,
     period: deal.period,
     stage: deal.stage,
+    paymentStatus: deal.paymentStatus ?? "unpaid",
     currency: deal.currency ?? "USD",
     notes: deal.notes ?? null,
     createdAt: deal.createdAt.toISOString(),
@@ -41,6 +43,7 @@ router.get(
     if (query.repId !== undefined)
       conditions.repId = new Types.ObjectId(query.repId);
     if (query.period !== undefined) conditions.period = query.period;
+    if (query.paymentStatus !== undefined) conditions.paymentStatus = query.paymentStatus;
 
     const deals = await Deal.find(conditions)
       .populate("repId")
@@ -71,6 +74,7 @@ router.post(
       closeDate: body.closeDate,
       period: body.period,
       stage: body.stage,
+      paymentStatus: body.paymentStatus ?? "unpaid",
       currency: body.currency ?? "USD",
       notes: body.notes ?? null,
     });
@@ -109,6 +113,7 @@ router.post(
           closeDate: d.closeDate,
           period: body.period,
           stage: d.stage,
+          paymentStatus: (d as any).paymentStatus ?? "unpaid",
           currency: d.currency ?? "USD",
           notes: d.notes ?? null,
         });
@@ -145,20 +150,23 @@ router.put(
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
     const { id } = req.params;
-    const body = CreateDealBody.parse(req.body);
+    const body = UpdateDealBody.parse(req.body);
+
+    const update: any = {
+      repId: new Types.ObjectId(body.repId),
+      name: body.name,
+      amount: body.amount,
+      closeDate: body.closeDate,
+      period: body.period,
+      stage: body.stage,
+      currency: body.currency,
+      notes: body.notes ?? null,
+    };
+    if (body.paymentStatus !== undefined) update.paymentStatus = body.paymentStatus;
 
     const deal = await Deal.findOneAndUpdate(
       { _id: new Types.ObjectId(id as string), workspaceId: new Types.ObjectId(workspaceId) },
-      {
-        repId: new Types.ObjectId(body.repId),
-        name: body.name,
-        amount: body.amount,
-        closeDate: body.closeDate,
-        period: body.period,
-        stage: body.stage,
-        currency: body.currency,
-        notes: body.notes ?? null,
-      },
+      update,
       { new: true },
     );
 

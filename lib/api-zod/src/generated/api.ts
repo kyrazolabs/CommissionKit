@@ -207,9 +207,12 @@ export const DeletePlanParams = zod.object({
 /**
  * @summary List deals
  */
+const DealPaymentStatus = zod.enum(['unpaid', 'paid', 'partial', 'on_hold']);
+
 export const ListDealsQueryParams = zod.object({
   "repId": zod.coerce.string().optional(),
-  "period": zod.coerce.string().optional().describe('Filter by period (YYYY-MM)')
+  "period": zod.coerce.string().optional().describe('Filter by period (YYYY-MM)'),
+  "paymentStatus": DealPaymentStatus.optional().describe('Filter by payment status')
 })
 
 export const ListDealsResponseItem = zod.object({
@@ -222,6 +225,7 @@ export const ListDealsResponseItem = zod.object({
   "period": zod.string().describe('YYYY-MM'),
   "stage": zod.enum(['closed_won', 'closed_lost', 'pending']),
   "currency": zod.string(),
+  "paymentStatus": DealPaymentStatus,
   "notes": zod.string().nullable(),
   "createdAt": zod.string()
 })
@@ -239,6 +243,7 @@ export const CreateDealBody = zod.object({
   "period": zod.string(),
   "stage": zod.enum(['closed_won', 'closed_lost', 'pending']),
   "currency": zod.string(),
+  "paymentStatus": DealPaymentStatus.default("unpaid"),
   "notes": zod.string().nullish()
 })
 
@@ -256,6 +261,7 @@ export const ImportDealsBody = zod.object({
   "period": zod.string(),
   "stage": zod.enum(['closed_won', 'closed_lost', 'pending']),
   "currency": zod.string(),
+  "paymentStatus": DealPaymentStatus.default("unpaid"),
   "notes": zod.string().nullish()
 }))
 })
@@ -290,6 +296,7 @@ export const UpdateDealBody = zod.object({
   "period": zod.string(),
   "stage": zod.enum(['closed_won', 'closed_lost', 'pending']),
   "currency": zod.string(),
+  "paymentStatus": DealPaymentStatus.optional(),
   "notes": zod.string().nullish()
 })
 
@@ -303,6 +310,7 @@ export const UpdateDealResponse = zod.object({
   "period": zod.string().describe('YYYY-MM'),
   "stage": zod.enum(['closed_won', 'closed_lost', 'pending']),
   "currency": zod.string(),
+  "paymentStatus": DealPaymentStatus,
   "notes": zod.string().nullable(),
   "createdAt": zod.string()
 })
@@ -329,7 +337,8 @@ export const ListRunsResponse = zod.array(ListRunsResponseItem)
  * @summary Trigger a commission calculation run
  */
 export const CreateRunBody = zod.object({
-  "period": zod.string().describe('YYYY-MM period to calculate')
+  "period": zod.string().describe('YYYY-MM period to calculate'),
+  "paymentStatuses": zod.array(DealPaymentStatus).optional().describe('Filter to deals with these payment statuses')
 })
 
 

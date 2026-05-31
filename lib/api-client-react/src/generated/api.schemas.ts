@@ -93,6 +93,16 @@ export const DealStage = {
   pending: 'pending',
 } as const;
 
+export type DealPaymentStatus = typeof DealPaymentStatus[keyof typeof DealPaymentStatus];
+
+
+export const DealPaymentStatus = {
+  unpaid: 'unpaid',
+  paid: 'paid',
+  partial: 'partial',
+  on_hold: 'on_hold',
+} as const;
+
 export interface Deal {
   id: string;
   repId: string;
@@ -103,6 +113,7 @@ export interface Deal {
   /** YYYY-MM */
   period: string;
   stage: DealStage;
+  paymentStatus: DealPaymentStatus;
   currency: string;
   notes: string | null;
   createdAt: string;
@@ -124,6 +135,7 @@ export interface CreateDealBody {
   closeDate: string;
   period: string;
   stage: CreateDealBodyStage;
+  paymentStatus: DealPaymentStatus;
   currency: string;
   notes?: string | null;
 }
@@ -144,6 +156,7 @@ export interface UpdateDealBody {
   closeDate: string;
   period: string;
   stage: UpdateDealBodyStage;
+  paymentStatus?: DealPaymentStatus;
   currency: string;
   notes?: string | null;
 }
@@ -220,6 +233,8 @@ export interface CommissionRunWithResults {
 export interface CreateRunBody {
   /** YYYY-MM period to calculate */
   period: string;
+  /** Filter to deals with these payment statuses */
+  paymentStatuses?: DealPaymentStatus[];
 }
 
 export interface RepEarning {
@@ -310,6 +325,10 @@ repId?: string;
  * Filter by period (YYYY-MM)
  */
 period?: string;
+/**
+ * Filter by payment status
+ */
+paymentStatus?: DealPaymentStatus;
 };
 
 export type GetReportsParams = {

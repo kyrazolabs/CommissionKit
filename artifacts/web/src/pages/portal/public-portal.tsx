@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { MarkdownEditor } from "@/components/markdown-editor";
+import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -373,10 +373,11 @@ function DisputeModal({
       <div className="grid gap-4 py-4">
         <div className="grid gap-2">
           <Label htmlFor="reason">Reason for dispute</Label>
-          <MarkdownEditor
+          <Textarea
             value={reason}
-            onChange={setReason}
+            onChange={(e) => setReason(e.target.value)}
             placeholder="Explain why this payout seems incorrect…"
+            rows={4}
           />
         </div>
       </div>

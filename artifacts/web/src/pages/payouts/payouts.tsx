@@ -1,10 +1,11 @@
 import { useState, useCallback } from "react";
+import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
   DollarSign, CheckCircle2, Clock, AlertTriangle, Download,
   MoreHorizontal, Check, Filter, Search, Plus, Loader2,
-  XCircle,
+  XCircle, ChevronDown, ChevronRight,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -419,6 +420,7 @@ export function PayoutsPage() {
   const [confirmTarget, setConfirmTarget] = useState<{ payout: Payout; status: string; extra?: any } | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [expandedPayoutId, setExpandedPayoutId] = useState<string | null>(null);
 
   const { data: payouts = [], isLoading } = useFetchPayouts(workspaceId, filters);
   const mutation = usePayoutMutation(workspaceId);
@@ -634,6 +636,7 @@ export function PayoutsPage() {
                   <TableHead className="text-right">Final</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Scheduled</TableHead>
+                  <TableHead className="w-10"></TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -641,6 +644,7 @@ export function PayoutsPage() {
                 {filtered.map((payout: Payout) => {
                   const isPaid = payout.status === "paid";
                   return (
+                    <>
                     <TableRow key={payout.id} className={cn(selectedIds.has(payout.id) ? "bg-primary/5" : "", isPaid && "opacity-80 bg-muted/20")}>
                       <TableCell>
                         {payout.status === "pending" && (
@@ -675,6 +679,16 @@ export function PayoutsPage() {
                         {payout.scheduledPaymentDate
                           ? format(new Date(payout.scheduledPaymentDate), "MMM d, yyyy")
                           : ":"}
+                      </TableCell>
+                      <TableCell className="w-10">
+                        {payout.notes ? (
+                          <button
+                            onClick={() => setExpandedPayoutId(expandedPayoutId === payout.id ? null : payout.id)}
+                            className="text-muted-foreground hover:text-foreground"
+                          >
+                            {expandedPayoutId === payout.id ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+                          </button>
+                        ) : null}
                       </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
@@ -714,6 +728,22 @@ export function PayoutsPage() {
                         </DropdownMenu>
                       </TableCell>
                     </TableRow>
+                    {expandedPayoutId === payout.id && payout.notes && (
+                      <TableRow key={`${payout.id}-notes`} className="hover:bg-transparent">
+                        <TableCell colSpan={10} className="p-0 border-t-0 overflow-hidden">
+                          <motion.div
+                            initial={{ opacity: 0, y: -4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.15, ease: "easeOut" }}
+                          >
+                            <div className="px-6 py-3 bg-muted/20 border-t text-sm text-muted-foreground">
+                              {payout.notes}
+                            </div>
+                          </motion.div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    </>
                   );
                 })}
               </TableBody>

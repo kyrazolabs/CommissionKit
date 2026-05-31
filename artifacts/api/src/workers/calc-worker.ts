@@ -142,11 +142,15 @@ export const calcWorker = new Worker<CommissionCalcPayload>(
       logger.info(`[Worker:Calc] Run ${runId} status set to processing`);
 
       // 1. Fetch all required data
-      const deals = await Deal.find({
+      const dealQuery: any = {
         workspaceId: new Types.ObjectId(workspaceId),
         period,
         stage: { $in: ["closed_won", "Closed Won", "Won", "won"] },
-      });
+      };
+      if (job.data.paymentStatuses) {
+        dealQuery.paymentStatus = { $in: job.data.paymentStatuses };
+      }
+      const deals = await Deal.find(dealQuery);
       logger.info(
         `[Worker:Calc] Found ${deals.length} deals for period ${period}`,
       );

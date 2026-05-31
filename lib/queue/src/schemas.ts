@@ -41,6 +41,7 @@ export const CommissionCalcJobSchema = z.object({
   runId: z.string(),
   period: z.string(),
   userId: z.string().optional(), // Who triggered it
+  paymentStatuses: z.array(z.enum(["unpaid", "paid", "partial", "on_hold"])).optional(),
 });
 
 export type CommissionCalcPayload = z.infer<typeof CommissionCalcJobSchema>;
