@@ -111,12 +111,15 @@ router.post("/runs", ...requirePermission("calculations", "create"), async (req:
   });
 
   // Enqueue the calculation
-  await enqueueCommissionCalc({
+  const payload: any = {
     workspaceId,
     runId: run._id.toString(),
     period,
     userId: req.userId
-  });
+  };
+  if (body.paymentStatuses) payload.paymentStatuses = body.paymentStatuses;
+
+  await enqueueCommissionCalc(payload);
 
   res.status(201).json({
     id: run._id,

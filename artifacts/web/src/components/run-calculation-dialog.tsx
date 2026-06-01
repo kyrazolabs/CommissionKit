@@ -22,16 +22,22 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { MonthPicker } from "@/components/ui/month-picker";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function RunCalculationDialog({ isProcessing, trigger }: { isProcessing: boolean; trigger?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [period, setPeriod] = useState<string>(() => format(new Date(), "yyyy-MM"));
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>("all");
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const createMutation = useCreateRun();
 
   const handleRun = () => {
-    createMutation.mutate({ data: { period } }, {
+    const data: any = { period };
+    if (paymentStatusFilter !== "all") {
+      data.paymentStatuses = [paymentStatusFilter];
+    }
+    createMutation.mutate({ data }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListRunsQueryKey() });
         toast({ title: "Calculation Queued", description: `Commission calculation for ${period} has been started.` });
@@ -69,7 +75,7 @@ export function RunCalculationDialog({ isProcessing, trigger }: { isProcessing: 
         <DialogHeader>
           <DialogTitle>Trigger Commission Calculation</DialogTitle>
           <DialogDescription className="flex items-center gap-1.5">
-            This will process all pending and closed won deals for the specified period and calculate rep commissions.
+            This will process all closed won deals for the specified period and calculate rep commissions.
             <HelpTooltip content="Calculating a run takes a 'snapshot' of current deals and plans. If you add deals later, you'll need to run it again to update totals." />
           </DialogDescription>
         </DialogHeader>
@@ -84,10 +90,28 @@ export function RunCalculationDialog({ isProcessing, trigger }: { isProcessing: 
                 className="flex-1"
               />
             </div>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="paymentStatus">Payment Status Filter</Label>
+            <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="unpaid">Unpaid only</SelectItem>
+                <SelectItem value="paid">Paid only</SelectItem>
+                <SelectItem value="partial">Partial only</SelectItem>
+                <SelectItem value="on_hold">On Hold only</SelectItem>
+              </SelectContent>
+            </Select>
             <p className="text-xs text-muted-foreground mt-1">
-              Warning: Running for a period that already has a calculation will create a new run record.
+              Optionally restrict calculation to deals with a specific payment status.
             </p>
           </div>
+          <p className="text-xs text-muted-foreground">
+            Warning: Running for a period that already has a calculation will create a new run record.
+          </p>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
