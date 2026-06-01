@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Link } from "wouter";
@@ -9,7 +10,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { MarkdownEditor } from "@/components/markdown-editor";
+import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -161,10 +162,11 @@ function ResolveModal({
 
         <div className="grid gap-2">
           <Label>Admin Notes (sent to rep)</Label>
-          <MarkdownEditor
+          <Textarea
             value={adminNotes}
-            onChange={setAdminNotes}
+            onChange={(e) => setAdminNotes(e.target.value)}
             placeholder="Explain the resolution…"
+            rows={4}
           />
         </div>
       </div>
@@ -233,22 +235,28 @@ function DisputeRow({ dispute, onAction }: { dispute: Dispute; onAction: (d: Dis
       </TableRow>
       {expanded && (
         <TableRow>
-          <TableCell colSpan={8} className="bg-muted/20 p-3">
+          <TableCell colSpan={8} className="bg-muted/20 p-3 overflow-hidden">
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+            >
             <div className="space-y-2 text-sm">
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">Reason</p>
-                <p>{dispute.reason}</p>
+                <p className="text-sm whitespace-pre-wrap">{dispute.reason}</p>
               </div>
               {dispute.adminNotes && (
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">Admin Notes</p>
-                  <div className="prose prose-sm max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: dispute.adminNotes }} />
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{dispute.adminNotes}</p>
                 </div>
               )}
               {dispute.resolvedAt && (
                 <p className="text-xs text-muted-foreground">Resolved on {format(new Date(dispute.resolvedAt), "MMM d, yyyy 'at' h:mm a")}</p>
               )}
             </div>
+            </motion.div>
           </TableCell>
         </TableRow>
       )}

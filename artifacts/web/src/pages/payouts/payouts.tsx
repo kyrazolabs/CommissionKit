@@ -1,10 +1,11 @@
 import { useState, useCallback } from "react";
+import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
   DollarSign, CheckCircle2, Clock, AlertTriangle, Download,
   MoreHorizontal, Check, Filter, Search, Plus, Loader2,
-  XCircle,
+  XCircle, ChevronDown, ChevronRight,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -63,11 +64,11 @@ interface Payout {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const STATUS_CONFIG = {
-  pending:   { label: "Pending",   class: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200/50" },
-  approved:  { label: "Approved",  class: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200/50" },
-  paid:      { label: "Paid",      class: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200/50" },
-  disputed:  { label: "Disputed",  class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200/50" },
-  on_hold:   { label: "On Hold",   class: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 border-gray-200/50" },
+  pending: { label: "Pending", class: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200/50" },
+  approved: { label: "Approved", class: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200/50" },
+  paid: { label: "Paid", class: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200/50" },
+  disputed: { label: "Disputed", class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200/50" },
+  on_hold: { label: "On Hold", class: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 border-gray-200/50" },
 };
 
 function StatusBadge({ status }: { status: Payout["status"] }) {
@@ -95,7 +96,7 @@ function useFetchPayouts(workspaceId: string, filters: any) {
 function usePayoutMutation(workspaceId: string) {
   const queryClient = useQueryClient();
   const { setSyncError } = useSyncStore();
-  
+
   return useMutation({
     mutationFn: async ({ id, action, body }: { id: string; action: string; body: any }) => {
       return apiFetch(`/api/payouts/${id}/${action}`, {
@@ -139,7 +140,7 @@ function usePayoutMutation(workspaceId: string) {
 
 // ─── Summary Cards ────────────────────────────────────────────────────────────
 function SummaryCards({ payouts, currency }: { payouts: Payout[]; currency: string }) {
-  const totalPending  = payouts.filter(p => p.status === "pending").reduce((s, p) => s + p.finalAmount, 0);
+  const totalPending = payouts.filter(p => p.status === "pending").reduce((s, p) => s + p.finalAmount, 0);
   const totalApproved = payouts.filter(p => p.status === "approved").reduce((s, p) => s + p.finalAmount, 0);
   const thisMonth = new Date().toISOString().slice(0, 7);
   const totalPaidMonth = payouts
@@ -256,7 +257,7 @@ function CreatePayoutModal({ workspaceId, open, setOpen }: { workspaceId: string
     onMutate: async (body) => {
       await queryClient.cancelQueries({ queryKey: ["payouts", workspaceId] });
       const previousQueries = queryClient.getQueriesData({ queryKey: ["payouts", workspaceId] });
-      
+
       const optimisticPayout = {
         id: `temp-${Date.now()}`,
         repId: body.repId,
@@ -271,7 +272,7 @@ function CreatePayoutModal({ workspaceId, open, setOpen }: { workspaceId: string
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      
+
       queryClient.setQueriesData({ queryKey: ["payouts", workspaceId] }, (old: any) => {
         return Array.isArray(old) ? [optimisticPayout, ...old] : [optimisticPayout];
       });
@@ -295,12 +296,12 @@ function CreatePayoutModal({ workspaceId, open, setOpen }: { workspaceId: string
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!periodStart || !periodEnd) return;
-    mutation.mutate({ 
-      repId, 
-      periodStart: format(periodStart, "yyyy-MM-dd"), 
-      periodEnd: format(periodEnd, "yyyy-MM-dd"), 
-      commissionAmount: parseFloat(amount), 
-      notes 
+    mutation.mutate({
+      repId,
+      periodStart: format(periodStart, "yyyy-MM-dd"),
+      periodEnd: format(periodEnd, "yyyy-MM-dd"),
+      commissionAmount: parseFloat(amount),
+      notes
     }, {
       onSuccess: () => {
         toast({ title: "Payout created" });
@@ -330,13 +331,13 @@ function CreatePayoutModal({ workspaceId, open, setOpen }: { workspaceId: string
         </div>
         <div className="grid gap-2">
           <Label>Payout Period</Label>
-          <DateRangePicker 
-            from={periodStart} 
-            to={periodEnd} 
+          <DateRangePicker
+            from={periodStart}
+            to={periodEnd}
             onRangeChange={(range) => {
               setPeriodStart(range?.from);
               setPeriodEnd(range?.to);
-            }} 
+            }}
             placeholder="Select period range"
             numberOfMonths={2}
           />
@@ -419,6 +420,7 @@ export function PayoutsPage() {
   const [confirmTarget, setConfirmTarget] = useState<{ payout: Payout; status: string; extra?: any } | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [expandedPayoutId, setExpandedPayoutId] = useState<string | null>(null);
 
   const { data: payouts = [], isLoading } = useFetchPayouts(workspaceId, filters);
   const mutation = usePayoutMutation(workspaceId);
@@ -484,15 +486,15 @@ export function PayoutsPage() {
     try {
       const params = new URLSearchParams();
       if (filters.status) params.set("status", filters.status);
-      
+
       const workspaceId = localStorage.getItem("ck_active_workspace");
       const res = await fetch(`${API_URL}/api/payouts/export?${params.toString()}`, {
         credentials: "include",
-        headers: { 
-          "x-workspace-id": workspaceId ?? "" 
+        headers: {
+          "x-workspace-id": workspaceId ?? ""
         },
       });
-      
+
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error || "Export failed");
@@ -592,12 +594,11 @@ export function PayoutsPage() {
 
           {selectedIds.size > 0 && (
             <Button
-              size="sm"
               onClick={handleBulkApprove}
               disabled={bulkLoading || !isGrowthPlus}
               className="gap-2"
             >
-              {bulkLoading ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
+              {bulkLoading ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-3.5" />}
               Approve {selectedIds.size} Selected
               {!isGrowthPlus && <span className="ml-1 text-[10px] opacity-70">(Growth+)</span>}
             </Button>
@@ -635,6 +636,7 @@ export function PayoutsPage() {
                   <TableHead className="text-right">Final</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Scheduled</TableHead>
+                  <TableHead className="w-10"></TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -642,6 +644,7 @@ export function PayoutsPage() {
                 {filtered.map((payout: Payout) => {
                   const isPaid = payout.status === "paid";
                   return (
+                    <>
                     <TableRow key={payout.id} className={cn(selectedIds.has(payout.id) ? "bg-primary/5" : "", isPaid && "opacity-80 bg-muted/20")}>
                       <TableCell>
                         {payout.status === "pending" && (
@@ -676,6 +679,16 @@ export function PayoutsPage() {
                         {payout.scheduledPaymentDate
                           ? format(new Date(payout.scheduledPaymentDate), "MMM d, yyyy")
                           : ":"}
+                      </TableCell>
+                      <TableCell className="w-10">
+                        {payout.notes ? (
+                          <button
+                            onClick={() => setExpandedPayoutId(expandedPayoutId === payout.id ? null : payout.id)}
+                            className="text-muted-foreground hover:text-foreground"
+                          >
+                            {expandedPayoutId === payout.id ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+                          </button>
+                        ) : null}
                       </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
@@ -715,6 +728,22 @@ export function PayoutsPage() {
                         </DropdownMenu>
                       </TableCell>
                     </TableRow>
+                    {expandedPayoutId === payout.id && payout.notes && (
+                      <TableRow key={`${payout.id}-notes`} className="hover:bg-transparent">
+                        <TableCell colSpan={10} className="p-0 border-t-0 overflow-hidden">
+                          <motion.div
+                            initial={{ opacity: 0, y: -4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.15, ease: "easeOut" }}
+                          >
+                            <div className="px-6 py-3 bg-muted/20 border-t text-sm text-muted-foreground">
+                              {payout.notes}
+                            </div>
+                          </motion.div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    </>
                   );
                 })}
               </TableBody>

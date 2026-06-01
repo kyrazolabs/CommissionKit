@@ -112,10 +112,7 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
       }
     } catch (err: any) {
       console.error("Auth error:", err);
-      const isUnverified =
-        err.status === 403 ||
-        err.code === "EMAIL_NOT_VERIFIED" ||
-        (err.message && err.message.toLowerCase().includes("verify"));
+      const isUnverified = err.code === "EMAIL_NOT_VERIFIED";
 
       if (isUnverified) {
         setVerificationSent(true);

@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { motion } from "framer-motion";
 import * as XLSX from 'xlsx';
 import { downloadTemplate } from "@/lib/templates";
 import { useQueryClient } from "@tanstack/react-query";
@@ -45,6 +46,7 @@ export function DealsPage() {
   const currency = activeWorkspace?.currency || "USD";
   const [period, setPeriod] = useState<string>(format(new Date(), "yyyy-MM"));
   const [repId, setRepId] = useState<string>("all");
+  const [paymentStatus, setPaymentStatus] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedDealId, setExpandedDealId] = useState<string | null>(null);
 
@@ -53,6 +55,7 @@ export function DealsPage() {
 
   const queryParams: any = { period };
   if (repId !== "all") queryParams.repId = repId;
+  if (paymentStatus !== "all") queryParams.paymentStatus = paymentStatus;
 
   const { data: deals, isLoading } = useListDeals(
     queryParams,
@@ -135,6 +138,20 @@ export function DealsPage() {
               </Select>
             </div>
             <div className="w-40">
+              <Select value={paymentStatus} onValueChange={setPaymentStatus}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Payment Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Payments</SelectItem>
+                  <SelectItem value="unpaid">Unpaid</SelectItem>
+                  <SelectItem value="paid">Paid</SelectItem>
+                  <SelectItem value="partial">Partial</SelectItem>
+                  <SelectItem value="on_hold">On Hold</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-40">
               <MonthPicker 
                 value={period} 
                 onChange={setPeriod} 
@@ -175,6 +192,7 @@ export function DealsPage() {
                   <TableHead>Amount</TableHead>
                   <TableHead>Close Date</TableHead>
                   <TableHead>Stage</TableHead>
+                  <TableHead>Payment</TableHead>
                   <TableHead className="text-right"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -213,6 +231,16 @@ export function DealsPage() {
                           {deal.stage.replace('_', ' ').toUpperCase()}
                         </span>
                       </TableCell>
+                      <TableCell>
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
+                          deal.paymentStatus === 'paid' ? 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800/30' : 
+                          deal.paymentStatus === 'partial' ? 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/30' :
+                          deal.paymentStatus === 'on_hold' ? 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800/30' :
+                          'bg-muted text-muted-foreground border-border'
+                        }`}>
+                          {(deal.paymentStatus || 'unpaid').replace('_', ' ').toUpperCase()}
+                        </span>
+                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
                           {hasPermission("deals", "edit") && (
@@ -228,10 +256,16 @@ export function DealsPage() {
                   if (expandedDealId === deal.id && deal.notes) {
                     rows.push(
                       <TableRow key={`${deal.id}-notes`} className="hover:bg-transparent">
-                        <TableCell colSpan={6} className="p-0 border-t-0">
-                          <div className="px-6 py-4 bg-muted/20 border-t">
-                            <div className="prose prose-sm max-w-none prose-p:my-0.5" dangerouslySetInnerHTML={{ __html: deal.notes }} />
-                          </div>
+                        <TableCell colSpan={7} className="p-0 border-t-0 overflow-hidden">
+                          <motion.div
+                            initial={{ opacity: 0, y: -4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.15, ease: "easeOut" }}
+                          >
+                            <div className="px-6 py-4 bg-muted/20 border-t">
+                              <div className="prose prose-sm max-w-none prose-p:my-0.5" dangerouslySetInnerHTML={{ __html: deal.notes }} />
+                            </div>
+                          </motion.div>
                         </TableCell>
                       </TableRow>
                     );
@@ -308,6 +342,7 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
     closeDate: format(new Date(deal.closeDate), "yyyy-MM-dd"),
     period: deal.period,
     stage: deal.stage as any,
+    paymentStatus: deal.paymentStatus || "unpaid",
     notes: deal.notes || ""
   });
 
@@ -317,7 +352,10 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
     setOpen(false);
   };
 
-  const isEditable = deal.stage === 'pending';
+  const isPending = deal.stage === 'pending';
+  const isClosedWon = deal.stage === 'closed_won';
+  const isEditable = isPending || isClosedWon;
+  const isPaymentOnly = isClosedWon;
 
   if (!isEditable) return null;
 
@@ -329,17 +367,37 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
           size="icon" 
           className="size-8 text-muted-foreground hover:text-primary"
           disabled={!isEditable}
-          title={!isEditable ? "Only pending deals can be edited" : "Edit deal"}
+          title={isPending ? "Edit deal" : "Update payment status"}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle>Edit Deal</DialogTitle>
-          <DialogDescription>Update deal details.</DialogDescription>
+          <DialogTitle>{isPaymentOnly ? "Update Payment Status" : "Edit Deal"}</DialogTitle>
+          <DialogDescription>{isPaymentOnly ? "Update the payment status for this closed won deal." : "Update deal details."}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
+          {isPaymentOnly ? (
+            <>
+              <div className="rounded-md bg-muted/50 p-3 text-sm text-muted-foreground border">
+                This deal is <strong>closed won</strong>. Only payment status can be changed.
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-paymentStatus">Payment Status</Label>
+                <Select value={formData.paymentStatus} onValueChange={(val) => setFormData(prev => ({ ...prev, paymentStatus: val }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unpaid">UNPAID</SelectItem>
+                    <SelectItem value="paid">PAID</SelectItem>
+                    <SelectItem value="partial">PARTIAL</SelectItem>
+                    <SelectItem value="on_hold">ON HOLD</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          ) : (
+            <>
           <div className="space-y-2">
             <Label htmlFor="edit-repId">Sales Rep</Label>
             <Select 
@@ -393,6 +451,18 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
             </div>
           </div>
           <div className="space-y-2">
+            <Label htmlFor="edit-paymentStatus">Payment Status</Label>
+            <Select value={formData.paymentStatus} onValueChange={(val) => setFormData(prev => ({ ...prev, paymentStatus: val }))}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unpaid">UNPAID</SelectItem>
+                <SelectItem value="paid">PAID</SelectItem>
+                <SelectItem value="partial">PARTIAL</SelectItem>
+                <SelectItem value="on_hold">ON HOLD</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="edit-notes">Notes</Label>
             <MarkdownEditor
               value={formData.notes}
@@ -400,6 +470,8 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
               placeholder="Add notes in Markdown... (optional)"
             />
           </div>
+            </>
+          )}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
             <Button type="submit" disabled={updateMutation.isPending}>{updateMutation.isPending ? "Saving…" : "Save Changes"}</Button>
@@ -501,6 +573,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
       const closeDateStr = (row['Close Date'] || row['Date'] || row['close_date'] || '').trim();
       const stageRaw = (row['Stage'] || row['stage'] || 'closed_won').toString().trim().toLowerCase().replace(' ', '_');
       const rowCurrency = (row['Currency'] || row['currency'] || defaultCurrency).trim().toUpperCase();
+      const paymentStatusRaw = (row['Payment Status'] || row['payment_status'] || row['Payment'] || 'unpaid').toString().trim().toLowerCase().replace(' ', '_');
       const notes = (row['Notes'] || row['Description'] || row['notes'] || '').trim();
 
       const rep = reps?.find(r => 
@@ -511,6 +584,11 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
       let stage: 'closed_won' | 'closed_lost' | 'pending' = 'closed_won';
       if (stageRaw.includes('lost')) stage = 'closed_lost';
       else if (stageRaw.includes('pending') || stageRaw.includes('open')) stage = 'pending';
+
+      let paymentStatus = 'unpaid';
+      if (paymentStatusRaw.includes('paid')) paymentStatus = 'paid';
+      else if (paymentStatusRaw.includes('partial')) paymentStatus = 'partial';
+      else if (paymentStatusRaw.includes('hold')) paymentStatus = 'on_hold';
       
       return {
         id: Math.random().toString(36).substr(2, 9), // Temp ID for list management
@@ -521,6 +599,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
         closeDate: closeDateStr || new Date().toISOString().split('T')[0],
         period: period,
         stage,
+        paymentStatus,
         currency: rowCurrency,
         notes: notes || null
       };
@@ -683,6 +762,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
                       <TableHead className="w-[160px]">Currency</TableHead>
                       <TableHead className="w-[150px]">Close Date</TableHead>
                       <TableHead className="w-[140px]">Stage</TableHead>
+                      <TableHead className="w-[140px]">Payment</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -740,6 +820,19 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
                               <SelectItem value="closed_won">CLOSED WON</SelectItem>
                               <SelectItem value="closed_lost">CLOSED LOST</SelectItem>
                               <SelectItem value="pending">PENDING</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          <Select value={row.paymentStatus || 'unpaid'} onValueChange={(val) => updateRow(row.id, 'paymentStatus', val)}>
+                            <SelectTrigger className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="unpaid">UNPAID</SelectItem>
+                              <SelectItem value="paid">PAID</SelectItem>
+                              <SelectItem value="partial">PARTIAL</SelectItem>
+                              <SelectItem value="on_hold">ON HOLD</SelectItem>
                             </SelectContent>
                           </Select>
                         </TableCell>
@@ -803,6 +896,7 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
           closeDate: newDeal.closeDate,
           period: newDeal.period || period,
           stage: newDeal.stage || 'closed_won',
+          paymentStatus: newDeal.paymentStatus || 'unpaid',
           notes: newDeal.notes || null,
         };
 
@@ -848,6 +942,7 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
     closeDate: format(new Date(), "yyyy-MM-dd"),
     period: period,
     stage: "closed_won" as any,
+    paymentStatus: "unpaid" as any,
     notes: ""
   });
 
@@ -865,6 +960,7 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
           closeDate: format(new Date(), "yyyy-MM-dd"),
           period: period,
           stage: "closed_won" as any,
+          paymentStatus: "unpaid" as any,
           notes: ""
         });
       }
@@ -926,16 +1022,28 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
               <Label htmlFor="stage">Stage</Label>
               <Select value={formData.stage} onValueChange={(val) => setFormData(prev => ({ ...prev, stage: val }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="closed_won">CLOSED WON</SelectItem>
-                  <SelectItem value="closed_lost">CLOSED LOST</SelectItem>
-                  <SelectItem value="pending">PENDING</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <SelectContent>
+                <SelectItem value="closed_won">CLOSED WON</SelectItem>
+                <SelectItem value="closed_lost">CLOSED LOST</SelectItem>
+                <SelectItem value="pending">PENDING</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
+            <Label htmlFor="paymentStatus">Payment Status</Label>
+            <Select value={formData.paymentStatus} onValueChange={(val) => setFormData(prev => ({ ...prev, paymentStatus: val }))}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unpaid">UNPAID</SelectItem>
+                <SelectItem value="paid">PAID</SelectItem>
+                <SelectItem value="partial">PARTIAL</SelectItem>
+                <SelectItem value="on_hold">ON HOLD</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="notes">Notes</Label>
             <MarkdownEditor
               value={formData.notes}
               onChange={(val) => setFormData(prev => ({ ...prev, notes: val }))}
