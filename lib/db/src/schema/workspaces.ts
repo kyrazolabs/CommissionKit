@@ -8,6 +8,7 @@ const WorkspaceSchema = new Schema({
   // Workspace-level settings
   currency: { type: String, default: "USD" },
   fiscalYearStart: { type: String, default: "January" }, // month name
+  commissionEngine: { type: String, default: "standard" },
 }, { timestamps: { createdAt: true, updatedAt: false } });
 
 const WorkspaceMemberSchema = new Schema({
@@ -28,6 +29,7 @@ export type Workspace = mongoose.Document & {
   ownerId: string;
   currency: string;
   fiscalYearStart: string;
+  commissionEngine: string;
   createdAt: Date;
 };
 

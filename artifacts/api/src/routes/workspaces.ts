@@ -48,6 +48,7 @@ router.get("/workspaces", requireAuth, async (req: AuthenticatedRequest, res): P
       name: (m.workspaceId as any).name,
       currency: (m.workspaceId as any).currency || "USD",
       fiscalYearStart: (m.workspaceId as any).fiscalYearStart || "January",
+      commissionEngine: (m.workspaceId as any).commissionEngine || "standard",
       role: m.role,
       createdAt: (m.workspaceId as any).createdAt.toISOString(),
     }))
@@ -288,6 +289,70 @@ router.delete("/workspaces/:id/members/:memberId", ...requirePermission("team", 
 
   await WorkspaceMember.deleteOne({ _id: new Types.ObjectId(memberId as string) });
   res.status(204).send();
+});
+
+// ─── Settings ──────────────────────────────────────────────────────────────────
+
+router.get("/workspaces/:id/settings", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
+  const workspaceId = String(req.params.id);
+  const membership = await getMembership(workspaceId, req.userId!);
+  if (!membership) { res.status(403).json({ error: "Not a member of this workspace" }); return; }
+
+  const workspace = await Workspace.findById(workspaceId);
+  if (!workspace) { res.status(404).json({ error: "Workspace not found" }); return; }
+
+  res.json({
+    currency: (workspace as any).currency || "USD",
+    fiscalYearStart: (workspace as any).fiscalYearStart || "January",
+    commissionEngine: (workspace as any).commissionEngine || "standard",
+  });
+});
+
+router.patch("/workspaces/:id/settings", ...requirePermission("workspace", "edit"), async (req: AuthenticatedRequest, res): Promise<void> => {
+  const workspaceId = String(req.params.id);
+  const { currency, fiscalYearStart } = req.body as {
+    currency?: string;
+    fiscalYearStart?: string;
+  };
+
+  const update: Record<string, any> = {};
+  if (currency) update.currency = currency;
+  if (fiscalYearStart) update.fiscalYearStart = fiscalYearStart;
+
+  if (Object.keys(update).length === 0) {
+    res.status(400).json({ error: "At least one setting must be provided" });
+    return;
+  }
+
+  const workspace = await Workspace.findByIdAndUpdate(workspaceId, update, { new: true });
+  if (!workspace) { res.status(404).json({ error: "Workspace not found" }); return; }
+
+  res.json({
+    currency: (workspace as any).currency || "USD",
+    fiscalYearStart: (workspace as any).fiscalYearStart || "January",
+    commissionEngine: (workspace as any).commissionEngine || "standard",
+  });
+});
+
+// ─── Features (sidebar nav) ─────────────────────────────────────────────────────
+
+router.get("/workspaces/:id/features", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
+  const workspaceId = String(req.params.id);
+  const membership = await getMembership(workspaceId, req.userId!);
+  if (!membership) { res.status(403).json({ error: "Not a member of this workspace" }); return; }
+
+  const workspace = await Workspace.findById(workspaceId);
+  if (!workspace) { res.status(404).json({ error: "Workspace not found" }); return; }
+
+  const { getEngine } = await import("../workers/engines/registry");
+  const engine = getEngine((workspace as any).commissionEngine || "standard");
+  const features = engine.features();
+
+  res.json({
+    engineName: engine.name,
+    engineLabel: engine.label,
+    ...features,
+  });
 });
 
 export default router;

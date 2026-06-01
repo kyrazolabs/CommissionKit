@@ -90,6 +90,7 @@ export function SettingsPage() {
   const [wsState, setWsState] = useState({
     currency: "USD",
     fiscalYear: "January",
+    commissionEngine: "standard",
     loading: false,
     saving: false,
     saved: false
@@ -249,6 +250,7 @@ export function SettingsPage() {
           ...prev,
           currency: d.currency ?? "USD",
           fiscalYear: d.fiscalYearStart ?? "January",
+          commissionEngine: d.commissionEngine ?? "standard",
           loading: false
         }));
       })

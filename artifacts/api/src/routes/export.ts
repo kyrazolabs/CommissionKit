@@ -120,7 +120,7 @@ router.get(
       commissionAmount: r.commissionAmount,
       rateApplied: `${(Number(r.rateApplied) * 100).toFixed(2)}%`,
       calculationNote: r.calculationNote,
-      createdAt: r.createdAt.toISOString()
+      createdAt: (r as any).createdAt.toISOString()
     }));
 
     const csv = toCSV(data, fields);

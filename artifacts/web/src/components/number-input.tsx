@@ -2,33 +2,44 @@ import { useState, useRef, useEffect, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
 function cleanNumber(value: string): string {
-  return value.replace(/[^0-9.]/g, "");
+  let cleaned = value.replace(/[^0-9.\-]/g, "");
+  const hasMinus = cleaned.startsWith("-");
+  cleaned = cleaned.replace(/-/g, "");
+  const dotIndex = cleaned.indexOf(".");
+  if (dotIndex !== -1) {
+    cleaned = cleaned.substring(0, dotIndex + 1) + cleaned.substring(dotIndex + 1).replace(/\./g, "");
+  }
+  return hasMinus ? "-" + cleaned : cleaned;
 }
 
 function formatLive(value: string, decimals: number): string {
   if (!value) return "";
   const cleaned = cleanNumber(value);
-  if (!cleaned) return "";
+  if (!cleaned || cleaned === "-") return cleaned;
 
-  const dotIdx = cleaned.indexOf(".");
-  let intPart = cleaned;
+  const negative = cleaned.startsWith("-");
+  const abs = negative ? cleaned.substring(1) : cleaned;
+
+  const dotIdx = abs.indexOf(".");
+  let intPart = abs;
   let decPart = "";
 
   if (dotIdx !== -1) {
-    intPart = cleaned.substring(0, dotIdx);
-    decPart = cleaned.substring(dotIdx + 1).replace(/\./g, "").substring(0, decimals);
+    intPart = abs.substring(0, dotIdx);
+    decPart = abs.substring(dotIdx + 1).replace(/\./g, "").substring(0, decimals);
   }
 
   const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  const prefix = negative ? "-" : "";
 
   if (dotIdx !== -1) {
-    return `${formattedInt}.${decPart}`;
+    return `${prefix}${formattedInt}.${decPart}`;
   }
-  return formattedInt;
+  return `${prefix}${formattedInt}`;
 }
 
 function getCursorAfterFormat(rawBeforeCursorLen: number, formatted: string): number {
-  let pos = 0;
+  let pos = formatted.startsWith("-") ? 1 : 0;
   let rawIdx = 0;
   while (rawIdx < rawBeforeCursorLen && pos < formatted.length) {
     if (formatted[pos] === ",") {

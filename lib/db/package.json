@@ -6,7 +6,8 @@
   "main": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./schema": "./src/schema/index.ts"
+    "./schema": "./src/schema/index.ts",
+    "./schema/aissol": "./src/schema/aissol/index.ts"
   },
   "dependencies": {
     "bson": "6.10.1",

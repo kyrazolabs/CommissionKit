@@ -20,6 +20,7 @@ export interface Workspace {
   name: string;
   currency: string;
   fiscalYearStart: string;
+  commissionEngine: string;
   role: "owner" | "admin" | "member";
   createdAt: string;
 }

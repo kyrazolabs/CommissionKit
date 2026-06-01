@@ -5,6 +5,7 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { getRedisClient, verifySmtp, enqueueExchangeRateSync, enqueueLogsFlush } from "@workspace/queue";
 import { connectDB } from "@workspace/db";
+import { bootstrapEngines } from "./workers/engines/registry";
 
 // ─── Boot workers (moved to boot() function) ──────────────────────────────────
 
@@ -28,6 +29,9 @@ if (process.env.SMTP_HOST) {
 async function boot() {
   try {
     await connectDB();
+
+    // Register all commission engines
+    await bootstrapEngines();
 
     // ─── Boot workers ─────────────────────────────────────────────────────────────
     // Register BullMQ workers only AFTER DB is connected.

@@ -22,6 +22,9 @@ import { PublicRepPortal } from "@/pages/portal/public-portal";
 
 import { SettingsPage } from "@/pages/settings/settings";
 import { BillingPage } from "@/pages/settings/billing";
+import { AissolProjectsPage } from "@/pages/enterprise/aissol/projects";
+import { AissolProjectDetailPage } from "@/pages/enterprise/aissol/project-detail";
+import { AissolMatrixPage } from "@/pages/enterprise/aissol/matrix";
 
 import { TeamPage } from "@/pages/team/team";
 import { RepsPage } from "@/pages/team/reps";
@@ -225,6 +228,30 @@ function PublicOrRedirectLanding() {
   return <LandingPage />;
 }
 
+function EnterprisePlansGuard() {
+  const { activeWorkspace } = useWorkspace();
+  const [, setLocation] = useLocation();
+  useEffect(() => {
+    if (activeWorkspace?.commissionEngine !== "standard") {
+      setLocation("/dash/enterprise/matrix");
+    }
+  }, [activeWorkspace?.commissionEngine]);
+  if (activeWorkspace?.commissionEngine !== "standard") return null;
+  return <PlansPage />;
+}
+
+function EnterpriseDealsGuard() {
+  const { activeWorkspace } = useWorkspace();
+  const [, setLocation] = useLocation();
+  useEffect(() => {
+    if (activeWorkspace?.commissionEngine !== "standard") {
+      setLocation("/dash/enterprise/projects");
+    }
+  }, [activeWorkspace?.commissionEngine]);
+  if (activeWorkspace?.commissionEngine !== "standard") return null;
+  return <DealsPage />;
+}
+
 function ProtectedRouter() {
   const { session, loading: authLoading } = useAuth();
   const { activeWorkspace, loading: wsLoading } = useWorkspace();
@@ -263,8 +290,8 @@ function ProtectedRouter() {
       <Switch>
         <Route path="/dash" component={Dashboard} />
         <Route path="/dash/reps" component={RepsPage} />
-        <Route path="/dash/plans" component={PlansPage} />
-        <Route path="/dash/deals" component={DealsPage} />
+        <Route path="/dash/plans" component={EnterprisePlansGuard} />
+        <Route path="/dash/deals" component={EnterpriseDealsGuard} />
         <Route path="/dash/runs" component={RunsPage} />
         <Route path="/dash/runs/:id" component={RunDetailsPage} />
         <Route path="/dash/reports" component={ReportsPage} />
@@ -274,6 +301,9 @@ function ProtectedRouter() {
         <Route path="/dash/billing" component={BillingPage} />
         <Route path="/dash/payouts" component={PayoutsPage} />
         <Route path="/dash/disputes" component={DisputesPage} />
+        <Route path="/dash/enterprise/projects" component={AissolProjectsPage} />
+        <Route path="/dash/enterprise/projects/:id" component={AissolProjectDetailPage} />
+        <Route path="/dash/enterprise/matrix" component={AissolMatrixPage} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
