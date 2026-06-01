@@ -2,12 +2,12 @@ import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Users, FileText, Briefcase, PlayCircle,
   Settings, CreditCard, LogOut, ChevronsUpDown, Check, Plus,
-  Building2, Shield, Crown, PieChart, Wallet, AlertOctagon,
+  Building2, Shield, Crown, PieChart, Wallet, AlertOctagon, FolderKanban, Grid3X3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useWorkspace, type Workspace } from "@/hooks/use-workspace";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRole } from "@/hooks/use-role";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -20,32 +20,38 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { apiFetch } from "@/lib/api";
+
+const ICON_MAP: Record<string, any> = {
+  LayoutDashboard, Users, FileText, Briefcase, PlayCircle,
+  Settings, CreditCard, PieChart, Wallet, AlertOctagon, FolderKanban, Building2, Grid3X3,
+};
 
 const navGroups = [
   {
     label: "Main",
     items: [
-      { name: "Dashboard", href: "/dash",          icon: LayoutDashboard },
-      { name: "Reports",   href: "/dash/reports",  icon: PieChart },
-      { name: "Reps",      href: "/dash/reps",     icon: Users },
-      { name: "Plans",     href: "/dash/plans",    icon: FileText },
+      { name: "Dashboard", href: "/dash",          icon: "LayoutDashboard" },
+      { name: "Reports",   href: "/dash/reports",  icon: "PieChart" },
+      { name: "Reps",      href: "/dash/reps",     icon: "Users" },
+      { name: "Plans",     href: "/dash/plans",    icon: "FileText" },
     ],
   },
   {
     label: "Operations",
     items: [
-      { name: "Deals",    href: "/dash/deals",    icon: Briefcase },
-      { name: "Runs",     href: "/dash/runs",     icon: PlayCircle },
-      { name: "Payouts",  href: "/dash/payouts",  icon: Wallet },
-      { name: "Disputes", href: "/dash/disputes", icon: AlertOctagon },
+      { name: "Deals",    href: "/dash/deals",    icon: "Briefcase" },
+      { name: "Runs",     href: "/dash/runs",     icon: "PlayCircle" },
+      { name: "Payouts",  href: "/dash/payouts",  icon: "Wallet" },
+      { name: "Disputes", href: "/dash/disputes", icon: "AlertOctagon" },
     ],
   },
   {
     label: "Account",
     items: [
-      { name: "Team",     href: "/dash/team",     icon: Users },
-      { name: "Billing",  href: "/dash/billing",  icon: CreditCard },
-      { name: "Settings", href: "/dash/settings", icon: Settings },
+      { name: "Team",     href: "/dash/team",     icon: "Users" },
+      { name: "Billing",  href: "/dash/billing",  icon: "CreditCard" },
+      { name: "Settings", href: "/dash/settings", icon: "Settings" },
     ],
   },
 ];
@@ -200,10 +206,26 @@ function WorkspaceSwitcher() {
 export function Sidebar() {
   const [location] = useLocation();
   const { user, signOut } = useAuth();
+  const { activeWorkspace } = useWorkspace();
+  const [engineNavItems, setEngineNavItems] = useState<{ name: string; href: string; icon: string; replaces: string }[]>([]);
 
   const initials = user?.email
     ? user.email.slice(0, 2).toUpperCase()
     : "??";
+
+  useEffect(() => {
+    if (!activeWorkspace?.id) return;
+    apiFetch(`/api/workspaces/${activeWorkspace.id}/features`)
+      .then((d) => setEngineNavItems(d.navItems ?? []))
+      .catch(() => setEngineNavItems([]));
+  }, [activeWorkspace?.id]);
+
+  const replaceMap = new Map(engineNavItems.map(item => [item.replaces, item]));
+
+  const allGroups = navGroups.map(g => ({
+    ...g,
+    items: g.items.map(item => replaceMap.get(item.href) ?? item),
+  }));
 
   return (
     <div className="flex h-full w-[220px] shrink-0 flex-col bg-sidebar">
@@ -213,13 +235,14 @@ export function Sidebar() {
 
       {/* Nav groups */}
       <div className="flex-1 overflow-y-auto px-3 pt-4 space-y-6">
-        {navGroups.map((group) => (
+        {allGroups.map((group) => (
           <div key={group.label}>
             <p className="px-2 mb-1.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-sidebar-muted-foreground select-none">
               {group.label}
             </p>
             <nav className="space-y-0.5">
-              {group.items.map((item) => {
+              {group.items.map((item: any) => {
+                const IconComponent = typeof item.icon === "string" ? ICON_MAP[item.icon] : item.icon;
                 const isActive =
                   location === item.href ||
                   (item.href !== "/dash" && location.startsWith(item.href));
@@ -234,14 +257,16 @@ export function Sidebar() {
                         : "text-sidebar-foreground font-normal border border-transparent hover:bg-muted hover:text-foreground"
                     )}
                   >
-                    <item.icon
-                      className={cn(
-                        "h-[15px] w-[15px] shrink-0",
-                        isActive
-                          ? "text-sidebar-primary"
-                          : "text-sidebar-muted-foreground opacity-70"
-                      )}
-                    />
+                    {IconComponent && (
+                      <IconComponent
+                        className={cn(
+                          "h-[15px] w-[15px] shrink-0",
+                          isActive
+                            ? "text-sidebar-primary"
+                            : "text-sidebar-muted-foreground opacity-70"
+                        )}
+                      />
+                    )}
                     {item.name}
                   </Link>
                 );

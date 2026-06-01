@@ -3,10 +3,6 @@ import { Types } from "mongoose";
 import {
   CommissionRun,
   CommissionResult,
-  Deal,
-  Rep,
-  Plan,
-  PlanTier,
   Workspace,
   WorkspaceMember,
 } from "@workspace/db";
@@ -18,7 +14,7 @@ import {
 import { commissionRunTemplate } from "@workspace/email-templates";
 import { createNotification } from "../lib/notify";
 import type { CommissionCalcPayload } from "@workspace/queue";
-import { convertCurrency, convertCurrencyAt } from "../lib/exchange";
+import { getEngine } from "./engines/registry";
 import { logger } from "../lib/logger";
 
 const WORKER_OPTS = {
@@ -45,84 +41,8 @@ const WORKER_OPTS = {
 };
 
 /**
- * Core commission calculation logic.
- */
-function calculateCommission(
-  amount: number,
-  currency: string,
-  planType: string,
-  flatRate: number | null,
-  acceleratorThreshold: number | null,
-  acceleratorRate: number | null,
-  tiers: { fromAmount: number; toAmount: number | null; rate: number }[],
-): { rate: number; commission: number; note: string } {
-  if (planType === "flat" && flatRate !== null) {
-    const commission = amount * flatRate;
-    return {
-      rate: flatRate,
-      commission,
-      note: `Flat rate ${(flatRate * 100).toFixed(2)}% on ${currency} ${amount.toFixed(2)}`,
-    };
-  }
-
-  if (planType === "accelerator" && flatRate !== null) {
-    if (
-      acceleratorThreshold !== null &&
-      acceleratorRate !== null &&
-      amount > acceleratorThreshold
-    ) {
-      const total = amount * acceleratorRate;
-      return {
-        rate: acceleratorRate,
-        commission: total,
-        note: `Accelerated: ${(acceleratorRate * 100).toFixed(2)}% on full ${currency} ${amount.toFixed(2)} (exceeded ${currency} ${acceleratorThreshold} threshold)`,
-      };
-    }
-    const commission = amount * flatRate;
-    return {
-      rate: flatRate,
-      commission,
-      note: `Base rate ${(flatRate * 100).toFixed(2)}% (below threshold of ${currency} ${acceleratorThreshold})`,
-    };
-  }
-
-  if (planType === "tiered" && tiers.length > 0) {
-    let remaining = amount;
-    let totalCommission = 0;
-    const notes: string[] = [];
-    let lastRate = 0;
-
-    for (const tier of tiers) {
-      if (remaining <= 0) break;
-      const tierTop = tier.toAmount !== null ? tier.toAmount : Infinity;
-      const tierBottom = tier.fromAmount;
-      const allocated = amount - remaining;
-      const tierStart = Math.max(tierBottom, allocated);
-      const tierEnd = Math.min(tierTop, amount);
-      const applicable = Math.max(0, tierEnd - tierStart);
-      if (applicable <= 0) continue;
-      const commission = applicable * tier.rate;
-      totalCommission += commission;
-      notes.push(
-        `${(tier.rate * 100).toFixed(2)}% on ${currency} ${applicable.toFixed(2)}`,
-      );
-      lastRate = tier.rate;
-      remaining -= applicable;
-    }
-
-    const effectiveRate = amount > 0 ? totalCommission / amount : lastRate;
-    return {
-      rate: effectiveRate,
-      commission: totalCommission,
-      note: `Tiered: ${notes.join(", ")}`,
-    };
-  }
-
-  return { rate: 0, commission: 0, note: "No plan or rate configured" };
-}
-
-/**
  * Worker to handle commission calculation jobs.
+ * Dispatches to the correct engine based on workspace configuration.
  */
 export const calcWorker = new Worker<CommissionCalcPayload>(
   COMMISSION_CALC_QUEUE,
@@ -141,147 +61,58 @@ export const calcWorker = new Worker<CommissionCalcPayload>(
       await CommissionRun.findByIdAndUpdate(runId, { status: "processing" });
       logger.info(`[Worker:Calc] Run ${runId} status set to processing`);
 
-      // 1. Fetch all required data
-      const dealQuery: any = {
-        workspaceId: new Types.ObjectId(workspaceId),
-        period,
-        stage: { $in: ["closed_won", "Closed Won", "Won", "won"] },
-      };
-      if (job.data.paymentStatuses) {
-        dealQuery.paymentStatus = { $in: job.data.paymentStatuses };
-      }
-      const deals = await Deal.find(dealQuery);
-      logger.info(
-        `[Worker:Calc] Found ${deals.length} deals for period ${period}`,
-      );
-
-      const reps = await Rep.find({
-        workspaceId: new Types.ObjectId(workspaceId),
-      });
-      const plans = await Plan.find({
-        workspaceId: new Types.ObjectId(workspaceId),
-      });
-      const tiers = await PlanTier.find({
-        planId: { $in: plans.map((p) => p._id) },
-      }).sort({ fromAmount: 1 });
-
-      const planMap = new Map(plans.map((p) => [p._id.toString(), p]));
-      const tierMap = new Map<
-        string,
-        { fromAmount: number; toAmount: number | null; rate: number }[]
-      >();
-      for (const t of tiers) {
-        const planIdStr = t.planId.toString();
-        if (!tierMap.has(planIdStr)) tierMap.set(planIdStr, []);
-        tierMap
-          .get(planIdStr)!
-          .push({
-            fromAmount: Number(t.fromAmount),
-            toAmount: t.toAmount !== null ? Number(t.toAmount) : null,
-            rate: Number(t.rate),
-          });
-      }
-      const repMap = new Map(reps.map((r) => [r._id.toString(), r]));
-
-      // Hoist workspace fetch — done once, not per-deal
       const workspace = await Workspace.findById(workspaceId);
+      const engineName = (workspace as any)?.commissionEngine || "standard";
       const wsCurrency = (workspace as any)?.currency || "USD";
 
-      // 2. Perform calculations
-      let totalCommission = 0;
-      let skippedDeals = 0;
-      const resultRows = [];
-      const involvedReps = new Set<string>();
+      logger.info(`[Worker:Calc] Dispatching to engine "${engineName}"`);
 
-      for (const deal of deals) {
-        const rep = repMap.get(deal.repId.toString());
-        if (!rep) {
-          logger.warn(`[Worker:Calc] Deal ${deal._id} has no rep found`);
-          skippedDeals++;
-          continue;
-        }
+      const engine = getEngine(engineName);
+      const output = await engine.calculate({
+        workspaceId,
+        runId,
+        period,
+        paymentStatuses: job.data.paymentStatuses,
+        wsCurrency,
+      });
 
-        if (!rep.planId) {
-          logger.warn(
-            `[Worker:Calc] Rep ${rep.name} has no plan assigned. Skipping deal ${deal.name}`,
-          );
-          skippedDeals++;
-          continue;
-        }
-
-        const plan = planMap.get(rep.planId.toString());
-        if (!plan) {
-          logger.warn(
-            `[Worker:Calc] Plan ${rep.planId} not found for rep ${rep.name}`,
-          );
-          skippedDeals++;
-          continue;
-        }
-        // ... (calculation logic remains same)
-
-        // Convert deal amount to workspace currency, anchored to deal creation time
-        // This produces the rate snapshot that will be stored permanently with the result.
-        const dealCreatedAt = (deal as any).createdAt instanceof Date
-          ? (deal as any).createdAt
-          : new Date((deal as any).createdAt || Date.now());
-
-        const { converted: normalizedAmount, rate: snapshotRate, snapshotDate } =
-          await convertCurrencyAt(Number(deal.amount), deal.currency || "USD", wsCurrency, dealCreatedAt);
-
-        // Perform calculation on the workspace-currency normalized amount
-        const { rate, commission: commissionInWsCurrency, note } = calculateCommission(
-          normalizedAmount,
-          wsCurrency,
-          plan.type,
-          plan.flatRate !== null ? Number(plan.flatRate) : null,
-          plan.acceleratorThreshold !== null ? Number(plan.acceleratorThreshold) : null,
-          plan.acceleratorRate !== null ? Number(plan.acceleratorRate) : null,
-          tierMap.get(plan._id.toString()) ?? [],
+      // Save results
+      await CommissionResult.deleteMany({ runId: run._id });
+      if (output.results.length > 0) {
+        await CommissionResult.insertMany(
+          output.results.map((r) => ({
+            runId: run._id,
+            repId: new Types.ObjectId(r.repId),
+            dealId: new Types.ObjectId(r.dealId),
+            rateApplied: r.rateApplied,
+            commissionAmount: r.commissionAmount,
+            currency: r.currency,
+            calculationNote: r.calculationNote,
+            wsCurrency: r.wsCurrency,
+            convertedDealAmount: r.convertedDealAmount,
+            convertedCommission: r.convertedCommission,
+            exchangeRateSnapshot: r.exchangeRateSnapshot,
+            rateSnapshotDate: r.rateSnapshotDate,
+            meta: r.meta,
+          })),
         );
-
-        // Commission in original deal currency (rate applied to original amount)
-        const commissionInOriginalCurrency = Number(deal.amount) * rate;
-        // Commission in workspace currency at snapshot rate
-        const commissionConverted = commissionInOriginalCurrency * snapshotRate;
-
-        totalCommission += commissionInWsCurrency;
-        involvedReps.add(rep._id.toString());
-        resultRows.push({
-          runId: run._id,
-          repId: rep._id,
-          dealId: deal._id,
-          rateApplied: rate,
-          commissionAmount: commissionInOriginalCurrency,
-          currency: deal.currency || "USD",
-          calculationNote: note,
-          // Snapshot fields
-          wsCurrency,
-          convertedDealAmount: normalizedAmount,
-          convertedCommission: commissionConverted,
-          exchangeRateSnapshot: snapshotRate,
-          rateSnapshotDate: snapshotDate,
-        });
       }
 
-      // 3. Save results
-      await CommissionResult.deleteMany({ runId: run._id }); // Clear any previous attempts
-      if (resultRows.length > 0) {
-        await CommissionResult.insertMany(resultRows);
-      }
+      const { totalCommission, totalItems, skippedItems, involvedReps } = output.summary;
 
       await CommissionRun.findByIdAndUpdate(runId, {
         totalCommission,
-        totalDeals: resultRows.length,
-        skippedDeals,
+        totalDeals: totalItems,
+        skippedDeals: skippedItems,
         repsCount: involvedReps.size,
         status: "completed",
         error: null,
       });
       logger.info(
-        `[Worker:Calc] Saved completed run ${runId} with ${resultRows.length} results`,
+        `[Worker:Calc] Saved completed run ${runId} with ${totalItems} results`,
       );
 
-      // 4. Notify admins
+      // Notify admins
       const adminMembers = await WorkspaceMember.find({
         workspaceId: new Types.ObjectId(workspaceId),
         role: { $in: ["owner", "admin"] },
@@ -299,13 +130,12 @@ export const calcWorker = new Worker<CommissionCalcPayload>(
 
       // Get top earner
       let topEarner: { name: string; amount: string } | undefined;
-      if (resultRows.length > 0) {
-        const top = resultRows.reduce((a, b) =>
+      if (output.results.length > 0) {
+        const top = output.results.reduce((a, b) =>
           a.commissionAmount > b.commissionAmount ? a : b,
         );
-        const topRep = repMap.get(top.repId.toString());
         topEarner = {
-          name: topRep?.name || "Unknown",
+          name: "Unknown",
           amount: `${top.currency} ${top.commissionAmount.toFixed(2)}`,
         };
       }
@@ -320,7 +150,7 @@ export const calcWorker = new Worker<CommissionCalcPayload>(
               workspaceName: workspaceId,
               period,
               totalPaid,
-              totalDeals: resultRows.length,
+              totalDeals: totalItems,
               totalReps: involvedReps.size,
               topEarner,
               runUrl,
@@ -343,7 +173,6 @@ export const calcWorker = new Worker<CommissionCalcPayload>(
         }
       } catch (notifyErr) {
         logger.error({ err: notifyErr }, "[Worker:Calc] Notification loop error");
-        // Don't rethrow, the calculation itself is finished and saved
       }
 
       logger.info(`[Worker:Calc] Completed run ${runId}`);

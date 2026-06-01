@@ -14,6 +14,7 @@ import reportsRouter from "./reports";
 import payoutsRouter from "./payouts";
 import disputesRouter from "./disputes";
 import rolesRouter from "./roles";
+import enterpriseRouter from "./enterprise";
 
 const router: IRouter = Router();
 
@@ -32,6 +33,7 @@ router.use("/reports", reportsRouter);
 router.use("/payouts", payoutsRouter);
 router.use("/disputes", disputesRouter);
 router.use(rolesRouter);
+router.use("/enterprise", enterpriseRouter);
 
 // Sentry integration test route
 router.get("/debug-sentry", (req, res) => {
