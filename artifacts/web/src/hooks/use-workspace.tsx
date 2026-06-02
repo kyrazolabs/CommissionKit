@@ -25,10 +25,18 @@ export interface Workspace {
   createdAt: string;
 }
 
+interface EngineNavItem {
+  name: string;
+  href: string;
+  icon: string;
+  replaces: string;
+}
+
 interface WorkspaceContextValue {
   workspaces: Workspace[];
   activeWorkspace: Workspace | null;
   loading: boolean;
+  engineNavItems: EngineNavItem[];
   setActiveWorkspace: (ws: Workspace) => void;
   createWorkspace: (
     name: string,
@@ -41,6 +49,7 @@ const WorkspaceContext = createContext<WorkspaceContextValue>({
   workspaces: [],
   activeWorkspace: null,
   loading: true,
+  engineNavItems: [],
   setActiveWorkspace: () => {},
   createWorkspace: async () => {
     throw new Error("Not ready");
@@ -61,9 +70,11 @@ export function WorkspaceProvider({
   const [activeWorkspace, setActiveWorkspaceState] =
     useState<Workspace | null>(null);
   const [loading, setLoading] = useState(true);
+  const [engineNavItems, setEngineNavItems] = useState<EngineNavItem[]>([]);
 
   // Track previous user
   const previousUserId = useRef<string | null>(null);
+  const initialized = useRef(false);
 
   const persistWorkspace = useCallback((ws: Workspace | null) => {
     if (ws) {
@@ -105,6 +116,22 @@ export function WorkspaceProvider({
       // IMPORTANT:
       // Re-persist validated workspace only
       persistWorkspace(nextWorkspace as any);
+
+      // Fetch engine features for the active workspace
+      if (nextWorkspace) {
+        try {
+          const fRes = await fetch(`${API_URL}/api/workspaces/${(nextWorkspace as any).id}/features`, {
+            credentials: "include",
+          });
+          if (fRes.ok) {
+            const fData = await fRes.json();
+            setEngineNavItems(fData?.navItems ?? []);
+          }
+        } catch {
+          setEngineNavItems([]);
+        }
+      }
+
     } catch (err) {
       console.error(err);
 
@@ -120,11 +147,17 @@ export function WorkspaceProvider({
   useEffect(() => {
     const currentUserId = session?.user?.id ?? null;
 
-    // User/account changed
-    if (previousUserId.current !== currentUserId) {
+    if (!initialized.current) {
+      initialized.current = true;
+      previousUserId.current = currentUserId;
+      if (session) { setLoading(true); fetchWorkspaces(); }
+      return;
+    }
+
+    // Clear saved workspace only on actual user/account change
+    if (previousUserId.current !== null && previousUserId.current !== currentUserId) {
       localStorage.removeItem(STORAGE_KEY);
       setWorkspaceId(null);
-
       setWorkspaces([]);
       setActiveWorkspaceState(null);
     }
@@ -137,19 +170,18 @@ export function WorkspaceProvider({
     } else {
       setWorkspaces([]);
       setActiveWorkspaceState(null);
-
       persistWorkspace(null);
-
       setLoading(false);
     }
   }, [session, fetchWorkspaces, persistWorkspace]);
 
   const setActiveWorkspace = useCallback(
     (ws: Workspace) => {
-      setActiveWorkspaceState(ws);
-      persistWorkspace(ws);
+      localStorage.setItem(STORAGE_KEY, ws.id);
+      setWorkspaceId(ws.id);
+      window.location.assign("/dash");
     },
-    [persistWorkspace]
+    []
   );
 
   const createWorkspace = useCallback(
@@ -190,6 +222,7 @@ export function WorkspaceProvider({
       workspaces,
       activeWorkspace,
       loading,
+      engineNavItems,
       setActiveWorkspace,
       createWorkspace,
       refreshWorkspaces: fetchWorkspaces,
@@ -198,6 +231,7 @@ export function WorkspaceProvider({
       workspaces,
       activeWorkspace,
       loading,
+      engineNavItems,
       setActiveWorkspace,
       createWorkspace,
       fetchWorkspaces,

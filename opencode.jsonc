@@ -1,0 +1,32 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "eraser": {
+      "type": "remote",
+      "url": "https://app.eraser.io/api/mcp",
+      "enabled": true
+    },
+    "twenty": {
+      "type": "remote",
+      "url": "https://crm.commissionk.it/mcp"
+    },
+    "mintlify-docs": {
+      "type": "remote",
+      "url": "https://mintlify.com/docs/mcp",
+      "enabled": true
+    },
+    "mintlify": {
+      "type": "remote",
+      "url": "https://mcp.mintlify.com",
+      "enabled": true,
+      "oauth": {
+        "clientId": "mcp-cc-9332849e-16db-4918-b923-c38f7baabd07",
+        "clientSecret": "WjbJX0zNAtNfNGQPTTWYLgnFXVXXoJJy1hFN-rCAHP2g9P5o"
+      }
+    },
+    "better-auth": {
+      "type": "remote",
+      "url": "https://mcp.better-auth.com/mcp"
+    }
+  }
+}
