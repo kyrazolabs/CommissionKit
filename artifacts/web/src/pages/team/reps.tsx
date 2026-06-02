@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Plus, Search, MoreHorizontal, Edit, Trash, ChevronRight, Users, Mail } from "lucide-react";
@@ -470,22 +471,14 @@ function RepDeleteAction({ rep }: { rep: any }) {
       >
         <Trash className="mr-2 size-4" />Delete Rep
       </DropdownMenuItem>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Are you absolutely sure?</DialogTitle>
-            <DialogDescription>
-              This will permanently delete <strong>{rep.name}</strong>. Their historical deals and commissions will be retained, but they will no longer appear in the active roster.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              Delete Representative
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={open}
+        onOpenChange={setOpen}
+        title="Delete Representative"
+        description={<>This will permanently delete <strong>{rep.name}</strong>. Their historical deals and commissions will be retained, but they will no longer appear in the active roster.</>}
+        confirmLabel="Delete Representative"
+        onConfirm={handleDelete}
+      />
     </>
   );
 }

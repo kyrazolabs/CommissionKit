@@ -5,6 +5,7 @@ import { apiFetch } from "../../lib/api";
 import { cn } from "../../lib/utils";
 import { useRole } from "@/hooks/use-role";
 import { useSyncStore } from "@/hooks/use-sync-store";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Card,
   CardContent,
@@ -47,6 +48,7 @@ export default function SettingsRoles() {
   const queryClient = useQueryClient();
   const [selectedRole, setSelectedRole] = useState<any>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [deleteConfirmRole, setDeleteConfirmRole] = useState<any>(null);
   const { setSyncError } = useSyncStore();
 
   const { data: roles = [], isLoading } = useQuery({
@@ -133,7 +135,6 @@ export default function SettingsRoles() {
                 {hasPermission("roles", "edit") && (
                   <Button
                     variant="outline"
-                    size="sm"
                     className="flex-1"
                     onClick={() => {
                       setSelectedRole(role);
@@ -147,16 +148,12 @@ export default function SettingsRoles() {
 
                 {!role.isSystem && hasPermission("roles", "delete") && (
                   <Button
-                    variant="destructive"
-                    size="icon"
-                    className="size-9 shrink-0"
-                    onClick={() => {
-                      if (confirm("Are you sure you want to delete this role? Users assigned to this role will lose these permissions immediately.")) {
-                        deleteMutation.mutate(role.id);
-                      }
-                    }}
+                    variant="outline"
+                    onClick={() => setDeleteConfirmRole(role)}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
                   >
-                    <Trash className="size-4" />
+                    <Trash className="size-4 mr-2" />
+                    Delete
                   </Button>
                 )}
               </div>
@@ -170,6 +167,17 @@ export default function SettingsRoles() {
         role={selectedRole}
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
+      />
+      <ConfirmDialog
+        open={!!deleteConfirmRole}
+        onOpenChange={(v) => { if (!v) setDeleteConfirmRole(null); }}
+        title="Delete Role"
+        description={<>Users assigned to <strong>{deleteConfirmRole?.name}</strong> will lose these permissions immediately.</>}
+        confirmLabel="Delete Role"
+        onConfirm={() => {
+          deleteMutation.mutate(deleteConfirmRole.id);
+          setDeleteConfirmRole(null);
+        }}
       />
     </div>
   );
