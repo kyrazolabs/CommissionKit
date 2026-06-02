@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useState } from "react";
 import { Link, useRoute, useLocation } from "wouter";
 import { Plus, Trash2, ArrowLeft, FolderKanban, FileText, DollarSign, TrendingUp, Percent, Download } from "lucide-react";
@@ -28,6 +29,7 @@ export function AissolProjectDetailPage() {
   const projectId = params?.id ?? "";
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState({ invoiceNumber: "", amount: "" });
+  const [deleteConfirmInvoice, setDeleteConfirmInvoice] = useState<any>(null);
 
   const { data: project, isLoading } = useQuery({
     queryKey: ["aissol-project", projectId],
@@ -230,7 +232,7 @@ export function AissolProjectDetailPage() {
                       variant="ghost"
                       size="icon"
                       className="size-7 text-muted-foreground hover:text-destructive"
-                      onClick={() => deleteInvoiceMutation.mutate(inv._id)}
+                      onClick={() => setDeleteConfirmInvoice(inv)}
                     >
                       <Trash2 className="size-3.5" />
                     </Button>
@@ -249,6 +251,17 @@ export function AissolProjectDetailPage() {
           <p className="text-sm text-muted-foreground mt-1">Add invoices to calculate commission for this project.</p>
         </div>
       )}
+      <ConfirmDialog
+        open={!!deleteConfirmInvoice}
+        onOpenChange={(v) => { if (!v) setDeleteConfirmInvoice(null); }}
+        title="Delete Invoice"
+        description={<>Are you sure you want to delete invoice <strong>#{deleteConfirmInvoice?.invoiceNumber}</strong>? This action cannot be undone.</>}
+        confirmLabel="Delete Invoice"
+        onConfirm={() => {
+          deleteInvoiceMutation.mutate(deleteConfirmInvoice._id);
+          setDeleteConfirmInvoice(null);
+        }}
+      />
     </div>
   );
 }

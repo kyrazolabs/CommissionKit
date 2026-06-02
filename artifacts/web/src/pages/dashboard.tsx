@@ -24,7 +24,7 @@ export function Dashboard() {
   const currency = activeWorkspace?.currency || "USD";
   const currentPeriod = format(new Date(), "yyyy-MM");
   const { data: summary, isLoading: summaryLoading } = useGetDashboardSummary(
-    { query: { queryKey: getGetDashboardSummaryQueryKey() } }
+    { query: { queryKey: [...getGetDashboardSummaryQueryKey(), activeWorkspace?.id] } }
   );
 
   if (summaryLoading || roleLoading) return <DashboardSkeleton />;

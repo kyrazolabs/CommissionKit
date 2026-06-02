@@ -25,6 +25,7 @@ import { useBillingStatus } from "@/hooks/use-billing-status";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { usePageMeta } from "@/hooks/use-page-meta";
 
 
@@ -253,6 +254,7 @@ function MemberRow({
 }) {
   const { toast } = useToast();
   const [updating, setUpdating] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const { hasPermission } = useRole()
   const isSelf = member.userId === currentUserId;
   const isProtected = member.role === "owner";
@@ -273,7 +275,7 @@ function MemberRow({
     }
   };
 
-  const removeMember = async () => {
+  const handleRemoveMember = async () => {
     setUpdating(true);
     try {
       await apiFetch(`/api/workspaces/${workspaceId}/members/${member.id}`, {
@@ -285,6 +287,7 @@ function MemberRow({
       toast({ title: "Failed to remove", description: err.message, variant: "destructive" });
     } finally {
       setUpdating(false);
+      setDeleteConfirmOpen(false);
     }
   };
 
@@ -370,7 +373,7 @@ function MemberRow({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
               <DropdownMenuItem
-                onClick={removeMember}
+                onClick={() => setDeleteConfirmOpen(true)}
                 className="text-destructive focus:text-destructive focus:bg-destructive/10"
               >
                 <Trash2 className="size-3.5 mr-2" />
@@ -380,6 +383,17 @@ function MemberRow({
           </DropdownMenu>
         )}
       </div>
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title={isSelf ? "Leave Workspace" : "Remove Member"}
+        description={isSelf
+          ? <>Are you sure you want to leave <strong>{member.email}</strong> from this workspace?</>
+          : <>Are you sure you want to remove <strong>{member.email}</strong> from this workspace? This action can be undone by re-inviting them.</>
+        }
+        confirmLabel={isSelf ? "Leave" : "Remove"}
+        onConfirm={handleRemoveMember}
+      />
     </div>
   );
 }

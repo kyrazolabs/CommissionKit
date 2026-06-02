@@ -206,19 +206,11 @@ function WorkspaceSwitcher() {
 export function Sidebar() {
   const [location] = useLocation();
   const { user, signOut } = useAuth();
-  const { activeWorkspace } = useWorkspace();
-  const [engineNavItems, setEngineNavItems] = useState<{ name: string; href: string; icon: string; replaces: string }[]>([]);
+  const { activeWorkspace, engineNavItems, loading: wsLoading } = useWorkspace();
 
   const initials = user?.email
     ? user.email.slice(0, 2).toUpperCase()
     : "??";
-
-  useEffect(() => {
-    if (!activeWorkspace?.id) return;
-    apiFetch(`/api/workspaces/${activeWorkspace.id}/features`)
-      .then((d) => setEngineNavItems(d.navItems ?? []))
-      .catch(() => setEngineNavItems([]));
-  }, [activeWorkspace?.id]);
 
   const replaceMap = new Map(engineNavItems.map(item => [item.replaces, item]));
 

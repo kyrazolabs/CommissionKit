@@ -2,6 +2,7 @@ import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -156,75 +157,42 @@ function CreateWorkspaceScreen() {
 }
 
 function AppLoader() {
+  const messages = [
+    "Calculating your commissions…",
+    "Rounding up the reps…",
+    "Crunching the numbers…",
+    "Preparing your workspace…",
+    "Loading your dashboard…",
+    "Almost there…",
+  ];
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setIdx(i => (i + 1) % messages.length), 2000);
+    return () => clearInterval(t);
+  }, []);
+
   return (
-
     <div className="min-h-screen flex items-center justify-center bg-sidebar">
-      <style>{`
-      @keyframes textShimmer {
-    0% {
-        background-position: 200% center;
-    }
-    100% {
-        background-position: -200% center;
-    }
-}
-
-.animate-shimmer-text {
-    background: linear-gradient(
-        90deg,
-        currentColor 0%,
-        color-mix(in srgb, currentColor, transparent 60%) 50%,
-        currentColor 100%
-    );
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: textShimmer 2s linear infinite;
-}
-@keyframes fadeInUpSmall {
-    from {
-        opacity: 0;
-        transform: translateY(4px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.animate-message-fade {
-    animation: fadeInUpSmall 0.3s ease-out forwards;
-}
-
-.loader-container {
-    interpolate-size: allow-keywords;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-      `}</style>
-      <div className="flex flex-col items-center gap-3">
-        {/* <svg width="24" height="24" viewBox="11 11 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <line x1="16" y1="40" x2="40" y2="16" stroke="#0D9488" stroke-width="3.5" stroke-linecap="round"/>
-          <circle cx="20" cy="20" r="5" fill="#0D9488"/>
-          <circle cx="36" cy="36" r="7" fill="none" stroke="#0D9488" stroke-width="3"/>
-          <circle cx="36" cy="36" r="2.5" fill="#0D9488"/>
-        </svg> */}
-        <p className="text-base font-semibold animate-shimmer-text animate-pulse">Loading…</p>
+      <div className="h-5 overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={idx}
+            initial={{ y: 16, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -16, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="text-sm text-muted-foreground"
+          >
+            {messages[idx]}
+          </motion.p>
+        </AnimatePresence>
       </div>
     </div>
   );
 }
 
 function PublicOrRedirectLanding() {
-  const { session, loading } = useAuth();
-  const [, setLocation] = useLocation();
-
-  useEffect(() => {
-    if (!loading && session) {
-      setLocation("/dash");
-    }
-  }, [session, loading, setLocation]);
-
   return <LandingPage />;
 }
 
@@ -259,7 +227,7 @@ function ProtectedRouter() {
 
   useEffect(() => {
     if (!authLoading && session) {
-      if (location === "/" || location === "" || location === "/home" || location === "/login" || location === "/register") {
+      if (location === "/login" || location === "/register") {
         setLocation("/dash");
       }
     }
@@ -267,23 +235,16 @@ function ProtectedRouter() {
 
   // Render public pages immediately (no auth-wait flash that would replace pre-rendered HTML)
   if (!session) {
-    if (authLoading) {
-      if (location === "/" || location === "" || location === "/home") return <LandingPage />;
-      if (location === "/register") return <AuthPage initialMode="signup" />;
-      if (location === "/login") return <AuthPage initialMode="login" />;
-    }
-    if (location === "/" || location === "" || location === "/home") return <LandingPage />;
+    if (authLoading) return <AppLoader />;
     if (location === "/register") return <AuthPage initialMode="signup" />;
+    if (location === "/login") return <AuthPage initialMode="login" />;
+    if (location === "/" || location === "" || location === "/home") return <LandingPage />;
     return <AuthPage initialMode="login" />;
   }
 
-  if (authLoading) return <AppLoader />;
-
-  if (location === "/login" || location === "/register" || location === "/home" || location === "/" || location === "") {
-    return <AppLoader />;
-  }
-  if (wsLoading) return <AppLoader />;
+  if (authLoading || wsLoading) return <AppLoader />;
   if (!activeWorkspace) return <CreateWorkspaceScreen />;
+  if (location === "/login" || location === "/register") return <AppLoader />;
 
   return (
     <Layout>

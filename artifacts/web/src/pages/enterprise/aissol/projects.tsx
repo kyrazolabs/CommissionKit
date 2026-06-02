@@ -15,6 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useState, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { format } from "date-fns";
@@ -40,6 +41,7 @@ export function AissolProjectsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRep, setFilterRep] = useState("all");
   const [filterPeriod, setFilterPeriod] = useState("all");
+  const [deleteConfirmProject, setDeleteConfirmProject] = useState<any>(null);
 
   const { data: projects, isLoading } = useQuery({
     queryKey: ["aissol-projects", activeWorkspace?.id],
@@ -308,7 +310,7 @@ export function AissolProjectsPage() {
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="icon" className="size-7 text-muted-foreground hover:text-destructive" onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(p._id); }}>
+                        <Button variant="ghost" size="icon" className="size-7 text-muted-foreground hover:text-destructive" onClick={(e) => { e.stopPropagation(); setDeleteConfirmProject(p); }}>
                           <Trash2 className="size-3.5" />
                         </Button>
                       </TableCell>
@@ -320,6 +322,17 @@ export function AissolProjectsPage() {
           )}
         </CardContent>
       </Card>
+      <ConfirmDialog
+        open={!!deleteConfirmProject}
+        onOpenChange={(v) => { if (!v) setDeleteConfirmProject(null); }}
+        title="Delete Project"
+        description={<>Are you sure you want to delete <strong>{deleteConfirmProject?.name}</strong>? All associated invoices will also be removed.</>}
+        confirmLabel="Delete Project"
+        onConfirm={() => {
+          deleteMutation.mutate(deleteConfirmProject._id);
+          setDeleteConfirmProject(null);
+        }}
+      />
     </div>
   );
 }

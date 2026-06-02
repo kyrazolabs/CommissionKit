@@ -386,7 +386,7 @@ export function SettingsPage() {
                 <p className="text-[11px] text-muted-foreground">Email address cannot be changed here.</p>
               </div>
               <div className="pt-2">
-                <Button size="sm" onClick={saveProfile} disabled={profileState.saving} className="gap-2">
+                <Button onClick={saveProfile} disabled={profileState.saving} className="gap-2">
                   {profileState.saving ? <Loader2 className="size-3.5 animate-spin" /> : profileState.saved ? <Check className="size-3.5" /> : <Save className="size-3.5" />}
                   {profileState.saved ? "Saved!" : "Save Profile"}
                 </Button>
@@ -408,7 +408,7 @@ export function SettingsPage() {
               <p className="text-sm font-medium">Team members</p>
               <p className="text-sm text-muted-foreground mt-0.5">Invite members, manage roles and access.</p>
             </div>
-            <Button variant="outline" size="sm" asChild className="gap-1.5">
+            <Button variant="outline" asChild className="gap-1.5">
               <Link href="/dash/team">Manage <ArrowRight className="size-3.5" /></Link>
             </Button>
           </div>
@@ -463,7 +463,6 @@ export function SettingsPage() {
             ) : linkedAccounts.some(acc => acc.providerId === "google") ? (
               <Button
                 variant="outline"
-                size="sm"
                 onClick={handleUnlinkGoogle}
                 disabled={unlinkingProvider === "google"}
                 className="text-destructive hover:text-destructive hover:bg-destructive/10 border-border/50 transition-colors"
@@ -474,7 +473,6 @@ export function SettingsPage() {
             ) : (
               <Button
                 variant="outline"
-                size="sm"
                 onClick={handleLinkGoogle}
                 disabled={linkingProvider === "google"}
                 className="hover:bg-muted transition-colors"
@@ -503,7 +501,7 @@ export function SettingsPage() {
               <Label className="text-sm font-medium">Theme</Label>
               <p className="text-sm text-muted-foreground mt-0.5">Currently using <span className="font-medium text-foreground">{theme === "dark" ? "dark" : "light"}</span> mode.</p>
             </div>
-            <Button variant="outline" size="sm" onClick={toggle} className="gap-2">
+            <Button variant="outline" onClick={toggle} className="gap-2">
               {theme === "dark" ? <><Sun className="size-4" /> Light mode</> : <><Moon className="size-4" /> Dark mode</>}
             </Button>
           </div>
@@ -546,7 +544,7 @@ export function SettingsPage() {
           </div>
           {isAdmin && (
             <div className="flex justify-end pt-1">
-              <Button size="sm" onClick={saveWorkspaceSettings} disabled={wsState.saving || wsState.loading} className="gap-2">
+              <Button onClick={saveWorkspaceSettings} disabled={wsState.saving || wsState.loading} className="gap-2">
                 {wsState.saving ? <Loader2 className="size-3.5 animate-spin" /> : wsState.saved ? <Check className="size-3.5" /> : <Save className="size-3.5" />}
                 {wsState.saved ? "Saved!" : "Save workspace settings"}
               </Button>
@@ -599,7 +597,7 @@ export function SettingsPage() {
           ))}
 
           <div className="flex justify-end pt-4">
-            <Button size="sm" onClick={saveNotifPrefs} disabled={prefsState.saving} className="gap-2">
+            <Button onClick={saveNotifPrefs} disabled={prefsState.saving} className="gap-2">
               {prefsState.saving ? <Loader2 className="size-3.5 animate-spin" /> : prefsState.saved ? <Check className="size-3.5" /> : <Save className="size-3.5" />}
               {prefsState.saved ? "Saved!" : "Save preferences"}
             </Button>
