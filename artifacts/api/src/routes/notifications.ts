@@ -159,16 +159,24 @@ router.patch("/users/me/notification-prefs", requireAuth, async (req: Authentica
 // ─── Workspace settings ───────────────────────────────────────────────────────
 
 const VALID_CURRENCIES = [
-  "USD","EUR","GBP","JPY","CAD","AUD","CHF","CNY","HKD","NZD",
-  "SEK","NOK","DKK","SGD","INR","BRL","MXN","ZAR","RUB","TRY",
-  "KRW","THB","IDR","MYR","PHP","TWD","PLN","CZK","HUF","RON",
-  "BGN","HRK","ISK","ILS","SAR","AED","QAR","KWD","BHD","OMR",
-  "JOD","EGP","NGN","KES","GHS","TZS","UGX","ETB","MAD","DZD",
-  "TND","PKR","BDT","LKR","NPR","MMK","VND","KHR","LAK","MNT",
-  "KZT","UZS","AZN","GEL","AMD","UAH","BYN","MDL","ALL","MKD",
-  "RSD","BAM","HNL","GTQ","CRC","PAB","DOP","JMD","TTD","BBD",
-  "CLP","COP","PEN","ARS","BOB","PYG","UYU","VES","GYD","SRD",
-  "FJD","PGK","WST","TOP","XCD","XOF","XAF","XPF",
+  "AED","AFN","ALL","AMD","ANG","AOA","ARS","AUD","AWG","AZN",
+  "BAM","BBD","BDT","BGN","BHD","BIF","BMD","BND","BOB","BRL",
+  "BSD","BTC","BTN","BWP","BYN","BZD","CAD","CDF","CHF","CLF",
+  "CLP","CNH","CNY","COP","CRC","CUC","CUP","CVE","CZK","DJF",
+  "DKK","DOP","DZD","EGP","ERN","ETB","EUR","FJD","FKP","GBP",
+  "GEL","GGP","GHS","GIP","GMD","GNF","GTQ","GYD","HKD","HNL",
+  "HRK","HTG","HUF","IDR","ILS","IMP","INR","IQD","IRR","ISK",
+  "JEP","JMD","JOD","JPY","KES","KGS","KHR","KMF","KPW","KRW",
+  "KWD","KYD","KZT","LAK","LBP","LKR","LRD","LSL","LYD","MAD",
+  "MDL","MGA","MKD","MMK","MNT","MOP","MRU","MUR","MVR","MWK",
+  "MXN","MYR","MZN","NAD","NGN","NIO","NOK","NPR","NZD","OMR",
+  "PAB","PEN","PGK","PHP","PKR","PLN","PYG","QAR","RON","RSD",
+  "RUB","RWF","SAR","SBD","SCR","SDG","SEK","SGD","SHP","SLE",
+  "SLL","SOS","SRD","SSP","STD","STN","SVC","SYP","SZL","THB",
+  "TJS","TMT","TND","TOP","TRY","TTD","TWD","TZS","UAH","UGX",
+  "USD","UYU","UZS","VES","VND","VUV","WST","XAF","XAG","XAU",
+  "XCD","XCG","XDR","XOF","XPD","XPF","XPT","YER","ZAR","ZMW",
+  "ZWG","ZWL",
 ];
 const VALID_MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -193,16 +201,9 @@ router.get("/workspaces/:id/settings", ...requirePermission("workspace", "read")
  */
 router.patch("/workspaces/:id/settings", ...requirePermission("workspace", "edit"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = String(req.params.id);
-  const { currency, fiscalYearStart } = req.body as { currency?: string; fiscalYearStart?: string };
+  const { fiscalYearStart } = req.body as { fiscalYearStart?: string };
 
   const update: Record<string, string> = {};
-
-  if (currency !== undefined) {
-    if (!VALID_CURRENCIES.includes(currency)) {
-      res.status(400).json({ error: `Invalid currency. Allowed: ${VALID_CURRENCIES.join(", ")}` }); return;
-    }
-    update.currency = currency;
-  }
 
   if (fiscalYearStart !== undefined) {
     if (!VALID_MONTHS.includes(fiscalYearStart)) {

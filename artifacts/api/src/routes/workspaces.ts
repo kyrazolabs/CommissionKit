@@ -310,13 +310,11 @@ router.get("/workspaces/:id/settings", requireAuth, async (req: AuthenticatedReq
 
 router.patch("/workspaces/:id/settings", ...requirePermission("workspace", "edit"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = String(req.params.id);
-  const { currency, fiscalYearStart } = req.body as {
-    currency?: string;
+  const { fiscalYearStart } = req.body as {
     fiscalYearStart?: string;
   };
 
   const update: Record<string, any> = {};
-  if (currency) update.currency = currency;
   if (fiscalYearStart) update.fiscalYearStart = fiscalYearStart;
 
   if (Object.keys(update).length === 0) {
