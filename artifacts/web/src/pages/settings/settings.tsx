@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CurrencyCombobox } from "@/components/currency-combobox";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -266,7 +265,7 @@ export function SettingsPage() {
     try {
       await apiFetch(`/api/workspaces/${activeWorkspace.id}/settings`, {
         method: "PATCH",
-        body: JSON.stringify({ currency: wsState.currency, fiscalYearStart: wsState.fiscalYear }),
+        body: JSON.stringify({ fiscalYearStart: wsState.fiscalYear }),
       });
       setWsState(prev => ({ ...prev, saving: false, saved: true }));
       toast({ title: "Workspace settings saved" });
@@ -525,8 +524,10 @@ export function SettingsPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-sm font-medium">Currency</Label>
-              <CurrencyCombobox value={wsState.currency} onChange={(v) => setWsState(prev => ({ ...prev, currency: v }))} disabled={!isAdmin || wsState.loading} />
-              <p className="text-xs text-muted-foreground">Used for all amount formatting.</p>
+              <div className="flex h-9 items-center rounded-md border bg-muted/50 px-3 text-sm text-muted-foreground">
+                {CURRENCIES.find(c => c.code === wsState.currency)?.code ?? wsState.currency} — {CURRENCIES.find(c => c.code === wsState.currency)?.name ?? "United States Dollar"}
+              </div>
+              <p className="text-xs text-muted-foreground">Set during workspace creation and cannot be changed.</p>
             </div>
             <div className="space-y-2">
               <Label className="text-sm font-medium">Fiscal year start</Label>

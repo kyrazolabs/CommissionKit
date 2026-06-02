@@ -206,7 +206,11 @@ export function AissolProjectsPage() {
                 <Select value={form.repId} onValueChange={(v) => setForm(p => ({ ...p, repId: v }))} required>
                   <SelectTrigger id="proj-rep"><SelectValue placeholder="Select rep" /></SelectTrigger>
                   <SelectContent>
-                    {reps?.map((r: any) => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
+                    {!Array.isArray(reps) || reps.length === 0 ? (
+                      <div className="p-2 text-sm text-muted-foreground text-center">No reps yet — create one in Reps first.</div>
+                    ) : (
+                      reps?.map((r: any) => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -235,7 +239,9 @@ export function AissolProjectsPage() {
                 <SelectTrigger><SelectValue placeholder="All Reps" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Reps</SelectItem>
-                  {Array.isArray(reps) && reps.map((rep: any) => <SelectItem key={rep.id} value={String(rep.id)}>{rep.name}</SelectItem>)}
+                  {!Array.isArray(reps) || reps.length === 0 ? (
+                    <div className="p-2 text-sm text-muted-foreground text-center">No reps yet — create one in Reps first.</div>
+                  ) : Array.isArray(reps) && reps.map((rep: any) => <SelectItem key={rep.id} value={String(rep.id)}>{rep.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -449,7 +455,9 @@ function ImportProjectsDialog({ workspaceId, period, defaultCurrency, reps, onIm
                         <TableCell>
                           <Select value={row.repId} onValueChange={(v) => updateRow(row.id, 'repId', v)}>
                             <SelectTrigger className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent"><SelectValue placeholder="Select rep" /></SelectTrigger>
-                            <SelectContent>{Array.isArray(reps) && reps.map((r: any) => <SelectItem key={r.id} value={String(r.id)}>{r.name}</SelectItem>)}</SelectContent>
+                            <SelectContent>{!Array.isArray(reps) || reps.length === 0 ? (
+                              <div className="p-2 text-sm text-muted-foreground text-center">No reps yet — create one in Reps first.</div>
+                            ) : Array.isArray(reps) && reps.map((r: any) => <SelectItem key={r.id} value={String(r.id)}>{r.name}</SelectItem>)}</SelectContent>
                           </Select>
                           {!row.repId && <p className="text-[10px] text-destructive mt-0.5 ml-2">Unknown: {row.repName}</p>}
                         </TableCell>
