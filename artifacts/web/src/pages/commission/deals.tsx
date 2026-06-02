@@ -129,11 +129,14 @@ export function DealsPage() {
                 <SelectTrigger>
                   <SelectValue placeholder="All Reps" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Reps</SelectItem>
-                  {Array.isArray(reps) && reps.map(rep => (
-                    <SelectItem key={rep.id} value={rep.id.toString()}>{rep.name}</SelectItem>
-                  ))}
+            <SelectContent>
+                  {!Array.isArray(reps) || reps.length === 0 ? (
+                    <div className="p-2 text-sm text-muted-foreground text-center">No reps yet — create one in Reps first.</div>
+                  ) : (
+                    Array.isArray(reps) && reps.map(rep => (
+                      <SelectItem key={rep.id} value={rep.id.toString()}>{rep.name}</SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -407,9 +410,13 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
             >
               <SelectTrigger><SelectValue placeholder="Select a representative" /></SelectTrigger>
               <SelectContent>
-                {Array.isArray(reps) && reps.map((rep: any) => (
-                  <SelectItem key={rep.id || rep._id} value={(rep.id || rep._id).toString()}>{rep.name}</SelectItem>
-                ))}
+                {!Array.isArray(reps) || reps.length === 0 ? (
+                  <div className="p-2 text-sm text-muted-foreground text-center">No reps yet — create one in Reps first.</div>
+                ) : (
+                  Array.isArray(reps) && reps.map((rep: any) => (
+                    <SelectItem key={rep.id || rep._id} value={(rep.id || rep._id).toString()}>{rep.name}</SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -775,9 +782,13 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
                               <SelectValue placeholder="Select rep" />
                             </SelectTrigger>
                             <SelectContent>
-                              {Array.isArray(reps) && reps.map(rep => (
-                                <SelectItem key={rep.id} value={rep.id.toString()}>{rep.name}</SelectItem>
-                              ))}
+                              {!Array.isArray(reps) || reps.length === 0 ? (
+                                <div className="p-2 text-sm text-muted-foreground text-center">No reps yet — create one in Reps first.</div>
+                              ) : (
+                                Array.isArray(reps) && reps.map(rep => (
+                                  <SelectItem key={rep.id} value={rep.id.toString()}>{rep.name}</SelectItem>
+                                ))
+                              )}
                             </SelectContent>
                           </Select>
                           {!row.repId && <p className="text-[10px] text-destructive mt-0.5 ml-2">Unknown email: {row.repEmail}</p>}
@@ -987,9 +998,13 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
             <Select value={formData.repId} onValueChange={(val) => setFormData(prev => ({ ...prev, repId: val }))}>
               <SelectTrigger><SelectValue placeholder="Select a representative" /></SelectTrigger>
               <SelectContent>
-                {Array.isArray(reps) && reps.map(rep => (
-                  <SelectItem key={rep.id} value={rep.id.toString()}>{rep.name}</SelectItem>
-                ))}
+                {!Array.isArray(reps) || reps.length === 0 ? (
+                  <div className="p-2 text-sm text-muted-foreground text-center">No reps yet — create one in Reps first.</div>
+                ) : (
+                  Array.isArray(reps) && reps.map(rep => (
+                    <SelectItem key={rep.id} value={rep.id.toString()}>{rep.name}</SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>

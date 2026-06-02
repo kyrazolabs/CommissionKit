@@ -1,6 +1,6 @@
 import { Router } from "express";
 import Stripe from "stripe";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import {
   WorkspaceSubscription,
   Workspace,
@@ -164,6 +164,10 @@ async function getOrCreateCustomer(
   workspaceId: string,
   userEmail: string,
   workspaceName?: string,
+  workspaceSlug?: string,
+  workspaceCurrency?: string,
+  workspaceOwnerId?: string,
+  workspaceOwnerName?: string,
 ): Promise<string> {
   const sub = await WorkspaceSubscription.findOne({
     workspaceId: new Types.ObjectId(workspaceId),
@@ -174,7 +178,14 @@ async function getOrCreateCustomer(
   const customer = await stripe.customers.create({
     email: userEmail,
     name: workspaceName,
-    metadata: { workspaceId },
+    metadata: {
+      workspaceId,
+      workspaceName: workspaceName ?? "",
+      workspaceSlug: workspaceSlug ?? "",
+      workspaceCurrency: workspaceCurrency ?? "USD",
+      workspaceOwnerId: workspaceOwnerId ?? "",
+      workspaceOwnerName: workspaceOwnerName ?? "",
+    },
   });
 
   // Upsert the subscription record with the customer id
@@ -316,10 +327,30 @@ router.post(
     }
 
     const ws = await Workspace.findById(workspaceId);
+
+    let ownerName = "";
+    if (ws?.ownerId) {
+      try {
+        const db = mongoose.connection.db;
+        if (db) {
+          const owner = await db
+            .collection("user")
+            .findOne({ _id: ws.ownerId }, { projection: { name: 1 } });
+          if (owner) ownerName = (owner as any).name ?? "";
+        }
+      } catch {
+        // non-critical — metadata enrichment best-effort
+      }
+    }
+
     const customerId = await getOrCreateCustomer(
       workspaceId,
       req.userEmail!,
       ws?.name,
+      ws?.slug,
+      ws?.currency,
+      ws?.ownerId,
+      ownerName,
     );
 
     try {
@@ -361,12 +392,21 @@ router.post(
         });
       }
 
+      const workspaceMeta = {
+        workspaceId,
+        workspaceName: ws?.name ?? "",
+        workspaceSlug: ws?.slug ?? "",
+        workspaceCurrency: ws?.currency ?? "USD",
+        workspaceOwnerId: ws?.ownerId ?? "",
+        workspaceOwnerName: ownerName,
+      };
+
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
         mode: checkoutMode,
         line_items: lineItems,
         metadata: {
-          workspaceId,
+          ...workspaceMeta,
           userId: req.userId ?? "",
           plan,
           interval,
@@ -378,12 +418,12 @@ router.post(
         },
         allow_promotion_codes: true,
         billing_address_collection: "auto",
-        success_url: `${appUrl}/billing?checkout=success&plan=${plan}`,
-        cancel_url: `${appUrl}/billing?checkout=cancelled`,
+        success_url: `${appUrl}/dash/billing?checkout=success&plan=${plan}`,
+        cancel_url: `${appUrl}/dash/billing?checkout=cancelled`,
         ...(checkoutMode === "subscription" && {
           subscription_data: {
             metadata: {
-              workspaceId,
+              ...workspaceMeta,
               plan,
               interval,
               extraReps: String(extraRepsQty),
