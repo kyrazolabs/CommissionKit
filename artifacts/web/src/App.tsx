@@ -289,10 +289,6 @@ function ProtectedRouter() {
         <Route path="/dash/billing" component={BillingPage} />
         <Route path="/dash/payouts" component={PayoutsPage} />
         <Route path="/dash/disputes" component={DisputesPage} />
-        <Route path="/dash/enterprise/projects" component={AissolProjectsPage} />
-        <Route path="/dash/enterprise/projects/:id" component={AissolProjectDetailPage} />
-        <Route path="/dash/enterprise/matrix" component={AissolMatrixPage} />
-        <Route path="/dash/enterprise/reports" component={AissolReportsPage} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
