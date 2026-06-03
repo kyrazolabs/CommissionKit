@@ -47,6 +47,7 @@ export function AissolProjectsPage() {
     queryKey: ["aissol-projects", activeWorkspace?.id],
     queryFn: () => apiFetch(`/api/enterprise/projects`).catch(() => []),
     enabled: !!activeWorkspace?.id && activeWorkspace?.commissionEngine === "aissol",
+    staleTime: 0,
   });
 
   const { data: reps } = useQuery({
