@@ -56,7 +56,7 @@ export function MonthPicker({
         <Button
           variant={"outline"}
           className={cn(
-            "w-full justify-start text-left font-normal h-10",
+            "w-full justify-start text-left font-normal h-9 rounded-md border border-input bg-transparent px-3 py-1 shadow-sm hover:bg-transparent",
             !value && "text-muted-foreground",
             className
           )}
@@ -65,7 +65,7 @@ export function MonthPicker({
           {value ? format(date, "MMMM yyyy") : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-64 p-3" align="start">
+      <PopoverContent className="w-54 p-3" align="start">
         <div className="flex items-center justify-between mb-4 px-1">
           <Button
             variant="ghost"
@@ -101,7 +101,7 @@ export function MonthPicker({
                 key={month}
                 variant={isSelected ? "default" : "ghost"}
                 className={cn(
-                  "h-9 w-full text-sm font-normal",
+                  "h-6 w-full text-sm font-normal",
                   isSelected && "bg-primary text-primary-foreground hover:bg-primary/90"
                 )}
                 onClick={(e) => {

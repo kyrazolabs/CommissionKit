@@ -32,6 +32,7 @@ export class AissolEngine implements CalcEngine {
       navItems: [
         { name: "Matrix", href: "/dash/enterprise/matrix", icon: "Grid3X3", replaces: "/dash/plans" },
         { name: "Projects", href: "/dash/enterprise/projects", icon: "FolderKanban", replaces: "/dash/deals" },
+        { name: "Reports", href: "/dash/enterprise/reports", icon: "PieChart", replaces: "/dash/reports" },
       ],
     };
   }
@@ -74,11 +75,17 @@ export class AissolEngine implements CalcEngine {
       workspaceId: new Types.ObjectId(workspaceId),
       period,
     });
+    logger.info(`[Engine:AISSOL] Found ${projects.length} projects for period ${period}`);
     const projectIds = projects.map((p) => p._id);
 
-    const invoices = await AissolInvoice.find({
+    const invoiceQuery: any = {
       projectId: { $in: projectIds },
-    });
+    };
+    if (input.paymentStatuses && input.paymentStatuses.length > 0) {
+      invoiceQuery.paymentStatus = { $in: input.paymentStatuses };
+    }
+    const invoices = await AissolInvoice.find(invoiceQuery);
+    logger.info(`[Engine:AISSOL] Found ${invoices.length} invoices for ${projects.length} projects`);
 
     const projectMap = new Map(projects.map((p) => [p._id.toString(), p]));
     const invoicesByProject = new Map<string, typeof invoices>();
