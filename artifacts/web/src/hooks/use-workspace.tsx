@@ -10,9 +10,7 @@ import {
 
 import { setWorkspaceId } from "@workspace/api-client-react";
 import { useAuth } from "./use-auth";
-
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:8088";
+import { apiFetch } from "@/lib/api";
 
 export interface Workspace {
   id: string;
@@ -90,15 +88,7 @@ export function WorkspaceProvider({
     if (!session) return;
 
     try {
-      const res = await fetch(`${API_URL}/api/workspaces`, {
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to fetch workspaces");
-      }
-
-      const data: Workspace[] = await res.json();
+      const data: Workspace[] = await apiFetch("/api/workspaces");
 
       setWorkspaces(data);
 
@@ -122,14 +112,8 @@ export function WorkspaceProvider({
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 5000);
         try {
-          const fRes = await fetch(`${API_URL}/api/workspaces/${(nextWorkspace as any).id}/features`, {
-            credentials: "include",
-            signal: controller.signal,
-          });
-          if (fRes.ok) {
-            const fData = await fRes.json();
-            setEngineNavItems(fData?.navItems ?? []);
-          }
+          const fData = await apiFetch(`/api/workspaces/${(nextWorkspace as any).id}/features`, { signal: controller.signal });
+          setEngineNavItems(fData?.navItems ?? []);
         } catch {
           setEngineNavItems([]);
         } finally {
@@ -198,20 +182,10 @@ export function WorkspaceProvider({
         throw new Error("Not authenticated");
       }
 
-      const res = await fetch(`${API_URL}/api/workspaces`, {
+      const ws: Workspace = await apiFetch("/api/workspaces", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
         body: JSON.stringify({ name, currency }),
       });
-
-      if (!res.ok) {
-        throw new Error(await res.text());
-      }
-
-      const ws: Workspace = await res.json();
 
       setWorkspaces((prev) => [...prev, ws]);
 
