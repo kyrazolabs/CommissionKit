@@ -43,8 +43,8 @@ services:
       context: .
       dockerfile: Dockerfile.web
     container_name: web
-    ports:
-      - "80:80"
+    expose:
+      - "80"
     depends_on:
       - api
     restart: always
