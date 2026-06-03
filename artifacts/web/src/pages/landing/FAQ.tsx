@@ -27,6 +27,10 @@ const FAQS = [
     q: "Do you support complex commission structures?",
     a: "Yes. CommissionKit supports tiered plans, flat rates, per-rep custom percentages, accelerators, and clawback rules. If your team has custom structures, the Growth plan has everything you need.",
   },
+  {
+    q: "What if my commission structure doesn't fit any standard engine?",
+    a: "We build custom commission engines tailored to your exact calculation rules. From project-based matrices to multi-currency tiered splits — our team implements your logic as a dedicated engine, isolated from standard features so nothing else is affected. Reach out to sales to discuss your needs.",
+  },
 ];
 
 function FAQItem({ q, a }: { q: string; a: string }) {

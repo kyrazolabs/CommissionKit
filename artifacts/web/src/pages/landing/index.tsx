@@ -6,6 +6,7 @@ import { ValueProps } from "./ValueProps";
 import { FeatureDeepDives } from "./FeatureDeepDives";
 import { GlobalSupport } from "./GlobalSupport";
 import { Pricing } from "./Pricing";
+import { CustomEngine } from "./CustomEngine";
 import { FAQ } from "./FAQ";
 import { FinalCTA } from "./FinalCTA";
 import { Footer } from "./Footer";
@@ -49,6 +50,7 @@ export function LandingPage() {
           <FeatureDeepDives />
           <GlobalSupport />
           <Pricing />
+          <CustomEngine />
           <FAQ />
           <FinalCTA />
         </motion.div>
