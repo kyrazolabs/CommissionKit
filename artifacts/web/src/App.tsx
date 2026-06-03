@@ -205,11 +205,11 @@ function EnterprisePlansGuard() {
   const { activeWorkspace } = useWorkspace();
   const [, setLocation] = useLocation();
   useEffect(() => {
-    if (activeWorkspace?.commissionEngine !== "standard") {
+    if (activeWorkspace?.commissionEngine && activeWorkspace.commissionEngine !== "standard") {
       setLocation("/dash/enterprise/matrix");
     }
   }, [activeWorkspace?.commissionEngine]);
-  if (activeWorkspace?.commissionEngine !== "standard") return null;
+  if (!activeWorkspace || activeWorkspace?.commissionEngine !== "standard") return null;
   return <PlansPage />;
 }
 
@@ -217,32 +217,30 @@ function EnterpriseDealsGuard() {
   const { activeWorkspace } = useWorkspace();
   const [, setLocation] = useLocation();
   useEffect(() => {
-    if (activeWorkspace?.commissionEngine !== "standard") {
+    if (activeWorkspace?.commissionEngine && activeWorkspace.commissionEngine !== "standard") {
       setLocation("/dash/enterprise/projects");
     }
   }, [activeWorkspace?.commissionEngine]);
-  if (activeWorkspace?.commissionEngine !== "standard") return null;
+  if (!activeWorkspace || activeWorkspace?.commissionEngine !== "standard") return null;
   return <DealsPage />;
-}
-
-function EnterpriseRepPortalGuard() {
-  const { activeWorkspace } = useWorkspace();
-  if (activeWorkspace?.commissionEngine !== "standard") return <EnterpriseRepPortal />;
-  return <RepPortal />;
 }
 
 function EnterpriseRunsListGuard() {
   const { activeWorkspace } = useWorkspace();
-  if (activeWorkspace?.commissionEngine !== "standard") return <EnterpriseRunsPage />;
+  if (!activeWorkspace || activeWorkspace?.commissionEngine !== "standard") return <EnterpriseRunsPage />;
   return <RunsPage />;
 }
 
 function EnterpriseRunsGuard() {
   const { activeWorkspace } = useWorkspace();
-  if (activeWorkspace?.commissionEngine !== "standard") {
-    return <EnterpriseRunDetailsPage />;
-  }
+  if (!activeWorkspace || activeWorkspace?.commissionEngine !== "standard") return <EnterpriseRunDetailsPage />;
   return <RunDetailsPage />;
+}
+
+function EnterpriseRepPortalGuard() {
+  const { activeWorkspace } = useWorkspace();
+  if (!activeWorkspace || activeWorkspace?.commissionEngine !== "standard") return <EnterpriseRepPortal />;
+  return <RepPortal />;
 }
 
 function ProtectedRouter() {
@@ -272,8 +270,12 @@ function ProtectedRouter() {
   if (location === "/login" || location === "/register") return <AppLoader />;
 
   return (
-    <Layout>
+      <Layout>
       <Switch>
+        <Route path="/dash/enterprise/projects" component={AissolProjectsPage} />
+        <Route path="/dash/enterprise/projects/:id" component={AissolProjectDetailPage} />
+        <Route path="/dash/enterprise/matrix" component={AissolMatrixPage} />
+        <Route path="/dash/enterprise/reports" component={AissolReportsPage} />
         <Route path="/dash" component={Dashboard} />
         <Route path="/dash/reps" component={RepsPage} />
         <Route path="/dash/plans" component={EnterprisePlansGuard} />
