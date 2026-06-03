@@ -119,9 +119,12 @@ export function WorkspaceProvider({
 
       // Fetch engine features for the active workspace
       if (nextWorkspace) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
         try {
           const fRes = await fetch(`${API_URL}/api/workspaces/${(nextWorkspace as any).id}/features`, {
             credentials: "include",
+            signal: controller.signal,
           });
           if (fRes.ok) {
             const fData = await fRes.json();
@@ -129,6 +132,8 @@ export function WorkspaceProvider({
           }
         } catch {
           setEngineNavItems([]);
+        } finally {
+          clearTimeout(timeout);
         }
       }
 
