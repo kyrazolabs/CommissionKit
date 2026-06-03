@@ -28,10 +28,11 @@ if (!db) {
 }
 
 const APP_URL = process.env.APP_URL || "http://localhost:3000";
+const AUTH_URL = process.env.BETTER_AUTH_URL || APP_URL;
 
 export const auth = betterAuth({
   database: mongodbAdapter(db),
-  baseURL: APP_URL,
+  baseURL: AUTH_URL,
   trustedOrigins: [APP_URL],
 
   user: {
