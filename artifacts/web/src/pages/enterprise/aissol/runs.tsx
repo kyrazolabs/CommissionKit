@@ -26,6 +26,7 @@ export function EnterpriseRunsPage() {
   const { data: runs, isLoading } = useListRuns({ 
     query: { 
       queryKey: getListRunsQueryKey(),
+      staleTime: 0,
       refetchInterval: (query: any) => {
         const data = query?.state?.data;
         const hasActiveRuns = Array.isArray(data) && data.some((r: any) => r.status === "pending" || r.status === "processing");

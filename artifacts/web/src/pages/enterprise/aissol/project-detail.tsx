@@ -45,6 +45,7 @@ export function AissolProjectDetailPage() {
     queryKey: ["aissol-project", projectId],
     queryFn: () => apiFetch(`/api/enterprise/projects/${projectId}`),
     enabled: !!projectId && !!activeWorkspace?.id && activeWorkspace?.commissionEngine === "aissol",
+    staleTime: 0,
   });
 
   const createInvoiceMutation = useMutation({

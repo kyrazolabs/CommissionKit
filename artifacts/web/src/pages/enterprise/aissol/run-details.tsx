@@ -23,6 +23,7 @@ export function EnterpriseRunDetailsPage() {
     query: {
       enabled: !!id,
       queryKey: getGetRunQueryKey(id),
+      staleTime: 0,
       refetchInterval: (query: any) => {
         const data = query?.state?.data;
         return (data?.status === "pending" || data?.status === "processing") ? 3000 : false;

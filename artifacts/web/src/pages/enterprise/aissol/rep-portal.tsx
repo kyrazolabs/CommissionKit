@@ -66,6 +66,7 @@ export function EnterpriseRepPortal() {
     queryKey: ["enterprise-rep-summary", id, period],
     queryFn: () => apiFetch(`/api/enterprise/reps/${id}/summary?period=${period}`),
     enabled: !!id && !!activeWorkspace?.id && activeWorkspace?.commissionEngine === "aissol",
+    staleTime: 0,
   });
 
   if (isLoading) return (
