@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useRoute, useLocation } from "wouter";
 import { DatePicker } from "@/components/ui/date-picker";
 import { parseISO } from "date-fns";
@@ -91,7 +91,13 @@ export function AissolProjectDetailPage() {
     a.click(); URL.revokeObjectURL(url);
   };
 
-  if (activeWorkspace?.commissionEngine !== "aissol") { setLocation("/dash"); return null; }
+  useEffect(() => {
+    if (activeWorkspace && activeWorkspace.commissionEngine && activeWorkspace.commissionEngine !== "aissol") {
+      setLocation("/dash");
+    }
+  }, [activeWorkspace?.commissionEngine]);
+
+  if (!activeWorkspace || activeWorkspace?.commissionEngine !== "aissol") return null;
   if (isLoading) {
     return (
       <div className="space-y-6">
