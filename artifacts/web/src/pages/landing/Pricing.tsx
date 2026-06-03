@@ -66,7 +66,7 @@ export function Pricing() {
   const [payYearly, setPayYearly] = useState(false);
 
   return (
-    <section className="py-24 px-6 md:px-12 bg-white/50 backdrop-blur-sm border-t border-border/60" id="pricing">
+    <section className="py-24 px-6 md:px-12 bg-white/50 backdrop-blur-sm border-b border-border/60" id="pricing">
       <div ref={ref} className="max-w-[1440px] mx-auto">
         <div className="text-center mb-10" style={fadeIn(inView)}>
           <h2 className="text-3xl lg:text-[32px] font-bold text-foreground mb-4 tracking-tight">
