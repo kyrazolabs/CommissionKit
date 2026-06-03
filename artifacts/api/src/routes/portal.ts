@@ -30,6 +30,7 @@ interface PortalTokenPayload {
   repId: string;
   accessCode: string;
   mustChangePassword: boolean;
+  commissionEngine?: string;
 }
 
 function signPortalToken(payload: PortalTokenPayload): string {
@@ -176,15 +177,20 @@ router.post("/portal/:accessCode/login", async (req, res): Promise<void> => {
 
     const mustChangePassword = Boolean(authUser.mustChangePassword);
 
-    // Sign a portal-scoped JWT — completely separate from Better Auth session cookies
+    // Get workspace engine type
+    const workspace = await Workspace.findById(rep.workspaceId);
+    const commissionEngine = (workspace as any)?.commissionEngine || "standard";
+
+    // Sign a portal-scoped JWT
     const token = signPortalToken({
       repId: rep._id.toString(),
       accessCode: rep.portalAccessCode!,
       mustChangePassword,
+      commissionEngine,
     });
 
     logger.info({ repId: rep._id, accessCode }, "Portal login successful");
-    res.json({ token, mustChangePassword, repName: rep.name });
+    res.json({ token, mustChangePassword, repName: rep.name, workspaceName: workspace?.name || "Workspace" });
   } catch (err: any) {
     logger.error({ err: err.message, accessCode }, "Portal login error");
     res.status(500).json({ error: "Login failed. Please try again." });
@@ -397,6 +403,7 @@ router.get("/portal/:accessCode", async (req, res): Promise<void> => {
     repId: rep._id,
     repName: rep.name,
     email: rep.email,
+    workspaceName: workspace?.name || null,
     planName,
     period,
     totalCommission,

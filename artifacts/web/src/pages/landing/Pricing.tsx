@@ -167,12 +167,12 @@ export function Pricing() {
             <div>
               <h3 className="text-xl font-bold text-foreground mb-1">Business</h3>
               <p className="text-sm text-muted-foreground mb-4 md:mb-0">
-                Custom features, SSO/SAML, dedicated infrastructure, and priority support for large organizations.
+                Custom commission engines, SSO/SAML, dedicated infrastructure, and priority support for large organizations.
               </p>
               <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-foreground">
                 <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> Unlimited reps & members</li>
                 <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> SAML/SSO & SCIM</li>
-                <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> Custom API rate limits</li>
+                <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> Custom Commission Engine</li>
                 <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> Dedicated account manager</li>
                 <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> Custom legal & SLA terms</li>
                 <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> On-premise deployment option</li>

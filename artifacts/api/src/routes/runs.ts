@@ -58,6 +58,8 @@ async function formatRun(run: any) {
         convertedCommission: (r as any).convertedCommission ?? null,
         exchangeRateSnapshot: (r as any).exchangeRateSnapshot ?? null,
         rateSnapshotDate: (r as any).rateSnapshotDate ?? null,
+        // Engine-specific metadata
+        meta: (r as any).meta ?? null,
       };
     }),
   };

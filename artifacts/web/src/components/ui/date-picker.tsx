@@ -32,7 +32,7 @@ export function DatePicker({
         <Button
           variant={"outline"}
           className={cn(
-            "w-full justify-start text-left font-normal",
+            "w-full justify-start text-left font-normal h-9 rounded-md border border-input bg-transparent px-3 py-1 shadow-sm hover:bg-transparent",
             !date && "text-muted-foreground",
             className
           )}
@@ -43,6 +43,7 @@ export function DatePicker({
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
+          className="rounded-md"
           mode="single"
           selected={date}
           onSelect={onChange}
@@ -96,7 +97,7 @@ export function DateRangePicker({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto p-3" align="start">
         <Calendar
           initialFocus
           mode="range"

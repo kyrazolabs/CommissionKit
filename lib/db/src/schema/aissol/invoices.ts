@@ -8,6 +8,9 @@ const AissolInvoiceSchema = new Schema({
   amount: { type: Number, required: true },
   currency: { type: String, default: "SAR" },
   period: { type: String, required: true },
+  notes: { type: String },
+  dueDate: { type: String },
+  paymentStatus: { type: String, enum: ["unpaid", "paid", "partial", "on_hold"], default: "unpaid" },
 }, { timestamps: { createdAt: true, updatedAt: true } });
 
 export const AissolInvoice = model("AissolInvoice", AissolInvoiceSchema);

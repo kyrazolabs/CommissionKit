@@ -27,7 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export function RunCalculationDialog({ isProcessing, trigger }: { isProcessing: boolean; trigger?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [period, setPeriod] = useState<string>(() => format(new Date(), "yyyy-MM"));
-  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>("all");
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>("paid");
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const createMutation = useCreateRun();

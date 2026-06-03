@@ -1,4 +1,4 @@
-import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation, useParams } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
@@ -26,6 +26,11 @@ import { BillingPage } from "@/pages/settings/billing";
 import { AissolProjectsPage } from "@/pages/enterprise/aissol/projects";
 import { AissolProjectDetailPage } from "@/pages/enterprise/aissol/project-detail";
 import { AissolMatrixPage } from "@/pages/enterprise/aissol/matrix";
+import { AissolReportsPage } from "@/pages/enterprise/aissol/reports";
+import { EnterpriseRunDetailsPage } from "@/pages/enterprise/aissol/run-details";
+import { EnterpriseRunsPage } from "@/pages/enterprise/aissol/runs";
+import { EnterpriseRepPortal } from "@/pages/enterprise/aissol/rep-portal";
+import { EnterprisePublicRepPortal } from "@/pages/enterprise/aissol/public-portal";
 
 import { TeamPage } from "@/pages/team/team";
 import { RepsPage } from "@/pages/team/reps";
@@ -220,6 +225,26 @@ function EnterpriseDealsGuard() {
   return <DealsPage />;
 }
 
+function EnterpriseRepPortalGuard() {
+  const { activeWorkspace } = useWorkspace();
+  if (activeWorkspace?.commissionEngine !== "standard") return <EnterpriseRepPortal />;
+  return <RepPortal />;
+}
+
+function EnterpriseRunsListGuard() {
+  const { activeWorkspace } = useWorkspace();
+  if (activeWorkspace?.commissionEngine !== "standard") return <EnterpriseRunsPage />;
+  return <RunsPage />;
+}
+
+function EnterpriseRunsGuard() {
+  const { activeWorkspace } = useWorkspace();
+  if (activeWorkspace?.commissionEngine !== "standard") {
+    return <EnterpriseRunDetailsPage />;
+  }
+  return <RunDetailsPage />;
+}
+
 function ProtectedRouter() {
   const { session, loading: authLoading } = useAuth();
   const { activeWorkspace, loading: wsLoading } = useWorkspace();
@@ -253,10 +278,10 @@ function ProtectedRouter() {
         <Route path="/dash/reps" component={RepsPage} />
         <Route path="/dash/plans" component={EnterprisePlansGuard} />
         <Route path="/dash/deals" component={EnterpriseDealsGuard} />
-        <Route path="/dash/runs" component={RunsPage} />
-        <Route path="/dash/runs/:id" component={RunDetailsPage} />
+        <Route path="/dash/runs" component={EnterpriseRunsListGuard} />
+        <Route path="/dash/runs/:id" component={EnterpriseRunsGuard} />
         <Route path="/dash/reports" component={ReportsPage} />
-        <Route path="/dash/reps/:id" component={RepPortal} />
+        <Route path="/dash/reps/:id" component={EnterpriseRepPortalGuard} />
         <Route path="/dash/team" component={TeamPage} />
         <Route path="/dash/settings" component={SettingsPage} />
         <Route path="/dash/billing" component={BillingPage} />
@@ -265,6 +290,7 @@ function ProtectedRouter() {
         <Route path="/dash/enterprise/projects" component={AissolProjectsPage} />
         <Route path="/dash/enterprise/projects/:id" component={AissolProjectDetailPage} />
         <Route path="/dash/enterprise/matrix" component={AissolMatrixPage} />
+        <Route path="/dash/enterprise/reports" component={AissolReportsPage} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
@@ -295,7 +321,15 @@ function App() {
             <CanonicalTag />
             {/* Public routes : no auth required directly here */}
             <Switch>
-              <Route path="/portal/:accessCode" component={PublicRepPortal} />
+              <Route path="/portal/:accessCode" component={() => {
+                const { accessCode } = useParams();
+                const token = localStorage.getItem(`ck_portal_${accessCode}`);
+                let engine = "standard";
+                if (token) {
+                  try { engine = JSON.parse(atob(token.split(".")[1])).commissionEngine || "standard"; } catch {}
+                }
+                return engine !== "standard" ? <EnterprisePublicRepPortal /> : <PublicRepPortal />;
+              }} />
               <Route path="/accept-invite" component={AcceptInvite} />
               <Route path="/home" component={() => (
                 <AuthProvider>
