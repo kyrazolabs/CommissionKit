@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { 
   useListRuns, getListRunsQueryKey,
 } from "@workspace/api-client-react";
+import { apiFetch } from "@/lib/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -18,6 +20,7 @@ import { useWorkspace } from "@/hooks/use-workspace";
 import { useBillingStatus } from "@/hooks/use-billing-status";
 import { RunCalculationDialog } from "@/components/run-calculation-dialog";
 import { usePageMeta } from "@/hooks/use-page-meta";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export function EnterpriseRunsPage() {
   usePageMeta({ title: "Commission Runs", description: "View and manage commission calculation runs.", robots: "noindex, nofollow" });
@@ -35,6 +38,24 @@ export function EnterpriseRunsPage() {
     }
   });
   const { hasPermission, isLoading: roleLoading } = useRole();
+  const [showMatrixWarning, setShowMatrixWarning] = useState(false);
+
+  const { data: matrixCheck, isLoading: matrixLoading } = useQuery({
+    queryKey: ["aissol-matrix", activeWorkspace?.id],
+    queryFn: () => apiFetch(`/api/enterprise/commission-matrix`),
+    enabled: !!activeWorkspace?.id,
+  });
+  const hasMatrix = matrixCheck?.exists;
+  const hasRates = hasMatrix && matrixCheck?.rates && 
+    Object.values(matrixCheck.rates).some((r: any) =>
+      Object.values(r).some((v: any) => v > 0)
+    );
+  const canRun = matrixLoading || (hasMatrix && hasRates);
+  const matrixWarningType = !matrixLoading && !hasMatrix
+    ? "no-matrix"
+    : !matrixLoading && hasMatrix && !hasRates
+    ? "zero-rates"
+    : null;
 
   if (roleLoading) {
     return <div className="space-y-6"><Skeleton className="size-10" /><Skeleton className="h-96 w-full" /></div>;
@@ -62,7 +83,23 @@ export function EnterpriseRunsPage() {
         </div>
         <div className="flex gap-2">
           {hasPermission("calculations", "export") && <ExportCommissionsButton />}
-          {hasPermission("calculations", "create") && <RunCalculationDialog isProcessing={isAnyRunProcessing} />}
+          {hasPermission("calculations", "create") && (
+            canRun ? (
+              <RunCalculationDialog isProcessing={isAnyRunProcessing} />
+            ) : (
+              <Button
+                onClick={() => setShowMatrixWarning(true)}
+                disabled={isAnyRunProcessing}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                {isAnyRunProcessing ? (
+                  <><Loader2 className="mr-2 size-4 animate-spin" />Processing…</>
+                ) : (
+                  <><PlayCircle className="mr-2 size-4" />Run Calculation</>
+                )}
+              </Button>
+            )
+          )}
         </div>
       </div>
 
@@ -119,6 +156,43 @@ export function EnterpriseRunsPage() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={showMatrixWarning} onOpenChange={setShowMatrixWarning}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {matrixWarningType === "zero-rates" ? "Commission Rates Are All Zero" : "Commission Matrix Not Configured"}
+            </DialogTitle>
+            <DialogDescription>
+              {matrixWarningType === "zero-rates"
+                ? "Your commission rates are all set to zero."
+                : "You need to set up a commission matrix before running calculations."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 text-sm text-muted-foreground space-y-2">
+            {matrixWarningType === "zero-rates" ? (
+              <p>
+                The calculation engine reads rates from the matrix to determine payouts. When all rates are zero, every commission will calculate to zero. Go to <strong>Commission Matrix</strong> and set non-zero rates for your slabs and brackets.
+              </p>
+            ) : (
+              <>
+                <p>
+                  The calculation engine uses sales slabs, GM brackets, and commission rates from the matrix to determine payouts. Without it, the engine won't be able to calculate any commissions.
+                </p>
+                <p>
+                  Go to <strong>Commission Matrix</strong> to configure your slabs, brackets, and rates.
+                </p>
+              </>
+            )}
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setShowMatrixWarning(false)}>Cancel</Button>
+            <Button asChild>
+              <Link href="/dash/enterprise/matrix">Configure Matrix</Link>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

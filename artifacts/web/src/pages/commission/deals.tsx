@@ -815,11 +815,9 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
                           />
                         </TableCell>
                         <TableCell>
-                          <Input 
-                            type="date" 
-                            value={row.closeDate} 
-                            onChange={(e) => updateRow(row.id, 'closeDate', e.target.value)}
-                            className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent"
+                          <DatePicker
+                            date={row.closeDate ? parseISO(row.closeDate) : undefined}
+                            onChange={(d) => updateRow(row.id, 'closeDate', d ? format(d, "yyyy-MM-dd") : "")}
                           />
                         </TableCell>
                         <TableCell>
