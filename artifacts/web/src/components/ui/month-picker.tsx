@@ -53,17 +53,16 @@ export function MonthPicker({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          variant={"outline"}
+        <button
           className={cn(
-            "w-full justify-start text-left font-normal h-9 rounded-md border border-input bg-transparent px-3 py-1 shadow-sm hover:bg-transparent",
+            "flex h-9 w-full items-center justify-start gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
             !value && "text-muted-foreground",
             className
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
+          <CalendarIcon className="size-4 shrink-0" />
           {value ? format(date, "MMMM yyyy") : <span>{placeholder}</span>}
-        </Button>
+        </button>
       </PopoverTrigger>
       <PopoverContent className="w-54 p-3" align="start">
         <div className="flex items-center justify-between mb-4 px-1">
