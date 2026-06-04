@@ -100,8 +100,8 @@ export function AissolReportsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-[12px] font-semibold text-primary mb-1">Analytics</p>
-        <h1 className="text-[28px] font-semibold tracking-tight">Enterprise Reports</h1>
+        <p className="text-[12px] font-semibold text-primary mb-1">Enterprise</p>
+        <h1 className="text-[28px] font-semibold tracking-tight">Executive Reports</h1>
         <p className="text-[14px] text-muted-foreground mt-1">Projects, commissions, and performance insights.</p>
       </div>
 
