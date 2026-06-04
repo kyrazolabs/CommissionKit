@@ -72,6 +72,7 @@ const queryClient = new QueryClient({
 });
 
 function Layout({ children }: { children: React.ReactNode }) {
+  const [location] = useLocation();
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-sidebar">
       <Header />
@@ -81,7 +82,14 @@ function Layout({ children }: { children: React.ReactNode }) {
           <div className="bg-card rounded-2xl border border-card-border flex-1 flex flex-col overflow-hidden shadow-xs">
             <div className="flex-1 overflow-y-auto custom-scrollbar">
               <main className="mx-auto p-8 lg:px-10 max-w-6xl min-h-full">
-                {children}
+                <motion.div
+                  key={location}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                >
+                  {children}
+                </motion.div>
               </main>
             </div>
           </div>
