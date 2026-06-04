@@ -20,13 +20,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DatePicker, DateRangePicker } from "@/components/ui/date-picker";
 import { parseISO } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Trash, UploadCloud, FileDown, Briefcase, Loader2, ChevronDown, ChevronRight } from "lucide-react";
+import { Search, Trash, UploadCloud, FileDown, Briefcase, Loader2, ChevronDown, ChevronRight, Pencil } from "lucide-react";
 import { HelpTooltip } from "@/components/help-tooltip";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/format";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import Papa from "papaparse";
@@ -128,14 +129,11 @@ export function DealsPage() {
                 <SelectTrigger>
                   <SelectValue placeholder="All Reps" />
                 </SelectTrigger>
-            <SelectContent>
-                  {!Array.isArray(reps) || reps.length === 0 ? (
-                    <div className="p-2 text-sm text-muted-foreground text-center">No reps yet — create one in Reps first.</div>
-                  ) : (
-                    Array.isArray(reps) && reps.map(rep => (
-                      <SelectItem key={rep.id} value={rep.id.toString()}>{rep.name}</SelectItem>
-                    ))
-                  )}
+                <SelectContent>
+                  <SelectItem value="all">All Reps</SelectItem>
+                  {Array.isArray(reps) && reps.map(rep => (
+                    <SelectItem key={rep.id} value={rep.id.toString()}>{rep.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -250,7 +248,7 @@ export function DealsPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
-                          {hasPermission("deals", "edit") && (
+                          {hasPermission("deals", "edit") && deal.paymentStatus !== "paid" && (
                             <UpdateDealDialog deal={deal} queryParams={queryParams} reps={reps} workspaceCurrency={currency} />
                           )}
                           {hasPermission("deals", "delete") && (
@@ -352,9 +350,15 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
     paymentStatus: deal.paymentStatus || "unpaid",
     notes: deal.notes || ""
   });
+  const [showClawbackConfirm, setShowClawbackConfirm] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const stageChangedToLost = deal.stage === "closed_won" && formData.stage === "closed_lost";
+    if (stageChangedToLost) {
+      setShowClawbackConfirm(true);
+      return;
+    }
     updateMutation.mutate({ id: deal.id, data: formData });
     setOpen(false);
   };
@@ -366,7 +370,7 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
 
   if (!isEditable) return null;
 
-  return (
+  return (<>
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button 
@@ -374,28 +378,39 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
           size="icon" 
           className="size-8 text-muted-foreground hover:text-primary"
           disabled={!isEditable}
-          title={isPending ? "Edit deal" : "Update payment status"}
+          title="Edit deal"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+          <Pencil />
+          
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader>
-          <DialogTitle>{isPaymentOnly ? "Update Payment Status" : "Edit Deal"}</DialogTitle>
-          <DialogDescription>{isPaymentOnly ? "Update the payment status for this closed won deal." : "Update deal details."}</DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          {isPaymentOnly ? (
-            <>
-              <div className="rounded-md bg-muted/50 p-3 text-sm text-muted-foreground border">
-                This deal is <strong>closed won</strong>. Only payment status can be changed.
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-paymentStatus">Payment Status</Label>
-                <Select value={formData.paymentStatus} onValueChange={(val) => setFormData(prev => ({ ...prev, paymentStatus: val }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unpaid">UNPAID</SelectItem>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle>{isPaymentOnly ? "Update Payment Status" : "Edit Deal"}</DialogTitle>
+            <DialogDescription>{isPaymentOnly ? "Update the stage or payment status for this closed won deal. Changing to Closed Lost triggers clawback." : "Update deal details."}</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4 py-4">
+            {isPaymentOnly ? (
+              <>
+                <div className="rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 p-3 text-sm text-amber-800 dark:text-amber-300">
+                  This deal is <strong>closed won</strong>. Changing the stage to <strong>Closed Lost</strong> will trigger a <strong>clawback</strong> if the plan has a clawback period configured.
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-stage">Stage</Label>
+                  <Select value={formData.stage} onValueChange={(val) => setFormData(prev => ({ ...prev, stage: val }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="closed_won">CLOSED WON</SelectItem>
+                      <SelectItem value="closed_lost">CLOSED LOST</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-paymentStatus">Payment Status</Label>
+                  <Select value={formData.paymentStatus} onValueChange={(val) => setFormData(prev => ({ ...prev, paymentStatus: val }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unpaid">UNPAID</SelectItem>
                     <SelectItem value="paid">PAID</SelectItem>
                     <SelectItem value="partial">PARTIAL</SelectItem>
                     <SelectItem value="on_hold">ON HOLD</SelectItem>
@@ -490,6 +505,20 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
         </form>
       </DialogContent>
     </Dialog>
+      <ConfirmDialog
+        open={showClawbackConfirm}
+        onOpenChange={setShowClawbackConfirm}
+        title="Trigger Clawback?"
+        description={<>Changing this deal from <strong>Closed Won</strong> to <strong>Closed Lost</strong> will trigger a clawback if the plan has a clawback period configured. The commission paid for this deal will be deducted from the rep's next payout.</>}
+        confirmLabel="Change to Closed Lost"
+        variant="destructive"
+        onConfirm={() => {
+          setShowClawbackConfirm(false);
+          updateMutation.mutate({ id: deal.id, data: formData });
+          setOpen(false);
+        }}
+      />
+      </>
   );
 }
 

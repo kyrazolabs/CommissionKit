@@ -174,6 +174,12 @@ router.put(
     };
     if (body.paymentStatus !== undefined) update.paymentStatus = body.paymentStatus;
 
+    // Block editing paid deals
+    if ((oldDeal as any).paymentStatus === "paid") {
+      res.status(400).json({ error: "Paid deals cannot be edited." });
+      return;
+    }
+
     const deal = await Deal.findOneAndUpdate(
       { _id: new Types.ObjectId(id as string), workspaceId: new Types.ObjectId(workspaceId) },
       update,
