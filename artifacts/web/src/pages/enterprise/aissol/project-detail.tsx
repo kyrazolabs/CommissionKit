@@ -181,7 +181,7 @@ export function AissolProjectDetailPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2"><Label htmlFor="inv-number">Invoice Number</Label><Input id="inv-number" value={form.invoiceNumber} onChange={(e) => setForm(p => ({ ...p, invoiceNumber: e.target.value }))} required /></div>
               <div className="space-y-2"><Label htmlFor="inv-amount">Amount</Label><NumberInput id="inv-amount" value={form.amount} onChange={(e) => setForm(p => ({ ...p, amount: e.target.value }))} required /></div>
-              <div className="space-y-2"><Label htmlFor="inv-due">Due Date</Label><Input id="inv-due" type="date" value={form.dueDate} onChange={(e) => setForm(p => ({ ...p, dueDate: e.target.value }))} /></div>
+              <div className="space-y-2"><Label>Due Date</Label><DatePicker date={form.dueDate ? parseISO(form.dueDate) : undefined} onChange={(d) => setForm(p => ({ ...p, dueDate: d ? format(d, "yyyy-MM-dd") : "" }))} /></div>
               <div className="space-y-2"><Label htmlFor="inv-status">Payment Status</Label>
                 <Select value={form.paymentStatus} onValueChange={(v) => setForm(p => ({ ...p, paymentStatus: v }))}>
                   <SelectTrigger id="inv-status"><SelectValue /></SelectTrigger>
