@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -36,13 +35,15 @@ export function CurrencyCombobox({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
+        <button
           role="combobox"
           aria-expanded={open}
-          aria-controls="currency-list"
           disabled={disabled}
-          className={cn("w-full justify-between h-9 px-3 font-normal", className)}
+          className={cn(
+            "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+            !selected && "text-muted-foreground",
+            className
+          )}
         >
           <span className="truncate">
             {selected ? (
@@ -54,7 +55,7 @@ export function CurrencyCombobox({
             )}
           </span>
           <ChevronsUpDown className="ml-2 size-3.5 shrink-0 opacity-50" />
-        </Button>
+        </button>
       </PopoverTrigger>
       <PopoverContent id="currency-list" className="w-[300px] p-0" align="start">
         <Command>
