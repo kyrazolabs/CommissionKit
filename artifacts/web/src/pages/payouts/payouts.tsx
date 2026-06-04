@@ -404,7 +404,7 @@ export function PayoutsPage() {
   const { activeWorkspace } = useWorkspace();
   const { hasPermission, isLoading: roleLoading } = useRole();
   const { toast } = useToast();
-  const { sub } = useBillingStatus();
+  const { sub, loading: subLoading } = useBillingStatus();
   const queryClient = useQueryClient();
 
   const workspaceId = activeWorkspace?.id || "";
@@ -425,14 +425,18 @@ export function PayoutsPage() {
   const { data: payouts = [], isLoading } = useFetchPayouts(workspaceId, filters);
   const mutation = usePayoutMutation(workspaceId);
 
-  if (roleLoading) {
+  if (roleLoading || subLoading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="size-10" />
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-64" />
         </div>
-        <Skeleton className="h-96 w-full" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-28 rounded-2xl" />)}
+        </div>
+        <Skeleton className="h-96 w-full rounded-2xl" />
       </div>
     );
   }

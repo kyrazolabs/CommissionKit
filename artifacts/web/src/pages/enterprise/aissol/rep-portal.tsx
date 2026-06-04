@@ -71,7 +71,11 @@ export function EnterpriseRepPortal() {
 
   if (isLoading) return (
     <div className="space-y-6 max-w-5xl mx-auto">
-      <Skeleton className="h-12 w-48" />
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-20" />
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-4 w-64" />
+      </div>
       <div className="grid gap-4 md:grid-cols-3">{[1,2,3].map(i=><Skeleton key={i} className="h-28 rounded-2xl"/>)}</div>
       <Skeleton className="h-64 rounded-2xl" />
     </div>

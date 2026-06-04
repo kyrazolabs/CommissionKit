@@ -269,7 +269,7 @@ export function DisputesPage() {
   usePageMeta({ title: "Disputes", description: "Review and resolve commission disputes.", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const { hasPermission, isLoading: roleLoading } = useRole();
-  const { sub } = useBillingStatus();
+  const { sub, loading: subLoading } = useBillingStatus();
   const workspaceId = activeWorkspace?.id ?? "";
   const [resolveTarget, setResolveTarget] = useState<Dispute | null>(null);
   const [showResolved, setShowResolved] = useState(false);
@@ -285,11 +285,27 @@ export function DisputesPage() {
     enabled: Boolean(workspaceId) && hasPermission("disputes", "read") && !roleLoading,
   });
 
-  if (roleLoading) {
+  if (roleLoading || subLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="size-10" />
-        <Skeleton className="h-96 w-full" />
+      <div className="space-y-7">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-8 w-56" />
+          <Skeleton className="h-4 w-72" />
+        </div>
+        <div className="rounded-2xl border border-border/40 p-5 space-y-3">
+          <div className="flex items-center gap-4 pb-3 border-b border-border/40">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-16 ml-auto" />
+          </div>
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full" />)}
+        </div>
       </div>
     );
   }
