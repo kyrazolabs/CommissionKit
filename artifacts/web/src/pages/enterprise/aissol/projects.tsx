@@ -219,7 +219,7 @@ export function AissolProjectsPage() {
               </div>
               <div className="space-y-2"><Label htmlFor="proj-value">Total Value</Label><NumberInput id="proj-value" value={form.totalValue} onChange={(e) => setForm(p => ({ ...p, totalValue: e.target.value }))} required /></div>
               <div className="space-y-2"><Label htmlFor="proj-cost">Total Cost</Label><NumberInput id="proj-cost" value={form.totalCost} onChange={(e) => setForm(p => ({ ...p, totalCost: e.target.value }))} required /></div>
-              <div className="space-y-2"><Label htmlFor="proj-period">Period</Label><Input id="proj-period" placeholder="2025-06" value={form.period} onChange={(e) => setForm(p => ({ ...p, period: e.target.value }))} required /></div>
+              <div className="space-y-2"><Label>Period</Label><MonthPicker value={form.period} onChange={(v) => setForm(p => ({ ...p, period: v }))} /></div>
               <div className="space-y-2"><Label htmlFor="proj-currency">Currency</Label><CurrencyCombobox value={form.currency} onChange={(v) => setForm(p => ({ ...p, currency: v }))} /></div>
             </div>
             <DialogFooter>
@@ -477,7 +477,7 @@ function ImportProjectsDialog({ workspaceId, period, defaultCurrency, reps, onIm
                         </TableCell>
                         <TableCell><NumberInput value={row.totalValue} onChange={(e) => updateRow(row.id, 'totalValue', e.target.value)} className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent" /></TableCell>
                         <TableCell><NumberInput value={row.totalCost} onChange={(e) => updateRow(row.id, 'totalCost', e.target.value)} className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent" /></TableCell>
-                        <TableCell><Input value={row.period} onChange={(e) => updateRow(row.id, 'period', e.target.value)} className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent" /></TableCell>
+                        <TableCell><MonthPicker value={row.period} onChange={(v) => updateRow(row.id, 'period', v)} className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent shadow-none" /></TableCell>
                         <TableCell><CurrencyCombobox value={row.currency} onChange={(v) => updateRow(row.id, 'currency', v)} className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent shadow-none hover:bg-muted/50" /></TableCell>
                         <TableCell><Button variant="ghost" size="icon" className="size-6 text-muted-foreground hover:text-destructive" onClick={() => removeRow(row.id)}><Trash2 className="size-3" /></Button></TableCell>
                       </TableRow>
