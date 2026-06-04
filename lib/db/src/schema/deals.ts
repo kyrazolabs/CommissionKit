@@ -14,6 +14,8 @@ const DealSchema = new Schema({
   currency: { type: String, required: true, default: "USD" },
   paymentStatus: { type: String, enum: DealPaymentStatus, default: "unpaid" },
   notes: { type: String },
+  clawbackApplied: { type: Boolean, default: false },
+  clawbackAmount: { type: Number, default: 0 },
 }, { timestamps: { createdAt: true, updatedAt: false } });
 
 export const Deal = model("Deal", DealSchema);
@@ -30,6 +32,8 @@ export type Deal = mongoose.Document & {
   currency: string;
   paymentStatus: string;
   notes?: string;
+  clawbackApplied?: boolean;
+  clawbackAmount?: number;
   createdAt: Date;
 };
 

@@ -569,10 +569,6 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
               )}
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="clawback">Clawback Period (Days) <span className="text-muted-foreground font-normal">- Optional</span></Label>
-              <NumberInput id="clawback" decimals={0} value={clawbackDays} onChange={e => setClawbackDays(e.target.value)} placeholder="e.g. 90" />
-            </div>
           </div>
           
           <DialogFooter>

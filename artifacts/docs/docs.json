@@ -34,7 +34,8 @@
         "pages": [
           "guides/importing-deals",
           "guides/managing-plans",
-          "guides/running-calculations"
+          "guides/running-calculations",
+          "guides/clawback"
         ]
       },
       {

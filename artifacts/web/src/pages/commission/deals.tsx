@@ -232,6 +232,11 @@ export function DealsPage() {
                         }`}>
                           {deal.stage.replace('_', ' ').toUpperCase()}
                         </span>
+                        {(deal as any).clawbackApplied && (
+                          <span className="ml-1 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-orange-100 text-orange-800 border border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800/30">
+                            CLAWBACK
+                          </span>
+                        )}
                       </TableCell>
                       <TableCell>
                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${

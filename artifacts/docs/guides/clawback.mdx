@@ -1,0 +1,57 @@
+---
+title: "Clawback"
+description: "Automatically recapture commissions from deals that fall through."
+---
+
+# Clawback
+
+Clawback is a commission recovery mechanism. When a deal is closed and commission is paid, but the deal later falls through — for example, the client cancels, the contract is terminated early, or a refund is issued — clawback **deducts the commission** from the rep's next payout.
+
+---
+
+## How It Works
+
+1. A deal is marked **closed won** and commission is paid to the rep.
+2. The plan has a `clawbackDays` window (e.g. 90 days).
+3. If the deal changes to **closed lost** or **cancelled** within that window, the system flags it.
+4. The rep's next payout is reduced by the clawed-back amount.
+5. The admin and rep are notified.
+
+---
+
+## Configuration
+
+Clawback is set at the **plan level**. When creating or editing a commission plan, set **Clawback Period (Days)** to the number of days after close during which the deal is subject to clawback.
+
+| Plan | Clawback Days | Behaviour |
+|---|---|---|
+| Growth | Configurable | Clawback enabled |
+| Pro | Configurable | Clawback enabled |
+| Starter | N/A | Not available |
+
+> Clawback requires the **Growth** plan or above.
+
+---
+
+## Example
+
+**Scenario:**
+
+| | Value |
+|---|---|
+| Plan | Growth (90-day clawback) |
+| Deal | Acme Corp Q3 — SAR 100,000 |
+| Commission Paid | SAR 1,500 (1.50%) |
+| Close Date | 2026-03-15 |
+| Clawback Window | 90 days (until 2026-06-13) |
+| Deal Cancelled | 2026-05-01 (within window) |
+
+**Result:** The rep's next payout is reduced by SAR 1,500. The rep sees the deduction in their portal with a clawback notification.
+
+---
+
+## Email Notifications
+
+When a clawback is triggered:
+- **Admin** receives a `clawback-alert` email with the rep name, deal name, and amount clawed back.
+- **Rep** sees the deduction in their payout breakdown on the portal.
