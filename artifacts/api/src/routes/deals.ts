@@ -53,7 +53,7 @@ router.get(
 
     const deals = await Deal.find(conditions)
       .populate("repId")
-      .sort({ closeDate: 1 });
+      .sort({ createdAt: -1 });
 
     res.json(
       deals.map((d) =>
@@ -173,6 +173,11 @@ router.put(
       notes: body.notes ?? null,
     };
     if (body.paymentStatus !== undefined) update.paymentStatus = body.paymentStatus;
+
+    // Paid deals: auto-set stage to closed_won, lock from further edits
+    if (body.paymentStatus === "paid" && (oldDeal as any).paymentStatus !== "paid") {
+      update.stage = "closed_won";
+    }
 
     // Block editing paid deals
     if ((oldDeal as any).paymentStatus === "paid") {

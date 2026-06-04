@@ -351,12 +351,18 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
     notes: deal.notes || ""
   });
   const [showClawbackConfirm, setShowClawbackConfirm] = useState(false);
+  const [showPaidConfirm, setShowPaidConfirm] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const stageChangedToLost = deal.stage === "closed_won" && formData.stage === "closed_lost";
+    const markingPaid = deal.paymentStatus !== "paid" && formData.paymentStatus === "paid";
     if (stageChangedToLost) {
       setShowClawbackConfirm(true);
+      return;
+    }
+    if (markingPaid) {
+      setShowPaidConfirm(true);
       return;
     }
     updateMutation.mutate({ id: deal.id, data: formData });
@@ -515,6 +521,19 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
         onConfirm={() => {
           setShowClawbackConfirm(false);
           updateMutation.mutate({ id: deal.id, data: formData });
+          setOpen(false);
+        }}
+      />
+      <ConfirmDialog
+        open={showPaidConfirm}
+        onOpenChange={setShowPaidConfirm}
+        title="Mark as Paid?"
+        description={<>Marking <strong>{deal.name}</strong> as paid will lock it from further edits and set the stage to <strong>Closed Won</strong>. This cannot be undone.</>}
+        confirmLabel="Mark as Paid"
+        variant="default"
+        onConfirm={() => {
+          setShowPaidConfirm(false);
+          updateMutation.mutate({ id: deal.id, data: { ...formData, stage: "closed_won" } });
           setOpen(false);
         }}
       />
