@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeAll, afterAll, beforeEach, mock } from "bun:test";
 import mongoose from "mongoose";
-import { setupTestDB, teardownTestDB, clearCollections } from "../../test-setup-db";
+import { setupTestDB, teardownTestDB, clearCollections } from "../../test/setup-db";
 import request from "supertest";
 
 const TEST_USER_ID = "test-user-001";

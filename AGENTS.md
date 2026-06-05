@@ -84,7 +84,8 @@ Bun auto-discovers `*.test.*` files — no configuration needed beyond what's de
 
 ### Test infrastructure
 
-- **MongoDB**: Use `mongodb-memory-server` for isolated in-memory test databases. Never use a real/shared MongoDB database. Set `MONGO_URL` to the memory server URI before importing any database-dependent code.
+- **MongoDB**: Use `mongodb-memory-server` for isolated in-memory test databases. Never use a real/shared MongoDB database. API route tests share a single MongoDB instance via the `artifacts/api/test/setup-db.ts` helper (ref-counted singleton — each `beforeAll` calls `setupTestDB()`, each `afterAll` calls `teardownTestDB()`).
+- **DOM environment**: Web tests use `happy-dom` registered via `--preload ./test/dom-setup.ts`. The root `package.json` `test` script includes this flag automatically.
 - **Redis**: Use `ioredis-mock` to simulate Redis in tests. No real Redis instance needed during test runs. The `@workspace/queue` connection module reads `REDIS_URL`, so set it to `"redis-mock://"` to trigger mock mode.
 - **Express app**: Import the Express app from `artifacts/api/src/app.ts` directly (not `index.ts` — which starts workers and schedules jobs). Use `supertest` to make HTTP assertions without binding to a real port.
 - **Better Auth**: Auth is mounted at `/api/auth/*`. Use the auth client's `auth.api` methods for user sign-up/sign-in in test setup. Call `auth.api.signUpEmail()` and `auth.api.signInEmail()` with the same headers that `supertest` would pass.
@@ -115,7 +116,10 @@ artifacts/web/src/pages/dashboard.test.tsx                 # Tests dashboard pag
 
 ### Test setup helpers
 
-Create a shared test helper module (e.g., `test/setup.ts` at repo root or per-workspace) that exports:
+- **`artifacts/api/test/setup-db.ts`** — Shared MongoDB test helper (ref-counted singleton). Exports `setupTestDB()`, `teardownTestDB()`, `clearCollections()`.
+- **`test/dom-setup.ts`** — happy-dom preload for web tests (loaded via `--preload` flag).
+
+The following factory helpers are defined inline in each API route test file:
 
 - **`setupTestDB()`** — Starts `mongodb-memory-server`, connects Mongoose, returns the connection and URI. Call in `beforeAll`/`beforeEach`.
 - **`teardownTestDB()`** — Drops all collections, disconnects Mongoose, stops memory server. Call in `afterAll`/`afterEach`.

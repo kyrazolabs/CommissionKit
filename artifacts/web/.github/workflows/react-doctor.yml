@@ -15,7 +15,7 @@ on:
   # (the sticky summary comment) are skipped automatically on `push` events.
   # Comment this block out if you only want PR-time scans.
   push:
-    branches: [main]
+    branches: [develop]
 
 permissions:
   # `actions/checkout` needs this to read the repo source.

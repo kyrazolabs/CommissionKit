@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeAll, afterAll, beforeEach, mock } from "bun:test";
-import { setupTestDB, teardownTestDB, clearCollections } from "../../test-setup-db";
+import { setupTestDB, teardownTestDB, clearCollections } from "../../test/setup-db";
 import mongoose from "mongoose";
 import request from "supertest";
 

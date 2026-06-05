@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeAll, afterAll, mock } from "bun:test";
 import request from "supertest";
-import { setupTestDB, teardownTestDB } from "../../test-setup-db";
+import { setupTestDB, teardownTestDB } from "../../test/setup-db";
 
 // Mock heavy dependencies BEFORE importing app
 mock.module("@workspace/queue", () => ({
