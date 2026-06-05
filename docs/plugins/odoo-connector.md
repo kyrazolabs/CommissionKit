@@ -4,6 +4,150 @@
 
 The Odoo connector integrates CommissionKit with Odoo's REST API (via JSON-RPC). Odoo is the reference implementation — it exercises all connector features: reps, deals, projects, invoices, payments, webhooks, and write-back.
 
+## How It Works — Deal Lifecycle Flow
+
+### Where Deals Come From in Odoo
+
+Odoo has two possible sources for sales deals:
+
+| Source | Odoo App | Module | Typical Use |
+|---|---|---|---|
+| **Sales app** | `sale.order` | `sale` | Quotations → Sales Orders → Confirmed/Done. The primary path for most Odoo users. |
+| **CRM app** | `crm.lead` → `sale.order` | `crm` + `sale` | Leads → Opportunities → Won → auto-creates a `sale.order`. The CRM pipelined path. |
+
+In both cases, the final record CommissionKit reads is **`sale.order`** — the confirmed sales order. The CRM path just means the deal started as a `crm.lead` and was converted to a `sale.order` when marked "Won."
+
+### The Full Lifecycle
+
+```
+   Odoo Sales / CRM                              CommissionKit
+  ──────────────────                            ────────────────
+
+  ┌──────────┐
+  │  Draft   │  Quotation created                (not synced)
+  │  (draft) │  (still negotiating)
+  └────┬─────┘
+       │
+       ▼
+  ┌──────────┐
+  │   Sent   │  Quotation emailed to customer    (not synced)
+  │  (sent)  │
+  └────┬─────┘
+       │
+       ▼
+  ┌──────────────────────────────────────────────────────────────────┐
+  │                                                                  │
+  │  ┌──────────┐    ┌──────────┐                                   │
+  │  │   Sale   │ or │   Done   │  Customer confirmed / delivered    │
+  │  │  (sale)  │    │  (done)  │                                    │
+  │  └────┬─────┘    └────┬─────┘                                    │
+  │       │               │                                          │
+  │       └───────┬───────┘                                          │
+  │               │                                                  │
+  │               ▼                                                  │
+  │   ┌──────────────────────┐                                      │
+  │   │  DEAL IS "CLOSED-WON" │  This is the trigger point          │
+  │   │  (state = sale/done) │                                      │
+  │   └──────────┬───────────┘                                      │
+  │              │                                                  │
+  └──────────────┼──────────────────────────────────────────────────┘
+                 │
+                 │  Webhook fires (real-time)
+                 │  or scheduled poll detects change
+                 │
+                 ▼
+  ┌───────────────────────────────────────────────────────────────────┐
+  │                     CommissionKit                                   │
+  │                                                                     │
+  │   ┌─────────────────────────────────────────────────────────────┐  │
+  │   │  Sync Engine receives the deal                               │  │
+  │   │                                                              │  │
+  │   │  1. Match by Odoo sale.order ID (externalId)                │  │
+  │   │     - New? → Create CKit Deal                                │  │
+  │   │     - Existing? → Update amount/stage/payment status         │  │
+  │   │                                                              │  │
+  │   │  2. Map fields:                                              │  │
+  │   │     sale.order.name        → Deal.name                       │  │
+  │   │     sale.order.amount_total → Deal.amount                    │  │
+  │   │     sale.order.date_order  → Deal.closeDate                  │  │
+  │   │     sale.order.user_id     → Deal.repId (matched by externalId)│
+  │   │     sale.order.currency_id → Deal.currency                    │  │
+  │   │     sale.order.state       → Deal.stage = "closed-won"       │  │
+  │   │     date_order → derived   → Deal.period ("YYYY-MM")         │  │
+  │   └─────────────────────────────────────────────────────────────┘  │
+  │                              │                                      │
+  │                              ▼                                      │
+  │   ┌─────────────────────────────────────────────────────────────┐  │
+  │   │  Deal is now live in CommissionKit                           │  │
+  │   │                                                              │  │
+  │   │  • Appears in the Deals table                                │  │
+  │   │  • Linked to the correct Rep (by externalId match)           │  │
+  │   │  • Ready for commission calculation in the next Run          │  │
+  │   └─────────────────────────────────────────────────────────────┘  │
+  └───────────────────────────────────────────────────────────────────┘
+```
+
+### What triggers the sync?
+
+There are three ways a closed-won deal gets into CommissionKit:
+
+| Method | Speed | Requires |
+|---|---|---|
+| **Webhook** | Near real-time (seconds) | Odoo Enterprise webhook module OR the `ckit_webhooks` Community module OR an Automation Rule |
+| **Scheduled poll** | Every hour (configurable) | Nothing — works out of the box |
+| **Manual sync** | On demand | User clicks "Sync Now" in the CKit dashboard |
+
+### How payment updates work
+
+After the deal is synced, Odoo continues to own the payment workflow:
+
+```
+  Odoo                                                CommissionKit
+  ────                                                ────────────────
+
+  Invoice created (account.move)
+       │
+       ▼
+  Payment received (account.payment)
+       │
+       │  payment_state changes: not_paid → in_payment → paid
+       │
+       │  Webhook or poll detects change
+       │
+       ▼
+  ┌─────────────────────────────────────────┐
+  │  CKit updates Deal.paymentStatus        │
+  │                                         │
+  │  "not_paid" → "unpaid"                  │
+  │  "in_payment" / "paid" → "paid"        │
+  │  "partial" → "partial"                 │
+  │  "reversed" → "on_hold"                │
+  │                                         │
+  │  If changed paid→unpaid:                │
+  │   → clawback enforcement triggered     │
+  └─────────────────────────────────────────┘
+```
+
+### What does NOT sync from Odoo?
+
+- **Draft and Sent quotations** — Only `sale` and `done` states sync by default (configurable via `dealStageMapping`)
+- **Cancelled orders** — Excluded by default
+- **CRM leads/opportunities** (before conversion) — Only the resulting `sale.order` matters
+- **Products/line items** — CKit only cares about the total deal amount, not individual line items
+- **Customer/partner data** — Not synced; CKit works with Reps, not customers
+
+### State mapping table
+
+| Odoo `sale.order` state | CKit behavior | Configurable? |
+|---|---|---|
+| `draft` | Not synced (still negotiating) | Yes — `dealStageMapping.excluded` |
+| `sent` | Not synced (awaiting customer) | Yes |
+| `sale` | **Synced** (confirmed by customer) | Default closed-won |
+| `done` | **Synced** (delivered/completed) | Default closed-won |
+| `cancel` | Not synced (lost/cancelled) | Yes |
+
+---
+
 ## Connection
 
 ### Prerequisites
@@ -96,7 +240,9 @@ async fetchReps(workspaceId: string, config: ConnectionConfig, options?: FetchOp
 
 ### Deals (Odoo → CKit Deal)
 
-**Source**: `sale.order` (confirmed sales orders).
+**Source**: `sale.order` — which is the model behind both the **Sales app** (quotations → sales orders) and the **CRM app** (opportunities → won → converted to sale.order). See the [Deal Lifecycle Flow](#how-it-works--deal-lifecycle-flow) above for the full journey.
+
+The connector fetches only confirmed orders (`state = "sale"` or `"done"`) by default.
 
 ```typescript
 async fetchDeals(workspaceId: string, config: ConnectionConfig, options?: FetchOptions): Promise<NormalizedDeal[]> {
