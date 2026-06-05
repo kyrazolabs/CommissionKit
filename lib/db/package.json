@@ -19,5 +19,8 @@
     "@types/node": "catalog:",
     "@types/pg": "^8.18.0",
     "drizzle-kit": "^0.31.9"
+  },
+  "scripts": {
+    "test": "bun test"
   }
 }
