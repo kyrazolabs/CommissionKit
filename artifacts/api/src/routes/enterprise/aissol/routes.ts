@@ -247,7 +247,7 @@ router.get("/reps/:repId/summary", ...requirePermission("reps", "read"), ensureA
 
   const workspace = await Workspace.findById(rep.workspaceId);
 
-  const allProjects = await AissolProject.find({ workspaceId: new Types.ObjectId(workspaceId), repId: new Types.ObjectId(repId) });
+  const allProjects = await AissolProject.find({ workspaceId: new Types.ObjectId(req.workspaceId!), repId: new Types.ObjectId(String(repId)) });
   const allProjectIds = allProjects.map(p => p._id);
   const allInvoices = await AissolInvoice.find({ projectId: { $in: allProjectIds } });
 

@@ -335,7 +335,7 @@ router.post(
         if (db) {
           const owner = await db
             .collection("user")
-            .findOne({ _id: ws.ownerId }, { projection: { name: 1 } });
+            .findOne({ _id: ws.ownerId as any }, { projection: { name: 1 } });
           if (owner) ownerName = (owner as any).name ?? "";
         }
       } catch {
