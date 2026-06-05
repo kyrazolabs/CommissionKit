@@ -5,7 +5,7 @@ import {
   requirePermission,
   requireGrowthPlan,
   type AuthenticatedRequest,
-} from "../middleware/auth";
+} from "../../middleware/auth";
 
 const router = Router();
 

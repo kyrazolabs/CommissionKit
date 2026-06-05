@@ -8,8 +8,8 @@ import {
   UpdatePlanParams,
   DeletePlanParams,
 } from "@workspace/api-zod";
-import { requirePermission, type AuthenticatedRequest } from "../middleware/auth";
-import { checkLimits } from "../lib/limits";
+import { requirePermission, type AuthenticatedRequest } from "../../middleware/auth";
+import { checkLimits } from "../../lib/limits";
 
 const router = Router();
 

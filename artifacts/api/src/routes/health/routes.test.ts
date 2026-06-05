@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeAll, afterAll, mock } from "bun:test";
 import request from "supertest";
-import { setupTestDB, teardownTestDB } from "../../test/setup-db";
+import { setupTestDB, teardownTestDB } from "../../../test/setup-db";
 
 // Mock heavy dependencies BEFORE importing app
 mock.module("@workspace/queue", () => ({
@@ -30,7 +30,7 @@ mock.module("@workspace/queue", () => ({
   PRIORITY_QUEUE_MAP: { high: { add: () => Promise.resolve() }, medium: { add: () => Promise.resolve() }, low: { add: () => Promise.resolve() } },
 }));
 
-mock.module("../lib/bull-board", () => ({
+mock.module("../../lib/bull-board", () => ({
   secureBullBoard: (req: any, res: any, next: any) => next(),
   serverAdapter: { getRouter: () => ((() => {}) as any) },
 }));
@@ -44,7 +44,7 @@ mock.module("stripe", () => ({
   },
 }));
 
-mock.module("../lib/rbac", () => ({
+mock.module("../../lib/rbac", () => ({
   getUserPermissions: mock(() => Promise.resolve(new Set(["*"]))),
   hasPermission: mock(() => true),
   invalidateUserPermissions: mock(() => Promise.resolve()),
@@ -80,7 +80,7 @@ afterAll(async () => {
 
 describe("GET /api/healthz", () => {
   test("returns 200 with status ok", async () => {
-    const app = (await import("../app")).default;
+    const app = (await import("../../app")).default;
     const res = await request(app).get("/api/healthz");
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ status: "ok" });

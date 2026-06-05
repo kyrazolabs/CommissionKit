@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeAll, afterAll, beforeEach, mock } from "bun:test";
 import mongoose from "mongoose";
-import { setupTestDB, teardownTestDB, clearCollections } from "../../test/setup-db";
+import { setupTestDB, teardownTestDB, clearCollections } from "../../../test/setup-db";
 import request from "supertest";
 
 const TEST_USER_ID = "test-user-001";
@@ -30,7 +30,7 @@ mock.module("@workspace/queue", () => ({
   PRIORITY_QUEUE_MAP: { high: { add: () => Promise.resolve() }, medium: { add: () => Promise.resolve() }, low: { add: () => Promise.resolve() } },
 }));
 
-mock.module("../lib/bull-board", () => ({
+mock.module("../../lib/bull-board", () => ({
   secureBullBoard: (req: any, res: any, next: any) => next(),
   serverAdapter: { getRouter: () => ((() => {}) as any) },
 }));
@@ -44,7 +44,7 @@ mock.module("stripe", () => ({
   },
 }));
 
-mock.module("../lib/rbac", () => ({
+mock.module("../../lib/rbac", () => ({
   getUserPermissions: mock(() => Promise.resolve(new Set(["*"]))),
   hasPermission: mock(() => true),
   invalidateUserPermissions: mock(() => Promise.resolve()),
@@ -52,7 +52,7 @@ mock.module("../lib/rbac", () => ({
   getUsersWithPermission: mock(() => Promise.resolve([])),
 }));
 
-mock.module("../lib/notify", () => ({
+mock.module("../../lib/notify", () => ({
   createNotification: mock(() => Promise.resolve()),
 }));
 
@@ -85,7 +85,7 @@ beforeAll(async () => {
   process.env.OPR_APP_KEY = "test";
   process.env.PORTAL_JWT_SECRET = "test-portal-jwt-secret";
 
-  const authModule = await import("../lib/auth");
+  const authModule = await import("../../lib/auth");
   (authModule.auth.api.getSession as any) = mock(() =>
     Promise.resolve({
       session: { id: "s1" },
@@ -102,7 +102,7 @@ beforeAll(async () => {
   Workspace = db.Workspace;
   WorkspaceMember = db.WorkspaceMember;
 
-  app = (await import("../app")).default;
+  app = (await import("../../app")).default;
 });
 
 afterAll(async () => {

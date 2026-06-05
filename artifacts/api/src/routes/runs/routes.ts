@@ -10,10 +10,10 @@ import {
 } from "@workspace/db";
 import { Types } from "mongoose";
 import { CreateRunBody, GetRunParams } from "@workspace/api-zod";
-import { requirePermission, type AuthenticatedRequest } from "../middleware/auth";
+import { requirePermission, type AuthenticatedRequest } from "../../middleware/auth";
 import { sendMediumPriorityEmail, enqueueCommissionCalc } from "@workspace/queue";
 import { commissionRunTemplate } from "@workspace/email-templates";
-import { createNotification } from "../lib/notify";
+import { createNotification } from "../../lib/notify";
 
 const router = Router();
 

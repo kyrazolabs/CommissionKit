@@ -4,12 +4,12 @@ import { Types } from "mongoose";
 import mongoose from "mongoose";
 import { randomBytes } from "crypto";
 import { CreateRepBody, UpdateRepBody, GetRepParams, UpdateRepParams, DeleteRepParams, SendPortalLinkParams } from "@workspace/api-zod";
-import { requirePermission, type AuthenticatedRequest } from "../middleware/auth";
-import { checkLimits } from "../lib/limits";
+import { requirePermission, type AuthenticatedRequest } from "../../middleware/auth";
+import { checkLimits } from "../../lib/limits";
 import { sendMediumPriorityEmail } from "@workspace/queue";
 import { repPortalTemplate } from "@workspace/email-templates";
-import { auth } from "../lib/auth";
-import { logger } from "../lib/logger";
+import { auth } from "../../lib/auth";
+import { logger } from "../../lib/logger";
 
 const router = Router();
 

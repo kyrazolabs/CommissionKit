@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { Workspace, WorkspaceMember } from "@workspace/db";
 import { Types } from "mongoose";
-import { requireAuth, requirePermission, type AuthenticatedRequest } from "../middleware/auth";
+import { requireAuth, requirePermission, type AuthenticatedRequest } from "../../middleware/auth";
 import { sendHighPriorityEmail } from "@workspace/queue";
 import { invitationTemplate } from "@workspace/email-templates";
-import { checkLimits } from "../lib/limits";
-import { seedWorkspaceRoles } from "../lib/seeds/roles";
-import { getUserPermissions } from "../lib/rbac";
+import { checkLimits } from "../../lib/limits";
+import { seedWorkspaceRoles } from "../../lib/seeds/roles";
+import { getUserPermissions } from "../../lib/rbac";
 
 const router = Router();
 
@@ -342,7 +342,7 @@ router.get("/workspaces/:id/features", requireAuth, async (req: AuthenticatedReq
   const workspace = await Workspace.findById(workspaceId);
   if (!workspace) { res.status(404).json({ error: "Workspace not found" }); return; }
 
-  const { getEngine } = await import("../workers/engines/registry");
+  const { getEngine } = await import("../../workers/engines/registry");
   const engine = getEngine((workspace as any).commissionEngine || "standard");
   const features = engine.features();
 

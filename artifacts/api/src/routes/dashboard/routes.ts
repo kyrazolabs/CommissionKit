@@ -10,8 +10,8 @@ import { GetRepSummaryParams } from "@workspace/api-zod";
 import {
   requirePermission,
   type AuthenticatedRequest,
-} from "../middleware/auth";
-import { convertCurrency } from "../lib/exchange";
+} from "../../middleware/auth";
+import { convertCurrency } from "../../lib/exchange";
 import { Workspace } from "@workspace/db";
 
 const router = Router();

@@ -11,9 +11,9 @@ import {
 import {
   requirePermission,
   type AuthenticatedRequest,
-} from "../middleware/auth";
-import { logger } from "../lib/logger";
-import { createNotification } from "../lib/notify";
+} from "../../middleware/auth";
+import { logger } from "../../lib/logger";
+import { createNotification } from "../../lib/notify";
 import { payoutUpdateTemplate } from "@workspace/email-templates";
 import { format } from "date-fns";
 

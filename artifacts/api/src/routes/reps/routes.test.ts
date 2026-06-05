@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeAll, afterAll, beforeEach, mock } from "bun:test";
 import mongoose from "mongoose";
-import { setupTestDB, teardownTestDB, clearCollections } from "../../test/setup-db";
+import { setupTestDB, teardownTestDB, clearCollections } from "../../../test/setup-db";
 import request from "supertest";
 
 const TEST_USER_ID = "test-user-001";
@@ -34,7 +34,7 @@ mock.module("@workspace/queue", () => ({
   PRIORITY_QUEUE_MAP: { high: { add: () => Promise.resolve() }, medium: { add: () => Promise.resolve() }, low: { add: () => Promise.resolve() } },
 }));
 
-mock.module("../lib/bull-board", () => ({
+mock.module("../../lib/bull-board", () => ({
   secureBullBoard: (req: any, res: any, next: any) => next(),
   serverAdapter: { getRouter: () => ((() => {}) as any) },
 }));
@@ -48,7 +48,7 @@ mock.module("stripe", () => ({
   },
 }));
 
-mock.module("../lib/rbac", () => ({
+mock.module("../../lib/rbac", () => ({
   getUserPermissions: mock(() => Promise.resolve(new Set(["*"]))),
   hasPermission: mock(() => true),
   invalidateUserPermissions: mock(() => Promise.resolve()),
@@ -83,7 +83,7 @@ beforeAll(async () => {
   process.env.OPR_APP_KEY = "test";
   process.env.PORTAL_JWT_SECRET = "test-portal-jwt-secret";
 
-  const authModule = await import("../lib/auth");
+  const authModule = await import("../../lib/auth");
   (authModule.auth.api.getSession as any) = mock(() =>
     Promise.resolve({
       session: { id: "s1" },
@@ -110,7 +110,7 @@ beforeAll(async () => {
     role: "owner",
   });
 
-  app = (await import("../app")).default;
+  app = (await import("../../app")).default;
 });
 
 afterAll(async () => {
@@ -134,7 +134,7 @@ const authHeader = () => ({ "X-Workspace-ID": workspaceId });
 
 describe("GET /api/reps", () => {
   test("returns 401 without auth", async () => {
-    const authLib = await import("../lib/auth");
+    const authLib = await import("../../lib/auth");
     (authLib.auth.api.getSession as any).mockResolvedValueOnce(null);
 
     const res = await request(app).get("/api/reps");

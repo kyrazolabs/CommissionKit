@@ -11,11 +11,11 @@ import {
 import {
   requirePermission,
   type AuthenticatedRequest,
-} from "../middleware/auth";
+} from "../../middleware/auth";
 import { sendMediumPriorityEmail } from "@workspace/queue";
 import { clawbackAlertTemplate } from "@workspace/email-templates";
-import { createNotification } from "../lib/notify";
-import { logger } from "../lib/logger";
+import { createNotification } from "../../lib/notify";
+import { logger } from "../../lib/logger";
 
 const router = Router();
 

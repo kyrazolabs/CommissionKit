@@ -4,13 +4,13 @@ import {
   Dispute, Payout, Rep, WorkspaceSubscription, Notification, WorkspaceMember,
   createDisputeSchema, updateDisputeSchema,
 } from "@workspace/db";
-import { requirePermission, type AuthenticatedRequest } from "../middleware/auth";
-import { logger } from "../lib/logger";
-import { createNotification } from "../lib/notify";
+import { requirePermission, type AuthenticatedRequest } from "../../middleware/auth";
+import { logger } from "../../lib/logger";
+import { createNotification } from "../../lib/notify";
 import { disputeUpdateTemplate } from "@workspace/email-templates";
 import { Workspace } from "@workspace/db";
 import { format } from "date-fns";
-import { getUsersWithPermission } from "../lib/rbac";
+import { getUsersWithPermission } from "../../lib/rbac";
 
 const router = Router();
 

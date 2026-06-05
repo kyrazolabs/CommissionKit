@@ -16,8 +16,8 @@ import {
   Notification,
 } from "@workspace/db";
 import { GetPortalByCodeParams, GetPortalByCodeQueryParams } from "@workspace/api-zod";
-import { logger } from "../lib/logger";
-import { getUsersWithPermission } from "../lib/rbac";
+import { logger } from "../../lib/logger";
+import { getUsersWithPermission } from "../../lib/rbac";
 
 const router = Router();
 

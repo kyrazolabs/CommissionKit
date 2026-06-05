@@ -10,9 +10,9 @@ import {
   requirePermission,
   requireWorkspaceMember,
   type AuthenticatedRequest,
-} from "../middleware/auth";
-import { logger } from "../lib/logger";
-import { getLatestRates } from "../lib/exchange";
+} from "../../middleware/auth";
+import { logger } from "../../lib/logger";
+import { getLatestRates } from "../../lib/exchange";
 
 const router = Router();
 

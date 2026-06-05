@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { Role } from "@workspace/db";
 import { Types } from "mongoose";
-import { requirePermission, type AuthenticatedRequest } from "../middleware/auth";
-import { invalidateWorkspaceRoles } from "../lib/rbac";
-import { seedWorkspaceRoles } from "../lib/seeds/roles";
+import { requirePermission, type AuthenticatedRequest } from "../../middleware/auth";
+import { invalidateWorkspaceRoles } from "../../lib/rbac";
+import { seedWorkspaceRoles } from "../../lib/seeds/roles";
 import { z } from "zod";
 
 const router = Router();

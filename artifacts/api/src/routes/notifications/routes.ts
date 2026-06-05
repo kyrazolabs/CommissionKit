@@ -7,7 +7,7 @@ import {
   NOTIFICATION_TYPES,
   type NotificationType,
 } from "@workspace/db";
-import { requireAuth, requireWorkspaceMember, requirePermission, type AuthenticatedRequest } from "../middleware/auth";
+import { requireAuth, requireWorkspaceMember, requirePermission, type AuthenticatedRequest } from "../../middleware/auth";
 
 const router = Router();
 

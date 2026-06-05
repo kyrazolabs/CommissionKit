@@ -8,8 +8,8 @@ import {
 import {
   requirePermission,
   type AuthenticatedRequest,
-} from "../middleware/auth";
-import { convertCurrency } from "../lib/exchange";
+} from "../../middleware/auth";
+import { convertCurrency } from "../../lib/exchange";
 
 const router = Router();
 
