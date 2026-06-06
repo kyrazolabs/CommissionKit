@@ -23,6 +23,7 @@
     "@workspace/email-templates": "workspace:*",
     "@workspace/plugins-core": "workspace:*",
     "@workspace/plugins-custom": "workspace:*",
+    "@workspace/plugins-odoo": "workspace:*",
     "@workspace/queue": "workspace:*",
     "better-auth": "^1.6.9",
     "bson": "6.10.1",

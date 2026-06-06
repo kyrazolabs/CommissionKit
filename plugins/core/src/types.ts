@@ -145,6 +145,7 @@ export interface JsonSchemaProperty {
   default?: unknown;
   format?: string;
   enum?: string[];
+  items?: JsonSchemaProperty;
   "x-sensitive"?: boolean;
 }
 

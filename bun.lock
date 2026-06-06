@@ -34,6 +34,7 @@
         "@workspace/email-templates": "workspace:*",
         "@workspace/plugins-core": "workspace:*",
         "@workspace/plugins-custom": "workspace:*",
+        "@workspace/plugins-odoo": "workspace:*",
         "@workspace/queue": "workspace:*",
         "better-auth": "^1.6.9",
         "bson": "6.10.1",
@@ -226,6 +227,16 @@
       "dependencies": {
         "@workspace/plugins-core": "workspace:*",
         "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@types/node": "catalog:",
+      },
+    },
+    "plugins/odoo": {
+      "name": "@workspace/plugins-odoo",
+      "version": "0.0.0",
+      "dependencies": {
+        "@workspace/plugins-core": "workspace:*",
       },
       "devDependencies": {
         "@types/node": "catalog:",
@@ -1354,6 +1365,8 @@
     "@workspace/plugins-core": ["@workspace/plugins-core@workspace:plugins/core"],
 
     "@workspace/plugins-custom": ["@workspace/plugins-custom@workspace:plugins/custom"],
+
+    "@workspace/plugins-odoo": ["@workspace/plugins-odoo@workspace:plugins/odoo"],
 
     "@workspace/queue": ["@workspace/queue@workspace:lib/queue"],
 
