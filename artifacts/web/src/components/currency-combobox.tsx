@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -29,6 +30,7 @@ export function CurrencyCombobox({
   disabled,
   className,
 }: CurrencyComboboxProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const selected = CURRENCIES.find((c) => c.code === value);
 
@@ -51,7 +53,7 @@ export function CurrencyCombobox({
                 <span className="font-mono font-medium">{selected.code}</span> : {selected.name}
               </>
             ) : (
-              "Select currency…"
+              t("common.selectCurrency")
             )}
           </span>
           <ChevronsUpDown className="ml-2 size-3.5 shrink-0 opacity-50" />
@@ -59,9 +61,9 @@ export function CurrencyCombobox({
       </PopoverTrigger>
       <PopoverContent id="currency-list" className="w-[300px] p-0" align="start">
         <Command>
-          <CommandInput placeholder="Search currency…" />
+          <CommandInput placeholder={t("common.searchCurrency")} />
           <CommandList className="max-h-60">
-            <CommandEmpty>No currency found.</CommandEmpty>
+            <CommandEmpty>{t('common.noCurrencyFound')}</CommandEmpty>
             <CommandGroup>
               {CURRENCIES.map((c) => (
                 <CommandItem

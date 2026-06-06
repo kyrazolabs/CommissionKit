@@ -19,6 +19,7 @@ const COLORS = ['#0D9488', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'
 
 import { useRole } from "@/hooks/use-role";
 import { usePageMeta } from "@/hooks/use-page-meta";
+import { useTranslation } from "react-i18next";
 
 
 const CustomTooltip = ({ active, payload, label, currency }: any) => {
@@ -78,7 +79,8 @@ const CountTooltip = ({ active, payload, label }: any) => {
 };
 
 export function ReportsPage() {
-  usePageMeta({ title: "Reports", description: "Detailed commission reports and analytics for your workspace.", robots: "noindex, nofollow" });
+  const { t } = useTranslation();
+  usePageMeta({ title: t("reports.title"), description: "Detailed commission reports and analytics for your workspace.", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const { hasPermission, isLoading: roleLoading } = useRole();
   const currency = activeWorkspace?.currency || "USD";
@@ -197,7 +199,7 @@ export function ReportsPage() {
 
               <Select value={interval} onValueChange={(v: "day" | "month") => setInterval(v)}>
                 <SelectTrigger className="w-[110px] h-8 border-none bg-transparent shadow-none text-sm focus:ring-0 focus:ring-offset-0">
-                  <SelectValue placeholder="Interval" />
+                  <SelectValue placeholder={t("reports.interval")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="day">Daily</SelectItem>
@@ -495,7 +497,7 @@ export function ReportsPage() {
                     <table className="w-full border-collapse">
                       <thead>
                         <tr className="bg-muted/60">
-                          {["#", "Deal Name", "Rep", "Amount", "Close Date"].map((h) => (
+                          {["#", t("deals.dealName"), t("deals.rep"), t("deals.amount"), t("deals.closeDate")].map((h) => (
                             <th key={h} className="px-[22px] py-3 text-left text-[11.5px] font-semibold uppercase tracking-[0.03em] text-muted-foreground">
                               {h}
                             </th>
@@ -540,7 +542,7 @@ export function ReportsPage() {
                 <table className="w-full border-collapse">
                   <thead>
                     <tr className="bg-muted/60">
-                      {["Representative", "Deals Won", "Win Rate", "Revenue Driven", "Commissions Paid", "Effective Rate"].map((h) => (
+                      {[t("deals.rep"), "Deals Won", "Win Rate", "Revenue Driven", "Commissions Paid", "Effective Rate"].map((h) => (
                         <th key={h} className="px-[22px] py-3 text-left text-[11.5px] font-semibold uppercase tracking-[0.03em] text-muted-foreground">
                           {h}
                         </th>

@@ -12,13 +12,15 @@ import { Button } from "@/components/ui/button";
 import { HelpTooltip } from "@/components/help-tooltip";
 import { RunCalculationDialog } from "@/components/run-calculation-dialog";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { useTranslation } from "react-i18next";
 
 import { useRole } from "@/hooks/use-role";
 import { usePageMeta } from "@/hooks/use-page-meta";
 
 
 export function Dashboard() {
-  usePageMeta({ title: "Dashboard", description: "Overview of your workspace commissions and performance.", robots: "noindex, nofollow" });
+  const { t } = useTranslation();
+  usePageMeta({ title: t("dashboard.title"), description: "Overview of your workspace commissions and performance.", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const { hasPermission, isLoading: roleLoading } = useRole();
   const currency = activeWorkspace?.currency || "USD";
@@ -33,8 +35,8 @@ export function Dashboard() {
     return (
       <div className="flex flex-col items-center justify-center h-96 text-center">
         <Activity className="size-10 text-muted-foreground mb-4" />
-        <h2 className="text-lg font-semibold">No data yet</h2>
-        <p className="text-muted-foreground mt-1 text-sm">Import deals to get started.</p>
+        <h2 className="text-lg font-semibold">{t("dashboard.noDataYet")}</h2>
+        <p className="text-muted-foreground mt-1 text-sm">{t("dashboard.importDealsToGetStarted")}</p>
       </div>
     );
   }
@@ -43,30 +45,26 @@ export function Dashboard() {
   const recentRuns = summary.recentRuns ?? [];
 
   const statCards = [
-    { label: "Total Commissions", value: formatCurrency(summary.totalCommission, currency), delta: "Calculated this period", icon: DollarSign },
-    { label: "Pipeline Revenue",  value: formatCurrency(summary.totalRevenue, currency),    delta: "Closed won deals",       icon: TrendingUp },
-    { label: "Deals Closed",      value: formatNumber(summary.totalDeals),        delta: "This period",            icon: Briefcase },
-    { label: "Active Reps",       value: formatNumber(summary.totalReps),         delta: `of ${formatNumber(summary.totalReps)} total`, icon: Users },
+    { label: t("dashboard.totalCommissions"), value: formatCurrency(summary.totalCommission, currency), delta: t("dashboard.calculatedThisPeriod"), icon: DollarSign, tooltip: t("dashboard.totalCommissionsTooltip") },
+    { label: t("dashboard.pipelineRevenue"),  value: formatCurrency(summary.totalRevenue, currency),    delta: t("dashboard.closedWonDeals"),       icon: TrendingUp, tooltip: t("dashboard.pipelineRevenueTooltip") },
+    { label: t("dashboard.dealsClosed"),      value: formatNumber(summary.totalDeals),        delta: t("dashboard.thisPeriod"),            icon: Briefcase, tooltip: t("dashboard.dealsClosedTooltip") },
+    { label: t("dashboard.activeReps"),       value: formatNumber(summary.totalReps),         delta: `${t("dashboard.thisPeriod")}`, icon: Users, tooltip: t("dashboard.activeRepsTooltip") },
   ];
 
   return (
     <div className="space-y-7">
       {/* Page header */}
       <div>
-        <p className="text-[12px] font-semibold text-primary mb-1">Overview</p>
-        <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">Dashboard</h1>
+        <p className="text-[12px] font-semibold text-primary mb-1">{t("dashboard.overview")}</p>
+        <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">{t("dashboard.title")}</h1>
         <p className="text-[14px] text-muted-foreground mt-1 leading-relaxed">
-          Commission performance for{" "}
-          <strong className="text-foreground/80">
-            {format(new Date(currentPeriod + "-01"), "MMMM yyyy")}
-          </strong>{" "}
-          : all plans and reps included.
+          {t("dashboard.commissionPerformanceFor", { period: format(new Date(currentPeriod + "-01"), "MMMM yyyy") })}
         </p>
       </div>
 
       {/* Stat cards : 4 columns, all teal icon badges */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        {statCards.map(({ label, value, delta, icon: Icon }) => (
+        {statCards.map(({ label, value, delta, icon: Icon, tooltip }) => (
           <div
             key={label}
             className="bg-card border border-card-border rounded-2xl px-[22px] py-5"
@@ -75,12 +73,7 @@ export function Dashboard() {
             <div className="flex items-center justify-between mb-3.5">
               <div className="flex items-center gap-1.5">
                 <span className="text-[12px] font-medium text-muted-foreground">{label}</span>
-                <HelpTooltip content={
-                  label === "Total Commissions" ? "The total amount earned by all reps this period." :
-                  label === "Pipeline Revenue" ? "Total value of deals marked as Closed Won." :
-                  label === "Deals Closed" ? "Number of successfully closed deals this period." :
-                  "Total number of sales reps in the system."
-                } />
+                <HelpTooltip content={tooltip} />
               </div>
               <div className="flex size-7 items-center justify-center rounded-[10px] bg-secondary">
                 <Icon className="size-3.5 text-primary" />
@@ -100,23 +93,23 @@ export function Dashboard() {
           <div className="flex items-center justify-between px-[22px] py-[18px] border-b border-border">
             <div>
               <div className="flex items-center gap-1.5">
-                <p className="text-[14.5px] font-semibold text-foreground">Top Earners</p>
-                <HelpTooltip content="Sales reps ranked by their total earned commission for the current period." />
+                <p className="text-[14.5px] font-semibold text-foreground">{t("dashboard.topEarners")}</p>
+                <HelpTooltip content={t("dashboard.topEarnersTooltip")} />
               </div>
-              <p className="text-[12px] text-muted-foreground mt-0.5">Ranked by commission earned</p>
+              <p className="text-[12px] text-muted-foreground mt-0.5">{t("dashboard.rankedByCommissionEarned")}</p>
             </div>
             <Link href="/dash/reps" className="flex items-center gap-1 text-[12px] font-semibold text-primary hover:opacity-80 transition-opacity">
-              View all <ArrowUpRight className="size-3" />
+              {t("common.viewAll")} <ArrowUpRight className="size-3" />
             </Link>
           </div>
 
           {repEarnings.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">No deals closed yet.</p>
+            <p className="text-sm text-muted-foreground text-center py-8">{t("dashboard.noDealsClosedYet")}</p>
           ) : (
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-muted/60">
-                  {["Rep", "Plan", "Deals", "Revenue", "Commission"].map((h) => (
+                  {[t("dashboard.rep"), t("dashboard.plan"), t("dashboard.deals"), t("dashboard.revenue"), t("dashboard.commission")].map((h) => (
                     <th key={h} className="p-4 text-left text-[11.5px] font-semibold uppercase tracking-[0.03em] text-muted-foreground">
                       {h}
                     </th>
@@ -145,16 +138,16 @@ export function Dashboard() {
                             {rep.repName}
                           </Link>
                           {i === 0 && (
-                            <span className="ml-1.5 text-[10px] font-semibold text-primary bg-secondary border border-primary/20 rounded px-1.5 py-px">
-                              Top
-                            </span>
+                              <span className="ml-1.5 text-[10px] font-semibold text-primary bg-secondary border border-primary/20 rounded px-1.5 py-px">
+                                {t("dashboard.top")}
+                              </span>
                           )}
                         </div>
                       </div>
                     </td>
                     <td className="p-4 text-[12.5px] text-muted-foreground">
                       <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-foreground">
-                        {(rep as any).planName || "None"}
+                        {(rep as any).planName || t("dashboard.none")}
                       </span>
                     </td>
                     <td className="p-4 text-[13px] font-medium text-foreground">{rep.totalDeals}</td>
@@ -185,15 +178,15 @@ export function Dashboard() {
             >
               <div className="flex items-center gap-2 mb-2.5">
                 <Zap className="size-4 text-primary" />
-                <p className="text-[14px] font-semibold text-foreground">Run Calculation</p>
+                <p className="text-[14px] font-semibold text-foreground">{t("dashboard.runCalculation")}</p>
               </div>
               <p className="text-[12.5px] text-muted-foreground leading-relaxed mb-4">
-                Trigger a commission run for the current period across all active reps and plans.</p>
+                {t("dashboard.runCalculationDescription")}</p>
               <RunCalculationDialog 
                 isProcessing={recentRuns.some((r: any) => r.status === "pending" || r.status === "processing")} 
                 trigger={
                   <Button className="w-full rounded-xl text-[13px] font-semibold">
-                    Run {format(new Date(currentPeriod + "-01"), "MMM yyyy")}
+                    {t("dashboard.run", { period: format(new Date(currentPeriod + "-01"), "MMM yyyy") })}
                   </Button>
                 }
               />
@@ -205,14 +198,14 @@ export function Dashboard() {
             className="flex-1 bg-card border border-card-border rounded-2xl px-[22px] py-[18px]"
             style={{ boxShadow: "var(--shadow-card)" }}
           >
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <p className="text-[14.5px] font-semibold text-foreground">Recent Runs</p>
-              <HelpTooltip content="Historical calculation snapshots. Each run locks the commission data for that period." />
-            </div>
-            <p className="text-[12px] text-muted-foreground mb-4">Previous calculation jobs</p>
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <p className="text-[14.5px] font-semibold text-foreground">{t("dashboard.recentRuns")}</p>
+                <HelpTooltip content={t("dashboard.recentRunsTooltip")} />
+              </div>
+              <p className="text-[12px] text-muted-foreground mb-4">{t("dashboard.previousCalculationJobs")}</p>
 
-            {recentRuns.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No runs yet.</p>
+              {recentRuns.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">{t("dashboard.noRunsYet")}</p>
             ) : (
               <div className="space-y-0">
                 {recentRuns.map((run) => (
@@ -230,7 +223,7 @@ export function Dashboard() {
                       href={`/dash/runs/${run.id}`}
                       className="flex items-center gap-0.5 text-[11px] font-semibold text-primary bg-secondary border border-primary/20 rounded-md px-2.5 py-0.5 hover:opacity-80 transition-opacity"
                     >
-                      Completed
+                      {t("dashboard.completed")}
                     </Link>
                   </div>
                 ))}

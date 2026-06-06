@@ -35,18 +35,22 @@ export const auth = betterAuth({
   baseURL: AUTH_URL,
   trustedOrigins: [APP_URL],
 
-  user: {
-    additionalFields: {
-      mustChangePassword: {
-        type: "boolean",
-        defaultValue: false,
+      user: {
+        additionalFields: {
+          mustChangePassword: {
+            type: "boolean",
+            defaultValue: false,
+          },
+          repId: {
+            type: "string",
+            required: false,
+          },
+          lang: {
+            type: "string",
+            defaultValue: "en",
+          },
+        },
       },
-      repId: {
-        type: "string",
-        required: false,
-      },
-    },
-  },
   emailVerification: {
     sendOnSignUp: true,
     sendVerificationEmail: async ({ user, token }) => {

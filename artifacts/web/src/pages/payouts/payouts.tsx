@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -71,11 +72,17 @@ const STATUS_CONFIG = {
   on_hold: { label: "On Hold", class: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 border-gray-200/50" },
 };
 
-function StatusBadge({ status }: { status: Payout["status"] }) {
+const STATUS_I18N: Record<string, string> = {
+  pending: "payouts.pending", approved: "payouts.approved", paid: "payouts.paid",
+  disputed: "payouts.disputed", on_hold: "payouts.onHold",
+};
+
+function StatusBadge({ status, i18nKey }: { status: Payout["status"]; i18nKey?: string }) {
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
+  const label = i18nKey ?? cfg.label;
   return (
     <span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold", cfg.class)}>
-      {cfg.label}
+      {label}
     </span>
   );
 }
@@ -231,6 +238,7 @@ function AdjustModal({ payout, workspaceId, onClose }: { payout: Payout; workspa
 
 // ─── Create Payout Modal ──────────────────────────────────────────────────────
 function CreatePayoutModal({ workspaceId, open, setOpen }: { workspaceId: string; open: boolean; setOpen: (v: boolean) => void }) {
+  const { t } = useTranslation();
   const [repId, setRepId] = useState("");
   const [periodStart, setPeriodStart] = useState<Date | undefined>(undefined);
   const [periodEnd, setPeriodEnd] = useState<Date | undefined>(undefined);
@@ -321,7 +329,7 @@ function CreatePayoutModal({ workspaceId, open, setOpen }: { workspaceId: string
         <div className="grid gap-2">
           <Label>Sales Rep</Label>
           <Select value={repId} onValueChange={setRepId} required>
-            <SelectTrigger><SelectValue placeholder="Select rep…" /></SelectTrigger>
+            <SelectTrigger><SelectValue placeholder={t("payouts.selectRep")}/></SelectTrigger>
             <SelectContent>
               {Array.isArray(reps) && reps.map((r: any) => (
                 <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
@@ -338,7 +346,7 @@ function CreatePayoutModal({ workspaceId, open, setOpen }: { workspaceId: string
               setPeriodStart(range?.from);
               setPeriodEnd(range?.to);
             }}
-            placeholder="Select period range"
+            placeholder={t("payouts.selectPeriod")}
             numberOfMonths={2}
           />
         </div>
@@ -402,6 +410,7 @@ function StatusConfirmModal({
 export function PayoutsPage() {
   usePageMeta({ title: "Payouts", description: "Manage and track commission payouts for your team.", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
+  const { t } = useTranslation();
   const { hasPermission, isLoading: roleLoading } = useRole();
   const { toast } = useToast();
   const { sub, loading: subLoading } = useBillingStatus();
@@ -475,11 +484,11 @@ export function PayoutsPage() {
         method: "POST",
         body: JSON.stringify({ ids: [...selectedIds] }),
       });
-      toast({ title: `${data.approved} payout(s) approved` });
+      toast({ title: t("payouts.bulkApproved", { count: data.approved }) });
       setSelectedIds(new Set());
       queryClient.invalidateQueries({ queryKey: ["payouts", workspaceId] });
     } catch {
-      toast({ title: "Bulk approve failed", variant: "destructive" });
+      toast({ title: t("payouts.bulkApproveFailed"), variant: "destructive" });
     } finally {
       setBulkLoading(false);
     }
@@ -579,12 +588,12 @@ export function PayoutsPage() {
         <div className="px-5 pt-4 pb-3 border-b border-border flex flex-wrap items-center gap-3">
           <div className="relative flex-1 min-w-[180px] max-w-xs">
             <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-            <Input placeholder="Search by rep…" className="pl-8" value={search} onChange={e => setSearch(e.target.value)} />
+            <Input placeholder={t("payouts.searchByRep")} className="pl-8" value={search} onChange={e => setSearch(e.target.value)} />
           </div>
           <Select value={filters.status || "all"} onValueChange={v => setFilters(f => ({ ...f, status: v === "all" ? "" : v }))}>
             <SelectTrigger className="w-36">
               <Filter className="size-3.5 mr-1.5 text-muted-foreground" />
-              <SelectValue placeholder="All statuses" />
+              <SelectValue placeholder={t("common.allStatuses")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>

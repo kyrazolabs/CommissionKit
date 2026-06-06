@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useParams } from "wouter";
 import { format } from "date-fns";
 import { formatCurrency, formatPercent } from "@/lib/format";
@@ -397,6 +398,7 @@ function DisputeModal({
 // ─── Page ───────────────────────────────────────────────────────────────────
 
 export function PublicRepPortal() {
+  const { t } = useTranslation();
   const params = useParams<{ accessCode: string }>();
   const accessCode = params.accessCode ?? "";
   const [period, setPeriod] = useState<string>(format(new Date(), "yyyy-MM"));
@@ -583,7 +585,7 @@ export function PublicRepPortal() {
                 <MonthPicker 
                   value={period}
                   onChange={setPeriod}
-                  placeholder="Pick a month"
+                  placeholder={t("common.pickMonth")}
                   className="w-40 h-9"
                 />
               </div>

@@ -2,6 +2,7 @@ import { Sun, Moon, Cloud, LifeBuoy } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/hooks/use-auth";
 import { NotificationBell } from "@/components/notification-bell";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { useIsMutating } from "@tanstack/react-query";
 import { useSyncStore } from "@/hooks/use-sync-store";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -100,6 +101,9 @@ export function Header() {
             ? <Sun className="size-4" />
             : <Moon className="size-4" />}
         </button>
+
+        {/* Language switcher */}
+        <LanguageSwitcher />
 
         {/* Live notification bell */}
         <NotificationBell />

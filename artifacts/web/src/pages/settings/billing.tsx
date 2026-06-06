@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { 
   Check, Zap, Building2, Infinity as InfinityIcon, Loader2, 
   ExternalLink, Crown, AlertTriangle, CheckCircle2, Gift, 
@@ -132,6 +133,7 @@ function formatDate(iso: string | null) {
 }
 
 function StatusBanner({ sub }: { sub: SubscriptionStatus }) {
+  const { t } = useTranslation();
   if (sub.plan === "free") return null;
 
   const isActive   = sub.status === "active";
@@ -145,7 +147,7 @@ function StatusBanner({ sub }: { sub: SubscriptionStatus }) {
       <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-800/40 dark:bg-red-900/20">
         <AlertTriangle className="size-4 text-red-600 shrink-0" />
         <p className="text-sm font-medium text-red-800 dark:text-red-300">
-          Payment failed : please update your payment method to keep access.
+          {t("billing.paymentFailed")}
         </p>
       </div>
     );
@@ -156,8 +158,7 @@ function StatusBanner({ sub }: { sub: SubscriptionStatus }) {
       <div className="flex items-center gap-3 rounded-xl border border-orange-200 bg-orange-50 p-4 dark:border-orange-800/40 dark:bg-orange-900/20">
         <AlertTriangle className="size-4 text-orange-600 shrink-0" />
         <p className="text-sm font-medium text-orange-800 dark:text-orange-300">
-          Your <strong>{sub.plan}</strong> plan cancels on{" "}
-          <strong>{formatDate(sub.currentPeriodEnd)}</strong>. Reactivate in the portal to keep access.
+          {t("billing.planCancels", { plan: sub.plan, date: formatDate(sub.currentPeriodEnd) })}
         </p>
       </div>
     );
@@ -168,8 +169,7 @@ function StatusBanner({ sub }: { sub: SubscriptionStatus }) {
       <div className="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 p-4 dark:border-green-800/40 dark:bg-green-900/20">
         <CheckCircle2 className="size-4 text-green-600 shrink-0" />
         <p className="text-sm font-medium text-green-800 dark:text-green-300">
-          <strong className="capitalize">{sub.plan}</strong> plan active : renews{" "}
-          <strong>{formatDate(sub.currentPeriodEnd)}</strong>.
+          {t("billing.planActive", { plan: sub.plan, date: formatDate(sub.currentPeriodEnd) })}
         </p>
       </div>
     );
@@ -203,15 +203,16 @@ function BillingUsageCard({
 }) {
   const currentPlan = sub?.plan ?? "free";
   const hasSub = sub && currentPlan !== "free";
+  const { t } = useTranslation();
 
   return (
     <Card className="border-border bg-card/50 shadow-sm">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-base font-semibold">Usage & Limits</CardTitle>
+            <CardTitle className="text-base font-semibold">{t("billing.usageAndLimits")}</CardTitle>
             <CardDescription className="text-xs">
-              Plan: <span className="capitalize text-foreground font-semibold">{currentPlan}</span>
+              {t("billing.planLabel", { plan: currentPlan })}
             </CardDescription>
           </div>
           {hasSub && (
@@ -227,7 +228,7 @@ function BillingUsageCard({
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-1.5 font-medium text-foreground">
               <UserRound className="size-3.5 text-muted-foreground" />
-              Sales Representatives
+              {t("billing.salesReps")}
             </div>
             <div className="text-muted-foreground">
               {repsLoading ? (
@@ -244,7 +245,7 @@ function BillingUsageCard({
           <Progress value={usagePercent(repsCount ?? 0, limits?.reps ?? 0)} className="h-1.5" />
           {limits && planBaseLimits && limits.reps > planBaseLimits.reps && (
              <p className="text-[10px] text-primary font-medium">
-               Includes {limits.reps - planBaseLimits.reps} extra rep seats from your add-on.
+               {t("billing.includesExtraSeats", { count: limits.reps - planBaseLimits.reps })}
              </p>
           )}
         </div>
@@ -254,7 +255,7 @@ function BillingUsageCard({
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-1.5 font-medium text-foreground">
               <FileText className="size-3.5 text-muted-foreground" />
-              Commission Plans
+              {t("billing.commissionPlans")}
             </div>
             <div className="text-muted-foreground">
               {plansLoading ? (
@@ -276,7 +277,7 @@ function BillingUsageCard({
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-1.5 font-medium text-foreground">
               <Users className="size-3.5 text-muted-foreground" />
-              Workspace Members
+              {t("billing.workspaceMembers")}
             </div>
             <div className="text-muted-foreground">
               {membersLoading ? (
@@ -300,7 +301,8 @@ function BillingUsageCard({
 
 
 export function BillingPage() {
-  usePageMeta({ title: "Billing", description: "Manage your CommissionKit subscription and billing details.", robots: "noindex, nofollow" });
+  const { t } = useTranslation();
+  usePageMeta({ title: t("billing.title"), description: "Manage your CommissionKit subscription and billing details.", robots: "noindex, nofollow" });
   const queryClient = TanStackReactQuery.useQueryClient();
   const { session } = useAuth();
   const { activeWorkspace } = useWorkspace();
@@ -396,8 +398,8 @@ export function BillingPage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
         <Crown className="size-10 text-muted-foreground" />
-        <h2 className="text-lg font-semibold">Access Denied</h2>
-        <p className="text-sm text-muted-foreground">You don't have permission to view billing information.</p>
+        <h2 className="text-lg font-semibold">{t("common.accessDenied")}</h2>
+        <p className="text-sm text-muted-foreground">{t("billing.accessDenied")}</p>
       </div>
     );
   }
@@ -429,7 +431,7 @@ export function BillingPage() {
       });
       window.location.href = url;
     } catch (err: any) {
-      toast({ title: "Checkout Error", description: err.message, variant: "destructive" });
+      toast({ title: t("billing.checkoutError"), description: err.message, variant: "destructive" });
       setLoadingPlan(null);
     }
   };
@@ -444,10 +446,10 @@ export function BillingPage() {
         body: JSON.stringify({ quantity: qty }),
       });
 
-      toast({ title: "Updated", description: `You now have ${qty} extra rep seats.` });
+      toast({ title: t("billing.updated"), description: t("billing.updatedDescription", { count: qty }) });
       await refetch();
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
     } finally {
       setAddonSaving(false);
     }
@@ -462,7 +464,7 @@ export function BillingPage() {
       });
       window.location.href = url;
     } catch (err: any) {
-      toast({ title: "Could not open portal", description: err.message, variant: "destructive" });
+      toast({ title: t("billing.couldNotOpenPortal"), description: err.message, variant: "destructive" });
     } finally {
       setPortalLoading(false);
     }
@@ -485,12 +487,12 @@ export function BillingPage() {
     <div className="space-y-8 max-w-5xl">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <p className="text-[12px] font-semibold text-primary mb-1">Account</p>
-          <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">Billing & Plans</h1>
+          <p className="text-[12px] font-semibold text-primary mb-1">{t("sidebar.account")}</p>
+          <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">{t("billing.billingAndPlans")}</h1>
           <p className="text-[14px] text-muted-foreground mt-1">
             {alreadySubscribed
-              ? "You’re subscribed. Use Manage subscription to change your plan or add-on seats : new checkout is disabled so you aren’t charged twice."
-              : "Choose a plan, add extra reps if you need them, then continue to secure checkout."}
+              ? t("billing.alreadySubscribedDescription")
+              : t("billing.choosePlanDescription")}
           </p>
         </div>
       </div>
@@ -501,9 +503,9 @@ export function BillingPage() {
             <Zap className="size-4" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">14-Day Free Trial Available</p>
+            <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">{t("billing.freeTrialAvailable")}</p>
             <p className="text-xs text-blue-800/80 dark:text-blue-200/60 mt-0.5">
-              Start any plan today and you won't be charged for the first 14 days. This is a one-time offer for your workspace.
+              {t("billing.freeTrialDescription")}
             </p>
           </div>
         </div>
@@ -525,9 +527,9 @@ export function BillingPage() {
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div>
-              <p className="text-sm font-semibold text-foreground">Pay yearly, get 2 months free</p>
+              <p className="text-sm font-semibold text-foreground">{t("billing.payYearlyTitle")}</p>
               <p className="text-xs text-muted-foreground mt-0.5 max-w-xl">
-                Annual billing is now available for <strong className="text-foreground">Starter, Growth, and Pro</strong>. Save up to 17% on your total subscription costs.
+                {t("billing.payYearlyDescription")}
               </p>
             </div>
             <div className="flex items-center gap-2.5 sm:shrink-0">
@@ -541,13 +543,13 @@ export function BillingPage() {
                 htmlFor="pay-yearly-growth"
                 className="text-sm font-medium leading-none cursor-pointer text-foreground"
               >
-                I want annual billing
+                {t("billing.iWantAnnual")}
               </Label>
             </div>
           </div>
           {payYearly && (
             <p className="text-[11px] text-primary font-medium">
-              You’re viewing yearly pricing across all plans.
+              {t("billing.viewingYearlyPricing")}
             </p>
           )}
         </div>
@@ -575,14 +577,14 @@ export function BillingPage() {
       {sub && sub.plan !== "free" && (
         <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-4">
           <div>
-            <p className="text-sm font-semibold text-foreground capitalize">{sub.plan} Plan</p>
+            <p className="text-sm font-semibold text-foreground capitalize">{sub.plan} {t("billing.plan")}</p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Billing portal: update payment method, invoices, or cancel.
+              {t("billing.billingPortalDescription")}
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={handlePortal} disabled={portalLoading} className="gap-2 shrink-0">
             {portalLoading ? <Loader2 className="size-3.5 animate-spin" /> : <ExternalLink className="size-3.5" />}
-            Manage Subscription
+            {t("billing.manageSubscription")}
           </Button>
         </div>
       )}
@@ -591,10 +593,9 @@ export function BillingPage() {
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800/40 dark:bg-amber-900/20">
           <AlertTriangle className="size-4 text-amber-700 shrink-0 mt-0.5 dark:text-amber-400" />
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">New checkout is turned off</p>
+            <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">{t("billing.checkoutDisabled")}</p>
             <p className="text-xs text-amber-900/85 dark:text-amber-200/90 mt-1 leading-relaxed">
-              You already have an active paid subscription on this workspace. Starting another Stripe checkout would create a <strong>second subscription</strong> and charge you again. To <strong>change your base plan</strong> (for example Growth to Growth Annual), use{" "}
-              <strong>Manage Subscription</strong> above.
+              {t("billing.checkoutDisabledDescription")}
             </p>
           </div>
         </div>
@@ -606,15 +607,15 @@ export function BillingPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <Users className="size-4 text-primary" />
-              Manage Add-ons
+              {t("billing.manageAddons")}
             </CardTitle>
             <CardDescription className="text-xs">
-              Add or remove extra rep seats on your current plan.
+              {t("billing.manageAddonsDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col sm:flex-row items-center gap-4">
             <div className="flex-1 space-y-1 w-full">
-              <Label htmlFor="addon-reps" className="text-xs font-medium">Extra rep seats</Label>
+              <Label htmlFor="addon-reps" className="text-xs font-medium">{t("billing.extraRepSeats")}</Label>
               <div className="flex items-center gap-3">
                 <NumberInput
                   id="addon-reps"
@@ -623,7 +624,7 @@ export function BillingPage() {
                   onChange={(e) => setExtraReps(e.target.value)}
                   className="max-w-[120px]"
                 />
-                <span className="text-xs text-muted-foreground">total add-on seats</span>
+                <span className="text-xs text-muted-foreground">{t("billing.totalAddonSeats")}</span>
               </div>
             </div>
             <Button
@@ -634,10 +635,10 @@ export function BillingPage() {
               {addonSaving ? (
                 <>
                   <Loader2 className="mr-2 size-4 animate-spin" />
-                  Saving…
+                  {t("common.saving")}
                 </>
               ) : (
-                "Save add-on"
+                t("billing.saveAddon")
               )}
             </Button>
           </CardContent>
@@ -646,15 +647,11 @@ export function BillingPage() {
 
       {/* Plan cards */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-foreground">Choose a Plan</h2>
+        <h2 className="text-lg font-semibold text-foreground">{t("billing.choosePlan")}</h2>
         {workspaceCurrency !== "USD" && (
           <div className="flex items-center gap-2">
             <Label htmlFor="currency-toggle" className="text-sm text-muted-foreground">
-              Show in {
-                workspaceCurrency === "SAR" ? "Riyal" : 
-                workspaceCurrency === "AED" ? "Dirham" : 
-                workspaceCurrency
-              }
+              {t("billing.showInCurrency", { currency: workspaceCurrency === "SAR" ? "Riyal" : workspaceCurrency === "AED" ? "Dirham" : workspaceCurrency })}
             </Label>
             <Switch
               id="currency-toggle"
@@ -700,7 +697,7 @@ export function BillingPage() {
                       ? "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800/40"
                       : "bg-primary text-primary-foreground border-primary",
                   )}>
-                    {isCurrent ? "✓ Current Plan" : plan.badge}
+                    {isCurrent ? t("billing.currentPlanBadge") : plan.badge}
                   </span>
                 </div>
               )}
@@ -723,7 +720,7 @@ export function BillingPage() {
                       "$" + (payYearly ? plan.priceYearlyUsd : plan.priceMonthlyUsd)
                     )}
                   </span>
-                  <span className="text-sm text-muted-foreground">{payYearly ? "/year" : "/month"}</span>
+                  <span className="text-sm text-muted-foreground">{payYearly ? t("billing.perYear") : t("billing.perMonth")}</span>
                 </div>
                 <CardDescription className="mt-1 text-[13px]">{plan.description}</CardDescription>
               </CardHeader>
@@ -747,7 +744,7 @@ export function BillingPage() {
                     disabled
                   >
                     <Check className="mr-2 size-4" />
-                    Current Plan
+                    {t("billing.currentPlan")}
                   </Button>
                 ) : (
                   <Button
@@ -760,7 +757,7 @@ export function BillingPage() {
                     }}
                     disabled={loadingPlan !== null || alreadySubscribed}
                   >
-                    {isSelected ? "Selected" : alreadySubscribed ? "Use portal" : "Select Plan"}
+                    {isSelected ? t("billing.selected") : alreadySubscribed ? t("billing.usePortal") : t("billing.selectPlan")}
                   </Button>
                 )}
               </CardFooter>
@@ -772,13 +769,13 @@ export function BillingPage() {
       {/* Selection + add-on + pay */}
       <Card className={cn("border-border", alreadySubscribed && "opacity-80")}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold">Checkout</CardTitle>
+          <CardTitle className="text-sm font-semibold">{t("billing.checkout")}</CardTitle>
           <CardDescription className="text-xs">
             {alreadySubscribed
-              ? "Checkout is only for new subscriptions. Use Manage subscription above for plan or add-on changes."
+              ? t("billing.checkoutDisabledForSubscribed")
               : sub?.trialUsed === false 
-                ? "Start your 14-day free trial. Select a plan above, choose add-ons, then pay securely with Stripe."
-                : "Select a plan above, choose add-ons, then pay securely with Stripe."}
+                ? t("billing.checkoutTrialDescription")
+                : t("billing.checkoutDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -787,21 +784,21 @@ export function BillingPage() {
               <p className="text-sm font-semibold text-foreground">
                 {selectedPlan ? (
                   <>
-                    Selected plan: <span className="capitalize">{selectedPlan.name}</span>
+                    {t("billing.selectedPlan")}: <span className="capitalize">{selectedPlan.name}</span>
                   </>
                 ) : (
-                  "No plan selected"
+                  t("billing.noPlanSelected")
                 )}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                You can adjust add-ons before checkout.
+                {t("billing.canAdjustBeforeCheckout")}
               </p>
             </div>
           </div>
 
           <div className="rounded-lg border bg-muted/20 p-4 space-y-3">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <p className="text-sm font-semibold">Add-on: Extra reps</p>
+              <p className="text-sm font-semibold">{t("billing.addonExtraReps")}</p>
               <p className="text-xs text-muted-foreground">
                 {showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] ? (
                   <>
@@ -810,16 +807,16 @@ export function BillingPage() {
                   </>
                 ) : (
                   formatCurrency(extraRepUnitDisplayUsd)
-                )} per extra rep
-                {payYearly ? " / year" : " / month"}
+                )} {t("billing.perExtraRep")}
+                {payYearly ? t("billing.perYear") : t("billing.perMonth")}
               </p>
             </div>
             <p className="text-xs text-muted-foreground">
-              Enter how many additional reps you want to add.
+              {t("billing.enterExtraRepsDescription")}
               {payYearly ? (
                 <>
                   {" "}
-                  Your add-on will be billed <strong className="text-foreground">yearly</strong> to match your plan.
+                  {t("billing.billedYearly")}
                 </>
               ) : null}
             </p>
@@ -831,14 +828,14 @@ export function BillingPage() {
                 className="max-w-[140px]"
                 disabled={!selectedPlan || alreadySubscribed}
               />
-              <span className="text-xs text-muted-foreground">reps</span>
+              <span className="text-xs text-muted-foreground">{t("billing.repsLabel")}</span>
             </div>
             {extraRepsQty > 0 && (
               <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border/80 bg-background/80 p-3">
                 <span className="text-xs font-medium text-foreground">
-                  Add-on total ({extraRepsQty} × {showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] 
+                  {t("billing.addonTotal", { count: extraRepsQty, price: showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] 
                     ? `≈${formatCurrency(extraRepUnitDisplayUsd * rates[workspaceCurrency], workspaceCurrency)}` 
-                    : formatCurrency(extraRepUnitDisplayUsd)})
+                    : formatCurrency(extraRepUnitDisplayUsd) })}
                 </span>
                 <span className="text-sm font-semibold tabular-nums text-foreground">
                   {showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] ? (
@@ -850,7 +847,7 @@ export function BillingPage() {
                     formatCurrency(extraRepsAddonTotalUsd)
                   )}
                   <span className="text-xs font-normal text-muted-foreground ml-1">
-                    {payYearly ? " / year" : " / month"}
+                    {payYearly ? t("billing.perYear") : t("billing.perMonth")}
                   </span>
                 </span>
               </div>
@@ -860,39 +857,25 @@ export function BillingPage() {
         <CardFooter className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
           <p className="text-xs text-muted-foreground">
             {selectedPlan ? (
-              <>
-                Plan subscription at Stripe checkout, plus{" "}
-                {extraRepsQty > 0 ? (
-                  <>
-                    <strong>{extraRepsQty}</strong> extra rep{extraRepsQty === 1 ? "" : "s"} at{" "}
-                    <strong>
-                      {showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] 
-                        ? `≈${formatCurrency(extraRepsAddonTotalUsd * rates[workspaceCurrency], workspaceCurrency)}` 
-                        : formatCurrency(extraRepsAddonTotalUsd)}
-                    </strong>
-                    {payYearly ? " / year" : " / month"} (
-                    {showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] 
+              <>{t("billing.stripeCheckoutSummary", { reps: extraRepsQty, annual: payYearly, priceFormatted: showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] 
+                      ? `≈${formatCurrency(extraRepsAddonTotalUsd * rates[workspaceCurrency], workspaceCurrency)}` 
+                      : formatCurrency(extraRepsAddonTotalUsd), perUnitFormatted: showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] 
                       ? `≈${formatCurrency(extraRepUnitDisplayUsd * rates[workspaceCurrency], workspaceCurrency)}` 
-                      : formatCurrency(extraRepUnitDisplayUsd)} each).
-                  </>
-                ) : (
-                  <>no extra-rep add-on.</>
-                )}
-              </>
+                      : formatCurrency(extraRepUnitDisplayUsd) })}</>
             ) : (
-              "Select a plan to continue."
+              t("billing.selectPlanDescription")
             )}
           </p>
           <Button
             className="sm:w-auto w-full"
             onClick={() => {
               if (!selectedPlan) {
-                toast({ title: "Select a plan", description: "Pick a plan above to continue.", variant: "destructive" });
+                toast({ title: t("billing.selectPlanTitle"), description: t("billing.selectPlanDescription"), variant: "destructive" });
                 return;
               }
               const priceId = payYearly ? selectedPlan.priceIdYearly : selectedPlan.priceIdMonthly;
               if (!priceId) {
-                toast({ title: "Plan not configured", description: "This billing period is missing a Stripe price ID.", variant: "destructive" });
+                toast({ title: t("billing.planNotConfigured"), description: t("billing.planNotConfiguredDescription"), variant: "destructive" });
                 return;
               }
               handleCheckout(priceId, selectedPlan.id, "subscription", extraRepsQty);
@@ -900,11 +883,11 @@ export function BillingPage() {
             disabled={loadingPlan !== null || !selectedPlan || alreadySubscribed}
           >
             {loadingPlan ? (
-              <><Loader2 className="mr-2 size-4 animate-spin" />Redirecting…</>
+              <><Loader2 className="mr-2 size-4 animate-spin" />{t("billing.redirecting")}</>
             ) : alreadySubscribed ? (
-              "Subscribed : use portal"
+              t("billing.subscribedUsePortal")
             ) : (
-              "Continue to payment"
+              t("billing.continueToPayment")
             )}
           </Button>
         </CardFooter>
@@ -912,7 +895,7 @@ export function BillingPage() {
 
 
       <p className="text-xs text-muted-foreground">
-        Payments processed securely by Stripe. Subscriptions renew automatically and can be cancelled any time via the billing portal.
+        {t("billing.stripeFooter")}
       </p>
     </div>
   );

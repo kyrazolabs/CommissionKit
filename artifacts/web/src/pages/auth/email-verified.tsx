@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,6 +23,7 @@ const useIsMobile = () => {
 };
 
 export function EmailVerifiedPage() {
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [, setLocation] = useLocation();
 
@@ -98,9 +100,9 @@ export function EmailVerifiedPage() {
                         transition={{ duration: 0.25 }}
                       >
                         <CardHeader className="pb-4">
-                          <CardTitle className="text-lg text-destructive">Verification Failed</CardTitle>
+                          <CardTitle className="text-lg text-destructive">{t('emailVerified.verificationFailed')}</CardTitle>
                           <CardDescription className="mt-1">
-                            The verification link is invalid or has expired.
+                            {t('emailVerified.verificationFailedDescription')}.
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col items-center justify-center py-4 text-center">
@@ -132,9 +134,9 @@ export function EmailVerifiedPage() {
                         transition={{ duration: 0.3 }}
                       >
                         <CardHeader className="pb-4">
-                          <CardTitle className="text-lg">Email Verified</CardTitle>
+                          <CardTitle className="text-lg">{t('emailVerified.emailVerified')}</CardTitle>
                           <CardDescription className="mt-1">
-                            Your email address has been successfully verified.
+                            {t('emailVerified.emailVerifiedDescription')}.
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col items-center justify-center py-4 text-center space-y-4">

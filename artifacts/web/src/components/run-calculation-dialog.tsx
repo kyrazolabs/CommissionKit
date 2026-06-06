@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { 
   getListRunsQueryKey,
@@ -25,6 +26,7 @@ import { MonthPicker } from "@/components/ui/month-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function RunCalculationDialog({ isProcessing, trigger }: { isProcessing: boolean; trigger?: React.ReactNode }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [period, setPeriod] = useState<string>(() => format(new Date(), "yyyy-MM"));
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>("paid");
@@ -40,11 +42,11 @@ export function RunCalculationDialog({ isProcessing, trigger }: { isProcessing: 
     createMutation.mutate({ data }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListRunsQueryKey() });
-        toast({ title: "Calculation Queued", description: `Commission calculation for ${period} has been started.` });
+        toast({ title: t("runs.calculationQueued"), description: `Commission calculation for ${period} has been started.` });
         setOpen(false);
       },
       onError: (err: any) => {
-        toast({ title: "Run failed", description: err.message || "An error occurred", variant: "destructive" });
+        toast({ title: t("runs.runFailed"), description: err.message || t("common.somethingWentWrong"), variant: "destructive" });
       }
     });
   };
@@ -86,7 +88,7 @@ export function RunCalculationDialog({ isProcessing, trigger }: { isProcessing: 
               <MonthPicker 
                 value={period}
                 onChange={setPeriod}
-                placeholder="Pick a month"
+                placeholder={t("common.pickMonth")}
                 className="flex-1"
               />
             </div>
@@ -116,7 +118,7 @@ export function RunCalculationDialog({ isProcessing, trigger }: { isProcessing: 
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
           <Button onClick={handleRun} disabled={createMutation.isPending}>
-            {createMutation.isPending ? "Processing…" : "Start Calculation"}
+            {createMutation.isPending ? t("runs.processing3") : t("runs.startCalculation")}
           </Button>
         </DialogFooter>
       </DialogContent>

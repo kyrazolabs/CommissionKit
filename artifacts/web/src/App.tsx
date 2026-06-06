@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -100,6 +101,7 @@ function Layout({ children }: { children: React.ReactNode }) {
 }
 
 function CreateWorkspaceScreen() {
+  const { t } = useTranslation();
   const { createWorkspace } = useWorkspace();
   const [name, setName] = useState("");
   const [currency, setCurrency] = useState("USD");
@@ -114,7 +116,7 @@ function CreateWorkspaceScreen() {
     try {
       await createWorkspace(name.trim(), currency);
     } catch {
-      setError("Failed to create workspace. Please try again.");
+      setError(t("createWorkspace.failedToCreate"));
       setCreating(false);
     }
   };
@@ -132,27 +134,27 @@ function CreateWorkspaceScreen() {
               <circle cx="36" cy="36" r="2.5" fill="#0D9488" />
             </svg>
           </div>
-          <CardTitle className="text-[18px] font-semibold text-center mb-1">Create your workspace</CardTitle>
+          <CardTitle className="text-[18px] font-semibold text-center mb-1">{t("createWorkspace.title")}</CardTitle>
           <CardDescription className="text-[13px] text-center">
-            A workspace holds your team's reps, plans, and deals.
+            {t("createWorkspace.description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleCreate} className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Workspace Name</Label>
+              <Label className="text-sm font-medium">{t("createWorkspace.workspaceName")}</Label>
               <Input
                 type="text"
-                placeholder="e.g. Acme Sales"
+                placeholder={t("createWorkspace.workspaceNamePlaceholder")}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Currency</Label>
+              <Label className="text-sm font-medium">{t("createWorkspace.currency")}</Label>
               <CurrencyCombobox value={currency} onChange={setCurrency} />
-              <p className="text-xs text-muted-foreground">Used for all amount formatting.</p>
+              <p className="text-xs text-muted-foreground">{t("createWorkspace.currencyHelp")}</p>
             </div>
             {error && <p className="text-[12px] text-destructive">{error}</p>}
             <Button
@@ -160,7 +162,7 @@ function CreateWorkspaceScreen() {
               disabled={!name.trim() || creating}
               className="w-full font-semibold"
             >
-              {creating ? "Creating…" : "Create workspace"}
+              {creating ? t("createWorkspace.creating") : t("createWorkspace.createWorkspace")}
             </Button>
           </form>
         </CardContent>
@@ -170,13 +172,14 @@ function CreateWorkspaceScreen() {
 }
 
 function AppLoader() {
+  const { t } = useTranslation();
   const messages = [
-    "Calculating your commissions…",
-    "Rounding up the reps…",
-    "Crunching the numbers…",
-    "Preparing your workspace…",
-    "Loading your dashboard…",
-    "Almost there…",
+    t("appLoader.calculatingCommissions"),
+    t("appLoader.roundingUpReps"),
+    t("appLoader.crunchingNumbers"),
+    t("appLoader.preparingWorkspace"),
+    t("appLoader.loadingDashboard"),
+    t("appLoader.almostThere"),
   ];
   const [idx, setIdx] = useState(0);
 

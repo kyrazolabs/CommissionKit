@@ -14,6 +14,7 @@ import { useWorkspace } from "@/hooks/use-workspace";
 import { CurrencyCell } from "@/components/currency-cell";
 import { MonthPicker } from "@/components/ui/month-picker";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { DatePicker } from "@/components/ui/date-picker";
 import { parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -21,15 +22,21 @@ import { apiFetch } from "@/lib/api";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 
-const PAYOUT_STATUS: Record<string, { label: string; class: string }> = {
-  pending:  { label: "Pending",  class: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200/50" },
-  approved: { label: "Approved", class: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200/50" },
-  paid:     { label: "Paid",     class: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200/50" },
-  disputed: { label: "Disputed", class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200/50" },
-  on_hold:  { label: "On Hold",  class: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 border-gray-200/50" },
+const PAYOUT_STATUS_I18N: Record<string, string> = {
+  pending: "portal.rep.pending", approved: "portal.rep.approved", paid: "portal.rep.paid",
+  disputed: "portal.rep.disputed", on_hold: "portal.rep.onHold",
+};
+
+const PAYOUT_STATUS_CLASSES: Record<string, string> = {
+  pending: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200/50",
+  approved: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200/50",
+  paid: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200/50",
+  disputed: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200/50",
+  on_hold: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 border-gray-200/50",
 };
 
 function PayoutsSection({ repId, workspaceId, currency }: { repId: string; workspaceId: string; currency: string }) {
+  const { t } = useTranslation();
   const { data: payouts = [], isLoading } = useQuery<any[]>({
     queryKey: ["rep-payouts", repId, workspaceId],
     queryFn: async () => {
@@ -77,7 +84,8 @@ function PayoutsSection({ repId, workspaceId, currency }: { repId: string; works
             </TableHeader>
             <TableBody>
               {payouts.map((p: any) => {
-                const cfg = PAYOUT_STATUS[p.status] ?? PAYOUT_STATUS.pending;
+                const statusClass = PAYOUT_STATUS_CLASSES[p.status] ?? PAYOUT_STATUS_CLASSES.pending;
+                const statusKey = PAYOUT_STATUS_I18N[p.status] ?? PAYOUT_STATUS_I18N.pending;
                 return (
                   <TableRow key={p.id}>
                     <TableCell className="text-sm text-muted-foreground">
@@ -88,7 +96,7 @@ function PayoutsSection({ repId, workspaceId, currency }: { repId: string; works
                       {p.adjustments !== 0 ? (p.adjustments > 0 ? "+" : "") + formatCurrency(p.adjustments, p.currency) : ":"}
                     </TableCell>
                     <TableCell className="text-right text-sm font-semibold tabular-nums">{formatCurrency(p.finalAmount, p.currency)}</TableCell>
-                    <TableCell><span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold", cfg.class)}>{cfg.label}</span></TableCell>
+                    <TableCell><span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold", statusClass)}>{t(statusKey)}</span></TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {p.actualPaymentDate ? format(new Date(p.actualPaymentDate), "MMM d, yyyy") : ":"}
                     </TableCell>
@@ -104,6 +112,7 @@ function PayoutsSection({ repId, workspaceId, currency }: { repId: string; works
 }
 
 export function RepPortal() {
+  const { t } = useTranslation();
   const { activeWorkspace } = useWorkspace();
   const currency = activeWorkspace?.currency || "USD";
   const params = useParams();
@@ -142,7 +151,7 @@ export function RepPortal() {
           <MonthPicker 
             value={period}
             onChange={setPeriod}
-            placeholder="Pick a month"
+            placeholder={t("common.pickMonth")}
             className="w-40 h-9"
           />
         </div>
@@ -210,7 +219,7 @@ export function RepPortal() {
       {summary.monthlyHistory && summary.monthlyHistory.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Earnings History</CardTitle>
+            <CardTitle>{t("portal.rep.title")}</CardTitle>
             <CardDescription>Past 6 months of commission payouts.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -249,7 +258,7 @@ export function RepPortal() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Deal Breakdown</CardTitle>
+          <CardTitle>{t("portal.rep.dealBreakdown")}</CardTitle>
           <CardDescription>Individual deal commissions for this period.</CardDescription>
         </CardHeader>
         <CardContent>

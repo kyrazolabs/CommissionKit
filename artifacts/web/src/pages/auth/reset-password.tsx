@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ const useIsMobile = () => {
 };
 
 export function ResetPasswordPage() {
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [, setLocation] = useLocation();
   const [password, setPassword] = useState("");
@@ -48,8 +50,8 @@ export function ResetPasswordPage() {
     e.preventDefault();
     if (!token) {
       toast({
-        title: "Error",
-        description: "Password reset token is missing.",
+        title: t("resetPassword.error"),
+        description: t("resetPassword.missingToken"),
         variant: "destructive",
       });
       return;
@@ -57,8 +59,8 @@ export function ResetPasswordPage() {
 
     if (!isFormValid) {
       toast({
-        title: "Validation error",
-        description: "Please ensure all password requirements are met.",
+        title: t("resetPassword.validationError"),
+        description: t("resetPassword.validationMessage"),
         variant: "destructive",
       });
       return;
@@ -76,14 +78,14 @@ export function ResetPasswordPage() {
 
       setSuccess(true);
       toast({
-        title: "Password reset successful",
-        description: "Your password has been updated. You can now sign in with your new password.",
+        title: t("resetPassword.resetSuccess"),
+        description: t("resetPassword.resetSuccessMessage"),
       });
     } catch (err: any) {
       console.error("Password reset error:", err);
       toast({
-        title: "Password reset failed",
-        description: err.message ?? "An error occurred while resetting your password. The link may have expired.",
+        title: t("resetPassword.resetFailed"),
+        description: err.message ?? t("resetPassword.resetFailedMessage"),
         variant: "destructive",
       });
     } finally {
@@ -243,7 +245,7 @@ export function ResetPasswordPage() {
                               <Input
                                 id="password"
                                 type="password"
-                                placeholder="••••••••"
+                                placeholder=""
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
@@ -304,7 +306,7 @@ export function ResetPasswordPage() {
                                   exit={{ opacity: 0, y: -10 }}
                                   transition={{ duration: 0.15 }}
                                 >
-                                  {loading ? "Updating password…" : "Reset password"}
+                                  {loading ? t("resetPassword.updatingPassword") : t("resetPassword.resetPasswordButton")}
                                 </motion.span>
                               </AnimatePresence>
                             </Button>
