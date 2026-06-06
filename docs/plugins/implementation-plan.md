@@ -78,13 +78,13 @@ This plan converts the plugin architecture from design into code. The implementa
 
 ## Phase 2: Odoo Connector (Weeks 3-4)
 
-**Goal**: Full Odoo integration — the reference connector implementation.
+**Goal**: Odoo integration — Reps + Deals only. The reference connector implementation. No enterprise engine (AISSOL/invoices/projects) — that's handled separately via the Enterprise API.
 
 ### Tasks
 
 #### 2.1 Odoo Client
 - [ ] Create `plugins/odoo/` directory
-- [ ] Implement `OdooClient` — Odoo JSON-RPC wrapper (authenticate, searchRead, searchCount, create, write, unlink)
+- [ ] Implement `OdooClient` — Odoo JSON-RPC wrapper (authenticate, searchRead, searchCount, write)
 - [ ] Handle Odoo session management
 - [ ] Implement rate limiting (3 concurrent requests)
 - [ ] Tests with mock Odoo JSON-RPC responses
@@ -92,34 +92,29 @@ This plan converts the plugin architecture from design into code. The implementa
 #### 2.2 Odoo Connector
 - [ ] Implement `OdooConnector` extending `BasePlugin`
 - [ ] Implement `fetchReps()` — `res.users` → NormalizedRep
-- [ ] Implement `fetchDeals()` — `sale.order` → NormalizedDeal
-- [ ] Implement `fetchProjects()` — `project.project` → NormalizedProject (enterprise)
-- [ ] Implement `fetchInvoices()` — `account.move` → NormalizedInvoice (enterprise)
-- [ ] Implement `fetchPayments()` — `account.payment` → NormalizedPayment
+- [ ] Implement `fetchDeals()` — `sale.order` (Sales app + CRM app path) → NormalizedDeal
 - [ ] Implement currency name → ISO 4217 mapping
-- [ ] Implement payment status derivation from invoice state
-- [ ] Tests for all fetch methods
+- [ ] Implement payment status derivation from `sale.order.invoice_status` (no separate payment sync needed)
+- [ ] Tests for both fetch methods
 
 #### 2.3 Odoo Webhooks
 - [ ] Implement `verifyWebhook()` — HMAC-SHA256 verification
-- [ ] Implement `parseWebhook()` — Odoo event → IngresEvent
+- [ ] Implement `parseWebhook()` — Odoo event → IngresEvent (only `sale.order` and `res.users` models)
 - [ ] Create `ckit_webhooks` Odoo module (Python) for users to install
   - [ ] `__manifest__.py`
-  - [ ] `models/webhook.py` — Hook into `create`, `write`, `unlink`
-  - [ ] `data/automation.xml` — Automated actions for key models
+  - [ ] `models/webhook.py` — Hook into `create`, `write` on `sale.order` and `res.users`
   - [ ] Documentation for installing the module
 
 #### 2.4 Odoo Write-Back
 - [ ] Implement `writeBackCommission()` — Creates/updates custom fields on `sale.order`
 - [ ] Implement `writeBackPayoutStatus()` — Updates payout status fields
-- [ ] Implement `ensureCustomFields()` — Idempotent custom field creation
-- [ ] Define custom field specs in `fields.ts`
+- [ ] Implement `ensureCustomFields()` — Idempotent custom field creation in Odoo
 
 ### Deliverables
-- Full Odoo ERP integration
-- Automated rep + deal + invoice + payment sync
+- Odoo rep + deal sync (standard engine)
+- Payment status derived from `sale.order.invoice_status`
 - Webhook-based real-time updates
-- Commission/payout write-back to Odoo
+- Commission/payout write-back to `sale.order` custom fields
 
 ---
 

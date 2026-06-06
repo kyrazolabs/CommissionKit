@@ -7,14 +7,20 @@ This document defines how entities from various ERP/CRM systems map to Commissio
 ## Entity Mapping Overview
 
 | CommissionKit Entity | Odoo ERP | HubSpot CRM | Salesforce CRM | Zoho CRM | Dynamics 365 | Generic REST |
-|---|---|---|---|---|---|---|
-| **Rep** | `res.users` / `hr.employee` (salespersons) | Contact (with "sales rep" property) | User (sales reps) | SalesPersons | SystemUser (salesperson role) | Configurable |
+|---|---|---|---|---|---|---|---|
+| **Rep** | `res.users` (salespersons) | Owner | User (sales reps) | SalesPersons | SystemUser (salesperson role) | Configurable |
 | **Deal** | `sale.order` (confirmed) | Deal | Opportunity (closed-won) | Deal (closed-won) | Opportunity (won) | Configurable |
-| **Project** | `project.project` | — (N/A) | — (N/A) | — (N/A) | Project | Configurable |
-| **Invoice** | `account.move` (customer invoice) | — (N/A) | — (N/A) | Invoice | Invoice | Configurable |
-| **Payment** | `account.payment` | — (N/A) | — (N/A) | — (N/A) | Payment | Configurable |
 
-**Key insight**: CRM platforms (HubSpot, Salesforce, Zoho) primarily have Deals/Opportunities. ERP platforms (Odoo, Dynamics) additionally have Projects, Invoices, and Payments. The plugin architecture handles both: CRM connectors sync only Reps + Deals; ERP connectors sync everything.
+**That's it for the standard connector.** Reps and Deals are the only data synced. The standard engine works with these two entities to calculate commissions (flat, tiered, accelerator).
+
+**Enterprise engine (AISSOL) additionally maps**:
+
+| CommissionKit Entity | Odoo ERP | Dynamics 365 | Generic REST |
+|---|---|---|---|
+| **Project** | `project.project` | Project | Configurable |
+| **Invoice** | `account.move` (customer invoice) | Invoice | Configurable |
+
+CRM platforms (HubSpot, Salesforce, Zoho) only have Deals/Opportunities — they sync Reps + Deals and nothing else.
 
 ---
 
@@ -67,7 +73,9 @@ This document defines how entities from various ERP/CRM systems map to Commissio
 
 ---
 
-## Project Mapping (Enterprise / AISSOL Engine)
+## Project Mapping (Enterprise / AISSOL Engine Only)
+
+> **Not part of the standard connector.** The Odoo connector syncs only Reps and Deals. Project/Invoice mapping applies exclusively to enterprise engine workspaces using the AISSOL engine. These connectors are separate from the standard Reps + Deals sync.
 
 | CKit Field | Odoo | Dynamics 365 | Generic |
 |---|---|---|---|
@@ -82,7 +90,9 @@ This document defines how entities from various ERP/CRM systems map to Commissio
 
 ---
 
-## Invoice Mapping (Enterprise / AISSOL Engine)
+## Invoice Mapping (Enterprise / AISSOL Engine Only)
+
+> **Not part of the standard connector.** Same as above — enterprise engine only.
 
 | CKit Field | Odoo | Dynamics 365 | Generic |
 |---|---|---|---|
@@ -101,14 +111,15 @@ This document defines how entities from various ERP/CRM systems map to Commissio
 
 ## Payment Status Mapping
 
-| CKit Status | Odoo `payment_state` | Dynamics 365 |
-|---|---|---|
-| `unpaid` | `not_paid` | Unpaid |
-| `paid` | `paid` or `in_payment` | Paid |
-| `partial` | `partial` | Partial |
-| `on_hold` | `reversed` or cancelled | On Hold |
+**For the standard Odoo connector**, payment status is read directly from `sale.order.invoice_status` — no separate payment sync needed:
 
-**Clawback automation**: When a deal's `paymentStatus` changes from `paid` to `unpaid` (refunded, charged back), the sync engine triggers clawback enforcement — existing commission run results for that deal are flagged, and the next run recalculates accordingly.
+| CKit Status | Odoo `sale.order.invoice_status` |
+|---|---|
+| `unpaid` | `to_invoice`, `no` |
+| `partial` | `invoiced`, `partial` |
+| `paid` | `fully_paid`, `paid` |
+
+**CLawback automation**: When a deal's `paymentStatus` changes from `paid` to `unpaid` (refunded, charged back), the sync engine triggers clawback enforcement — existing commission run results for that deal are flagged, and the next run recalculates accordingly.
 
 ---
 
@@ -118,9 +129,7 @@ This document defines how entities from various ERP/CRM systems map to Commissio
 |---|---|---|
 | Rep name, email, role | ERP | ERP → CKit |
 | Deal amount, closeDate, stage, currency | ERP | ERP → CKit |
-| Deal paymentStatus | ERP | ERP → CKit |
-| Project totalValue, totalCost, status | ERP | ERP → CKit |
-| Invoice amount, dueDate, paymentStatus | ERP | ERP → CKit |
+| Deal paymentStatus | ERP | ERP → CKit (from `sale.order.invoice_status` in Odoo) |
 | Commission plan assignment | CKit | — (manual in CKit) |
 | Commission calculation results | CKit | CKit → ERP (optional write-back) |
 | Payout status | CKit | CKit → ERP (optional write-back) |
