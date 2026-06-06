@@ -1,0 +1,20 @@
+{
+  "name": "@workspace/plugins-custom",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "zod": "catalog:",
+    "@workspace/plugins-core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:"
+  },
+  "scripts": {
+    "test": "bun test"
+  }
+}

@@ -6,6 +6,8 @@ import { logger } from "./lib/logger";
 import { getRedisClient, verifySmtp, enqueueExchangeRateSync, enqueueLogsFlush } from "@workspace/queue";
 import { connectDB } from "@workspace/db";
 import { bootstrapEngines } from "./workers/engines/registry";
+import { pluginRegistry } from "@workspace/plugins-core";
+import { CustomConnector } from "@workspace/plugins-custom";
 
 // ─── Boot workers (moved to boot() function) ──────────────────────────────────
 
@@ -33,11 +35,35 @@ async function boot() {
     // Register all commission engines
     await bootstrapEngines();
 
+    // Register plugins
+    pluginRegistry.register(new CustomConnector());
+
+    // Rehydrate connected workspaces
+    const { IntegrationConnection } = await import("@workspace/db");
+    const activeConnections = await IntegrationConnection.find({ status: "connected" });
+    for (const conn of activeConnections) {
+      try {
+        const plugin = pluginRegistry.get(conn.connectorName);
+        if (plugin) {
+          await plugin.init(
+            conn.workspaceId.toString(),
+            conn.config as Record<string, unknown>,
+          );
+          logger.info({ workspaceId: conn.workspaceId, connector: conn.connectorName }, "[Boot] Rehydrated plugin connection");
+        }
+      } catch (err) {
+        logger.error({ err, workspaceId: conn.workspaceId, connector: conn.connectorName }, "[Boot] Failed to rehydrate plugin");
+      }
+    }
+
     // ─── Boot workers ─────────────────────────────────────────────────────────────
     // Register BullMQ workers only AFTER DB is connected.
     await import("@workspace/queue/worker");
     await import("./workers/calc-worker");
     await import("./workers/logs-worker");
+    await import("./workers/sync-reps-worker");
+    await import("./workers/sync-deals-worker");
+    await import("./workers/webhook-ingress-worker");
     
     const server = app.listen(port, (err) => {
       if (err) {
@@ -62,10 +88,31 @@ async function boot() {
         try {
           const { closeWorkers } = await import("@workspace/queue/worker");
           await closeWorkers();
-          
-          // Close local logs worker
+
+          // Close sync workers
+          const { syncRepsWorker } = await import("./workers/sync-reps-worker");
+          const { syncDealsWorker } = await import("./workers/sync-deals-worker");
+          const { webhookIngressWorker } = await import("./workers/webhook-ingress-worker");
+          await syncRepsWorker.close();
+          await syncDealsWorker.close();
+          await webhookIngressWorker.close();
+
+          // Close calc + logs workers
+          const { calcWorker } = await import("./workers/calc-worker");
           const { logsWorker } = await import("./workers/logs-worker");
+          await calcWorker.close();
           await logsWorker.close();
+
+          // Destroy all plugin connections
+          for (const plugin of pluginRegistry.list()) {
+            const connections = await IntegrationConnection.find({
+              connectorName: plugin.name,
+              status: "connected",
+            });
+            for (const conn of connections) {
+              await plugin.destroy(conn.workspaceId.toString()).catch(() => {});
+            }
+          }
 
           await getRedisClient().quit();
           logger.info("Shutdown complete");

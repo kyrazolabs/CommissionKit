@@ -9,7 +9,14 @@ const RepSchema = new Schema({
   planId: { type: Schema.Types.ObjectId, ref: "Plan" },
   portalAccessCode: { type: String, unique: true, sparse: true },
   portalUsername: { type: String, unique: true, sparse: true },
+  externalId: { type: String, index: true, sparse: true },
+  sourceSystem: { type: String },
+  syncHash: { type: String },
+  lastSyncedAt: { type: Date },
+  metadata: { type: Schema.Types.Mixed },
 }, { timestamps: { createdAt: true, updatedAt: false } });
+
+RepSchema.index({ workspaceId: 1, sourceSystem: 1, externalId: 1 }, { unique: true, sparse: true });
 
 export const Rep = model("Rep", RepSchema);
 
@@ -22,6 +29,11 @@ export type Rep = mongoose.Document & {
   planId?: Types.ObjectId;
   portalAccessCode?: string;
   portalUsername?: string;
+  externalId?: string;
+  sourceSystem?: string;
+  syncHash?: string;
+  lastSyncedAt?: Date;
+  metadata?: Record<string, unknown>;
   createdAt: Date;
 };
 

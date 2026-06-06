@@ -1,0 +1,462 @@
+import { Router, type IRouter } from "express";
+import { IntegrationConnection, IntegrationSync, IntegrationLog, WorkspaceMember } from "@workspace/db";
+import { pluginRegistry } from "@workspace/plugins-core";
+import {
+  syncRepsQueue,
+  syncDealsQueue,
+  webhookIngressQueue,
+} from "@workspace/queue";
+import {
+  requirePermission,
+  type AuthenticatedRequest,
+} from "../../middleware/auth";
+import { logger } from "../../lib/logger";
+
+const router: IRouter = Router();
+
+// ─── List available connectors ──────────────────────────────────────
+
+router.get(
+  "/connectors",
+  async (_req, res): Promise<void> => {
+    const connectors = pluginRegistry.list().map((p) => {
+      const meta = p.getUIMetadata();
+      return {
+        name: p.name,
+        displayName: p.displayName,
+        description: p.description,
+        icon: p.icon,
+        category: meta.category,
+        features: meta.features,
+        version: p.version,
+      };
+    });
+
+    res.json({ connectors });
+  },
+);
+
+// ─── Get connector metadata + settings schema ───────────────────────
+
+router.get(
+  "/connectors/:name",
+  async (req, res): Promise<void> => {
+    const plugin = pluginRegistry.get(req.params.name);
+    if (!plugin) {
+      res.status(404).json({ error: "Connector not found" });
+      return;
+    }
+
+    const meta = plugin.getUIMetadata();
+    res.json({
+      name: plugin.name,
+      displayName: plugin.displayName,
+      description: plugin.description,
+      icon: plugin.icon,
+      category: meta.category,
+      version: plugin.version,
+      features: meta.features,
+      setupGuideUrl: meta.setupGuideUrl,
+      settingsSchema: plugin.getSettingsSchema(),
+    });
+  },
+);
+
+// ─── Get connection status ──────────────────────────────────────────
+
+router.get(
+  "/:workspaceId/status",
+  ...requirePermission("workspace", "read"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+
+    const conn = await IntegrationConnection.findOne({
+      workspaceId,
+    });
+
+    if (!conn) {
+      res.json({ connected: false });
+      return;
+    }
+
+    const plugin = pluginRegistry.get(conn.connectorName);
+    const status = plugin ? await plugin.getStatus(workspaceId) : "disconnected";
+
+    const recentSyncs = await IntegrationSync.find({
+      workspaceId,
+      connectorName: conn.connectorName,
+    })
+      .sort({ startedAt: -1 })
+      .limit(10)
+      .lean();
+
+    res.json({
+      connected: conn.status === "connected",
+      connectorName: conn.connectorName,
+      connectorDisplayName: plugin?.displayName || conn.connectorName,
+      status,
+      lastSyncedAt: conn.lastSyncedAt,
+      syncSchedule: conn.syncSchedule,
+      writeBackEnabled: conn.writeBackEnabled,
+      lastError: conn.lastError,
+      recentSyncs: recentSyncs.map((s: any) => ({
+        id: s._id,
+        entityType: s.entityType,
+        status: s.status,
+        trigger: s.trigger,
+        stats: s.stats,
+        completedAt: s.completedAt,
+      })),
+    });
+  },
+);
+
+// ─── Test connection ────────────────────────────────────────────────
+
+router.post(
+  "/:workspaceId/test",
+  ...requirePermission("workspace", "edit"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const { connectorName, config } = req.body;
+
+    const plugin = pluginRegistry.get(connectorName);
+    if (!plugin) {
+      res.status(404).json({ error: "Connector not found" });
+      return;
+    }
+
+    try {
+      const result = await plugin.testConnection(config);
+      res.json(result);
+    } catch (err: any) {
+      res.json({ success: false, message: err.message || "Test failed" });
+    }
+  },
+);
+
+// ─── Connect workspace to ERP ───────────────────────────────────────
+
+router.post(
+  "/:workspaceId/connect",
+  ...requirePermission("workspace", "edit"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const { connectorName, config, syncSchedule, writeBackEnabled } = req.body;
+
+    const plugin = pluginRegistry.get(connectorName);
+    if (!plugin) {
+      res.status(404).json({ error: "Connector not found" });
+      return;
+    }
+
+    try {
+      // Test first
+      const testResult = await plugin.testConnection(config);
+      if (!testResult.success) {
+        res.status(400).json({ error: "Connection test failed", details: testResult });
+        return;
+      }
+
+      // Init plugin
+      await plugin.init(workspaceId, config);
+
+      // Upsert connection record
+      const webhookSecret = Array.from(
+        { length: 32 },
+        () => Math.random().toString(36)[2],
+      ).join("");
+
+      const conn = await IntegrationConnection.findOneAndUpdate(
+        { workspaceId },
+        {
+          workspaceId,
+          connectorName,
+          status: "connected",
+          config,
+          webhookSecret,
+          syncSchedule: syncSchedule || { reps: "hourly", deals: "hourly" },
+          writeBackEnabled: writeBackEnabled ?? false,
+          lastConnectedAt: new Date(),
+          lastError: undefined,
+        },
+        { upsert: true, new: true },
+      );
+
+      // Enqueue initial syncs
+      await syncRepsQueue.add(`initial-reps-${workspaceId}`, {
+        workspaceId,
+        connectorName,
+        trigger: "initial",
+      });
+
+      await syncDealsQueue.add(`initial-deals-${workspaceId}`, {
+        workspaceId,
+        connectorName,
+        trigger: "initial",
+      });
+
+      const webhookUrl = `${process.env.API_BASE_URL || "http://localhost:8088"}/api/integrations/webhooks/${connectorName}`;
+
+      logger.info({ workspaceId, connectorName }, "[Integrations] Workspace connected");
+
+      res.json({
+        success: true,
+        connection: {
+          workspaceId,
+          connectorName,
+          status: "connected",
+          webhookUrl,
+        },
+      });
+    } catch (err: any) {
+      logger.error({ err, workspaceId, connectorName }, "[Integrations] Connection failed");
+      res.status(500).json({ error: err.message || "Connection failed" });
+    }
+  },
+);
+
+// ─── Update config ─────────────────────────────────────────────────
+
+router.patch(
+  "/:workspaceId/config",
+  ...requirePermission("workspace", "edit"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const { config, syncSchedule, writeBackEnabled } = req.body;
+
+    const conn = await IntegrationConnection.findOne({ workspaceId });
+    if (!conn) {
+      res.status(404).json({ error: "No connection found" });
+      return;
+    }
+
+    if (config) conn.config = config;
+    if (syncSchedule) conn.syncSchedule = syncSchedule;
+    if (writeBackEnabled !== undefined) conn.writeBackEnabled = writeBackEnabled;
+
+    await conn.save();
+
+    // Re-init plugin with new config
+    const plugin = pluginRegistry.get(conn.connectorName);
+    if (plugin && config) {
+      await plugin.init(workspaceId, config);
+    }
+
+    res.json({ success: true });
+  },
+);
+
+// ─── Disconnect ─────────────────────────────────────────────────────
+
+router.delete(
+  "/:workspaceId/disconnect",
+  ...requirePermission("workspace", "edit"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+
+    const conn = await IntegrationConnection.findOne({ workspaceId });
+    if (!conn) {
+      res.status(404).json({ error: "No connection found" });
+      return;
+    }
+
+    const plugin = pluginRegistry.get(conn.connectorName);
+    if (plugin) {
+      await plugin.destroy(workspaceId);
+    }
+
+    await IntegrationConnection.findOneAndUpdate(
+      { workspaceId },
+      { status: "disconnected", lastError: undefined },
+    );
+
+    logger.info({ workspaceId, connectorName: conn.connectorName }, "[Integrations] Workspace disconnected");
+
+    res.json({ success: true });
+  },
+);
+
+// ─── Manual sync trigger ────────────────────────────────────────────
+
+router.post(
+  "/:workspaceId/sync/:entityType",
+  ...requirePermission("workspace", "edit"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const entityType = String(req.params.entityType);
+    const { externalIds, fullSync } = req.body || {};
+
+    if (!["reps", "deals"].includes(entityType)) {
+      res.status(400).json({ error: "entityType must be 'reps' or 'deals'" });
+      return;
+    }
+
+    const conn = await IntegrationConnection.findOne({ workspaceId });
+    if (!conn || conn.status !== "connected") {
+      res.status(400).json({ error: "Not connected" });
+      return;
+    }
+
+    const queue = entityType === "reps" ? syncRepsQueue : syncDealsQueue;
+    const job = await queue.add(`manual-${entityType}-${workspaceId}`, {
+      workspaceId,
+      connectorName: conn.connectorName,
+      trigger: "manual",
+      options: { externalIds, fullSync },
+    });
+
+    res.json({ syncId: job.id, status: "running" });
+  },
+);
+
+// ─── Sync history ───────────────────────────────────────────────────
+
+router.get(
+  "/:workspaceId/sync-history",
+  ...requirePermission("workspace", "read"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const { entityType, status, limit, offset } = req.query;
+
+    const filter: any = { workspaceId };
+    if (entityType) filter.entityType = entityType;
+    if (status) filter.status = status;
+
+    const syncs = await IntegrationSync.find(filter)
+      .sort({ startedAt: -1 })
+      .skip(Number(offset) || 0)
+      .limit(Number(limit) || 50)
+      .lean();
+
+    const total = await IntegrationSync.countDocuments(filter);
+
+    res.json({
+      syncs: syncs.map((s: any) => ({
+        id: s._id,
+        entityType: s.entityType,
+        direction: s.direction,
+        trigger: s.trigger,
+        status: s.status,
+        stats: s.stats,
+        startedAt: s.startedAt,
+        completedAt: s.completedAt,
+      })),
+      total,
+    });
+  },
+);
+
+// ─── Sync detail ────────────────────────────────────────────────────
+
+router.get(
+  "/:workspaceId/sync-history/:syncId",
+  ...requirePermission("workspace", "read"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+
+    const sync = await IntegrationSync.findOne({
+      _id: req.params.syncId,
+      workspaceId,
+    }).lean();
+
+    if (!sync) {
+      res.status(404).json({ error: "Sync not found" });
+      return;
+    }
+
+    const logs = await IntegrationLog.find({ syncId: (sync as any)._id })
+      .sort({ createdAt: 1 })
+      .limit(500)
+      .lean();
+
+    res.json({
+      ...sync,
+      logs: logs.map((l: any) => ({
+        id: l._id,
+        entityType: l.entityType,
+        externalId: l.externalId,
+        action: l.action,
+        message: l.message,
+        createdAt: l.createdAt,
+      })),
+    });
+  },
+);
+
+// ─── Webhook receiver (public) ──────────────────────────────────────
+
+router.post(
+  "/webhooks/:connectorName",
+  async (req, res): Promise<void> => {
+    const { connectorName } = req.params;
+
+    const plugin = pluginRegistry.get(connectorName);
+    if (!plugin) {
+      res.status(404).json({ error: "Unknown connector" });
+      return;
+    }
+
+    try {
+      // Find all connections for this connector and try to verify
+      const connections = await IntegrationConnection.find({
+        connectorName,
+        status: "connected",
+      });
+
+      if (connections.length === 0) {
+        res.status(200).json({ received: true });
+        return;
+      }
+
+      // Try each connection's webhook secret until one verifies
+      let verifiedConn: typeof connections[0] | null = null;
+      for (const conn of connections) {
+        try {
+          await plugin.verifyWebhook(
+            {
+              method: req.method,
+              path: req.path,
+              headers: req.headers as Record<string, string>,
+              body: req.body,
+              rawBody: Buffer.from(JSON.stringify(req.body)),
+            },
+            conn.webhookSecret || "",
+          );
+          verifiedConn = conn;
+          break;
+        } catch {
+          // Try next
+        }
+      }
+
+      if (!verifiedConn) {
+        res.status(401).json({ error: "Webhook verification failed" });
+        return;
+      }
+
+      const events = plugin.parseWebhook(req.body);
+
+      for (const event of events) {
+        await webhookIngressQueue.add(
+          `wh-${event.type}-${event.externalId}`,
+          {
+            workspaceId: event.workspaceId,
+            connectorName,
+            entityType: event.type.startsWith("rep") ? "reps" : "deals",
+            eventType: event.type.includes("created") ? "created" : event.type.includes("deleted") ? "deleted" : "updated",
+            externalId: event.externalId,
+            timestamp: event.timestamp.toISOString(),
+            payload: event.payload,
+          },
+        );
+      }
+
+      res.status(200).json({ received: true, events: events.length });
+    } catch (err: any) {
+      logger.error({ err, connectorName }, "[Webhook] Processing failed");
+      res.status(500).json({ error: "Webhook processing failed" });
+    }
+  },
+);
+
+export default router;

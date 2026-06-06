@@ -9,3 +9,6 @@ export * from "./exchangeRate";
 export * from "./payouts";
 export * from "./disputes";
 export * from "./roles";
+export * from "./integrationConnection";
+export * from "./integrationSync";
+export * from "./integrationLog";

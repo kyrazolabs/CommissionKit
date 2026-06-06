@@ -16,7 +16,14 @@ const DealSchema = new Schema({
   notes: { type: String },
   clawbackApplied: { type: Boolean, default: false },
   clawbackAmount: { type: Number, default: 0 },
+  externalId: { type: String, index: true, sparse: true },
+  sourceSystem: { type: String },
+  syncHash: { type: String },
+  lastSyncedAt: { type: Date },
+  metadata: { type: Schema.Types.Mixed },
 }, { timestamps: { createdAt: true, updatedAt: false } });
+
+DealSchema.index({ workspaceId: 1, sourceSystem: 1, externalId: 1 }, { unique: true, sparse: true });
 
 export const Deal = model("Deal", DealSchema);
 
@@ -34,6 +41,11 @@ export type Deal = mongoose.Document & {
   notes?: string;
   clawbackApplied?: boolean;
   clawbackAmount?: number;
+  externalId?: string;
+  sourceSystem?: string;
+  syncHash?: string;
+  lastSyncedAt?: Date;
+  metadata?: Record<string, unknown>;
   createdAt: Date;
 };
 
