@@ -1,0 +1,532 @@
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { useWorkspace } from "@/hooks/use-workspace";
+import { useRole } from "@/hooks/use-role";
+import { usePageMeta } from "@/hooks/use-page-meta";
+import { apiFetch } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog, DialogContent, DialogDescription,
+  DialogHeader, DialogTitle, DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Table, TableBody, TableCell,
+  TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Switch } from "@/components/ui/switch";
+import {
+  Plug, Store, Sprout, Cable, CheckCircle2, XCircle,
+  AlertTriangle, RefreshCw, Trash2, ArrowRight, ExternalLink,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const CONNECTOR_ICONS: Record<string, any> = {
+  odoo: Store,
+  custom: Cable,
+  hubspot: Sprout,
+};
+
+interface Connector {
+  name: string;
+  displayName: string;
+  description: string;
+  icon: string;
+  category: string;
+  features: string[];
+  version: string;
+}
+
+interface ConnectionStatus {
+  connected: boolean;
+  connectorName?: string;
+  connectorDisplayName?: string;
+  status?: string;
+  lastSyncedAt?: string;
+  syncSchedule?: { reps: string; deals: string };
+  writeBackEnabled?: boolean;
+  lastError?: string;
+  recentSyncs?: Array<{
+    id: string;
+    entityType: string;
+    status: string;
+    trigger: string;
+    stats: { total: number; created: number; updated: number; skipped: number; failed: number };
+    completedAt: string;
+  }>;
+}
+
+export function IntegrationsPage() {
+  usePageMeta({ title: "Integrations", description: "Connect CommissionKit to your ERP or CRM.", robots: "noindex, nofollow" });
+  const { activeWorkspace } = useWorkspace();
+  const { t } = useTranslation();
+  const { hasPermission } = useRole();
+  const queryClient = useQueryClient();
+
+  const [selectedConnector, setSelectedConnector] = useState<string | null>(null);
+  const [connecting, setConnecting] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [syncTarget, setSyncTarget] = useState<string | null>(null);
+
+  // Form state
+  const [formValues, setFormValues] = useState<Record<string, string | boolean>>({});
+
+  const { data: connectors, isLoading: connectorsLoading } = useQuery<{ connectors: Connector[] }>({
+    queryKey: ["integrations", "connectors"],
+    queryFn: () => apiFetch("/api/integrations/connectors"),
+  });
+
+  const { data: status, isLoading: statusLoading } = useQuery<ConnectionStatus>({
+    queryKey: ["integrations", "status", activeWorkspace?.id],
+    queryFn: () => apiFetch(`/api/integrations/${activeWorkspace?.id}/status`),
+    enabled: !!activeWorkspace?.id,
+    refetchInterval: 10000,
+  });
+
+  const testMutation = useMutation({
+    mutationFn: (data: { connectorName: string; config: Record<string, unknown> }) =>
+      apiFetch(`/api/integrations/${activeWorkspace?.id}/test`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: (data: any) => {
+      setTestResult(data);
+    },
+  });
+
+  const connectMutation = useMutation({
+    mutationFn: (data: { connectorName: string; config: Record<string, unknown> }) =>
+      apiFetch(`/api/integrations/${activeWorkspace?.id}/connect`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["integrations"] });
+      setSelectedConnector(null);
+      setConnecting(false);
+      setFormValues({});
+      setTestResult(null);
+    },
+  });
+
+  const disconnectMutation = useMutation({
+    mutationFn: () =>
+      apiFetch(`/api/integrations/${activeWorkspace?.id}/disconnect`, { method: "DELETE" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["integrations"] });
+    },
+  });
+
+  const syncMutation = useMutation({
+    mutationFn: (entityType: string) =>
+      apiFetch(`/api/integrations/${activeWorkspace?.id}/sync/${entityType}`, { method: "POST" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["integrations"] });
+      setSyncTarget(null);
+    },
+  });
+
+  const handleTest = async (connectorName: string) => {
+    setTesting(true);
+    setTestResult(null);
+    const config: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(formValues)) {
+      if (k !== "syncClosedOnly" && k !== "writeBackEnabled") {
+        config[k] = v;
+      }
+    }
+    testMutation.mutate({ connectorName, config }, { onSettled: () => setTesting(false) });
+  };
+
+  const handleConnect = async (connectorName: string) => {
+    setConnecting(true);
+    const config: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(formValues)) {
+      if (k !== "syncClosedOnly" && k !== "writeBackEnabled") {
+        config[k] = v;
+      }
+    }
+    connectMutation.mutate(
+      {
+        connectorName,
+        config,
+      },
+      { onSettled: () => setConnecting(false) },
+    );
+  };
+
+  const isLoading = connectorsLoading || statusLoading;
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-4xl px-6 py-8 space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-4 w-96" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Skeleton className="h-48" />
+          <Skeleton className="h-48" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasPermission("workspace", "read")) {
+    return (
+      <div className="mx-auto max-w-4xl px-6 py-8">
+        <Card>
+          <CardContent className="py-8 text-center">
+            <p className="text-muted-foreground">{t("common.accessDenied")}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const ConnectorIcon = status?.connected
+    ? CONNECTOR_ICONS[status.connectorName || ""] || Plug
+    : null;
+
+  return (
+    <div className="mx-auto max-w-4xl px-6 py-8 space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          Integrations
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Connect CommissionKit to your ERP or CRM. Synced reps and deals are ready for commission calculation.
+        </p>
+      </div>
+
+      {/* Connection status */}
+      {status?.connected && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {ConnectorIcon && (
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-teal-600/10 text-teal-600">
+                    <ConnectorIcon className="size-5" />
+                  </div>
+                )}
+                <div>
+                  <CardTitle className="text-base">
+                    Connected to {status.connectorDisplayName || status.connectorName}
+                  </CardTitle>
+                  <CardDescription>
+                    {status.status === "connected" ? (
+                      <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                        <CheckCircle2 className="size-3.5" />
+                        Connected
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5 text-amber-600">
+                        <AlertTriangle className="size-3.5" />
+                        {status.status}
+                      </span>
+                    )}
+                  </CardDescription>
+                </div>
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Trash2 className="size-3.5 mr-1.5" />
+                    Disconnect
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Disconnect from {status.connectorDisplayName}?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will stop syncing data. Your existing reps and deals will remain in CommissionKit.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => disconnectMutation.mutate()}>
+                      Disconnect
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
+            {/* Sync controls */}
+            <div className="flex items-center gap-3">
+              <p className="text-sm font-medium">Manual Sync:</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => syncMutation.mutate("reps")}
+                disabled={syncMutation.isPending}
+              >
+                <RefreshCw className={cn("size-3.5 mr-1.5", syncMutation.isPending && "animate-spin")} />
+                Sync Reps
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => syncMutation.mutate("deals")}
+                disabled={syncMutation.isPending}
+              >
+                <RefreshCw className={cn("size-3.5 mr-1.5", syncMutation.isPending && "animate-spin")} />
+                Sync Deals
+              </Button>
+            </div>
+
+            {status.lastSyncedAt && (
+              <p className="text-xs text-muted-foreground">
+                Last synced: {new Date(status.lastSyncedAt).toLocaleString()}
+              </p>
+            )}
+
+            {status.lastError && (
+              <div className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+                <AlertTriangle className="size-4 shrink-0" />
+                {status.lastError}
+              </div>
+            )}
+
+            {/* Recent syncs */}
+            {status.recentSyncs && status.recentSyncs.length > 0 && (
+              <div>
+                <p className="text-sm font-medium mb-2">Recent Syncs</p>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs">Type</TableHead>
+                      <TableHead className="text-xs">Trigger</TableHead>
+                      <TableHead className="text-xs">Status</TableHead>
+                      <TableHead className="text-xs">Stats</TableHead>
+                      <TableHead className="text-xs">Completed</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {status.recentSyncs.map((sync) => (
+                      <TableRow key={sync.id}>
+                        <TableCell className="text-xs font-medium">{sync.entityType}</TableCell>
+                        <TableCell className="text-xs capitalize">{sync.trigger}</TableCell>
+                        <TableCell className="text-xs">
+                          <Badge variant={sync.status === "completed" ? "default" : sync.status === "partial" ? "secondary" : "destructive"} className="text-[10px]">
+                            {sync.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs tabular-nums">
+                          {sync.stats.created}c / {sync.stats.updated}u / {sync.stats.skipped}s
+                          {sync.stats.failed > 0 && <span className="text-destructive ml-1">/ {sync.stats.failed}f</span>}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {sync.completedAt ? new Date(sync.completedAt).toLocaleString() : "-"}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Connector cards */}
+      <div>
+        <h2 className="text-lg font-semibold mb-3">
+          {status?.connected ? "Switch Connector" : "Choose a Connector"}
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {connectors?.connectors?.map((connector) => {
+            const IconComponent = CONNECTOR_ICONS[connector.name] || Plug;
+            const isConnected = status?.connectorName === connector.name;
+
+            return (
+              <Card
+                key={connector.name}
+                className={cn(
+                  "transition-colors",
+                  isConnected && "ring-2 ring-teal-600/50",
+                )}
+              >
+                <CardHeader className="pb-2">
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "flex size-10 items-center justify-center rounded-xl shrink-0",
+                      isConnected ? "bg-teal-600/10 text-teal-600" : "bg-muted text-muted-foreground",
+                    )}>
+                      <IconComponent className="size-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        {connector.displayName}
+                        {isConnected && (
+                          <Badge variant="default" className="text-[10px] bg-teal-600/10 text-teal-600 border-teal-600/20">
+                            Connected
+                          </Badge>
+                        )}
+                      </CardTitle>
+                      <CardDescription className="text-xs line-clamp-2">
+                        {connector.description}
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {connector.features.map((f) => (
+                      <Badge key={f} variant="secondary" className="text-[10px]">
+                        {f.replace(/_/g, " ")}
+                      </Badge>
+                    ))}
+                  </div>
+                  <Dialog onOpenChange={(open) => {
+                    if (open) {
+                      setSelectedConnector(connector.name);
+                      setFormValues({});
+                      setTestResult(null);
+                    }
+                  }}>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant={isConnected ? "outline" : "default"}
+                        size="sm"
+                        className="w-full"
+                      >
+                        {isConnected ? "Configure" : "Set Up"}
+                        <ArrowRight className="size-3.5 ml-1.5" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[500px]">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                          <IconComponent className="size-5" />
+                          Connect to {connector.displayName}
+                        </DialogTitle>
+                        <DialogDescription>
+                          Enter your {connector.displayName} credentials to start syncing data.
+                        </DialogDescription>
+                      </DialogHeader>
+
+                      <div className="space-y-4 py-2">
+                        {/* Connector-specific fields */}
+                        {connector.name === "odoo" && (
+                          <>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs">Odoo Instance URL</Label>
+                              <Input
+                                placeholder="https://mycompany.odoo.com"
+                                value={String(formValues.baseUrl || "")}
+                                onChange={(e) => setFormValues({ ...formValues, baseUrl: e.target.value })}
+                                className="h-9 text-sm"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs">Database Name</Label>
+                              <Input
+                                placeholder="mycompany-db"
+                                value={String(formValues.database || "")}
+                                onChange={(e) => setFormValues({ ...formValues, database: e.target.value })}
+                                className="h-9 text-sm"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs">Username (Email)</Label>
+                              <Input
+                                placeholder="admin@mycompany.com"
+                                value={String(formValues.username || "")}
+                                onChange={(e) => setFormValues({ ...formValues, username: e.target.value })}
+                                className="h-9 text-sm"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs">API Key</Label>
+                              <Input
+                                type="password"
+                                placeholder="Generated from Odoo user settings"
+                                value={String(formValues.apiKey || "")}
+                                onChange={(e) => setFormValues({ ...formValues, apiKey: e.target.value })}
+                                className="h-9 text-sm"
+                              />
+                            </div>
+                          </>
+                        )}
+
+                        {connector.name === "custom" && (
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Base URL</Label>
+                            <Input
+                              placeholder="https://api.erp.example.com"
+                              value={String(formValues.baseUrl || "")}
+                              onChange={(e) => setFormValues({ ...formValues, baseUrl: e.target.value })}
+                              className="h-9 text-sm"
+                            />
+                          </div>
+                        )}
+
+                        {/* Test result */}
+                        {testResult && (
+                          <div className={cn(
+                            "rounded-lg p-3 text-sm flex items-center gap-2",
+                            testResult.success
+                              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                              : "bg-destructive/10 text-destructive",
+                          )}>
+                            {testResult.success ? (
+                              <CheckCircle2 className="size-4 shrink-0" />
+                            ) : (
+                              <XCircle className="size-4 shrink-0" />
+                            )}
+                            {testResult.message || (testResult.success ? "Connection successful" : "Connection failed")}
+                          </div>
+                        )}
+
+                        {connectMutation.isError && (
+                          <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+                            {(connectMutation.error as Error)?.message || "Connection failed"}
+                          </div>
+                        )}
+
+                        {/* Actions */}
+                        <div className="flex gap-2 pt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleTest(connector.name)}
+                            disabled={testing}
+                            className="flex-1"
+                          >
+                            {testing ? "Testing..." : "Test Connection"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => handleConnect(connector.name)}
+                            disabled={connecting}
+                            className="flex-1"
+                          >
+                            {connecting ? "Connecting..." : "Connect"}
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}

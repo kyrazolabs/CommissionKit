@@ -42,7 +42,7 @@
     "dashboard": "Dashboard", "reps": "Reps", "plans": "Plans",
     "deals": "Deals", "runs": "Runs", "reports": "Reports",
     "team": "Team", "settings": "Settings", "billing": "Billing",
-    "payouts": "Payouts", "disputes": "Disputes",
+    "payouts": "Payouts", "disputes": "Disputes", "integrations": "Integrations",
     "main": "Main", "operations": "Operations", "account": "Account",
     "enterprise": { "projects": "Projects", "matrix": "Matrix", "repPortal": "Rep Portal" }
   },

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard, Users, FileText, Briefcase, PlayCircle,
   Settings, CreditCard, LogOut, ChevronsUpDown, Check, Plus,
-  Building2, Shield, Crown, PieChart, Wallet, AlertOctagon, FolderKanban, Grid3X3,
+  Building2, Shield, Crown, PieChart, Wallet, AlertOctagon, FolderKanban, Grid3X3, Plug,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -26,6 +26,7 @@ import { apiFetch } from "@/lib/api";
 const ICON_MAP: Record<string, any> = {
   LayoutDashboard, Users, FileText, Briefcase, PlayCircle,
   Settings, CreditCard, PieChart, Wallet, AlertOctagon, FolderKanban, Building2, Grid3X3,
+  Plug,
 };
 
 const ROLE_ICONS = {
@@ -212,6 +213,7 @@ export function Sidebar() {
       items: [
         { name: t("layout.team"),     href: "/dash/team",     icon: "Users" },
         { name: t("layout.billing"),  href: "/dash/billing",  icon: "CreditCard" },
+        { name: t("layout.integrations"), href: "/dash/integrations", icon: "Plug" },
         { name: t("layout.settings"), href: "/dash/settings", icon: "Settings" },
       ],
     },

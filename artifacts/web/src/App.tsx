@@ -46,6 +46,7 @@ import { LandingPage } from "@/pages/landing";
 
 import { PayoutsPage } from "@/pages/payouts/payouts";
 import { DisputesPage } from "@/pages/payouts/disputes";
+import { IntegrationsPage } from "@/pages/integrations/integrations";
 
 import { CommissionCalculator } from "@/pages/commission-calculator";
 import { PrivacyPage } from "@/pages/legal/privacy";
@@ -300,6 +301,7 @@ function ProtectedRouter() {
         <Route path="/dash/billing" component={BillingPage} />
         <Route path="/dash/payouts" component={PayoutsPage} />
         <Route path="/dash/disputes" component={DisputesPage} />
+        <Route path="/dash/integrations" component={IntegrationsPage} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
