@@ -46,7 +46,7 @@ export class CustomConnector extends BasePlugin {
   readonly name = "custom";
   readonly displayName = "Custom REST API";
   readonly version = "1.0.0";
-  readonly description = "Connect CommissionKit to any ERP or CRM that exposes a REST API. Configure field mappings, authentication, and pagination — no code needed.";
+  readonly description = "Connect CKit to any ERP or CRM that exposes a REST API. Configure field mappings, authentication, and pagination — no code needed.";
   readonly icon = "plug";
 
   private parseConfig(config: ConnectionConfig): CustomConnectorConfig | null {

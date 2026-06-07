@@ -360,7 +360,7 @@ router.post(
 
     await IntegrationConnection.findOneAndUpdate(
       { workspaceId },
-      { lastError: undefined },
+      { lastError: '' },
     );
 
     res.json({ success: true });
