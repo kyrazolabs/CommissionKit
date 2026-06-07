@@ -195,7 +195,19 @@ export class CustomConnector extends BasePlugin {
       }
 
       const items = responsePath ? jsonpathGet(response, responsePath) : response;
-      const list = Array.isArray(items) ? items : items?.data || items?.results || items?.items || [];
+      let list: any[] = [];
+      if (Array.isArray(items)) {
+        list = items;
+      } else if (items && typeof items === "object") {
+        // Try common wrappers: data, results, items, records, then any array property
+        list = items.data || items.results || items.items || items.records;
+        if (!Array.isArray(list)) {
+          for (const key of Object.keys(items)) {
+            if (Array.isArray(items[key])) { list = items[key]; break; }
+          }
+        }
+      }
+      if (!Array.isArray(list)) list = [];
 
       for (const item of list) {
         allResults.push(mapFn(item, fieldMap));
