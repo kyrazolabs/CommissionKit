@@ -69,32 +69,52 @@ async function boot() {
 
     // Restore scheduled sync jobs for connected workspaces
     const { syncRepsQueue, syncDealsQueue } = await import("@workspace/queue");
+
+    // Sweep all existing scheduled-* repeatable jobs (cleanup stale ones)
+    const repJobs = await syncRepsQueue.getRepeatableJobs().catch(() => []);
+    for (const j of repJobs) {
+      if (j.name?.startsWith("scheduled-")) {
+        await syncRepsQueue.removeRepeatableByKey(j.key).catch(() => {});
+      }
+    }
+    const dealJobs = await syncDealsQueue.getRepeatableJobs().catch(() => []);
+    for (const j of dealJobs) {
+      if (j.name?.startsWith("scheduled-")) {
+        await syncDealsQueue.removeRepeatableByKey(j.key).catch(() => {});
+      }
+    }
+
     for (const conn of activeConnections) {
       const wsId = conn.workspaceId.toString();
-      const repInterval = conn.syncSchedule?.reps === "realtime" ? 600_000 : 3_600_000;
-      const dealInterval = conn.syncSchedule?.deals === "realtime" ? 600_000 : 3_600_000;
+      const repSchedule = conn.syncSchedule?.reps || "hourly";
+      const dealSchedule = conn.syncSchedule?.deals || "hourly";
 
-      await syncRepsQueue.add(
-        `scheduled-reps-${wsId}`,
-        { workspaceId: wsId, connectorName: conn.connectorName, trigger: "scheduled" },
-        {
-          repeat: { every: repInterval },
-          jobId: `scheduled-reps-${wsId}`,
-          removeOnComplete: { age: 300 },
-          removeOnFail: { age: 300 },
-        },
-      ).catch(() => {});
+      // Clean up any stale repeatable jobs first
+      if (repSchedule === "manual") {
+        for (const ms of [600_000, 3_600_000, 86_400_000]) {
+          await syncRepsQueue.removeRepeatable(`scheduled-reps-${wsId}`, { every: ms }).catch(() => {});
+        }
+      } else {
+        const repInterval = repSchedule === "realtime" ? 600_000 : repSchedule === "daily" ? 86_400_000 : 3_600_000;
+        await syncRepsQueue.add(
+          `scheduled-reps-${wsId}`,
+          { workspaceId: wsId, connectorName: conn.connectorName, trigger: "scheduled" },
+          { repeat: { every: repInterval }, jobId: `scheduled-reps-${wsId}`, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
+        ).catch(() => {});
+      }
 
-      await syncDealsQueue.add(
-        `scheduled-deals-${wsId}`,
-        { workspaceId: wsId, connectorName: conn.connectorName, trigger: "scheduled" },
-        {
-          repeat: { every: dealInterval },
-          jobId: `scheduled-deals-${wsId}`,
-          removeOnComplete: { age: 300 },
-          removeOnFail: { age: 300 },
-        },
-      ).catch(() => {});
+      if (dealSchedule === "manual") {
+        for (const ms of [600_000, 3_600_000, 86_400_000]) {
+          await syncDealsQueue.removeRepeatable(`scheduled-deals-${wsId}`, { every: ms }).catch(() => {});
+        }
+      } else {
+        const dealInterval = dealSchedule === "realtime" ? 600_000 : dealSchedule === "daily" ? 86_400_000 : 3_600_000;
+        await syncDealsQueue.add(
+          `scheduled-deals-${wsId}`,
+          { workspaceId: wsId, connectorName: conn.connectorName, trigger: "scheduled" },
+          { repeat: { every: dealInterval }, jobId: `scheduled-deals-${wsId}`, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
+        ).catch(() => {});
+      }
     }
     
     const server = app.listen(port, (err) => {

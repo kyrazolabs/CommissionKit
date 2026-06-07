@@ -195,31 +195,24 @@ router.post(
         trigger: "initial",
       });
 
-      // Schedule periodic syncs (every 10 minutes for realtime, hourly otherwise)
-      const repInterval = syncSchedule?.reps === "realtime" ? 600_000 : 3_600_000;
-      const dealInterval = syncSchedule?.deals === "realtime" ? 600_000 : 3_600_000;
+      // Schedule periodic syncs (only if not set to manual)
+      if (syncSchedule?.reps !== "manual") {
+        const repInterval = syncSchedule?.reps === "realtime" ? 600_000 : syncSchedule?.reps === "daily" ? 86_400_000 : 3_600_000;
+        await syncRepsQueue.add(
+          `scheduled-reps-${workspaceId}`,
+          { workspaceId, connectorName, trigger: "scheduled" },
+          { repeat: { every: repInterval }, jobId: `scheduled-reps-${workspaceId}`, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
+        );
+      }
 
-      await syncRepsQueue.add(
-        `scheduled-reps-${workspaceId}`,
-        { workspaceId, connectorName, trigger: "scheduled" },
-        {
-          repeat: { every: repInterval },
-          jobId: `scheduled-reps-${workspaceId}`,
-          removeOnComplete: { age: 300 },
-          removeOnFail: { age: 300 },
-        },
-      );
-
-      await syncDealsQueue.add(
-        `scheduled-deals-${workspaceId}`,
-        { workspaceId, connectorName, trigger: "scheduled" },
-        {
-          repeat: { every: dealInterval },
-          jobId: `scheduled-deals-${workspaceId}`,
-          removeOnComplete: { age: 300 },
-          removeOnFail: { age: 300 },
-        },
-      );
+      if (syncSchedule?.deals !== "manual") {
+        const dealInterval = syncSchedule?.deals === "realtime" ? 600_000 : syncSchedule?.deals === "daily" ? 86_400_000 : 3_600_000;
+        await syncDealsQueue.add(
+          `scheduled-deals-${workspaceId}`,
+          { workspaceId, connectorName, trigger: "scheduled" },
+          { repeat: { every: dealInterval }, jobId: `scheduled-deals-${workspaceId}`, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
+        );
+      }
 
       const webhookUrl = `${process.env.API_BASE_URL || "http://localhost:8088"}/api/integrations/webhooks/${connectorName}`;
 
@@ -270,25 +263,33 @@ router.patch(
 
     // Update repeatable jobs if schedule changed
     if (syncSchedule) {
-      const repInterval = syncSchedule.reps === "realtime" ? 600_000 : 3_600_000;
-      const dealInterval = syncSchedule.deals === "realtime" ? 600_000 : 3_600_000;
+      // Remove old repeatable jobs (all possible intervals)
+      const jobName = `scheduled-reps-${workspaceId}`;
+      for (const ms of [600_000, 3_600_000, 86_400_000]) {
+        await syncRepsQueue.removeRepeatable(jobName, { every: ms }).catch(() => {});
+      }
+      for (const ms of [600_000, 3_600_000, 86_400_000]) {
+        await syncDealsQueue.removeRepeatable(`scheduled-deals-${workspaceId}`, { every: ms }).catch(() => {});
+      }
 
-      // Remove old repeatable jobs
-      await syncRepsQueue.removeRepeatable("scheduled-reps", { every: 600_000 }).catch(() => {});
-      await syncRepsQueue.removeRepeatable("scheduled-reps", { every: 3_600_000 }).catch(() => {});
+      // Create new ones (unless set to manual)
+      if (syncSchedule.reps !== "manual") {
+        const repInterval = syncSchedule.reps === "realtime" ? 600_000 : syncSchedule.reps === "daily" ? 86_400_000 : 3_600_000;
+        await syncRepsQueue.add(
+          jobName,
+          { workspaceId, connectorName: conn.connectorName, trigger: "scheduled" },
+          { repeat: { every: repInterval }, jobId: jobName, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
+        ).catch(() => {});
+      }
 
-      // Create new ones
-      await syncRepsQueue.add(
-        `scheduled-reps-${workspaceId}`,
-        { workspaceId, connectorName: conn.connectorName, trigger: "scheduled" },
-        { repeat: { every: repInterval }, jobId: `scheduled-reps-${workspaceId}`, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
-      ).catch(() => {});
-
-      await syncDealsQueue.add(
-        `scheduled-deals-${workspaceId}`,
-        { workspaceId, connectorName: conn.connectorName, trigger: "scheduled" },
-        { repeat: { every: dealInterval }, jobId: `scheduled-deals-${workspaceId}`, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
-      ).catch(() => {});
+      if (syncSchedule.deals !== "manual") {
+        const dealInterval = syncSchedule.deals === "realtime" ? 600_000 : syncSchedule.deals === "daily" ? 86_400_000 : 3_600_000;
+        await syncDealsQueue.add(
+          `scheduled-deals-${workspaceId}`,
+          { workspaceId, connectorName: conn.connectorName, trigger: "scheduled" },
+          { repeat: { every: dealInterval }, jobId: `scheduled-deals-${workspaceId}`, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
+        ).catch(() => {});
+      }
     }
 
     res.json({ success: true });
@@ -315,10 +316,10 @@ router.delete(
     }
 
     // Remove scheduled sync jobs
-    await syncRepsQueue.removeRepeatableByKey(`scheduled-reps-${workspaceId}:::${3_600_000}`);
-    await syncRepsQueue.removeRepeatableByKey(`scheduled-reps-${workspaceId}:::${600_000}`);
-    await syncDealsQueue.removeRepeatableByKey(`scheduled-deals-${workspaceId}:::${3_600_000}`);
-    await syncDealsQueue.removeRepeatableByKey(`scheduled-deals-${workspaceId}:::${600_000}`);
+    for (const ms of [600_000, 3_600_000, 86_400_000]) {
+      await syncRepsQueue.removeRepeatable(`scheduled-reps-${workspaceId}`, { every: ms }).catch(() => {});
+      await syncDealsQueue.removeRepeatable(`scheduled-deals-${workspaceId}`, { every: ms }).catch(() => {});
+    }
 
     await IntegrationConnection.findOneAndUpdate(
       { workspaceId },
