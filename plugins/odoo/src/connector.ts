@@ -9,8 +9,6 @@ import type {
   WebhookRequest,
   JsonSchema,
   PluginUIMetadata,
-  CommissionWriteBack,
-  WriteBackResult,
 } from "@workspace/plugins-core";
 import { OdooClient } from "./client";
 import { normalizeOdooCurrency } from "./currency";
@@ -203,38 +201,6 @@ export class OdooConnector extends BasePlugin {
     });
   }
 
-  async writeBackCommission(
-    workspaceId: string,
-    config: ConnectionConfig,
-    results: CommissionWriteBack[],
-  ): Promise<WriteBackResult[]> {
-    const c = this.parseConfig(config);
-    const client = this.getOdooClient(config);
-    await client.authenticate(c.username, c.apiKey);
-
-    const outcomes: WriteBackResult[] = [];
-
-    for (const result of results) {
-      try {
-        // Write to sale.order custom fields
-        await client.write("sale.order", [Number(result.dealExternalId)], {
-          x_ckit_commission_amount: result.commissionAmount,
-          x_ckit_commission_rate: result.commissionRate,
-          x_ckit_commission_currency: result.currency,
-          x_ckit_last_calc_run: result.runId,
-        });
-        outcomes.push({ externalId: result.dealExternalId, success: true });
-      } catch (err: any) {
-        outcomes.push({
-          externalId: result.dealExternalId,
-          success: false,
-          error: err.message || "Write-back failed",
-        });
-      }
-    }
-
-    return outcomes;
-  }
 
   async verifyWebhook(req: WebhookRequest, secret: string): Promise<void> {
     const signature = req.headers["x-odoo-signature"];
@@ -338,7 +304,7 @@ export class OdooConnector extends BasePlugin {
       description: this.description,
       icon: this.icon,
       category: "erp",
-      features: ["sync_reps", "sync_deals", "write_back_commission", "webhook_support"],
+      features: ["sync_reps", "sync_deals", "webhook_support"],
       setupGuideUrl: "https://docs.commissionkit.com/integrations/odoo",
     };
   }

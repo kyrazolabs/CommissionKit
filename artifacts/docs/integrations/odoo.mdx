@@ -3,7 +3,7 @@ title: "Odoo ERP"
 description: "Connect CommissionKit to Odoo to sync sales reps and deals from the Sales or CRM app"
 ---
 
-Connect your Odoo instance to CommissionKit. The connector works with Odoo Community and Enterprise editions, version 15 and above. It syncs reps and deals, and can optionally write commission results back to Odoo as custom fields.
+Connect your Odoo instance to CommissionKit. The connector works with Odoo Community and Enterprise editions, version 15 and above. It syncs reps and deals automatically.
 
 ## How data flows
 
@@ -34,7 +34,7 @@ Lead / Opportunity             (not synced)
 Opportunity marked "Won"
        │
        ▼
-Quotation manually created
+Quotation created
 from the opportunity     →     Deal created (state = closed_won)
        │
        ▼
@@ -106,16 +106,3 @@ By default, only `closed_won` deals (`sale` and `done`) are synced.
    - **API Key** — the key generated in step 1
 4. Click **Test Connection** to verify
 5. Click **Connect** — initial sync begins immediately
-
-## Write-back
-
-When enabled, CommissionKit writes commission results and payout statuses back to custom fields on each `sale.order` in Odoo:
-
-| Field | Description |
-|---|---|
-| `x_ckit_commission_amount` | Commission amount calculated |
-| `x_ckit_commission_rate` | Rate applied |
-| `x_ckit_payout_status` | Current payout status |
-| `x_ckit_payout_amount` | Final payout amount |
-
-All fields are read-only in Odoo.
