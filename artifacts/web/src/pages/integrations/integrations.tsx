@@ -309,8 +309,9 @@ export function IntegrationsPage() {
     <div className="mx-auto max-w-4xl px-6 py-8 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-baseline gap-2">
           Integrations
+          <span className="text-base px-1 tracking-[0.07em] font-medium text-primary">Beta</span>
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
           Connect CommissionKit to your ERP or CRM. Synced reps and deals are ready for commission calculation.
@@ -450,10 +451,13 @@ export function IntegrationsPage() {
                 <Button
                   variant="ghost"
                   className="h-6 text-xs shrink-0 ml-2 hover:bg-destructive/20"
-                  onClick={() =>
-                    apiFetch(`/api/integrations/${activeWorkspace?.id}/dismiss-error`, { method: "POST" })
-                      .then(() => queryClient.invalidateQueries({ queryKey: ["integrations"] }))
-                  }
+                  onClick={async () => {
+                    await apiFetch(`/api/integrations/${activeWorkspace?.id}/dismiss-error`, { method: "POST" });
+                    queryClient.setQueryData(["integrations", "status", activeWorkspace?.id], (old: any) =>
+                      old ? { ...old, lastError: undefined } : old,
+                    );
+                    await queryClient.refetchQueries({ queryKey: ["integrations", "status", activeWorkspace?.id] });
+                  }}
                 >
                   Dismiss
                 </Button>
