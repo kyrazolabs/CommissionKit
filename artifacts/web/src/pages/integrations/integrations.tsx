@@ -48,7 +48,7 @@ const CONNECTOR_ICONS: Record<string, any> = {
 };
 
 const ICON_SRC: Record<string, string> = {
-  odoo: "/odoo/sales.png",
+  odoo: "/odoo/odoo.png",
 };
 
 function ConnectorImage({ name, className }: { name: string; className?: string }) {

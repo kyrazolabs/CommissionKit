@@ -304,7 +304,7 @@ export class OdooConnector extends BasePlugin {
       description: this.description,
       icon: this.icon,
       category: "erp",
-      features: ["sync_reps", "sync_deals", "webhook_support"],
+      features: ["sync_reps", "sync_deals"],
       setupGuideUrl: "https://docs.commissionkit.com/integrations/odoo",
     };
   }
