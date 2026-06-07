@@ -39,10 +39,22 @@ import {
 import { cn } from "@/lib/utils";
 
 const CONNECTOR_ICONS: Record<string, any> = {
-  odoo: Store,
   custom: Cable,
   hubspot: Sprout,
 };
+
+const ICON_SRC: Record<string, string> = {
+  odoo: "/odoo/sales.png",
+};
+
+function ConnectorImage({ name, className }: { name: string; className?: string }) {
+  const src = ICON_SRC[name];
+  if (src) {
+    return <img src={src} alt={name} className={className} />;
+  }
+  const Icon = CONNECTOR_ICONS[name] || Plug;
+  return <Icon className={className} />;
+}
 
 interface Connector {
   name: string;
@@ -223,6 +235,8 @@ export function IntegrationsPage() {
     ? CONNECTOR_ICONS[status.connectorName || ""] || Plug
     : null;
 
+  const connectorImgSrc = status?.connected ? ICON_SRC[status.connectorName || ""] : null;
+
   return (
     <div className="mx-auto max-w-4xl px-6 py-8 space-y-6">
       {/* Header */}
@@ -241,7 +255,12 @@ export function IntegrationsPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {ConnectorIcon && (
+                {connectorImgSrc && (
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-teal-600/10 p-1.5">
+                    <img src={connectorImgSrc} alt={status.connectorName} className="size-full object-contain" />
+                  </div>
+                )}
+                {!connectorImgSrc && ConnectorIcon && (
                   <div className="flex size-10 items-center justify-center rounded-xl bg-teal-600/10 text-teal-600">
                     <ConnectorIcon className="size-5" />
                   </div>
@@ -435,7 +454,6 @@ export function IntegrationsPage() {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {connectors?.connectors?.map((connector) => {
-            const IconComponent = CONNECTOR_ICONS[connector.name] || Plug;
             const isConnected = status?.connectorName === connector.name;
 
             return (
@@ -449,10 +467,10 @@ export function IntegrationsPage() {
                 <CardHeader className="pb-2">
                   <div className="flex items-center gap-3">
                     <div className={cn(
-                      "flex size-10 items-center justify-center rounded-xl shrink-0",
-                      isConnected ? "bg-teal-600/10 text-teal-600" : "bg-muted text-muted-foreground",
+                      "flex size-10 items-center justify-center rounded-xl shrink-0 overflow-hidden",
+                      isConnected ? "bg-teal-600/10" : "bg-muted",
                     )}>
-                      <IconComponent className="size-5" />
+                      <ConnectorImage name={connector.name} className={cn("size-6 object-contain", !isConnected && "opacity-50")} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <CardTitle className="text-base flex items-center gap-2">
@@ -496,7 +514,7 @@ export function IntegrationsPage() {
                     <DialogContent className="sm:max-w-[500px]">
                       <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                          <IconComponent className="size-5" />
+                          <ConnectorImage name={connector.name} className="size-5 object-contain" />
                           Connect to {connector.displayName}
                         </DialogTitle>
                         <DialogDescription>
