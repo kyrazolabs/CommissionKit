@@ -14,7 +14,6 @@ import type {
 } from "@workspace/plugins-core";
 import { OdooClient } from "./client";
 import { normalizeOdooCurrency } from "./currency";
-import { deriveOdooPaymentStatus, isClosedWon, derivePeriod } from "./transform";
 
 interface OdooConfig {
   baseUrl: string;
@@ -132,25 +131,73 @@ export class OdooConnector extends BasePlugin {
       "state",
       "currency_id",
       "user_id",
-      "invoice_status",
+      "invoice_ids",
       "write_date",
       "note",
     ];
 
     const records = await client.searchRead("sale.order", domain, fields);
 
-    return records.map((r: any) => ({
-      externalId: String(r.id),
-      repExternalId: r.user_id?.[0] ? String(r.user_id[0]) : "",
-      name: r.name || "",
-      amount: r.amount_total || 0,
-      closeDate: r.date_order ? new Date(r.date_order) : new Date(),
-      stage: r.state || "",
-      currency: normalizeOdooCurrency(r.currency_id?.[1]),
-      paymentStatus: deriveOdooPaymentStatus(r.invoice_status),
-      notes: r.note || undefined,
-      metadata: { odooOrderId: r.id, odooState: r.state },
-    }));
+    // Collect all invoice IDs to batch-query payment states
+    const allInvoiceIds: number[] = [];
+    for (const r of records) {
+      if (r.invoice_ids && Array.isArray(r.invoice_ids)) {
+        for (const invId of r.invoice_ids) {
+          allInvoiceIds.push(invId);
+        }
+      }
+    }
+
+    // Batch fetch invoice payment states
+    let invoicePayments = new Map<number, string>();
+    if (allInvoiceIds.length > 0) {
+      try {
+        const invoices = await client.searchRead(
+          "account.move",
+          [["id", "in", allInvoiceIds]],
+          ["payment_state"],
+        );
+        for (const inv of invoices) {
+          invoicePayments.set(inv.id, inv.payment_state || "not_paid");
+        }
+      } catch {
+        // Fallback: if invoice query fails, assume all unpaid
+      }
+    }
+
+    return records.map((r: any) => {
+      // Derive payment status from linked invoices, not invoice_status
+      let paymentStatus: import("@workspace/plugins-core").PaymentStatus = "unpaid";
+      if (r.invoice_ids && Array.isArray(r.invoice_ids) && r.invoice_ids.length > 0) {
+        const states = r.invoice_ids
+          .map((id: number) => invoicePayments.get(id) || "not_paid");
+
+        const allPaid = states.every((s: string) => s === "paid" || s === "in_payment");
+        const nonePaid = states.every((s: string) => s === "not_paid");
+        const anyReversed = states.some((s: string) => s === "reversed" || s === "cancel");
+
+        if (anyReversed) {
+          paymentStatus = "on_hold";
+        } else if (allPaid) {
+          paymentStatus = "paid";
+        } else if (!nonePaid) {
+          paymentStatus = "partial";
+        }
+      }
+
+      return {
+        externalId: String(r.id),
+        repExternalId: r.user_id?.[0] ? String(r.user_id[0]) : "",
+        name: r.name || "",
+        amount: r.amount_total || 0,
+        closeDate: r.date_order ? new Date(r.date_order) : new Date(),
+        stage: r.state || "",
+        currency: normalizeOdooCurrency(r.currency_id?.[1]),
+        paymentStatus,
+        notes: r.note || undefined,
+        metadata: { odooOrderId: r.id, odooState: r.state },
+      };
+    });
   }
 
   async writeBackCommission(
