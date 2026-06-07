@@ -119,6 +119,7 @@ export function IntegrationsPage() {
     queryFn: () => apiFetch(`/api/integrations/${activeWorkspace?.id}/status`),
     enabled: !!activeWorkspace?.id,
     refetchInterval: 10000,
+    refetchOnWindowFocus: false,
   });
 
   const testMutation = useMutation({
