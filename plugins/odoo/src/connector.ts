@@ -89,13 +89,13 @@ export class OdooConnector extends BasePlugin {
       ["active", "=", true],
     ];
 
-    const records = await client.searchRead("res.users", domain, ["name", "email", "login", "job_id"]);
+    const records = await client.searchRead("res.users", domain, ["name", "email", "login"]);
 
     return records.map((r: any) => ({
       externalId: String(r.id),
       name: r.name || r.login || "",
       email: r.email || r.login || "",
-      role: r.job_id?.[1] || undefined,
+      role: undefined,
       metadata: { odooUserId: r.id, odooLogin: r.login },
     }));
   }

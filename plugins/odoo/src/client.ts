@@ -110,6 +110,9 @@ export class OdooClient {
       id: ++this.id,
     };
 
+    // Extract model name for error context
+    const model = args[3] || "unknown";
+
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -121,13 +124,16 @@ export class OdooClient {
 
     if (!response.ok) {
       const text = await response.text().catch(() => "");
-      throw new Error(`Odoo HTTP ${response.status}: ${text}`);
+      throw new Error(`Odoo HTTP ${response.status} on ${service}.${method}/${model}: ${text.slice(0, 500)}`);
     }
 
     const data = (await response.json()) as JsonRpcResponse;
 
     if (data.error) {
-      throw new Error(`Odoo RPC error: ${data.error.message} (${data.error.code})`);
+      const detail = data.error.data
+        ? (typeof data.error.data === "string" ? data.error.data : JSON.stringify(data.error.data).slice(0, 300))
+        : "(no detail)";
+      throw new Error(`Odoo ${service}.${method}/${model}: ${data.error.message} (code ${data.error.code}) — ${detail}`);
     }
 
     return data.result as T;
