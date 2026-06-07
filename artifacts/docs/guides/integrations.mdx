@@ -14,23 +14,51 @@ Connect CommissionKit to your ERP or CRM so reps and deals sync automatically �
 
 ## How it works
 
-```
-Your ERP                      CommissionKit
-─────────                     ────────────────
+**Sales app path** (quotation → order):
 
-Rep creates deal               
+```
+Odoo Sales app                CommissionKit
+──────────────                ───────────────
+
+Quotation created              (not synced)
        │
        ▼
-Deal closed-won          →     Deal created (or updated if already synced)
+Quotation confirmed      →     Deal created (state = closed_won)
        │
        ▼
-Invoice created + paid   →     Deal payment status updates
+Invoice created + paid   →     Payment status updates to "paid"
        │
        ▼
-Commission run           ←     Calculates commission from synced deals
+Commission run           ←     Calculates commission from deals
 ```
 
-Reps and deals sync **into** CommissionKit. Commission results and payout statuses optionally write **back** to the ERP.
+**CRM app path** (opportunity → quotation → order):
+
+```
+Odoo CRM app                  CommissionKit
+─────────────                 ───────────────
+
+Lead / Opportunity             (not synced)
+       │
+       ▼
+Opportunity won +
+quotation auto-created   →     Deal created (state = closed_won)
+       │
+       ▼
+Invoice created + paid   →     Payment status updates to "paid"
+```
+
+In both paths, the final record CommissionKit reads is **`sale.order`** — the confirmed sales order. The CRM path just means the deal started as an opportunity.
+
+## Odoo CRM: opportunity pipeline
+
+If you use Odoo's **CRM** app rather than the Sales app, opportunities must have a **quotation** created from them before they appear in CommissionKit.
+
+To ensure every won opportunity becomes a deal in CommissionKit:
+
+1. In Odoo CRM, configure your opportunity stages so that marking an opportunity **Won** automatically creates a quotation (this is Odoo's default behavior when the **Sales** and **CRM** modules are both installed)
+2. Verify that won opportunities have a linked sale order by opening the opportunity and checking for a **Quotation** smart button
+3. Run a manual **Sync Deals** in CommissionKit to confirm the deal appears
 
 ## Payment status: paid vs unpaid
 
