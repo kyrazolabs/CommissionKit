@@ -23,10 +23,12 @@ The Custom REST connector lets you integrate CommissionKit with any system that 
 
 ### Step 2: Configure
 
-After connecting, send the full configuration JSON to the API. Open your browser's developer console or use `curl`:
+After connecting, send the full configuration JSON to the CommissionKit API. This tells CKit how to talk to your ERP — what endpoints to call, how to authenticate, and how to map fields.
+
+Open a terminal or use the browser's developer console:
 
 ```bash
-curl -X PATCH https://your-domain.com/api/integrations/YOUR_WORKSPACE_ID/config \
+curl -X PATCH https://your-ckit-domain.com/api/integrations/YOUR_WORKSPACE_ID/config \
   -H "Content-Type: application/json" \
   -H "X-Workspace-ID: YOUR_WORKSPACE_ID" \
   --cookie "ck_session=..." \
