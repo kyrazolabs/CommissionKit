@@ -1,6 +1,7 @@
 // src/lib/bull-board.ts
 
 import path from "path";
+import { fileURLToPath } from "url";
 
 import { createBullBoard } from "@bull-board/api";
 import { ExpressAdapter } from "@bull-board/express";
@@ -15,8 +16,10 @@ import {
 } from "@workspace/queue";
 import { logger } from "./logger";
 
-const bullBoardUiPath = path.dirname(
-  new URL(import.meta.resolve("@bull-board/ui/package.json")).pathname,
+// Resolve Bull Board UI static assets path
+const bullBoardUiPath = path.resolve(
+  path.dirname(fileURLToPath(import.meta.resolve("@bull-board/ui"))),
+  "dist",
 );
 
 const BULL_BOARD_USERNAME = process.env.BULL_BOARD_USERNAME;

@@ -74,19 +74,15 @@ async function boot() {
     await import("./workers/webhook-ingress-worker");
 
     // Restore scheduled sync jobs for connected workspaces
-    const { syncRepsQueue, syncDealsQueue } = await import("@workspace/queue");
+    const { syncRepsQueue, syncDealsQueue, commissionCalcQueue, exchangeRateQueue } = await import("@workspace/queue");
 
     // Sweep all existing scheduled-* repeatable jobs (cleanup stale ones)
-    const repJobs = await syncRepsQueue.getRepeatableJobs().catch(() => []);
-    for (const j of repJobs) {
-      if (j.name?.startsWith("scheduled-")) {
-        await syncRepsQueue.removeRepeatableByKey(j.key).catch(() => {});
-      }
-    }
-    const dealJobs = await syncDealsQueue.getRepeatableJobs().catch(() => []);
-    for (const j of dealJobs) {
-      if (j.name?.startsWith("scheduled-")) {
-        await syncDealsQueue.removeRepeatableByKey(j.key).catch(() => {});
+    for (const q of [syncRepsQueue, syncDealsQueue, commissionCalcQueue, exchangeRateQueue]) {
+      const jobs = await q.getRepeatableJobs().catch(() => []);
+      for (const j of jobs) {
+        if (j.name?.startsWith("scheduled-")) {
+          await q.removeRepeatableByKey(j.key).catch(() => {});
+        }
       }
     }
 
