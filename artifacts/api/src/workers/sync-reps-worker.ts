@@ -19,7 +19,7 @@ const WORKER_OPTS = {
 export const syncRepsWorker = new Worker<SyncRepsPayload>(
   SYNC_REPS_QUEUE,
   async (job) => {
-    const { workspaceId, connectorName, trigger, options } = job.data;
+    const { workspaceId, connectorName, trigger } = job.data;
 
     const release = await acquireWorkspaceLock(workspaceId);
     try {
@@ -47,20 +47,10 @@ export const syncRepsWorker = new Worker<SyncRepsPayload>(
 
       await job.updateProgress(10);
 
-      // For scheduled syncs, only fetch records modified since last sync
-      const fetchOpts: Record<string, unknown> = {};
-      if (trigger === "scheduled" && conn.lastSyncedAt) {
-        fetchOpts.modifiedAfter = conn.lastSyncedAt;
-      }
-      if (options?.externalIds) {
-        fetchOpts.modifiedAfter = undefined; // Don't use incremental for targeted syncs
-        fetchOpts.limit = 500;
-      }
-
       const reps = await plugin.fetchReps(
         workspaceId,
         conn.config as Record<string, unknown>,
-        fetchOpts,
+        {},
       );
 
       await job.updateProgress(50);

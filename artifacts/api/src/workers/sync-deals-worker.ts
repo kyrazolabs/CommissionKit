@@ -19,7 +19,7 @@ const WORKER_OPTS = {
 export const syncDealsWorker = new Worker<SyncDealsPayload>(
   SYNC_DEALS_QUEUE,
   async (job) => {
-    const { workspaceId, connectorName, trigger, options } = job.data;
+    const { workspaceId, connectorName, trigger } = job.data;
 
     const release = await acquireWorkspaceLock(workspaceId);
     try {
@@ -47,20 +47,10 @@ export const syncDealsWorker = new Worker<SyncDealsPayload>(
 
       await job.updateProgress(10);
 
-      // For scheduled syncs, only fetch records modified since last sync
-      const fetchOpts: Record<string, unknown> = {};
-      if (trigger === "scheduled" && conn.lastSyncedAt) {
-        fetchOpts.modifiedAfter = conn.lastSyncedAt;
-      }
-      if (options?.externalIds) {
-        fetchOpts.modifiedAfter = undefined; // Don't use incremental for targeted syncs
-        fetchOpts.limit = 500;
-      }
-
       const deals = await plugin.fetchDeals(
         workspaceId,
         conn.config as Record<string, unknown>,
-        fetchOpts,
+        {},
       );
 
       await job.updateProgress(50);
