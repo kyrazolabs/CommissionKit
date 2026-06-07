@@ -221,6 +221,12 @@ export class CustomConnector extends BasePlugin {
       }
       if (!Array.isArray(list)) list = [];
 
+      // Diagnostic logging
+      if (process.env.NODE_ENV !== "production") {
+        const keys = list.length > 0 ? Object.keys(list[0]).slice(0, 5).join(", ") : "none";
+        console.log(`[CustomConnector] ${endpoint} → ${list.length} records, fields: ${keys}`);
+      }
+
       for (const item of list) {
         allResults.push(mapFn(item, fieldMap));
       }

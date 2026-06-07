@@ -224,7 +224,9 @@ export function IntegrationsPage() {
   const saveMapping = () => {
     setMappingError(null);
     try {
-      const config = JSON.parse(mappingJson);
+      const parsed = JSON.parse(mappingJson);
+      // Unwrap "config" key if user pasted the full API payload
+      const config = parsed.config || parsed;
       configMutation.mutate(config);
     } catch (e: any) {
       setMappingError(e.message || "Invalid JSON");

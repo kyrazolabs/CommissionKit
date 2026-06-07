@@ -287,49 +287,51 @@ Paste this JSON into the **Edit Mapping** editor (⋮ menu) — replace the toke
 
 ```json
 {
-  "baseUrl": "https://crm.yourcompany.com/rest",
-  "auth": {
-    "type": "bearer",
-    "token": "eyJhbGciOi..."
-  },
-  "pagination": {
-    "type": "cursor",
-    "limitParam": "limit",
-    "cursorParam": "starting_after",
-    "cursorPath": "pageInfo.endCursor"
-  },
-  "responsePath": "data",
-  "entities": {
-    "reps": {
-      "enabled": true,
-      "endpoint": "/workspaceMembers",
-      "fields": {
-        "externalId": "id",
-        "name": "name.firstName",
-        "email": "userEmail"
-      },
-      "filters": [
-        { "key": "order_by", "value": "createdAt" }
-      ]
+  "config": {
+    "baseUrl": "https://crm.yourcompany.com/rest",
+    "auth": {
+      "type": "bearer",
+      "token": "eyJhbGciOi..."
     },
-    "deals": {
-      "enabled": true,
-      "endpoint": "/opportunities",
-      "fields": {
-        "externalId": "id",
-        "name": "name",
-        "amount": "amount.amountMicros",
-        "closeDate": "closeDate",
-        "stage": "stage",
-        "currency": "amount.currencyCode",
-        "repExternalId": "createdBy.workspaceMemberId"
+    "pagination": {
+      "type": "cursor",
+      "limitParam": "limit",
+      "cursorParam": "starting_after",
+      "cursorPath": "pageInfo.endCursor"
+    },
+    "responsePath": "data",
+    "entities": {
+      "reps": {
+        "enabled": true,
+        "endpoint": "/workspaceMembers",
+        "fields": {
+          "externalId": "id",
+          "name": "name.firstName",
+          "email": "userEmail"
+        },
+        "filters": [
+          { "key": "order_by", "value": "createdAt" }
+        ]
       },
-      "filters": [
-        { "key": "order_by", "value": "createdAt" }
-      ],
-      "stageFilter": {
-        "field": "stage",
-        "include": ["ON_HOLD", "NEW", "MEETING"]
+      "deals": {
+        "enabled": true,
+        "endpoint": "/opportunities",
+        "fields": {
+          "externalId": "id",
+          "name": "name",
+          "amount": "amount.amountMicros",
+          "closeDate": "closeDate",
+          "stage": "stage",
+          "currency": "amount.currencyCode",
+          "repExternalId": "createdBy.workspaceMemberId"
+        },
+        "filters": [
+          { "key": "order_by", "value": "createdAt" }
+        ],
+        "stageFilter": {
+          "field": "stage",
+          "include": ["ON_HOLD", "NEW", "MEETING"]
+        }
       }
     }
   }
