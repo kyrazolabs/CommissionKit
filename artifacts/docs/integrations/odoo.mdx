@@ -31,24 +31,28 @@ Odoo CRM app                  CommissionKit
 Lead / Opportunity             (not synced)
        │
        ▼
-Opportunity won +
-quotation auto-created   →     Deal created (state = closed_won)
+Opportunity marked "Won"
+       │
+       ▼
+Quotation manually created
+from the opportunity     →     Deal created (state = closed_won)
        │
        ▼
 Invoice created + paid   →     Payment status updates to "paid"
 ```
 
-In both paths, the final record CommissionKit reads is **`sale.order`** — the confirmed sales order.
+In both paths, the final record CommissionKit reads is **`sale.order`** — the confirmed sales order. Opportunities alone are not enough; a quotation must be created from the opportunity first.
 
 ## CRM: opportunity pipeline
 
-If you use Odoo's **CRM** app, opportunities must have a **quotation** created from them to appear in CommissionKit. CommissionKit reads `sale.order` records — not CRM opportunities. If your team marks an opportunity as "Won" without creating a quotation, it will never sync.
+If you use Odoo's **CRM** app, opportunities must have a **quotation** created manually before they appear in CommissionKit. CommissionKit reads `sale.order` records — not CRM opportunities. If your team marks an opportunity as "Won" without creating a quotation, it will never sync.
 
-To ensure every won opportunity becomes a deal:
+To get a won opportunity into CommissionKit:
 
-1. In Odoo CRM, configure your stages so that marking an opportunity **Won** automatically creates a quotation (this is Odoo's default when the **Sales** and **CRM** modules are both installed)
-2. Verify that won opportunities have a linked sale order by opening the opportunity and checking for the **Quotation** smart button
-3. Run a manual **Sync Deals** in CommissionKit to confirm the deal appears
+1. Open the opportunity in Odoo CRM
+2. Click **New Quotation** to create a sale order from the opportunity
+3. Confirm the quotation so its state becomes **Sale Order** or **Done**
+4. Run a manual **Sync Deals** in CommissionKit to pull it in
 
 ## Payment status
 
