@@ -77,7 +77,7 @@ export const CustomConnectorConfigSchema = z.object({
   entities: z.object({
     reps: EntityMappingSchema.optional(),
     deals: EntityMappingSchema.optional(),
-  }),
+  }).optional(),
 });
 
 export type CustomConnectorConfig = z.infer<typeof CustomConnectorConfigSchema>;

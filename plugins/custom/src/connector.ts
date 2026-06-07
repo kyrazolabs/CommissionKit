@@ -73,7 +73,7 @@ export class CustomConnector extends BasePlugin {
     options?: FetchOptions,
   ): Promise<NormalizedRep[]> {
     const parsed = this.parseConfig(config);
-    const entity = parsed.entities.reps;
+    const entity = parsed.entities?.reps;
     if (!entity?.enabled) return [];
 
     return this.fetchEntities(
@@ -102,7 +102,7 @@ export class CustomConnector extends BasePlugin {
     options?: FetchOptions,
   ): Promise<NormalizedDeal[]> {
     const parsed = this.parseConfig(config);
-    const entity = parsed.entities.deals;
+    const entity = parsed.entities?.deals;
     if (!entity?.enabled) return [];
 
     const deals: NormalizedDeal[] = await this.fetchEntities(

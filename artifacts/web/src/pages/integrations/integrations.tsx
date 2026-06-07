@@ -199,25 +199,26 @@ export function IntegrationsPage() {
   };
 
   const buildConfig = (): Record<string, unknown> => {
-    const config: Record<string, unknown> = {};
+    const config: Record<string, unknown> = {
+      entities: {},
+    };
     for (const [k, v] of Object.entries(formValues)) {
-      if (k === "authType" || k === "syncClosedOnly" || k === "writeBackEnabled") continue;
+      if (k.startsWith("auth") || k === "syncClosedOnly" || k === "writeBackEnabled") continue;
       config[k] = v;
     }
-    // Build auth object for custom connector
-    if (formValues.authType) {
-      const auth: Record<string, unknown> = { type: formValues.authType };
-      if (formValues.authType === "apiKey") {
-        auth.headerName = formValues.authHeaderName || "X-API-Key";
-        auth.apiKey = formValues.authApiKey || "";
-      } else if (formValues.authType === "bearer") {
-        auth.token = formValues.authToken || "";
-      } else if (formValues.authType === "basic") {
-        auth.username = formValues.authUsername || "";
-        auth.password = formValues.authPassword || "";
-      }
-      config.auth = auth;
+    // Build auth object
+    const authType = String(formValues.authType || "bearer");
+    const auth: Record<string, unknown> = { type: authType };
+    if (authType === "apiKey") {
+      auth.headerName = formValues.authHeaderName || "X-API-Key";
+      auth.apiKey = formValues.authApiKey || "";
+    } else if (authType === "bearer") {
+      auth.token = formValues.authToken || "";
+    } else if (authType === "basic") {
+      auth.username = formValues.authUsername || "";
+      auth.password = formValues.authPassword || "";
     }
+    config.auth = auth;
     return config;
   };
 
