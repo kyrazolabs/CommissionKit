@@ -1,0 +1,101 @@
+---
+title: "ERP & CRM Integrations"
+description: "Connect CommissionKit to your ERP or CRM to auto-sync reps and deals"
+---
+
+Connect CommissionKit to your ERP or CRM so reps and deals sync automatically — no manual entry needed. When deal data changes in your ERP, CommissionKit picks it up and recalculates commissions.
+
+## Supported connectors
+
+| Connector | What syncs | Auto sync |
+|---|---|---|
+| **Odoo ERP** | Reps (`res.users`) + Deals (`sale.order` from Sales or CRM app) | Yes — every 10 min, hourly, or daily |
+| **Custom REST** | Any REST API — configure field mappings via JSON | Yes |
+
+## How it works
+
+```
+Your ERP                      CommissionKit
+─────────                     ────────────────
+
+Rep creates deal               
+       │
+       ▼
+Deal closed-won          →     Deal created (or updated if already synced)
+       │
+       ▼
+Invoice created + paid   →     Deal payment status updates
+       │
+       ▼
+Commission run           ←     Calculates commission from synced deals
+```
+
+Reps and deals sync **into** CommissionKit. Commission results and payout statuses optionally write **back** to the ERP.
+
+## Payment status: paid vs unpaid
+
+CommissionKit determines payment status by querying the actual invoices linked to each deal in your ERP. Here is exactly how it decides:
+
+### Odoo
+
+1. Fetches `sale.order` records with their linked `invoice_ids`
+2. Queries each invoice's `payment_state` from `account.move`
+3. Aggregates per deal:
+
+| Invoice payment states | Resulting CKit status |
+|---|---|
+| All invoices `paid` or `in_payment` | **paid** |
+| Some paid, some unpaid | **partial** |
+| No invoices (not yet invoiced) | **unpaid** |
+| Any invoice `reversed` or `cancel` | **on_hold** |
+
+**Important**: `sale.order.invoice_status` is NOT used. That field only tracks whether invoices have been **created**, not whether they have been **paid**. CommissionKit queries the actual invoice records for accurate payment status.
+
+### Other connectors
+
+For the Custom REST connector, payment status mapping is configured via the `paymentStatusMapping` JSON field.
+
+## Stages
+
+Raw Odoo sale order states map to CommissionKit's canonical stages:
+
+| Odoo state | CKit stage |
+|---|---|
+| `draft` | `pending` |
+| `sent` | `pending` |
+| `sale` | `closed_won` |
+| `done` | `closed_won` |
+| `cancel` | `closed_lost` |
+
+By default, only `closed_won` deals (`sale` and `done`) are synced. Stages can be customized in the connector settings.
+
+## Sync schedule
+
+Choose how often CommissionKit pulls updates from your ERP:
+
+| Option | Interval |
+|---|---|
+| **Every 10 min** | Fires a sync every 10 minutes |
+| **Hourly** | Fires a sync every hour |
+| **Daily** | Fires a sync every 24 hours |
+| **Manual only** | No automatic sync — use the **Sync Reps** / **Sync Deals** buttons |
+
+Manual syncs and auto-syncs behave identically: they fetch all records from the ERP and use hash-based change detection to skip unchanged data. A sync reports three counts:
+
+- **New** — records that did not exist in CommissionKit
+- **Updated** — records whose data changed in the ERP
+- **Skipped** — records unchanged since the last sync
+
+## Setting up
+
+1. Go to **Integrations** in the sidebar
+2. Select your connector
+3. Enter credentials and click **Test Connection**
+4. Click **Connect** to start the initial sync
+5. Choose your auto-sync schedule from the **⋮** menu
+
+Reps and deals sync immediately on connect. Changes in the ERP are picked up at the chosen interval.
+
+## Disconnecting
+
+Disconnecting stops all syncs but does **not** delete any data. All synced reps, deals, and commission history remain in CommissionKit.
