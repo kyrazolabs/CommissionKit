@@ -1,4 +1,4 @@
-import { Sun, Moon, Cloud, LifeBuoy } from "lucide-react";
+import { Sun, Moon, Cloud, LifeBuoy, RefreshCw } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/hooks/use-auth";
 import { NotificationBell } from "@/components/notification-bell";
@@ -37,8 +37,8 @@ function SyncIndicator() {
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="flex size-8 items-center justify-center text-primary/80">
-            <Cloud className="size-4 animate-pulse text-amber-500 dark:text-amber-400" />
+          <div className="flex size-8 items-center justify-center">
+            <RefreshCw className="size-3.5 animate-spin text-amber-500 dark:text-amber-400" />
           </div>
         </TooltipTrigger>
         <TooltipContent side="bottom" align="end">
