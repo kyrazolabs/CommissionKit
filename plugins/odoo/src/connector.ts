@@ -185,17 +185,20 @@ export class OdooConnector extends BasePlugin {
         }
       }
 
+      // Normalize Odoo state to CKit stage
+      const stage = normalizeStage(r.state);
+
       return {
         externalId: String(r.id),
         repExternalId: r.user_id?.[0] ? String(r.user_id[0]) : "",
         name: r.name || "",
         amount: r.amount_total || 0,
         closeDate: r.date_order ? new Date(r.date_order) : new Date(),
-        stage: r.state || "",
+        stage,
         currency: normalizeOdooCurrency(r.currency_id?.[1]),
         paymentStatus,
         notes: r.note || undefined,
-        metadata: { odooOrderId: r.id, odooState: r.state },
+        metadata: { odooOrderId: r.id, odooRawState: r.state },
       };
     });
   }
@@ -339,4 +342,18 @@ export class OdooConnector extends BasePlugin {
       setupGuideUrl: "https://docs.commissionkit.com/integrations/odoo",
     };
   }
+}
+
+// ─── Stage normalization ─────────────────────────────────────────────
+
+const ODOO_STAGE_MAP: Record<string, string> = {
+  draft: "negotiation",
+  sent: "sent",
+  sale: "closed_won",
+  done: "closed_won",
+  cancel: "closed_lost",
+};
+
+function normalizeStage(odooState: string): string {
+  return ODOO_STAGE_MAP[odooState] || odooState || "closed_won";
 }
