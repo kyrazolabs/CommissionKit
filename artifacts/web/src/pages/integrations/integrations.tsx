@@ -118,8 +118,6 @@ export function IntegrationsPage() {
     queryKey: ["integrations", "status", activeWorkspace?.id],
     queryFn: () => apiFetch(`/api/integrations/${activeWorkspace?.id}/status`),
     enabled: !!activeWorkspace?.id,
-    refetchInterval: 10000,
-    refetchOnWindowFocus: false,
   });
 
   const testMutation = useMutation({
@@ -401,11 +399,15 @@ export function IntegrationsPage() {
                     </Select>
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={openMappingEditor} className="flex items-center gap-2">
-                    <FileCode className="size-3.5" />
-                    Edit Mapping
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
+                  {status?.connectorName === "custom" && (
+                    <>
+                      <DropdownMenuItem onClick={openMappingEditor} className="flex items-center gap-2">
+                        <FileCode className="size-3.5" />
+                        Edit Mapping
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <DropdownMenuItem
