@@ -26,7 +26,7 @@ The Custom REST connector lets you integrate CommissionKit with any system that 
 After connecting, send the full configuration JSON to the API. Open your browser's developer console or use `curl`:
 
 ```bash
-curl -X PATCH http://localhost:8088/api/integrations/YOUR_WORKSPACE_ID/config \
+curl -X PATCH https://your-domain.com/api/integrations/YOUR_WORKSPACE_ID/config \
   -H "Content-Type: application/json" \
   -H "X-Workspace-ID: YOUR_WORKSPACE_ID" \
   --cookie "ck_session=..." \
