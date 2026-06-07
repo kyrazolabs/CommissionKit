@@ -1,0 +1,117 @@
+---
+title: "Odoo ERP"
+description: "Connect CommissionKit to Odoo to sync sales reps and deals from the Sales or CRM app"
+---
+
+Connect your Odoo instance to CommissionKit. The connector works with Odoo Community and Enterprise editions, version 15 and above. It syncs reps and deals, and can optionally write commission results back to Odoo as custom fields.
+
+## How data flows
+
+**Sales app path** (quotation → order):
+
+```
+Odoo Sales app                CommissionKit
+──────────────                ───────────────
+
+Quotation created              (not synced)
+       │
+       ▼
+Quotation confirmed      →     Deal created (state = closed_won)
+       │
+       ▼
+Invoice created + paid   →     Payment status updates to "paid"
+```
+
+**CRM app path** (opportunity → quotation → order):
+
+```
+Odoo CRM app                  CommissionKit
+─────────────                 ───────────────
+
+Lead / Opportunity             (not synced)
+       │
+       ▼
+Opportunity won +
+quotation auto-created   →     Deal created (state = closed_won)
+       │
+       ▼
+Invoice created + paid   →     Payment status updates to "paid"
+```
+
+In both paths, the final record CommissionKit reads is **`sale.order`** — the confirmed sales order.
+
+## CRM: opportunity pipeline
+
+If you use Odoo's **CRM** app, opportunities must have a **quotation** created from them to appear in CommissionKit. CommissionKit reads `sale.order` records — not CRM opportunities. If your team marks an opportunity as "Won" without creating a quotation, it will never sync.
+
+To ensure every won opportunity becomes a deal:
+
+1. In Odoo CRM, configure your stages so that marking an opportunity **Won** automatically creates a quotation (this is Odoo's default when the **Sales** and **CRM** modules are both installed)
+2. Verify that won opportunities have a linked sale order by opening the opportunity and checking for the **Quotation** smart button
+3. Run a manual **Sync Deals** in CommissionKit to confirm the deal appears
+
+## Payment status
+
+CommissionKit determines payment status by querying the **actual invoice payment states**, not the `sale.order.invoice_status` field.
+
+**How it works**:
+
+1. Fetches `sale.order` records with their linked `invoice_ids`
+2. Queries each invoice's `payment_state` from `account.move`
+3. Aggregates per deal:
+
+| Invoice payment states | Resulting CKit status |
+|---|---|
+| All invoices `paid` or `in_payment` | **paid** |
+| Some paid, some unpaid | **partial** |
+| No invoices attached | **unpaid** |
+| Any invoice `reversed` or `cancel` | **on_hold** |
+
+<Note>
+`sale.order.invoice_status` is NOT used. That field only tracks whether invoices have been **created**, not whether they have been **paid**.
+</Note>
+
+## Stage mapping
+
+Raw Odoo sale order states map to CommissionKit's canonical stages:
+
+| Odoo state | CKit stage |
+|---|---|
+| `draft` | `pending` |
+| `sent` | `pending` |
+| `sale` | `closed_won` |
+| `done` | `closed_won` |
+| `cancel` | `closed_lost` |
+
+By default, only `closed_won` deals (`sale` and `done`) are synced.
+
+## Prerequisites
+
+- Odoo 15+ (Community or Enterprise, self-hosted or Odoo.sh)
+- A user account with API access — generate an API key under **Settings > Users & Companies > Users > [User] > API Keys**
+- The **Sales** module (`sale`) must be installed. No other modules required.
+
+## Setup
+
+1. In Odoo, generate an API key for a user with sales access
+2. In CommissionKit, go to **Integrations** and select **Odoo ERP**
+3. Enter:
+   - **Odoo Instance URL** — e.g. `https://mycompany.odoo.com`
+   - **Database Name** — your Odoo database name
+   - **Username** — the email of the user with API access
+   - **API Key** — the key generated in step 1
+4. Click **Test Connection** to verify
+5. Click **Connect** — initial sync begins immediately
+
+## Write-back
+
+When enabled, CommissionKit writes commission results and payout statuses back to custom fields on each `sale.order` in Odoo:
+
+| Field | Description |
+|---|---|
+| `x_ckit_commission_amount` | Commission amount calculated |
+| `x_ckit_commission_rate` | Rate applied |
+| `x_ckit_payout_status` | Current payout status |
+| `x_ckit_payout_amount` | Final payout amount |
+
+All fields are read-only in Odoo.
