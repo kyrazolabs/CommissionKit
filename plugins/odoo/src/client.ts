@@ -39,19 +39,24 @@ export class OdooClient {
   ): Promise<any[]> {
     this.ensureAuth();
 
-    const kwargs: any = {
-      fields,
-      context: {},
-    };
-
-    if (limit !== undefined) kwargs.limit = limit;
-    if (offset !== undefined) kwargs.offset = offset;
-
+    // Use execute (all positional args) instead of execute_kw for max compatibility
+    // search_read(domain, fields, offset=0, limit=None, order=None)
     const result = await this.jsonRpc<any[]>(
       `${this.baseUrl}/jsonrpc`,
       "object",
-      "execute_kw",
-      [this.database, this.uid, this.apiKey, model, "search_read", [domain], kwargs],
+      "execute",
+      [
+        this.database,
+        this.uid,
+        this.apiKey,
+        model,
+        "search_read",
+        domain,
+        fields,
+        offset ?? 0,
+        limit ?? 0,
+        {},
+      ],
     );
 
     return result;
@@ -76,8 +81,8 @@ export class OdooClient {
     const result = await this.jsonRpc<boolean>(
       `${this.baseUrl}/jsonrpc`,
       "object",
-      "execute_kw",
-      [this.database, this.uid, this.apiKey, model, "write", [ids, values]],
+      "execute",
+      [this.database, this.uid, this.apiKey, model, "write", ids, values],
     );
 
     return result;
@@ -89,8 +94,8 @@ export class OdooClient {
     const result = await this.jsonRpc<number>(
       `${this.baseUrl}/jsonrpc`,
       "object",
-      "execute_kw",
-      [this.database, this.uid, this.apiKey, model, "create", [values]],
+      "execute",
+      [this.database, this.uid, this.apiKey, model, "create", values],
     );
 
     return result;
@@ -131,7 +136,7 @@ export class OdooClient {
 
     if (data.error) {
       const detail = data.error.data
-        ? (typeof data.error.data === "string" ? data.error.data : JSON.stringify(data.error.data).slice(0, 300))
+        ? (typeof data.error.data === "string" ? data.error.data : JSON.stringify(data.error.data).slice(0, 500))
         : "(no detail)";
       throw new Error(`Odoo ${service}.${method}/${model}: ${data.error.message} (code ${data.error.code}) — ${detail}`);
     }
