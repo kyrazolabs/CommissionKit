@@ -12,6 +12,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog, DialogContent, DialogDescription,
   DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
@@ -77,7 +84,6 @@ export function IntegrationsPage() {
   const [connecting, setConnecting] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
-  const [syncTarget, setSyncTarget] = useState<string | null>(null);
 
   // Form state
   const [formValues, setFormValues] = useState<Record<string, string | boolean>>({});
@@ -128,14 +134,34 @@ export function IntegrationsPage() {
     },
   });
 
-  const syncMutation = useMutation({
-    mutationFn: (entityType: string) =>
-      apiFetch(`/api/integrations/${activeWorkspace?.id}/sync/${entityType}`, { method: "POST" }),
+  const syncRepsMutation = useMutation({
+    mutationFn: () =>
+      apiFetch(`/api/integrations/${activeWorkspace?.id}/sync/reps`, { method: "POST" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["integrations"] });
-      setSyncTarget(null);
     },
   });
+
+  const syncDealsMutation = useMutation({
+    mutationFn: () =>
+      apiFetch(`/api/integrations/${activeWorkspace?.id}/sync/deals`, { method: "POST" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["integrations"] });
+    },
+  });
+
+  const scheduleMutation = useMutation({
+    mutationFn: (schedule: { reps: string; deals: string }) =>
+      apiFetch(`/api/integrations/${activeWorkspace?.id}/config`, {
+        method: "PATCH",
+        body: JSON.stringify({ syncSchedule: schedule }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["integrations"] });
+    },
+  });
+
+  const syncPending = syncRepsMutation.isPending || syncDealsMutation.isPending;
 
   const handleTest = async (connectorName: string) => {
     setTesting(true);
@@ -266,24 +292,50 @@ export function IntegrationsPage() {
 
           <CardContent className="space-y-4">
             {/* Sync controls */}
-            <div className="flex items-center gap-3">
-              <p className="text-sm font-medium">Manual Sync:</p>
-              <Button
-                variant="outline"
-                onClick={() => syncMutation.mutate("reps")}
-                disabled={syncMutation.isPending}
-              >
-                <RefreshCw className={cn("size-3.5 mr-1.5", syncMutation.isPending && "animate-spin")} />
-                Sync Reps
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => syncMutation.mutate("deals")}
-                disabled={syncMutation.isPending}
-              >
-                <RefreshCw className={cn("size-3.5 mr-1.5", syncMutation.isPending && "animate-spin")} />
-                Sync Deals
-              </Button>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium">Auto Sync:</p>
+                <Select
+                  value={status.syncSchedule?.deals || "hourly"}
+                  onValueChange={(v) =>
+                    scheduleMutation.mutate({ reps: v, deals: v })
+                  }
+                >
+                  <SelectTrigger className="h-9 w-[140px] text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="realtime">Every 10 min</SelectItem>
+                    <SelectItem value="hourly">Hourly</SelectItem>
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="manual">Manual only</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-2 ml-3">
+                <p className="text-sm font-medium">Manual:</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => syncRepsMutation.mutate()}
+                  disabled={syncPending}
+                  className="text-[13px]"
+                >
+                  <RefreshCw className={cn("size-3.5 mr-1.5", syncRepsMutation.isPending && "animate-spin")} />
+                  Sync Reps
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => syncDealsMutation.mutate()}
+                  disabled={syncPending}
+                  className="text-[13px]"
+                >
+                  <RefreshCw className={cn("size-3.5 mr-1.5", syncDealsMutation.isPending && "animate-spin")} />
+                  Sync Deals
+                </Button>
+              </div>
             </div>
 
             {status.lastSyncedAt && (
@@ -332,7 +384,12 @@ export function IntegrationsPage() {
                         <TableCell className="text-xs font-medium">{sync.entityType}</TableCell>
                         <TableCell className="text-xs capitalize">{sync.trigger}</TableCell>
                         <TableCell className="text-xs">
-                          <Badge variant={sync.status === "completed" ? "default" : sync.status === "partial" ? "secondary" : "destructive"} className="text-[10px]">
+                          <Badge variant={
+                            sync.status === "completed" ? "default"
+                            : sync.status === "partial" ? "secondary"
+                            : sync.status === "running" ? "outline"
+                            : "destructive"
+                          } className="text-[10px]">
                             {sync.status}
                           </Badge>
                         </TableCell>
