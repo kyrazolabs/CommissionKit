@@ -276,6 +276,23 @@ router.delete(
   },
 );
 
+// ─── Dismiss error ─────────────────────────────────────────────────
+
+router.post(
+  "/:workspaceId/dismiss-error",
+  ...requirePermission("workspace", "edit"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+
+    await IntegrationConnection.findOneAndUpdate(
+      { workspaceId },
+      { lastError: undefined },
+    );
+
+    res.json({ success: true });
+  },
+);
+
 // ─── Manual sync trigger ────────────────────────────────────────────
 
 router.post(
@@ -296,6 +313,9 @@ router.post(
       res.status(400).json({ error: "Not connected" });
       return;
     }
+
+    // Clear stale error on manual sync
+    await IntegrationConnection.findByIdAndUpdate(conn._id, { lastError: undefined });
 
     const queue = entityType === "reps" ? syncRepsQueue : syncDealsQueue;
     const job = await queue.add(`manual-${entityType}-${workspaceId}`, {

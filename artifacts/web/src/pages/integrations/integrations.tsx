@@ -293,9 +293,22 @@ export function IntegrationsPage() {
             )}
 
             {status.lastError && (
-              <div className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-                <AlertTriangle className="size-4 shrink-0" />
-                {status.lastError}
+              <div className="flex items-center justify-between rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+                <div className="flex items-center gap-2 min-w-0">
+                  <AlertTriangle className="size-4 shrink-0" />
+                  <span className="truncate">{status.lastError}</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-xs shrink-0 ml-2 hover:bg-destructive/20"
+                  onClick={() =>
+                    apiFetch(`/api/integrations/${activeWorkspace?.id}/dismiss-error`, { method: "POST" })
+                      .then(() => queryClient.invalidateQueries({ queryKey: ["integrations"] }))
+                  }
+                >
+                  Dismiss
+                </Button>
               </div>
             )}
 
