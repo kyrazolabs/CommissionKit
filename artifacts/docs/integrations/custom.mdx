@@ -119,6 +119,8 @@ JSONPath to the array of results in the API response. Examples:
 - `"results.items"` — if it's `{ "results": { "items": [...] } }`
 - Omit if the response body is already a top-level array
 
+Most APIs wrap results — the connector auto-detects the array by checking common wrapper keys (`data`, `results`, `items`, `records`) and recursing into nested objects. For example, `{ "data": { "workspaceMembers": [...] } }` works with `responsePath: "data"` or even without it entirely.
+
 ### `entities` (required)
 
 At least one of `reps` or `deals` must be enabled.
