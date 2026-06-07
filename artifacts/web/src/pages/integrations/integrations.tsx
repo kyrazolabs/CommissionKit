@@ -323,9 +323,27 @@ export function IntegrationsPage() {
                             {sync.status}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-xs tabular-nums">
-                          {sync.stats.created}c / {sync.stats.updated}u / {sync.stats.skipped}s
-                          {sync.stats.failed > 0 && <span className="text-destructive ml-1">/ {sync.stats.failed}f</span>}
+                        <TableCell className="text-xs">
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                              <span className="text-[11px] font-semibold tabular-nums">{sync.stats.created}</span>
+                              <span className="text-[10px]">new</span>
+                            </span>
+                            <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                              <span className="text-[11px] font-semibold tabular-nums">{sync.stats.updated}</span>
+                              <span className="text-[10px]">updated</span>
+                            </span>
+                            <span className="inline-flex items-center gap-1 text-muted-foreground">
+                              <span className="text-[11px] font-semibold tabular-nums">{sync.stats.skipped}</span>
+                              <span className="text-[10px]">skipped</span>
+                            </span>
+                            {sync.stats.failed > 0 && (
+                              <span className="inline-flex items-center gap-1 text-destructive">
+                                <span className="text-[11px] font-semibold tabular-nums">{sync.stats.failed}</span>
+                                <span className="text-[10px]">failed</span>
+                              </span>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground">
                           {sync.completedAt ? new Date(sync.completedAt).toLocaleString() : "-"}
