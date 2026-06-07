@@ -200,3 +200,107 @@ After configuring, verify the connector works:
 2. Check the sync stats — you should see **new** records created
 3. If you see **failed**, check the error banner for details
 4. Adjust field mappings if needed and sync again
+
+## Example: Twenty CRM
+
+This walkthrough connects CommissionKit to a **Twenty CRM** instance. The same approach works for any REST API.
+
+### Step 1: Understand the API response
+
+Here is a real response from Twenty's `GET /rest/opportunities` endpoint:
+
+```json
+{
+  "data": {
+    "opportunities": [
+      {
+        "id": "468c34b3-0717-48fa-8219-72392bda7392",
+        "name": "AISSOL - Growth",
+        "amount": {
+          "amountMicros": 990000000,
+          "currencyCode": "USD"
+        },
+        "closeDate": null,
+        "stage": "ON_HOLD",
+        "pointOfContactId": "fa47ecd3-0d5b-49eb-a35e-eb5aecb2a14e",
+        "createdAt": "2026-05-27T07:07:53.816Z"
+      }
+    ]
+  },
+  "totalCount": 2,
+  "pageInfo": {
+    "startCursor": "eyJpZCI6...",
+    "endCursor": "eyJpZCI6...",
+    "hasNextPage": true
+  }
+}
+```
+
+### Step 2: Map the fields
+
+| CKit field | JSONPath | Why |
+|---|---|---|
+| `externalId` | `"id"` | Twenty's UUID |
+| `name` | `"name"` | Opportunity name |
+| `amount` | `"amount.amountMicros"` | Deal amount in micros (990000000 = $990) |
+| `closeDate` | `"closeDate"` | Date field directly |
+| `stage` | `"stage"` | Twenty stage: NEW, MEETING, ON_HOLD, etc. |
+| `currency` | `"amount.currencyCode"` | Nested inside amount object |
+| `repExternalId` | `"pointOfContactId"` | Links to the contact person |
+
+### Step 3: Write the config
+
+```bash
+curl -X PATCH https://commissionk.it/api/integrations/YOUR_WORKSPACE_ID/config \
+  -H "Content-Type: application/json" \
+  -H "X-Workspace-ID: YOUR_WORKSPACE_ID" \
+  --cookie "ck_session=..." \
+  -d '{
+    "config": {
+      "baseUrl": "https://crm.yourcompany.com/rest",
+      "auth": {
+        "type": "bearer",
+        "token": "eyJhbGciOi..."
+      },
+      "pagination": {
+        "type": "cursor",
+        "limitParam": "limit",
+        "cursorParam": "starting_after",
+        "cursorPath": "pageInfo.endCursor"
+      },
+      "responsePath": "data.opportunities",
+      "entities": {
+        "deals": {
+          "enabled": true,
+          "endpoint": "/opportunities",
+          "fields": {
+            "externalId": "id",
+            "name": "name",
+            "amount": "amount.amountMicros",
+            "closeDate": "closeDate",
+            "stage": "stage",
+            "currency": "amount.currencyCode",
+            "repExternalId": "pointOfContactId"
+          },
+          "filters": [
+            { "key": "order_by", "value": "createdAt" }
+          ],
+          "stageFilter": {
+            "field": "stage",
+            "include": ["ON_HOLD", "NEW", "MEETING"]
+          }
+        }
+      }
+    }
+  }'
+```
+
+### Step 4: What happens
+
+1. The connector calls `GET /rest/opportunities?order_by=createdAt&limit=60&starting_after=`
+2. The response array is extracted from `data.opportunities`
+3. Each opportunity is mapped using the field paths above
+4. Cursor pagination reads `pageInfo.endCursor` and passes it as `starting_after` for the next page
+5. Only opportunities with stage in `["ON_HOLD", "NEW", "MEETING"]` are synced
+
+Run **Sync Deals** to see your Twenty opportunities appear in CommissionKit.
