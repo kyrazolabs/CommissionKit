@@ -41,7 +41,13 @@ async function boot() {
     pluginRegistry.register(new OdooConnector());
 
     // Rehydrate connected workspaces
-    const { IntegrationConnection } = await import("@workspace/db");
+    const { IntegrationConnection, IntegrationSync } = await import("@workspace/db");
+
+    // Mark any "running" syncs as failed (stuck from previous crash)
+    await IntegrationSync.updateMany(
+      { status: "running" },
+      { status: "failed", error: "Worker restarted", completedAt: new Date() },
+    );
     const activeConnections = await IntegrationConnection.find({ status: "connected" });
     for (const conn of activeConnections) {
       try {

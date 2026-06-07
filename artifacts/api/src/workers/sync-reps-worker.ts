@@ -45,49 +45,57 @@ export const syncRepsWorker = new Worker<SyncRepsPayload>(
         startedAt: new Date(),
       });
 
-      await job.updateProgress(10);
+      try {
+        await job.updateProgress(10);
 
-      const reps = await plugin.fetchReps(
-        workspaceId,
-        conn.config as Record<string, unknown>,
-        {},
-      );
+        const reps = await plugin.fetchReps(
+          workspaceId,
+          conn.config as Record<string, unknown>,
+          {},
+        );
 
-      await job.updateProgress(50);
+        await job.updateProgress(50);
 
-      const stats = await upsertReps(
-        workspaceId,
-        connectorName,
-        reps,
-        syncRecord._id.toString(),
-      );
+        const stats = await upsertReps(
+          workspaceId,
+          connectorName,
+          reps,
+          syncRecord._id.toString(),
+        );
 
-      await IntegrationSync.findByIdAndUpdate(syncRecord._id, {
-        status: stats.failed > 0 ? "partial" : "completed",
-        stats,
-        completedAt: new Date(),
-      });
+        await IntegrationSync.findByIdAndUpdate(syncRecord._id, {
+          status: stats.failed > 0 ? "partial" : "completed",
+          stats,
+          completedAt: new Date(),
+        });
 
-      await IntegrationConnection.findByIdAndUpdate(conn._id, {
-        lastSyncedAt: new Date(),
-        lastError: undefined,
-      });
+        await IntegrationConnection.findByIdAndUpdate(conn._id, {
+          lastSyncedAt: new Date(),
+          lastError: undefined,
+        });
 
-      logger.info(
-        { workspaceId, connectorName, stats },
-        "[SyncRepsWorker] Rep sync complete",
-      );
+        logger.info(
+          { workspaceId, connectorName, stats },
+          "[SyncRepsWorker] Rep sync complete",
+        );
 
-      await job.updateProgress(100);
-    } catch (err: any) {
-      logger.error({ err, workspaceId, connectorName }, "[SyncRepsWorker] Rep sync failed");
+        await job.updateProgress(100);
+      } catch (err: any) {
+        logger.error({ err, workspaceId, connectorName }, "[SyncRepsWorker] Rep sync failed");
 
-      await IntegrationConnection.findOneAndUpdate(
-        { workspaceId, connectorName },
-        { lastError: err.message },
-      );
+        await IntegrationSync.findByIdAndUpdate(syncRecord._id, {
+          status: "failed",
+          error: err.message,
+          completedAt: new Date(),
+        });
 
-      throw err; // Let BullMQ handle retry
+        await IntegrationConnection.findOneAndUpdate(
+          { workspaceId, connectorName },
+          { lastError: err.message },
+        );
+
+        throw err; // Let BullMQ handle retry
+      }
     } finally {
       release();
     }
