@@ -162,6 +162,8 @@ At least one of `reps` or `deals` must be enabled.
 
 Use dot notation for nested fields: `"salesRep.id"` reads `record.salesRep.id`.
 
+**Compute fields**: prefix with `$div:N:` to divide a numeric value. For example, Twenty CRM stores amounts in micros — `"$div:1000000:amount.amountMicros"` converts `990000000` to `990`.
+
 ## Payment status mapping
 
 Map your ERP's payment status strings to CommissionKit's four values:
@@ -275,7 +277,7 @@ GET /rest/workspaceMembers?order_by=createdAt&limit=60
 |---|---|---|
 | `externalId` | `"id"` | Twenty's opportunity UUID |
 | `name` | `"name"` | Opportunity name |
-| `amount` | `"amount.amountMicros"` | Deal amount in micros ($990) |
+| `amount` | `"$div:1000000:amount.amountMicros"` | Deal amount in micros → dollars |
 | `closeDate` | `"closeDate"` | Date field directly |
 | `stage` | `"stage"` | Twenty stage: NEW, MEETING, ON_HOLD |
 | `currency` | `"amount.currencyCode"` | Nested inside amount object |
@@ -319,7 +321,7 @@ Paste this JSON into the **Edit Mapping** editor (⋮ menu) — replace the toke
         "fields": {
           "externalId": "id",
           "name": "name",
-          "amount": "amount.amountMicros",
+            "amount": "$div:1000000:amount.amountMicros",
           "closeDate": "closeDate",
           "stage": "stage",
           "currency": "amount.currencyCode",

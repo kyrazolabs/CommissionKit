@@ -19,6 +19,20 @@ import { jsonpathGet } from "./jsonpath";
 import { createPaginationState, getPaginationParams, advancePage } from "./pagination";
 import { getAuthHeaders, refreshOAuthToken } from "./auth";
 
+// Compute field helpers: $div:1000000:path applies division to extracted value
+function resolveFieldValue(item: any, fieldDef: string): any {
+  if (fieldDef.startsWith("$div:")) {
+    const rest = fieldDef.slice(5); // remove "$div:"
+    const colonIdx = rest.indexOf(":");
+    if (colonIdx === -1) return jsonpathGet(item, rest);
+    const divisor = Number(rest.slice(0, colonIdx)) || 1;
+    const path = rest.slice(colonIdx + 1);
+    const raw = jsonpathGet(item, path);
+    return typeof raw === "number" ? raw / divisor : raw;
+  }
+  return jsonpathGet(item, fieldDef);
+}
+
 const DEFAULT_PAGINATION = {
   type: "offset" as const,
   limitParam: "limit",
@@ -101,10 +115,10 @@ export class CustomConnector extends BasePlugin {
       parsed.responsePath,
       options,
       (item, fields) => ({
-        externalId: String(jsonpathGet(item, fields.externalId || "id") || ""),
-        name: jsonpathGet(item, fields.name || "name") || "",
-        email: jsonpathGet(item, fields.email || "email") || "",
-        role: fields.role ? jsonpathGet(item, fields.role) : undefined,
+        externalId: String(resolveFieldValue(item, fields.externalId || "id") || ""),
+        name: resolveFieldValue(item, fields.name || "name") || "",
+        email: resolveFieldValue(item, fields.email || "email") || "",
+        role: fields.role ? resolveFieldValue(item, fields.role) : undefined,
       }) as NormalizedRep,
     );
   }
@@ -136,21 +150,21 @@ export class CustomConnector extends BasePlugin {
       parsed.responsePath,
       options,
       (item, fields) => {
-        const rawStage = jsonpathGet(item, fields.stage || "stage");
-        const rawPaymentStatus = fields.paymentStatus ? jsonpathGet(item, fields.paymentStatus) : undefined;
+        const rawStage = resolveFieldValue(item, fields.stage || "stage");
+        const rawPaymentStatus = fields.paymentStatus ? resolveFieldValue(item, fields.paymentStatus) : undefined;
 
         return {
-          externalId: String(jsonpathGet(item, fields.externalId || "id") || ""),
-          repExternalId: String(jsonpathGet(item, fields.repExternalId || "repId") || ""),
-          name: jsonpathGet(item, fields.name || "name") || "",
-          amount: Number(jsonpathGet(item, fields.amount || "amount")) || 0,
-          closeDate: new Date(jsonpathGet(item, fields.closeDate || "closeDate") || Date.now()),
+          externalId: String(resolveFieldValue(item, fields.externalId || "id") || ""),
+          repExternalId: String(resolveFieldValue(item, fields.repExternalId || "repId") || ""),
+          name: resolveFieldValue(item, fields.name || "name") || "",
+          amount: Number(resolveFieldValue(item, fields.amount || "amount")) || 0,
+          closeDate: new Date(resolveFieldValue(item, fields.closeDate || "closeDate") || Date.now()),
           stage: rawStage || "closed_won",
-          currency: fields.currency ? jsonpathGet(item, fields.currency) : undefined,
+          currency: fields.currency ? resolveFieldValue(item, fields.currency) : undefined,
           paymentStatus: rawPaymentStatus
             ? derivePaymentStatus(rawPaymentStatus, entity.paymentStatusMapping as any)
             : undefined,
-          notes: fields.notes ? jsonpathGet(item, fields.notes) : undefined,
+          notes: fields.notes ? resolveFieldValue(item, fields.notes) : undefined,
         } as NormalizedDeal;
       },
     );
