@@ -295,25 +295,8 @@ export function IntegrationsPage() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                    Actions
+                    Sync & Disconnect
                   </DropdownMenuLabel>
-                  <DropdownMenuItem
-                    onClick={() => syncRepsMutation.mutate()}
-                    disabled={syncPending}
-                    className="flex items-center gap-2"
-                  >
-                    <RefreshCw className={cn("size-3.5", syncRepsMutation.isPending && "animate-spin")} />
-                    Sync Reps
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => syncDealsMutation.mutate()}
-                    disabled={syncPending}
-                    className="flex items-center gap-2"
-                  >
-                    <RefreshCw className={cn("size-3.5", syncDealsMutation.isPending && "animate-spin")} />
-                    Sync Deals
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
                   <div className="px-2 py-1.5">
                     <Label className="text-[11px] text-muted-foreground">Auto Sync</Label>
                     <Select
@@ -365,6 +348,28 @@ export function IntegrationsPage() {
           </CardHeader>
 
           <CardContent className="space-y-4">
+            {/* Manual sync */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                onClick={() => syncRepsMutation.mutate()}
+                disabled={syncPending}
+                className="text-[13px]"
+              >
+                <RefreshCw className={cn("size-3.5 mr-1.5", syncRepsMutation.isPending && "animate-spin")} />
+                Sync Reps
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => syncDealsMutation.mutate()}
+                disabled={syncPending}
+                className="text-[13px]"
+              >
+                <RefreshCw className={cn("size-3.5 mr-1.5", syncDealsMutation.isPending && "animate-spin")} />
+                Sync Deals
+              </Button>
+            </div>
+
             {status.lastSyncedAt && (
               <p className="text-xs text-muted-foreground">
                 Last synced: {new Date(status.lastSyncedAt).toLocaleString()}
