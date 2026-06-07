@@ -206,11 +206,16 @@ export class CustomConnector extends BasePlugin {
       if (Array.isArray(items)) {
         list = items;
       } else if (items && typeof items === "object") {
-        // Try common wrappers: data, results, items, records, then any array property
-        list = items.data || items.results || items.items || items.records;
-        if (!Array.isArray(list)) {
-          for (const key of Object.keys(items)) {
-            if (Array.isArray(items[key])) { list = items[key]; break; }
+        // Try common wrapper keys (may contain arrays or nested objects)
+        const wrappers = [items.data, items.results, items.items, items.records, items];
+        for (const wrapper of wrappers) {
+          if (Array.isArray(wrapper)) { list = wrapper; break; }
+          if (wrapper && typeof wrapper === "object") {
+            // Check if any key inside the wrapper is an array
+            for (const key of Object.keys(wrapper)) {
+              if (Array.isArray(wrapper[key])) { list = wrapper[key]; break; }
+            }
+            if (list.length > 0) break;
           }
         }
       }
