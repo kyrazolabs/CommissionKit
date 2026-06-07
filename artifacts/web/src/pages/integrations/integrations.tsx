@@ -148,6 +148,7 @@ export function IntegrationsPage() {
       apiFetch(`/api/integrations/${activeWorkspace?.id}/disconnect`, { method: "DELETE" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["integrations"] });
+      toast({ title: "Disconnected", description: "Integration has been disconnected." });
     },
   });
 
@@ -175,8 +176,10 @@ export function IntegrationsPage() {
         method: "PATCH",
         body: JSON.stringify({ syncSchedule: schedule }),
       }),
-    onSuccess: () => {
+    onSuccess: (_, vars) => {
       queryClient.invalidateQueries({ queryKey: ["integrations"] });
+      const labels: Record<string, string> = { realtime: "Every 10 min", hourly: "Hourly", daily: "Daily", manual: "Manual only" };
+      toast({ title: "Auto sync updated", description: `Now syncing ${labels[vars.reps] || vars.reps}.` });
     },
   });
 
