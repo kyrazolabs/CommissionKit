@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Plug, Sprout, Cable, CheckCircle2, XCircle,
-  AlertTriangle, RefreshCw, Trash2, ArrowRight, Ellipsis, LoaderCircle,
+  AlertTriangle, RefreshCw, Trash2, ArrowRight, Ellipsis, LoaderCircle, Bug,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -647,6 +647,17 @@ export function IntegrationsPage() {
             );
           })}
         </div>
+      </div>
+
+      {/* Bug report */}
+      <div className="mt-8 pt-6 border-t border-border">
+        <a
+          href="mailto:support@commissionk.it?subject=Integration Bug Report"
+          className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <Bug className="size-3.5" />
+          Report a bug or request a connector
+        </a>
       </div>
     </div>
   );
