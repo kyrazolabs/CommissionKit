@@ -1,20 +1,21 @@
 import { Router, type IRouter } from "express";
-import healthRouter from "./health";
-import workspacesRouter from "./workspaces";
-import repsRouter from "./reps";
-import plansRouter from "./plans";
-import dealsRouter from "./deals";
-import runsRouter from "./runs";
-import dashboardRouter from "./dashboard";
-import billingRouter from "./billing";
-import notificationsRouter from "./notifications";
-import portalRouter from "./portal";
-import exportRouter from "./export";
-import reportsRouter from "./reports";
-import payoutsRouter from "./payouts";
-import disputesRouter from "./disputes";
-import rolesRouter from "./roles";
+import healthRouter from "./health/routes";
+import workspacesRouter from "./workspaces/routes";
+import repsRouter from "./reps/routes";
+import plansRouter from "./plans/routes";
+import dealsRouter from "./deals/routes";
+import runsRouter from "./runs/routes";
+import dashboardRouter from "./dashboard/routes";
+import billingRouter from "./billing/routes";
+import notificationsRouter from "./notifications/routes";
+import portalRouter from "./portal/routes";
+import exportRouter from "./export/routes";
+import reportsRouter from "./reports/routes";
+import payoutsRouter from "./payouts/routes";
+import disputesRouter from "./disputes/routes";
+import rolesRouter from "./roles/routes";
 import enterpriseRouter from "./enterprise";
+import integrationsRouter from "./integrations/routes";
 
 const router: IRouter = Router();
 
@@ -34,6 +35,7 @@ router.use("/payouts", payoutsRouter);
 router.use("/disputes", disputesRouter);
 router.use(rolesRouter);
 router.use("/enterprise", enterpriseRouter);
+router.use("/integrations", integrationsRouter);
 
 // Sentry integration test route
 router.get("/debug-sentry", (req, res) => {

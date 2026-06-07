@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useRole } from "@/hooks/use-role";
 import { usePageMeta } from "@/hooks/use-page-meta";
@@ -32,6 +33,7 @@ function toCSV(headers: string[], rows: string[][]): string {
 export function AissolProjectsPage() {
   usePageMeta({ title: "Projects", description: "Manage enterprise projects", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -207,7 +209,7 @@ export function AissolProjectsPage() {
               <div className="space-y-2">
                 <Label htmlFor="proj-rep">Sales Rep</Label>
                 <Select value={form.repId} onValueChange={(v) => setForm(p => ({ ...p, repId: v }))} required>
-                  <SelectTrigger id="proj-rep"><SelectValue placeholder="Select rep" /></SelectTrigger>
+                  <SelectTrigger id="proj-rep"><SelectValue placeholder={t("enterprise.projects.selectRep")} /></SelectTrigger>
                   <SelectContent>
                     {!Array.isArray(reps) || reps.length === 0 ? (
                       <div className="p-2 text-sm text-muted-foreground text-center">No reps yet — create one in Reps first.</div>
@@ -234,12 +236,12 @@ export function AissolProjectsPage() {
         <CardHeader className="pb-3 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-            <Input placeholder="Search projects…" className="pl-8" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            <Input placeholder={t("enterprise.projects.searchProjects")} className="pl-8" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
           </div>
           <div className="flex flex-wrap gap-2">
             <div className="w-40">
               <Select value={filterRep} onValueChange={setFilterRep}>
-                <SelectTrigger><SelectValue placeholder="All Reps" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("enterprise.projects.allReps")} /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Reps</SelectItem>
                   {!Array.isArray(reps) || reps.length === 0 ? (
@@ -250,7 +252,7 @@ export function AissolProjectsPage() {
             </div>
             <div className="w-40">
               <Select value={filterPeriod} onValueChange={setFilterPeriod}>
-                <SelectTrigger><SelectValue placeholder="All Periods" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("enterprise.projects.allPeriods")} /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Periods</SelectItem>
                   {[...new Set((Array.isArray(projects) ? projects : []).map((p: any) => p.period).filter(Boolean))].map((p: any) => (

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useRole } from "@/hooks/use-role";
 import { useAuth } from "@/hooks/use-auth";
@@ -120,6 +121,7 @@ function MemberAvatar({ email, status }: { email: string; status: MemberStatus }
 function InviteMemberDialog({
   workspaceId, onInvited, isLimitReached, limit, rolesList
 }: { workspaceId: string; onInvited: () => void; isLimitReached: boolean; limit: number; rolesList: any[] }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [roleIds, setRoleIds] = useState<string[]>([]);
@@ -135,13 +137,13 @@ function InviteMemberDialog({
         method: "POST",
         body: JSON.stringify({ email: email.trim(), roleIds }),
       });
-      toast({ title: "Invitation sent", description: `${email} was invited.` });
+      toast({ title: t("team.invitationSent"), description: `${email} was invited.` });
       setEmail("");
       setRoleIds([]);
       setOpen(false);
       onInvited();
     } catch (err: any) {
-      toast({ title: "Failed to invite", description: err.message, variant: "destructive" });
+      toast({ title: t("team.failedToInvite"), description: err.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -152,23 +154,23 @@ function InviteMemberDialog({
       <DialogTrigger asChild>
         <Button className="gap-2" disabled={isLimitReached}>
           <UserPlus className="size-4" />
-          {isLimitReached ? `Limit Reached (${limit})` : "Invite Member"}
+          {isLimitReached ? `Limit Reached (${limit})` : t("team.inviteMember")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[440px]">
         <DialogHeader>
-          <DialogTitle>Invite a Team Member</DialogTitle>
+          <DialogTitle>{t("team.inviteTeamMember")}</DialogTitle>
           <DialogDescription>
-            They'll receive an email link. Until they accept, they appear as pending.
+            {t('team.inviteDescription')}.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleInvite} className="grid gap-5 py-2">
           <div className="grid gap-2">
-            <Label htmlFor="invite-email">Email address</Label>
+            <Label htmlFor="invite-email">{t("team.emailAddress")}</Label>
             <Input
               id="invite-email"
               type="email"
-              placeholder="colleague@company.com"
+              placeholder={t("team.emailPlaceholder")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -176,8 +178,8 @@ function InviteMemberDialog({
           </div>
           <div className="grid gap-2">
             <div className="flex items-center gap-1.5">
-              <Label>Role</Label>
-              <HelpTooltip content="Owners and Admins can invite and manage members. Members have read access only." />
+              <Label>{t("team.role")}</Label>
+              <HelpTooltip content="{t('team.roleTooltip')}. Members have read access only." />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[160px] overflow-y-auto pr-1">
               {rolesList.reduce((acc: any[], r: any) => {
@@ -228,9 +230,9 @@ function InviteMemberDialog({
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>{t("common.cancel")}</Button>
             <Button type="submit" disabled={loading || !email.trim()}>
-              {loading ? "Sending…" : "Send Invitation"}
+              {loading ? t("common.sending2") : t("team.sendInvitation")}
             </Button>
           </DialogFooter>
         </form>
@@ -252,6 +254,7 @@ function MemberRow({
   onChanged: () => void;
   rolesList: any[];
 }) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [updating, setUpdating] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -266,10 +269,10 @@ function MemberRow({
         method: "PATCH",
         body: JSON.stringify({ roleIds: newRoleIds }),
       });
-      toast({ title: "Roles updated", description: `${member.email}'s roles have been updated.` });
+      toast({ title: t("team.rolesUpdated"), description: `${member.email}'s roles have been updated.` });
       onChanged();
     } catch (err: any) {
-      toast({ title: "Failed to update role", description: err.message, variant: "destructive" });
+      toast({ title: t("team.failedToUpdateRole"), description: err.message, variant: "destructive" });
     } finally {
       setUpdating(false);
     }
@@ -281,10 +284,10 @@ function MemberRow({
       await apiFetch(`/api/workspaces/${workspaceId}/members/${member.id}`, {
         method: "DELETE",
       });
-      toast({ title: isSelf ? "Left workspace" : "Member removed" });
+      toast({ title: isSelf ? t("team.leftWorkspace") : t("team.memberRemoved") });
       onChanged();
     } catch (err: any) {
-      toast({ title: "Failed to remove", description: err.message, variant: "destructive" });
+      toast({ title: t("team.failedToRemove"), description: err.message, variant: "destructive" });
     } finally {
       setUpdating(false);
       setDeleteConfirmOpen(false);
@@ -377,7 +380,7 @@ function MemberRow({
                 className="text-destructive focus:text-destructive focus:bg-destructive/10"
               >
                 <Trash2 className="size-3.5 mr-2" />
-                {isSelf ? "Leave workspace" : "Remove member"}
+                {isSelf ? t("team.leaveWorkspace") : t("team.removeMember")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -386,7 +389,7 @@ function MemberRow({
       <ConfirmDialog
         open={deleteConfirmOpen}
         onOpenChange={setDeleteConfirmOpen}
-        title={isSelf ? "Leave Workspace" : "Remove Member"}
+        title={isSelf ? t("team.leaveWorkspaceTitle") : t("team.removeMemberTitle")}
         description={isSelf
           ? <>Are you sure you want to leave <strong>{member.email}</strong> from this workspace?</>
           : <>Are you sure you want to remove <strong>{member.email}</strong> from this workspace? This action can be undone by re-inviting them.</>
@@ -401,6 +404,7 @@ function MemberRow({
 // ─── Role Reference Card ──────────────────────────────────────────────────────
 
 function RoleReference() {
+  const { t } = useTranslation();
   return (
     <div className="bg-card border border-card-border rounded-2xl overflow-hidden">
       <div className="p-5 border-b border-border">
@@ -435,7 +439,8 @@ function RoleReference() {
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
 export function TeamPage() {
-  usePageMeta({ title: "Team", description: "Manage team members, roles, and workspace access.", robots: "noindex, nofollow" });
+  const { t } = useTranslation();
+  usePageMeta({ title: t("team.title"), description: "Manage team members, roles, and workspace access.", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const { user } = useAuth();
   const { role, can, is, hasPermission, isLoading: roleLoading } = useRole();
@@ -473,8 +478,12 @@ export function TeamPage() {
   if (roleLoading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="size-10" />
-        <Skeleton className="h-96 w-full" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <Skeleton className="h-96 w-full rounded-2xl" />
       </div>
     );
   }
@@ -483,8 +492,8 @@ export function TeamPage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
         <Users className="size-10 text-muted-foreground" />
-        <h2 className="text-lg font-semibold">Access Denied</h2>
-        <p className="text-sm text-muted-foreground">You don't have permission to view the team roster.</p>
+        <h2 className="text-lg font-semibold">{t("team.accessDenied")}</h2>
+        <p className="text-sm text-muted-foreground">{t("team.noPermissionTeam")}</p>
       </div>
     );
   }
@@ -499,12 +508,10 @@ export function TeamPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <p className="text-[12px] font-semibold text-primary mb-1">Organization</p>
-          <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">Team & Roles</h1>
+          <p className="text-[12px] font-semibold text-primary mb-1">{t("team.organization")}</p>
+          <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">{t("team.title")}</h1>
           <p className="text-[14px] text-muted-foreground mt-1">
-            Manage who has access to{" "}
-            <span className="font-medium text-foreground">{activeWorkspace.name}</span>
-            {" "}and what they can do.
+            {t("team.description", { workspace: activeWorkspace.name })}
           </p>
         </div>
         {hasPermission("team", "create") && (

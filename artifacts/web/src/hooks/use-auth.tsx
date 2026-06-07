@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
 import { authClient, useSession } from "@/lib/auth-client";
 import { setAuthTokenGetter, setWorkspaceId, setBaseUrl } from "@workspace/api-client-react";
+import { loadSavedLang } from "@/i18n";
 
 interface AuthContextValue {
   session: any | null;
@@ -23,15 +24,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set the base URL for the generated API client
     setBaseUrl(import.meta.env.VITE_API_URL || "http://localhost:8088");
 
-    // Better Auth handles sessions via cookies, but we might still need 
-    // to pass tokens if the API client expects them. 
-    // For now, we'll keep the token getter logic if needed, 
-    // but Better Auth usually doesn't need explicit token passing for same-origin.
     setAuthTokenGetter(async () => {
       return null; // Better Auth uses cookies
     });
+
+    // Load saved language preference from server when user logs in
+    if (session?.user) {
+      loadSavedLang();
+    }
+
     return () => setAuthTokenGetter(null);
-  }, []);
+  }, [session?.user]);
 
   const signOut = useCallback(async () => {
     await authClient.signOut();

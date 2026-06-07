@@ -51,3 +51,41 @@ export const ExchangeRateJobSchema = z.object({
 });
 
 export type ExchangeRatePayload = z.infer<typeof ExchangeRateJobSchema>;
+
+// ─── Sync job schemas ─────────────────────────────────────────────────
+
+export const SyncRepsJobSchema = z.object({
+  workspaceId: z.string(),
+  connectorName: z.string(),
+  trigger: z.enum(["scheduled", "webhook", "manual", "initial"]),
+  options: z.object({
+    externalIds: z.array(z.string()).optional(),
+    fullSync: z.boolean().optional(),
+  }).optional(),
+});
+
+export type SyncRepsPayload = z.infer<typeof SyncRepsJobSchema>;
+
+export const SyncDealsJobSchema = z.object({
+  workspaceId: z.string(),
+  connectorName: z.string(),
+  trigger: z.enum(["scheduled", "webhook", "manual", "initial"]),
+  options: z.object({
+    externalIds: z.array(z.string()).optional(),
+    fullSync: z.boolean().optional(),
+  }).optional(),
+});
+
+export type SyncDealsPayload = z.infer<typeof SyncDealsJobSchema>;
+
+export const WebhookIngressJobSchema = z.object({
+  workspaceId: z.string(),
+  connectorName: z.string(),
+  entityType: z.enum(["reps", "deals"]),
+  eventType: z.enum(["created", "updated", "deleted"]),
+  externalId: z.string(),
+  timestamp: z.string(),
+  payload: z.unknown(),
+});
+
+export type WebhookIngressPayload = z.infer<typeof WebhookIngressJobSchema>;

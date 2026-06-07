@@ -101,9 +101,14 @@ export function AissolProjectDetailPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-10 w-48" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-4 w-56" />
+        </div>
         <div className="grid gap-4 md:grid-cols-3"><Skeleton className="h-28 rounded-2xl" /><Skeleton className="h-28 rounded-2xl" /><Skeleton className="h-28 rounded-2xl" /></div>
         <div className="grid gap-4 md:grid-cols-3"><Skeleton className="h-28 rounded-2xl" /><Skeleton className="h-28 rounded-2xl" /><Skeleton className="h-28 rounded-2xl" /></div>
+        <Skeleton className="h-64 w-full rounded-2xl" />
       </div>
     );
   }

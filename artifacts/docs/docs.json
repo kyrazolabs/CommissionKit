@@ -34,7 +34,16 @@
         "pages": [
           "guides/importing-deals",
           "guides/managing-plans",
-          "guides/running-calculations"
+          "guides/running-calculations",
+          "guides/clawback"
+        ]
+      },
+      {
+        "group": "Integrations",
+        "pages": [
+          "integrations/overview",
+          "integrations/odoo",
+          "integrations/custom"
         ]
       },
       {

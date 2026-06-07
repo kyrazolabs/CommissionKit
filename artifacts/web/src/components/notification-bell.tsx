@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Bell, CheckCheck, X, ExternalLink, Inbox } from "lucide-react";
 import { useNotifications } from "@/hooks/use-notifications";
 import { formatDistanceToNow } from "date-fns";
@@ -17,17 +18,18 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 const TYPE_LABELS: Record<string, string> = {
-  commission_run_completed: "Run",
-  new_rep_added:            "Rep",
-  deal_imported:            "Deal",
-  clawback_triggered:       "Clawback",
-  member_invited:           "Invite",
-  member_role_changed:      "Role",
-  plan_created:             "Plan",
-  plan_updated:             "Plan",
+  commission_run_completed: "notificationBell.run",
+  new_rep_added:            "notificationBell.rep",
+  deal_imported:            "notificationBell.deal",
+  clawback_triggered:       "notificationBell.clawback",
+  member_invited:           "notificationBell.invite",
+  member_role_changed:      "notificationBell.role",
+  plan_created:             "notificationBell.plan",
+  plan_updated:             "notificationBell.plan",
 };
 
 export function NotificationBell() {
+  const { t } = useTranslation();
   const { notifications, unreadCount, markRead, markAllRead, dismiss } = useNotifications();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -46,7 +48,7 @@ export function NotificationBell() {
       <button
         onClick={() => setOpen((o) => !o)}
         className="relative flex size-8 items-center justify-center rounded-lg hover:bg-muted transition-colors"
-        aria-label="Notifications"
+        aria-label={t("notificationBell.notifications")}
       >
         <Bell className="size-4 text-muted-foreground" />
         {unreadCount > 0 && (
@@ -62,10 +64,10 @@ export function NotificationBell() {
           <div className="flex items-center justify-between p-4 border-b border-border">
             <div className="flex items-center gap-2">
               <Bell className="size-3.5 text-primary" />
-              <span className="text-sm font-semibold">Notifications</span>
+              <span className="text-sm font-semibold">{t("notificationBell.notifications")}</span>
               {unreadCount > 0 && (
                 <span className="text-[11px] font-semibold bg-primary/10 text-primary p-1.5 rounded-full">
-                  {unreadCount} new
+                  {unreadCount}{t("notificationBell.newNotification")}
                 </span>
               )}
             </div>
@@ -74,7 +76,7 @@ export function NotificationBell() {
                 onClick={markAllRead}
                 className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary transition-colors"
               >
-                <CheckCheck className="size-3" /> Mark all read
+                <CheckCheck className="size-3" /> {t("notificationBell.markAllRead")}
               </button>
             )}
           </div>
@@ -84,8 +86,8 @@ export function NotificationBell() {
             {notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center p-10 text-center">
                 <Inbox className="size-8 text-muted-foreground/40 mb-2" />
-                <p className="text-sm font-medium text-muted-foreground">No notifications</p>
-                <p className="text-xs text-muted-foreground/70 mt-0.5">You're all caught up!</p>
+                <p className="text-sm font-medium text-muted-foreground">{t("notificationBell.noNotifications")}</p>
+                <p className="text-xs text-muted-foreground/70 mt-0.5">{t('notificationBell.allCaughtUp')}</p>
               </div>
             ) : (
               notifications.map((n) => (
@@ -107,7 +109,7 @@ export function NotificationBell() {
                         "inline-block text-[10px] font-semibold p-1.5 rounded-full",
                         TYPE_COLORS[n.type] ?? "bg-muted text-muted-foreground",
                       )}>
-                        {TYPE_LABELS[n.type] ?? n.type}
+                        {t(TYPE_LABELS[n.type]) ?? n.type}
                       </span>
                       <span className="text-[10px] text-muted-foreground">
                         {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
@@ -138,7 +140,7 @@ export function NotificationBell() {
                       <button
                         onClick={() => markRead(n.id)}
                         className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
-                        title="Mark as read"
+                        title={t("notificationBell.markAsRead")}
                       >
                         <CheckCheck className="size-3.5" />
                       </button>
@@ -153,7 +155,7 @@ export function NotificationBell() {
           {notifications.length > 0 && (
             <div className="border-t border-border p-4">
               <p className="text-center text-[11px] text-muted-foreground">
-                Showing last {notifications.length} notifications
+                {t("notificationBell.showingLast", { count: notifications.length })}
               </p>
             </div>
           )}

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, memo, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Plus, Settings, Shield, Trash, Edit, Check } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../../lib/api";
@@ -29,22 +30,23 @@ import {
 import { Badge } from "../../components/ui/badge";
 
 const PERMISSION_RESOURCES = [
-  { id: "deals", name: "Deals", actions: ["read", "create", "edit", "delete", "export"] },
-  { id: "payouts", name: "Payouts", actions: ["read", "create", "edit", "delete", "approve", "mark_paid", "adjust", "export"] },
-  { id: "plans", name: "Commission Plans", actions: ["read", "create", "edit", "delete"] },
-  { id: "reps", name: "Sales Reps", actions: ["read", "create", "edit", "delete"] },
-  { id: "disputes", name: "Disputes", actions: ["read", "edit", "delete"] },
-  { id: "analytics", name: "Reports", actions: ["read", "export"] },
-  { id: "calculations", name: "Commission Runs", actions: ["read", "create", "edit", "delete", "export"] },
-  { id: "team", name: "Teams", actions: ["read", "create", "edit", "delete"] },
-  { id: "roles", name: "Roles & Permissions", actions: ["read", "create", "edit", "delete"] },
-  { id: "billing", name: "Billing & Subscription", actions: ["read", "edit"] },
-  { id: "workspace", name: "Workspace Settings", actions: ["read", "edit"] },
-  { id: "notifications", name: "In-App Notifications", actions: ["read", "edit"] },
+  { id: "deals", name: "Deals", i18nKey: "roles.deals", actions: ["read", "create", "edit", "delete", "export"] },
+  { id: "payouts", name: "Payouts", i18nKey: "roles.payouts", actions: ["read", "create", "edit", "delete", "approve", "mark_paid", "adjust", "export"] },
+  { id: "plans", name: "Commission Plans", i18nKey: "roles.commissionPlans", actions: ["read", "create", "edit", "delete"] },
+  { id: "reps", name: "Sales Reps", i18nKey: "roles.salesReps", actions: ["read", "create", "edit", "delete"] },
+  { id: "disputes", name: "Disputes", i18nKey: "roles.disputes2", actions: ["read", "edit", "delete"] },
+  { id: "analytics", name: "Reports", i18nKey: "roles.reports2", actions: ["read", "export"] },
+  { id: "calculations", name: "Commission Runs", i18nKey: "roles.commissionRuns", actions: ["read", "create", "edit", "delete", "export"] },
+  { id: "team", name: "Teams", i18nKey: "roles.teams", actions: ["read", "create", "edit", "delete"] },
+  { id: "roles", name: "Roles & Permissions", i18nKey: "roles.rolesPermissions", actions: ["read", "create", "edit", "delete"] },
+  { id: "billing", name: "Billing & Subscription", i18nKey: "roles.billingSubscription", actions: ["read", "edit"] },
+  { id: "workspace", name: "Workspace Settings", i18nKey: "roles.workspaceSettings", actions: ["read", "edit"] },
+  { id: "notifications", name: "In-App Notifications", i18nKey: "roles.inAppNotifications", actions: ["read", "edit"] },
 ];
 
 export default function SettingsRoles() {
   const { hasPermission } = useRole();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [selectedRole, setSelectedRole] = useState<any>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -78,16 +80,16 @@ export default function SettingsRoles() {
   });
 
   if (isLoading) {
-    return <div className="p-8 text-muted-foreground animate-pulse">Loading roles…</div>;
+    return <div className="p-8 text-muted-foreground animate-pulse">{t("roles.loadingRoles")}</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">Roles & Permissions</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">{t("roles.title")}</h2>
           <p className="text-muted-foreground mt-2">
-            Manage custom roles and define granular access controls for your workspace members.
+            {t("roles.description")}
           </p>
         </div>
         {hasPermission("roles", "create") && (
@@ -98,7 +100,7 @@ export default function SettingsRoles() {
             }}
           >
             <Plus className="size-4 mr-2" />
-            Create Role
+            {t("roles.createRole")}
           </Button>
         )}
       </div>
@@ -114,20 +116,20 @@ export default function SettingsRoles() {
                 </CardTitle>
                 {role.isSystem && (
                   <Badge variant="secondary" className="text-xs">
-                    System
+                    {t("roles.system")}
                   </Badge>
                 )}
               </div>
               <CardDescription className="min-h-10 mt-1 line-clamp-2">
-                {role.description || "No description provided."}
+                {role.description || t("roles.noDescription")}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex-1">
               <div className="text-sm text-muted-foreground mb-4">
                 {role.permissions.includes("*") ? (
-                  <span className="font-medium text-emerald-500">Full Access (All Permissions)</span>
+                  <span className="font-medium text-emerald-500">{t("roles.fullAccess")}</span>
                 ) : (
-                  <span>{role.permissions.length} permissions granted</span>
+                  <span>{t("roles.permissionsGranted", { count: role.permissions.length })}</span>
                 )}
               </div>
 
@@ -142,7 +144,7 @@ export default function SettingsRoles() {
                     }}
                   >
                     <Edit className="size-4 mr-2" />
-                    {role.name === "Owner" ? "View" : "Edit"}
+                    {role.name === "Owner" ? t("common.view") : t("common.edit")}
                   </Button>
                 )}
 
@@ -153,7 +155,7 @@ export default function SettingsRoles() {
                     className="text-destructive hover:text-destructive hover:bg-destructive/10"
                   >
                     <Trash className="size-4 mr-2" />
-                    Delete
+                    {t("common.delete")}
                   </Button>
                 )}
               </div>
@@ -171,9 +173,9 @@ export default function SettingsRoles() {
       <ConfirmDialog
         open={!!deleteConfirmRole}
         onOpenChange={(v) => { if (!v) setDeleteConfirmRole(null); }}
-        title="Delete Role"
+        title={t("roles.deleteRole")}
         description={<>Users assigned to <strong>{deleteConfirmRole?.name}</strong> will lose these permissions immediately.</>}
-        confirmLabel="Delete Role"
+        confirmLabel={t("roles.deleteRole")}
         onConfirm={() => {
           deleteMutation.mutate(deleteConfirmRole.id);
           setDeleteConfirmRole(null);
@@ -184,6 +186,7 @@ export default function SettingsRoles() {
 }
 
 function RoleDialog({ role, open, onOpenChange }: any) {
+  const { t } = useTranslation();
   const isSystem = role?.isSystem;
   const isOwner = role?.name === "Owner";
 
@@ -234,7 +237,7 @@ function RoleDialog({ role, open, onOpenChange }: any) {
     onError: (err: any, variables, context: any) => {
       setSyncError(true);
       queryClient.setQueryData(["roles"], context?.previous);
-      setError(err.message || "Failed to save role. Recovering your input...");
+      setError(err.message || t("roles.saveRoleFailed"));
       onOpenChange(true);
     },
     onSettled: () => {
@@ -296,9 +299,9 @@ function RoleDialog({ role, open, onOpenChange }: any) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>{role ? (isOwner ? "View Role" : "Edit Role") : "Create Custom Role"}</DialogTitle>
+          <DialogTitle>{role ? (isOwner ? t("roles.viewRole") : t("roles.editRole")) : t("roles.createCustomRole")}</DialogTitle>
           <DialogDescription>
-            {isOwner ? "The Owner role has full access to the workspace and cannot be modified." : "Define granular permissions for what users in this role can do."}
+            {isOwner ? t("roles.ownerHasFullAccess") : t("roles.permissionsDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -311,37 +314,37 @@ function RoleDialog({ role, open, onOpenChange }: any) {
         <form id="role-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto pr-2 space-y-6 py-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Role Name</Label>
+              <Label htmlFor="name">{t("roles.roleName")}</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={e => setName(e.target.value)}
                 disabled={isSystem || isOwner}
                 required
-                placeholder="e.g. Regional Manager"
+                placeholder={t("roles.roleNamePlaceholder")}
               />
-              {isSystem && !isOwner && <p className="text-xs text-muted-foreground">System role names cannot be changed.</p>}
+              {isSystem && !isOwner && <p className="text-xs text-muted-foreground">{t("roles.systemRoleNameImmutable")}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{t("roles.descriptionLabel")}</Label>
               <Input
                 id="description"
                 value={description}
                 onChange={e => setDescription(e.target.value)}
                 disabled={isOwner}
-                placeholder="Briefly describe what this role does"
+                placeholder={t("roles.descriptionPlaceholder")}
               />
             </div>
           </div>
 
           <div className="space-y-4">
-            <h4 className="text-sm font-semibold border-b pb-2">Permissions Matrix</h4>
+            <h4 className="text-sm font-semibold border-b pb-2">{t("roles.permissionsMatrix")}</h4>
 
             {isOwner ? (
               <div className="flex items-center justify-center p-8 bg-muted/50 rounded-lg border border-dashed">
                 <p className="text-muted-foreground flex items-center gap-2">
                   <Shield className="size-5 text-emerald-500" />
-                  This role implicitly has full access (<code className="bg-muted px-1 rounded">*</code>) to all resources.
+                  {t("roles.ownerImplicitFullAccess", { role: role.name })}
                 </p>
               </div>
             ) : (
@@ -357,11 +360,11 @@ function RoleDialog({ role, open, onOpenChange }: any) {
 
         <DialogFooter className="pt-4 border-t">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {isOwner ? "Close" : "Cancel"}
+            {isOwner ? t("common.close") : t("common.cancel")}
           </Button>
           {!isOwner && (
             <Button type="submit" form="role-form">
-              {role ? "Save Changes" : "Create Role"}
+              {role ? t("roles.saveChanges") : t("roles.createRole")}
             </Button>
           )}
         </DialogFooter>
@@ -373,6 +376,7 @@ function RoleDialog({ role, open, onOpenChange }: any) {
 const COLUMNS = ["read", "create", "edit", "delete", "approve", "mark_paid", "adjust", "export"];
 
 const PermissionMatrix = memo(({ permissions, onTogglePermission, onToggleResource, isOwner }: any) => {
+  const { t } = useTranslation();
   const hasGlobalWildcard = permissions.includes("*");
 
   return (
@@ -381,10 +385,10 @@ const PermissionMatrix = memo(({ permissions, onTogglePermission, onToggleResour
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border/60 bg-muted/40 backdrop-blur-md">
-              <th className="p-4 text-left font-semibold text-foreground/90 w-1/3">Resource</th>
+              <th className="p-4 text-left font-semibold text-foreground/90 w-1/3">{t("common.resource")}</th>
               {COLUMNS.map(col => (
                 <th key={col} className="p-4 text-center font-semibold text-muted-foreground/80 capitalize text-[12px] tracking-tight">
-                  {col}
+                  {t(`common.${col}`, col)}
                 </th>
               ))}
             </tr>
@@ -413,7 +417,7 @@ const PermissionMatrix = memo(({ permissions, onTogglePermission, onToggleResour
                         "font-semibold text-[13.5px] transition-colors",
                         isFullAccess ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
                       )}>
-                        {resource.name}
+                        {t(resource.i18nKey, resource.name)}
                       </span>
                     </div>
                   </td>
