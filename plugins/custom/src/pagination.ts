@@ -59,7 +59,11 @@ export function advancePage(
     case "cursor":
       if (config.cursorPath) {
         state.cursor = jsonpathGet(response, config.cursorPath) || null;
-        state.hasMore = state.cursor !== null;
+        // Check hasNextPage in response if available, otherwise use result count
+        const hasNextPage = jsonpathGet(response, "pageInfo.hasNextPage");
+        state.hasMore = typeof hasNextPage === "boolean"
+          ? hasNextPage
+          : (resultCount > 0 && state.cursor !== null);
       } else {
         state.hasMore = resultCount >= state.limit;
       }

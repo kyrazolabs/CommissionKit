@@ -40,8 +40,6 @@ export class CustomConnector extends BasePlugin {
       return CustomConnectorConfigSchema.parse(config);
     } catch (e: any) {
       if (process.env.NODE_ENV !== "production") {
-        console.log("[CustomConnector] Config parse failed:", e instanceof Error ? e.message : String(e));
-        console.log("[CustomConnector] Config keys:", Object.keys(config));
       }
       return null;
     }
@@ -83,13 +81,9 @@ export class CustomConnector extends BasePlugin {
   ): Promise<NormalizedRep[]> {
     const parsed = this.parseConfig(config);
     if (!parsed) {
-      console.log("[CustomConnector] fetchReps: parseConfig returned null (invalid config)");
-      console.log("[CustomConnector] config keys:", Object.keys(config));
       return [];
     }
     if (!parsed.entities?.reps?.enabled) {
-      console.log("[CustomConnector] fetchReps: reps not enabled or entities missing");
-      console.log("[CustomConnector] parsed.entities:", JSON.stringify(parsed.entities));
       return [];
     }
 
@@ -122,11 +116,9 @@ export class CustomConnector extends BasePlugin {
   ): Promise<NormalizedDeal[]> {
     const parsed = this.parseConfig(config);
     if (!parsed) {
-      console.log("[CustomConnector] fetchDeals: parseConfig returned null (invalid config)");
       return [];
     }
     if (!parsed.entities?.deals?.enabled) {
-      console.log("[CustomConnector] fetchDeals: deals not enabled or entities missing");
       return [];
     }
 
@@ -184,7 +176,6 @@ export class CustomConnector extends BasePlugin {
     options: FetchOptions | undefined,
     mapFn: (item: any, fields: Record<string, string>) => T,
   ): Promise<T[]> {
-    console.log(`[CustomConnector] fetchEntities called: ${endpoint}`);
     let headers = getAuthHeaders(authConfig);
 
     if (authConfig.type === "oauth2") {
@@ -247,8 +238,6 @@ export class CustomConnector extends BasePlugin {
       // Diagnostic
       if (process.env.NODE_ENV !== "production" && pageNum === 1) {
         const topKeys = items && typeof items === "object" ? Object.keys(items).join(", ") : "not an object";
-        console.log(`[CustomConnector] ${endpoint} response has keys: ${topKeys}`);
-        console.log(`[CustomConnector] ${endpoint} extracted ${list.length} items, responsePath="${responsePath || "none"}"`);
       }
 
       // Diagnostic logging
@@ -256,7 +245,6 @@ export class CustomConnector extends BasePlugin {
         const statusMsg = list.length > 0
           ? `${list.length} records, sample keys: ${Object.keys(list[0]).slice(0, 8).join(", ")}`
           : "0 records (empty or auto-detection failed)";
-        console.log(`[CustomConnector] ${endpoint} page ${pageNum} → ${statusMsg}`);
       }
 
       for (const item of list) {
