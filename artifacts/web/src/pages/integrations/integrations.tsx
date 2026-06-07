@@ -241,7 +241,7 @@ export function IntegrationsPage() {
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline">
                     <Trash2 className="size-3.5 mr-1.5" />
                     Disconnect
                   </Button>
@@ -270,7 +270,6 @@ export function IntegrationsPage() {
               <p className="text-sm font-medium">Manual Sync:</p>
               <Button
                 variant="outline"
-                size="sm"
                 onClick={() => syncMutation.mutate("reps")}
                 disabled={syncMutation.isPending}
               >
@@ -279,7 +278,6 @@ export function IntegrationsPage() {
               </Button>
               <Button
                 variant="outline"
-                size="sm"
                 onClick={() => syncMutation.mutate("deals")}
                 disabled={syncMutation.isPending}
               >
@@ -401,7 +399,6 @@ export function IntegrationsPage() {
                     <DialogTrigger asChild>
                       <Button
                         variant={isConnected ? "outline" : "default"}
-                        size="sm"
                         className="w-full"
                       >
                         {isConnected ? "Configure" : "Set Up"}
@@ -502,7 +499,6 @@ export function IntegrationsPage() {
                         <div className="flex gap-2 pt-2">
                           <Button
                             variant="outline"
-                            size="sm"
                             onClick={() => handleTest(connector.name)}
                             disabled={testing}
                             className="flex-1"
@@ -510,7 +506,6 @@ export function IntegrationsPage() {
                             {testing ? "Testing..." : "Test Connection"}
                           </Button>
                           <Button
-                            size="sm"
                             onClick={() => handleConnect(connector.name)}
                             disabled={connecting}
                             className="flex-1"

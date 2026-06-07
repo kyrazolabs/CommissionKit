@@ -9,6 +9,7 @@ export class OdooClient {
   private baseUrl: string;
   private database: string;
   private uid: number | null = null;
+  private apiKey: string = "";
   private id = 0;
 
   constructor(baseUrl: string, database: string) {
@@ -17,6 +18,8 @@ export class OdooClient {
   }
 
   async authenticate(username: string, apiKey: string): Promise<number> {
+    this.apiKey = apiKey;
+
     const result = await this.jsonRpc<number>(
       `${this.baseUrl}/jsonrpc`,
       "common",
@@ -34,65 +37,69 @@ export class OdooClient {
     limit?: number,
     offset?: number,
   ): Promise<any[]> {
-    if (this.uid === null) throw new Error("Not authenticated");
+    this.ensureAuth();
 
-    const params: any = {
-      model,
-      domain,
+    const kwargs: any = {
       fields,
       context: {},
     };
 
-    if (limit !== undefined) params.limit = limit;
-    if (offset !== undefined) params.offset = offset;
+    if (limit !== undefined) kwargs.limit = limit;
+    if (offset !== undefined) kwargs.offset = offset;
 
     const result = await this.jsonRpc<any[]>(
       `${this.baseUrl}/jsonrpc`,
       "object",
       "execute_kw",
-      [this.database, this.uid, apiKeyPlaceholder, model, "search_read", [domain], params],
+      [this.database, this.uid, this.apiKey, model, "search_read", [domain], kwargs],
     );
 
     return result;
   }
 
   async searchCount(model: string, domain: any[]): Promise<number> {
-    if (this.uid === null) throw new Error("Not authenticated");
+    this.ensureAuth();
 
     const result = await this.jsonRpc<number>(
       `${this.baseUrl}/jsonrpc`,
       "object",
       "execute_kw",
-      [this.database, this.uid, apiKeyPlaceholder, model, "search_count", [domain]],
+      [this.database, this.uid, this.apiKey, model, "search_count", [domain]],
     );
 
     return result;
   }
 
   async write(model: string, ids: number[], values: Record<string, unknown>): Promise<boolean> {
-    if (this.uid === null) throw new Error("Not authenticated");
+    this.ensureAuth();
 
     const result = await this.jsonRpc<boolean>(
       `${this.baseUrl}/jsonrpc`,
       "object",
       "execute_kw",
-      [this.database, this.uid, apiKeyPlaceholder, model, "write", [ids, values]],
+      [this.database, this.uid, this.apiKey, model, "write", [ids, values]],
     );
 
     return result;
   }
 
   async create(model: string, values: Record<string, unknown>): Promise<number> {
-    if (this.uid === null) throw new Error("Not authenticated");
+    this.ensureAuth();
 
     const result = await this.jsonRpc<number>(
       `${this.baseUrl}/jsonrpc`,
       "object",
       "execute_kw",
-      [this.database, this.uid, apiKeyPlaceholder, model, "create", [values]],
+      [this.database, this.uid, this.apiKey, model, "create", [values]],
     );
 
     return result;
+  }
+
+  private ensureAuth(): void {
+    if (this.uid === null || !this.apiKey) {
+      throw new Error("Not authenticated — call authenticate() first");
+    }
   }
 
   private async jsonRpc<T>(url: string, service: string, method: string, args: any[]): Promise<T> {
@@ -126,6 +133,3 @@ export class OdooClient {
     return data.result as T;
   }
 }
-
-// Odoo's execute_kw uses the API key here
-const apiKeyPlaceholder = "";
