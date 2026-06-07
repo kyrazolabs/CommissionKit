@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import { authClient } from "@/lib/auth-client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { Loader2, CheckCircle2, XCircle, UserPlus, LogIn } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export function AcceptInvite() {
+  const { t } = useTranslation();
   const [location, setLocation] = useLocation();
   const { session, loading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -23,7 +25,7 @@ export function AcceptInvite() {
   // Fetch invitation details to show what they are joining
   useEffect(() => {
     if (!invitationId) {
-      setError("No invitation ID provided.");
+      setError(t("invitation.noInvitationId"));
       setChecking(false);
       return;
     }
@@ -34,7 +36,7 @@ export function AcceptInvite() {
         // but for now we'll just try to accept it if logged in or show join button
         setChecking(false);
       } catch (err) {
-        setError("Failed to load invitation details.");
+        setError(t("invitation.failedToLoad"));
         setChecking(false);
       }
     }

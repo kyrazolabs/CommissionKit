@@ -27,6 +27,7 @@
       "artifacts/*",
       "lib/*",
       "lib/integrations/*",
+      "plugins/*",
       "scripts"
     ],
     "catalog": {

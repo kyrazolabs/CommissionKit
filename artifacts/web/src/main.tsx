@@ -1,4 +1,5 @@
 import "./instrument"; // MUST be first
+import "./i18n"; // i18n init — must be before first render
 
 import { hydrateRoot, createRoot } from "react-dom/client";
 import { reactErrorHandler } from "@sentry/react";

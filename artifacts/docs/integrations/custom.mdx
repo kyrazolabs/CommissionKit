@@ -1,0 +1,342 @@
+---
+title: "Custom REST API"
+description: "Connect CommissionKit to any ERP or CRM that exposes a REST API"
+---
+
+The Custom REST connector lets you integrate CommissionKit with any system that has a REST API — no code changes needed. Configure field mappings, authentication, and pagination via JSON.
+
+## When to use
+
+- ERP or CRM not in the official connector list
+- In-house or custom ERP systems
+- Legacy systems with REST APIs
+- Any system that can expose reps and deals as JSON
+
+## Setup
+
+### Step 1: Connect
+
+1. Go to **Integrations** and select **Custom REST API**
+2. Enter your API's **Base URL** (e.g. `https://api.erp.example.com`)
+3. Click **Test Connection** — the connector sends a HEAD request to verify the URL is reachable
+4. Click **Connect**
+
+### Step 2: Configure
+
+After connecting, paste the full configuration JSON into the **Edit Mapping** editor on the integrations page. This tells CKit how to talk to your ERP — what endpoints to call, how to authenticate, and how to map fields.
+
+Navigate to **Settings > Integrations** in the web UI, find your new connection, and click **Edit Mapping**. Replace the editor contents with the JSON below and click **Save**:
+
+```json
+{
+  "baseUrl": "https://api.erp.example.com",
+  "auth": {
+    "type": "bearer",
+    "token": "sk-abc123"
+  },
+  "pagination": {
+    "type": "offset",
+    "limitParam": "limit",
+    "offsetParam": "offset",
+    "limitValue": 100
+  },
+  "responsePath": "data",
+  "entities": {
+    "reps": {
+      "enabled": true,
+      "endpoint": "/api/v1/users",
+      "fields": {
+        "externalId": "id",
+        "name": "fullName",
+        "email": "emailAddress"
+      },
+      "filters": [
+        { "key": "department", "value": "sales" }
+      ]
+    },
+    "deals": {
+      "enabled": true,
+      "endpoint": "/api/v1/orders",
+      "fields": {
+        "externalId": "id",
+        "name": "orderNumber",
+        "amount": "totalAmount",
+        "closeDate": "confirmationDate",
+        "repExternalId": "salesRep.id",
+        "currency": "currencyCode",
+        "paymentStatus": "paymentState"
+      },
+      "stageFilter": {
+        "field": "status",
+        "include": ["confirmed", "delivered"]
+      }
+    }
+  }
+}
+```
+
+### Step 3: Sync
+
+Once configured, a manual sync is automatically triggered. You can also use the **⋮** menu to manually **Sync Reps** or **Sync Deals**, or set an auto-sync schedule.
+
+## Configuration reference
+
+### `baseUrl` (required)
+
+Root URL of your ERP's REST API. All endpoints are relative to this.
+
+### `auth` (required)
+
+| Type | Fields | Description |
+|---|---|---|
+| `apiKey` | `headerName`, `apiKey` | Custom header with API key value |
+| `bearer` | `token` | `Authorization: Bearer <token>` |
+| `basic` | `username`, `password` | HTTP Basic Auth (Base64 encoded) |
+| `oauth2` | `tokenUrl`, `clientId`, `clientSecret`, `scopes` | Client credentials flow with auto token refresh |
+
+### `pagination` (optional)
+
+| Type | How it works | Extra params |
+|---|---|---|
+| `offset` | `?limit=100&offset=0` → `?limit=100&offset=100` | `limitParam`, `offsetParam` |
+| `cursor` | Reads cursor from response JSONPath | `limitParam`, `cursorParam`, `cursorPath` |
+| `page` | `?limit=100&page=1` → `?limit=100&page=2` | `limitParam`, `pageParam` |
+
+Default: `{ "type": "offset", "limitParam": "limit", "offsetParam": "offset", "limitValue": 100 }`
+
+### `responsePath` (optional)
+
+JSONPath to the array of results in the API response. Examples:
+- `"data"` — if the response is `{ "data": [...] }`
+- `"results.items"` — if it's `{ "results": { "items": [...] } }`
+- Omit if the response body is already a top-level array
+
+Most APIs wrap results — the connector auto-detects the array by checking common wrapper keys (`data`, `results`, `items`, `records`) and recursing into nested objects. For example, `{ "data": { "workspaceMembers": [...] } }` works with `responsePath: "data"` or even without it entirely.
+
+### `entities` (required)
+
+At least one of `reps` or `deals` must be enabled.
+
+#### Entity fields
+
+| Field | Description | Required |
+|---|---|---|
+| `enabled` | Set to `true` to sync this entity | Yes |
+| `endpoint` | API path relative to `baseUrl` | Yes |
+| `method` | `"GET"` (default) or `"POST"` | No |
+| `fields` | JSONPath mappings for each CKit field | No (defaults shown below) |
+| `filters` | Static query params added to every request | No |
+| `modifiedAfterParam` | Query param for incremental sync | No |
+| `stageFilter` | Only sync records with matching stage values | No |
+| `paymentStatusMapping` | Map custom payment strings to CKit values | No |
+
+#### Field mapping (reps)
+
+| CKit field | Default JSONPath | Description |
+|---|---|---|
+| `externalId` | `"id"` | Unique identifier in your ERP |
+| `name` | `"name"` | Rep's display name |
+| `email` | `"email"` | Rep's email address |
+
+#### Field mapping (deals)
+
+| CKit field | Default JSONPath | Description |
+|---|---|---|
+| `externalId` | `"id"` | Unique deal identifier |
+| `repExternalId` | `"repId"` | Links to the rep who closed the deal |
+| `name` | `"name"` | Deal name |
+| `amount` | `"amount"` | Deal value (numeric) |
+| `closeDate` | `"closeDate"` | Date the deal closed |
+| `stage` | `"stage"` | Deal stage (mapped via stageFilter) |
+| `currency` | `"currency"` | ISO 4217 currency code |
+| `paymentStatus` | `"paymentStatus"` | Payment status string |
+| `notes` | `"notes"` | Optional notes |
+
+Use dot notation for nested fields: `"salesRep.id"` reads `record.salesRep.id`.
+
+**Compute fields**: prefix with `$div:N:` to divide a numeric value. For example, Twenty CRM stores amounts in micros — `"$div:1000000:amount.amountMicros"` converts `990000000` to `990`.
+
+## Payment status mapping
+
+Map your ERP's payment status strings to CommissionKit's four values:
+
+```json
+{
+  "paymentStatusMapping": {
+    "paid": ["fullyPaid", "overpaid", "settled"],
+    "unpaid": ["outstanding", "overdue", "pending"],
+    "partial": ["partiallyPaid", "partPaid"],
+    "on_hold": ["disputed", "writeOff", "frozen"]
+  }
+}
+```
+
+Strings are matched case-insensitively.
+
+## Stage filtering
+
+Optional filter to only sync deals at certain stages:
+
+```json
+{
+  "stageFilter": {
+    "field": "status",
+    "include": ["confirmed", "delivered"]
+  }
+}
+```
+
+Deals whose `status` field is not `"confirmed"` or `"delivered"` are skipped.
+
+## Testing
+
+After configuring, verify the connector works:
+
+1. Click **Sync Reps** in the **⋮** menu
+2. Check the sync stats — you should see **new** records created
+3. If you see **failed**, check the error banner for details
+4. Adjust field mappings if needed and sync again
+
+## Example: Twenty CRM
+
+This walkthrough connects CommissionKit to a **Twenty CRM** instance. The same approach works for any REST API.
+
+### Step 1: Understand the API response
+
+Here is a real response from Twenty's `GET /rest/opportunities` endpoint:
+
+```json
+{
+  "data": {
+    "opportunities": [
+      {
+        "id": "468c34b3-0717-48fa-8219-72392bda7392",
+        "name": "AISSOL - Growth",
+        "amount": {
+          "amountMicros": 990000000,
+          "currencyCode": "USD"
+        },
+        "closeDate": null,
+        "stage": "ON_HOLD",
+        "pointOfContactId": "fa47ecd3-0d5b-49eb-a35e-eb5aecb2a14e",
+        "createdBy": {
+          "source": "MANUAL",
+          "workspaceMemberId": "c3cc2494-d8af-460e-b652-ffa6424e8948",
+          "name": "Anit Vian"
+        },
+        "createdAt": "2026-05-27T07:07:53.816Z"
+      }
+    ]
+  },
+  "pageInfo": {
+    "endCursor": "eyJpZCI6...",
+    "hasNextPage": true
+  }
+}
+```
+
+### Step 2: Map the fields
+
+**Reps** (from `GET /rest/workspaceMembers`):
+
+```
+GET /rest/workspaceMembers?order_by=createdAt&limit=60
+```
+
+```json
+{
+  "data": {
+    "workspaceMembers": [
+      {
+        "id": "a96bd39d-03ec-452a-834d-f24879636da0",
+        "name": { "firstName": "Abdullah", "lastName": "Al-agi" },
+        "userEmail": "abdullah@company.com"
+      }
+    ]
+  }
+}
+```
+
+| CKit field | JSONPath | Why |
+|---|---|---|
+| `externalId` | `"id"` | Twenty's workspace member UUID |
+| `name` | `"name.firstName"` | Returns first name (e.g. "Abdullah") |
+| `email` | `"userEmail"` | Member email |
+
+**Deals** (from `GET /rest/opportunities`):
+
+| CKit field | JSONPath | Why |
+|---|---|---|
+| `externalId` | `"id"` | Twenty's opportunity UUID |
+| `name` | `"name"` | Opportunity name |
+| `amount` | `"$div:1000000:amount.amountMicros"` | Deal amount in micros → dollars |
+| `closeDate` | `"closeDate"` | Date field directly |
+| `stage` | `"stage"` | Twenty stage: NEW, MEETING, ON_HOLD |
+| `currency` | `"amount.currencyCode"` | Nested inside amount object |
+| `repExternalId` | `"createdBy.workspaceMemberId"` | Links to the creator (a workspace member) |
+
+### Step 3: Write the config
+
+Paste this JSON into the **Edit Mapping** editor (⋮ menu) — replace the token and URL with yours:
+
+```json
+{
+  "config": {
+    "baseUrl": "https://crm.yourcompany.com/rest",
+    "auth": {
+      "type": "bearer",
+      "token": "eyJhbGciOi..."
+    },
+    "pagination": {
+      "type": "cursor",
+      "limitParam": "limit",
+      "cursorParam": "starting_after",
+      "cursorPath": "pageInfo.endCursor"
+    },
+    "responsePath": "data",
+    "entities": {
+      "reps": {
+        "enabled": true,
+        "endpoint": "/workspaceMembers",
+        "fields": {
+          "externalId": "id",
+          "name": "name.firstName",
+          "email": "userEmail"
+        },
+        "filters": [
+          { "key": "order_by", "value": "createdAt" }
+        ]
+      },
+      "deals": {
+        "enabled": true,
+        "endpoint": "/opportunities",
+        "fields": {
+          "externalId": "id",
+          "name": "name",
+            "amount": "$div:1000000:amount.amountMicros",
+          "closeDate": "closeDate",
+          "stage": "stage",
+          "currency": "amount.currencyCode",
+          "repExternalId": "createdBy.workspaceMemberId"
+        },
+        "filters": [
+          { "key": "order_by", "value": "createdAt" }
+        ],
+        "stageFilter": {
+          "field": "stage",
+          "include": ["ON_HOLD", "NEW", "MEETING"]
+        }
+      }
+    }
+  }
+}
+```
+
+### Step 4: What happens
+
+1. **Reps**: The connector calls `GET /rest/workspaceMembers?order_by=createdAt&limit=60`. The `responsePath` is `"data"`, and the connector auto-detects the `workspaceMembers` array inside. Each member is mapped as a CommissionKit rep.
+2. **Deals**: The connector calls `GET /rest/opportunities?order_by=createdAt&limit=60`. With `responsePath: "data"`, the connector finds the `opportunities` array. Each opportunity is mapped as a deal, linking `createdBy.workspaceMemberId` back to the rep synced in step 1.
+3. Cursor pagination reads `pageInfo.endCursor` and passes it as `starting_after` for the next page.
+4. Only opportunities with stage in `["ON_HOLD", "NEW", "MEETING"]` are synced.
+
+Run **Sync Reps** first, then **Sync Deals**. Your Twenty workspace members and opportunities will appear in CommissionKit.

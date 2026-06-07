@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { 
   useListRuns, getListRunsQueryKey,
@@ -31,7 +32,8 @@ import { usePageMeta } from "@/hooks/use-page-meta";
 
 
 export function RunsPage() {
-  usePageMeta({ title: "Commission Runs", description: "View and manage commission calculation runs.", robots: "noindex, nofollow" });
+  const { t } = useTranslation();
+  usePageMeta({ title: t("runs.title"), description: "View and manage commission calculation runs.", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const currency = activeWorkspace?.currency || "USD";
   const { data: runs, isLoading } = useListRuns({ 
@@ -63,8 +65,8 @@ export function RunsPage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
         <PlayCircle className="size-10 text-muted-foreground" />
-        <h2 className="text-lg font-semibold">Access Denied</h2>
-        <p className="text-sm text-muted-foreground">You don't have permission to view calculation runs.</p>
+        <h2 className="text-lg font-semibold">{t("runs.accessDenied")}</h2>
+        <p className="text-sm text-muted-foreground">{t("runs.noPermissionRuns")}</p>
       </div>
     );
   }
@@ -75,9 +77,9 @@ export function RunsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <p className="text-[12px] font-semibold text-primary mb-1">Operations</p>
-          <h1 className="text-3xl font-semibold tracking-tight">Calculation Runs</h1>
-          <p className="text-muted-foreground">Execute and audit commission calculations.</p>
+          <p className="text-[12px] font-semibold text-primary mb-1">{t("runs.operations")}</p>
+          <h1 className="text-3xl font-semibold tracking-tight">{t("runs.title")}</h1>
+          <p className="text-muted-foreground">{t("runs.description")}</p>
         </div>
         <div className="flex gap-2">
           {hasPermission("calculations", "export") && <ExportCommissionsButton />}
@@ -87,8 +89,8 @@ export function RunsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Run History</CardTitle>
-          <CardDescription>All historical commission calculation batches.</CardDescription>
+          <CardTitle>{t("runs.runHistory")}</CardTitle>
+          <CardDescription>{t('runs.runHistoryDescription')}.</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -111,10 +113,10 @@ export function RunsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Run ID</TableHead>
-                  <TableHead>Period</TableHead>
-                  <TableHead>Executed On</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>{t("runs.runId")}</TableHead>
+                  <TableHead>{t("runs.period")}</TableHead>
+                  <TableHead>{t("runs.executedOn")}</TableHead>
+                  <TableHead>{t("runs.status")}</TableHead>
                   <TableHead className="text-right">Reps</TableHead>
                   <TableHead className="text-right">Deals</TableHead>
                   <TableHead className="text-right">Total Commission</TableHead>
@@ -142,7 +144,7 @@ export function RunsPage() {
                       )}
                       {(run.status === "pending" || run.status === "processing") && (
                         <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20 animate-pulse gap-1">
-                          <Loader2 className="size-3 animate-spin" /> {run.status === "processing" ? "Processing" : "Pending"}
+                          <Loader2 className="size-3 animate-spin" /> {run.status === "processing" ? t("runs.processing2") : t("runs.pending2")}
                         </Badge>
                       )}
                       {run.status === "failed" && (
@@ -153,7 +155,7 @@ export function RunsPage() {
                             </Badge>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>{run.error || "An unknown error occurred during calculation."}</p>
+                            <p>{run.error || "{t('runs.unknownError')}."}</p>
                           </TooltipContent>
                         </Tooltip>
                       )}
@@ -169,7 +171,7 @@ export function RunsPage() {
                             </span>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>{run.skippedDeals} deals skipped (missing rep plan or stage not won)</p>
+                            <p>{run.skippedDeals} {t('runs.dealsSkipped', { count: run.skippedDeals })}</p>
                           </TooltipContent>
                         </Tooltip>
                       )}
@@ -197,6 +199,7 @@ export function RunsPage() {
 
 
 function ExportCommissionsButton() {
+  const { t } = useTranslation();
   const { sub } = useBillingStatus();
   const { activeWorkspace } = useWorkspace();
   const { toast } = useToast();
@@ -207,7 +210,7 @@ function ExportCommissionsButton() {
   const handleExport = async () => {
     if (!isGrowth) {
       toast({
-        title: "Growth Plan Required",
+        title: t("runs.growthPlanRequired"),
         description: "Bulk CSV export is a premium feature. Please upgrade to the Growth plan to export your data.",
         variant: "destructive",
       });
@@ -237,12 +240,12 @@ function ExportCommissionsButton() {
       document.body.removeChild(a);
       
       toast({
-        title: "Export Successful",
+        title: t("deals.exportSuccessful"),
         description: "Your commission data has been exported to CSV.",
       });
     } catch (err) {
       toast({
-        title: "Export Failed",
+        title: t("deals.exportFailed"),
         description: "There was an error exporting your data. Please try again.",
         variant: "destructive",
       });

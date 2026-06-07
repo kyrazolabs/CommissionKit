@@ -39,6 +39,14 @@
         ]
       },
       {
+        "group": "Integrations",
+        "pages": [
+          "integrations/overview",
+          "integrations/odoo",
+          "integrations/custom"
+        ]
+      },
+      {
         "group": "Portal",
         "pages": [
           "portal/rep-portal",

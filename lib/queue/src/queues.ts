@@ -8,8 +8,19 @@ import {
   COMMISSION_CALC_QUEUE,
   EXCHANGE_RATE_QUEUE,
   LOGS_FLUSH_QUEUE,
+  SYNC_REPS_QUEUE,
+  SYNC_DEALS_QUEUE,
+  WEBHOOK_INGRESS_QUEUE,
+  SYNC_EGRESS_QUEUE,
 } from "./constants.js";
-import type { MailSendPayload, CommissionCalcPayload, ExchangeRatePayload } from "./schemas.js";
+import type {
+  MailSendPayload,
+  CommissionCalcPayload,
+  ExchangeRatePayload,
+  SyncRepsPayload,
+  SyncDealsPayload,
+  WebhookIngressPayload,
+} from "./schemas.js";
 
 /** Shared BullMQ queue options — exponential back-off, 10 retries */
 function buildOptions(overrides?: Partial<QueueOptions>): QueueOptions {
@@ -80,3 +91,29 @@ export const PRIORITY_QUEUE_MAP = {
   medium: mailMediumQueue,
   low:    mailLowQueue,
 } as const;
+
+// ─── Sync queues ────────────────────────────────────────────────────────────
+
+/** Rep sync queue — ingests normalized reps from ERP connectors. */
+export const syncRepsQueue = new Queue<SyncRepsPayload>(
+  SYNC_REPS_QUEUE,
+  buildOptions({ defaultJobOptions: { attempts: 3, backoff: { type: "exponential", delay: 10_000 } } }),
+);
+
+/** Deal sync queue — ingests normalized deals from ERP/CRM connectors. */
+export const syncDealsQueue = new Queue<SyncDealsPayload>(
+  SYNC_DEALS_QUEUE,
+  buildOptions({ defaultJobOptions: { attempts: 3, backoff: { type: "exponential", delay: 10_000 } } }),
+);
+
+/** Webhook ingress queue — receives and routes webhook events from connectors. */
+export const webhookIngressQueue = new Queue<WebhookIngressPayload>(
+  WEBHOOK_INGRESS_QUEUE,
+  buildOptions({ defaultJobOptions: { attempts: 5, backoff: { type: "exponential", delay: 2_000 } } }),
+);
+
+/** Sync egress queue — writes commission results back to ERP. */
+export const syncEgressQueue = new Queue<{ workspaceId: string; runId: string }>(
+  SYNC_EGRESS_QUEUE,
+  buildOptions({ defaultJobOptions: { attempts: 3, backoff: { type: "exponential", delay: 10_000 } } }),
+);

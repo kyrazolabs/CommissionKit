@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ const useIsMobile = () => {
 };
 
 export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "signup" | "forgot" }) {
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [mode, setMode] = useState<"login" | "signup" | "forgot">(initialMode);
   const [email, setEmail] = useState("");
@@ -58,13 +60,13 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
       if (error) throw error;
       setResendCooldown(60);
       toast({
-        title: "Verification email sent",
-        description: "Please check your inbox for a new verification link.",
+        title: t("auth.verificationEmailSent"),
+        description: t("auth.verificationEmailSentDescription"),
       });
     } catch (err: any) {
       toast({
-        title: "Failed to resend",
-        description: err.message ?? "Something went wrong. Please try again.",
+        title: t("auth.failedToResend"),
+        description: err.message ?? t("common.somethingWentWrong"),
         variant: "destructive",
       });
     } finally {
@@ -94,8 +96,8 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
         });
         if (error) throw error;
         toast({
-          title: "Verification email sent",
-          description: "Please check your inbox to verify your email address.",
+          title: t("auth.verificationEmailSent"),
+          description: t("auth.verificationEmailSentDescription"),
         });
         setVerificationSent(true);
       } else if (mode === "forgot") {
@@ -106,8 +108,8 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
         if (error) throw error;
         setEmailSent(true);
         toast({
-          title: "Reset email sent",
-          description: "If an account with that email exists, you will receive a password reset link.",
+          title: t("auth.resetEmailSent"),
+          description: t("auth.resetEmailSentDescription"),
         });
       }
     } catch (err: any) {
@@ -129,13 +131,13 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
           });
         setResendCooldown(60);
         toast({
-          title: "Verification required",
-          description: "We've sent a new verification link to your inbox. Please check your email.",
+          title: t("auth.verificationRequired"),
+          description: t("auth.verificationRequiredDescription"),
         });
       } else {
         toast({
-          title: "Authentication error",
-          description: err.message ?? "Something went wrong.",
+          title: t("auth.authenticationError"),
+          description: err.message ?? t("common.somethingWentWrong"),
           variant: "destructive",
         });
       }
@@ -152,7 +154,7 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
       });
     } catch (err: any) {
       toast({
-        title: "Google sign-in failed",
+        title: t("auth.googleSignInFailed"),
         description: err.message || "An unexpected error occurred.",
         variant: "destructive",
       });
@@ -226,21 +228,21 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                       >
                         <CardTitle className="text-lg">
                           {verificationSent
-                            ? "Verify your email"
+                            ? t("auth.verifyYourEmail")
                             : mode === "login"
-                              ? "Welcome back"
+                              ? t("auth.welcomeBack")
                               : mode === "signup"
-                                ? "Start your 14-day free trial"
-                                : "Reset your password"}
+                                ? t("auth.startFreeTrial")
+                                : t("auth.resetYourPassword")}
                         </CardTitle>
                         <CardDescription className="mt-1">
                           {verificationSent
-                            ? "We sent an activation link to your email."
+                            ? t("auth.weSentActivationLink")
                             : mode === "login"
-                              ? "Your team's commissions are waiting."
+                              ? t("auth.yourTeamCommissionsAreWaiting")
                               : mode === "signup"
-                                ? "No credit card required · Setup in 30 minutes"
-                                : "Enter your email to receive a password reset link."}
+                                ? t("auth.noCreditCardSetup")
+                                : t("auth.enterEmailForReset")}
                         </CardDescription>
                       </motion.div>
                     </AnimatePresence>
@@ -263,9 +265,9 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                                 </svg>
                               </div>
                               <div className="space-y-2">
-                                <h3 className="font-semibold text-foreground">Check your inbox</h3>
+                                <h3 className="font-semibold text-foreground">{t("auth.checkYourInbox")}</h3>
                                 <p className="text-sm text-muted-foreground max-w-[280px]">
-                                  Please click the verification link we sent to <span className="font-medium text-foreground">{email}</span> to activate your account.
+                                  {t("auth.verificationLinkSentTo", { email })}
                                 </p>
                               </div>
                             </motion.div>
@@ -283,9 +285,9 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                                 </svg>
                               </div>
                               <div className="space-y-2">
-                                <h3 className="font-semibold text-foreground">Check your inbox</h3>
+                                <h3 className="font-semibold text-foreground">{t("auth.checkYourInbox")}</h3>
                                 <p className="text-sm text-muted-foreground max-w-[280px]">
-                                  We have sent a password reset link to <span className="font-medium text-foreground">{email}</span>.
+                                  {t("auth.passwordResetLinkSentTo", { email })}
                                 </p>
                               </div>
                             </motion.div>
@@ -301,11 +303,11 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                                     transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                                     className="space-y-2 overflow-hidden"
                                   >
-                                    <Label htmlFor="name">Full Name</Label>
+                                    <Label htmlFor="name">{t("auth.fullName")}</Label>
                                     <Input
                                       id="name"
                                       type="text"
-                                      placeholder="John Doe"
+                                      placeholder={t("auth.defaultNamePlaceholder")}
                                       value={name}
                                       onChange={(e) => setName(e.target.value)}
                                       required={mode === "signup"}
@@ -315,11 +317,11 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                               </AnimatePresence>
 
                               <motion.div layout className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
+                                <Label htmlFor="email">{t("auth.email")}</Label>
                                 <Input
                                   id="email"
                                   type="email"
-                                  placeholder="you@company.com"
+                                  placeholder={t("auth.emailPlaceholder")}
                                   value={email}
                                   onChange={(e) => setEmail(e.target.value)}
                                   required
@@ -338,7 +340,7 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                                     className="space-y-2 overflow-hidden"
                                   >
                                     <div className="flex items-center justify-between">
-                                      <Label htmlFor="password">Password</Label>
+                                      <Label htmlFor="password">{t("auth.password")}</Label>
                                       {mode === "login" && (
                                         <button
                                           type="button"
@@ -348,14 +350,14 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                                             setEmailSent(false);
                                           }}
                                         >
-                                          Forgot password?
+                                          {t("auth.forgotPassword")}
                                         </button>
                                       )}
                                     </div>
                                     <Input
                                       id="password"
                                       type="password"
-                                      placeholder="••••••••"
+                                      placeholder=""
                                       value={password}
                                       onChange={(e) => setPassword(e.target.value)}
                                       required
@@ -383,7 +385,7 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                             >
                               <div className="relative flex items-center">
                                 <div className="flex-grow border-t border-border/40"></div>
-                                <span className="flex-shrink mx-3 text-[10px] uppercase font-bold tracking-widest text-muted-foreground/45">Or continue with</span>
+                                <span className="flex-shrink mx-3 text-[10px] uppercase font-bold tracking-widest text-muted-foreground/45">{t("auth.orContinueWith")}</span>
                                 <div className="flex-grow border-t border-border/40"></div>
                               </div>
 
@@ -436,10 +438,10 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                                   transition={{ duration: 0.15 }}
                                 >
                                   {resendLoading
-                                    ? "Sending…"
+                                    ? t("auth.sending")
                                     : resendCooldown > 0
-                                      ? `Resend in ${resendCooldown}s`
-                                      : "Resend verification email"}
+                                      ? t("auth.resendIn", { seconds: resendCooldown })
+                                      : t("auth.resendVerificationEmail")}
                                 </motion.span>
                               </AnimatePresence>
                             </Button>
@@ -453,7 +455,7 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                                 setMode("login");
                               }}
                             >
-                              Back to sign in
+                              {t("common.backToSignIn")}
                             </Button>
                           </div>
                         ) : mode === "forgot" && emailSent ? (
@@ -483,12 +485,12 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                                 transition={{ duration: 0.15 }}
                               >
                                 {loading
-                                  ? "Please wait…"
+                                  ? t("common.pleaseWait")
                                   : mode === "login"
-                                    ? "Sign in"
+                                    ? t("auth.signIn")
                                     : mode === "signup"
-                                      ? "Create account"
-                                      : "Send reset link"}
+                                      ? t("auth.createAccount")
+                                      : t("auth.sendResetLink")}
                               </motion.span>
                             </AnimatePresence>
                           </Button>
@@ -504,11 +506,11 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                               transition={{ duration: 0.2 }}
                               className="flex items-center justify-center gap-1 text-[11px] text-muted-foreground/80 font-medium tracking-wide mt-1"
                             >
-                              <span>🔒 No credit card required</span>
+                              <span>{t("auth.noCreditCardRequired")}</span>
                               <span className="text-muted-foreground/30">•</span>
-                              <span>14-day free trial</span>
+                              <span>{t("auth.fourteenDayFreeTrial")}</span>
                               <span className="text-muted-foreground/30">•</span>
-                              <span>Cancel anytime</span>
+                              <span>{t("auth.cancelAnytime")}</span>
                             </motion.div>
                           )}
                         </AnimatePresence>
@@ -517,7 +519,7 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                           <p className="text-sm text-muted-foreground text-center">
                             {mode === "login" ? (
                               <>
-                                Don't have an account?{" "}
+                                {t("auth.dontHaveAccount")}{" "}
                                 <button
                                   type="button"
                                   className="text-primary font-medium hover:underline focus:outline-none cursor-pointer"
@@ -526,12 +528,12 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                                     setVerificationSent(false);
                                   }}
                                 >
-                                  Sign up
+                                  {t("auth.signUp")}
                                 </button>
                               </>
                             ) : mode === "signup" ? (
                               <>
-                                Already have an account?{" "}
+                                {t("auth.alreadyHaveAccount")}{" "}
                                 <button
                                   type="button"
                                   className="text-primary font-medium hover:underline focus:outline-none cursor-pointer"
@@ -540,12 +542,12 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                                     setVerificationSent(false);
                                   }}
                                 >
-                                  Sign in
+                                  {t("auth.signIn")}
                                 </button>
                               </>
                             ) : (
                               <>
-                                Remembered your password?{" "}
+                                {t("auth.rememberedYourPassword")}{" "}
                                 <button
                                   type="button"
                                   className="text-primary font-medium hover:underline focus:outline-none cursor-pointer"
@@ -555,7 +557,7 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                                     setVerificationSent(false);
                                   }}
                                 >
-                                  Sign in
+                                  {t("auth.signIn")}
                                 </button>
                               </>
                             )}
@@ -573,7 +575,7 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
           <div className="w-full flex justify-center pb-4 z-10">
             <div className="mx-auto flex flex-col items-center gap-3 pb-2 pointer-events-auto">
               <p className="text-[10px] tracking-widest text-muted-foreground/50 font-bold uppercase mt-1">
-                © {new Date().getFullYear()} COMMISSIONKIT. ALL RIGHTS RESERVED.
+                {t("auth.commissionKitAllRightsReserved", { year: new Date().getFullYear() })}
               </p>
             </div>
           </div>

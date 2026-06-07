@@ -7,6 +7,7 @@ import {
   NOTIFICATION_TYPES,
   type NotificationType,
 } from "@workspace/db";
+import { connectDB, mongoose } from "@workspace/db";
 import { requireAuth, requireWorkspaceMember, requirePermission, type AuthenticatedRequest } from "../../middleware/auth";
 
 const router = Router();
@@ -223,6 +224,53 @@ router.patch("/workspaces/:id/settings", ...requirePermission("workspace", "edit
     currency: (ws as any).currency ?? "USD",
     fiscalYearStart: (ws as any).fiscalYearStart ?? "January",
   });
+});
+
+// ─── User language preference ──────────────────────────────────────────────────
+
+/**
+ * GET /users/me/lang
+ * Returns the current user's saved language preference.
+ */
+router.get("/users/me/lang", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
+  const userId = req.userId!;
+  try {
+    await connectDB();
+    const db = mongoose.connection.db;
+    if (!db) { res.json({ lang: "en" }); return; }
+    const user = await db.collection("user").findOne({ _id: userId as any });
+    res.json({ lang: user?.lang || "en" });
+  } catch {
+    res.json({ lang: "en" });
+  }
+});
+
+/**
+ * PATCH /users/me/lang
+ * Saves the user's language preference.
+ */
+router.patch("/users/me/lang", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
+  const userId = req.userId!;
+  const { lang } = req.body as { lang?: string };
+  const supportedLangs = ["en", "es", "ar", "hi"];
+
+  if (!lang || !supportedLangs.includes(lang)) {
+    res.status(400).json({ error: `lang must be one of: ${supportedLangs.join(", ")}` }); return;
+  }
+
+  try {
+    await connectDB();
+    const db = mongoose.connection.db;
+    if (!db) { res.status(500).json({ error: "Database not connected" }); return; }
+    await db.collection("user").updateOne(
+      { _id: userId as any },
+      { $set: { lang } },
+      { upsert: true },
+    );
+    res.json({ lang });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Failed to save language preference" });
+  }
 });
 
 export default router;

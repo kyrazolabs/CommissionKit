@@ -1,8 +1,9 @@
 import { Link, useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard, Users, FileText, Briefcase, PlayCircle,
   Settings, CreditCard, LogOut, ChevronsUpDown, Check, Plus,
-  Building2, Shield, Crown, PieChart, Wallet, AlertOctagon, FolderKanban, Grid3X3,
+  Building2, Shield, Crown, PieChart, Wallet, AlertOctagon, FolderKanban, Grid3X3, Plug,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -25,36 +26,8 @@ import { apiFetch } from "@/lib/api";
 const ICON_MAP: Record<string, any> = {
   LayoutDashboard, Users, FileText, Briefcase, PlayCircle,
   Settings, CreditCard, PieChart, Wallet, AlertOctagon, FolderKanban, Building2, Grid3X3,
+  Plug,
 };
-
-const navGroups = [
-  {
-    label: "Main",
-    items: [
-      { name: "Dashboard", href: "/dash",          icon: "LayoutDashboard" },
-      { name: "Reports",   href: "/dash/reports",  icon: "PieChart" },
-      { name: "Reps",      href: "/dash/reps",     icon: "Users" },
-      { name: "Plans",     href: "/dash/plans",    icon: "FileText" },
-    ],
-  },
-  {
-    label: "Operations",
-    items: [
-      { name: "Deals",    href: "/dash/deals",    icon: "Briefcase" },
-      { name: "Runs",     href: "/dash/runs",     icon: "PlayCircle" },
-      { name: "Payouts",  href: "/dash/payouts",  icon: "Wallet" },
-      { name: "Disputes", href: "/dash/disputes", icon: "AlertOctagon" },
-    ],
-  },
-  {
-    label: "Account",
-    items: [
-      { name: "Team",     href: "/dash/team",     icon: "Users" },
-      { name: "Billing",  href: "/dash/billing",  icon: "CreditCard" },
-      { name: "Settings", href: "/dash/settings", icon: "Settings" },
-    ],
-  },
-];
 
 const ROLE_ICONS = {
   owner: Crown,
@@ -63,6 +36,7 @@ const ROLE_ICONS = {
 };
 
 function WorkspaceSwitcher() {
+  const { t } = useTranslation();
   const { workspaces, activeWorkspace, setActiveWorkspace, createWorkspace } = useWorkspace();
   const [open, setOpen] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
@@ -126,7 +100,7 @@ function WorkspaceSwitcher() {
               >
                 <div className="px-2 pt-2 pb-1">
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1.5 pb-1">
-                    Workspaces
+                    {t("sidebar.workspaces")}
                   </p>
                   <div className="space-y-0.5 max-h-[200px] overflow-y-auto">
                     {workspaces.map((ws) => (
@@ -152,7 +126,7 @@ function WorkspaceSwitcher() {
                     className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-muted text-left transition-colors"
                   >
                     <Plus className="size-3.5 text-muted-foreground" />
-                    <span className="text-[12.5px] text-muted-foreground">New workspace</span>
+                    <span className="text-[12.5px] text-muted-foreground">{t("sidebar.newWorkspace")}</span>
                   </button>
                 </div>
               </motion.div>
@@ -165,11 +139,11 @@ function WorkspaceSwitcher() {
                 transition={{ duration: 0.2 }}
               >
                 <form onSubmit={handleCreate} className="p-3 space-y-3">
-                  <p className="text-[11px] font-semibold text-foreground">New workspace</p>
+                  <p className="text-[11px] font-semibold text-foreground">{t("sidebar.newWorkspace")}</p>
                   <Input
                     autoFocus
                     type="text"
-                    placeholder="Workspace name"
+                    placeholder={t("sidebar.workspaceNamePlaceholder")}
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     className="h-8! text-[12.5px]"
@@ -182,7 +156,7 @@ function WorkspaceSwitcher() {
                       onClick={() => { setShowCreate(false); setNewName(""); }}
                       className="flex-1 h-7 text-[12px]"
                     >
-                      Cancel
+                      {t("common.cancel")}
                     </Button>
                     <Button
                       type="submit"
@@ -190,7 +164,7 @@ function WorkspaceSwitcher() {
                       disabled={!newName.trim() || creating}
                       className="flex-1 h-7 text-[12px]"
                     >
-                      {creating ? "…" : "Create"}
+                      {creating ? "…" : t("common.create")}
                     </Button>
                   </div>
                 </form>
@@ -204,6 +178,7 @@ function WorkspaceSwitcher() {
 }
 
 export function Sidebar() {
+  const { t } = useTranslation();
   const [location] = useLocation();
   const { user, signOut } = useAuth();
   const { activeWorkspace, engineNavItems, loading: wsLoading } = useWorkspace();
@@ -213,6 +188,36 @@ export function Sidebar() {
     : "??";
 
   const replaceMap = new Map(engineNavItems.map(item => [item.replaces, item]));
+
+  const navGroups = [
+    {
+      label: t("sidebar.main"),
+      items: [
+        { name: t("layout.dashboard"), href: "/dash",          icon: "LayoutDashboard" },
+        { name: t("layout.reports"),   href: "/dash/reports",  icon: "PieChart" },
+        { name: t("layout.reps"),      href: "/dash/reps",     icon: "Users" },
+        { name: t("layout.plans"),     href: "/dash/plans",    icon: "FileText" },
+      ],
+    },
+    {
+      label: t("sidebar.operations"),
+      items: [
+        { name: t("layout.deals"),    href: "/dash/deals",    icon: "Briefcase" },
+        { name: t("layout.runs"),     href: "/dash/runs",     icon: "PlayCircle" },
+        { name: t("layout.payouts"),  href: "/dash/payouts",  icon: "Wallet" },
+        { name: t("layout.disputes"), href: "/dash/disputes", icon: "AlertOctagon" },
+      ],
+    },
+    {
+      label: t("sidebar.account"),
+      items: [
+        { name: t("layout.team"),     href: "/dash/team",     icon: "Users" },
+        { name: t("layout.billing"),  href: "/dash/billing",  icon: "CreditCard" },
+        { name: t("layout.integrations"), href: "/dash/integrations", icon: "Plug" },
+        { name: t("layout.settings"), href: "/dash/settings", icon: "Settings" },
+      ],
+    },
+  ];
 
   const allGroups = navGroups.map(g => ({
     ...g,
@@ -311,7 +316,7 @@ export function Sidebar() {
               <DropdownMenuItem asChild>
                 <Link href="/dash/settings" className="w-full cursor-pointer flex items-center gap-2.5 rounded-lg py-2">
                   <Settings className="size-[15px] opacity-70" />
-                  Account Settings
+                  {t("sidebar.accountSettings")}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -320,7 +325,7 @@ export function Sidebar() {
                 className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer flex items-center gap-2.5 rounded-lg py-2"
               >
                 <LogOut className="size-[15px] opacity-70" />
-                Sign out
+                {t("sidebar.signOut")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
