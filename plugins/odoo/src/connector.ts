@@ -347,13 +347,13 @@ export class OdooConnector extends BasePlugin {
 // ─── Stage normalization ─────────────────────────────────────────────
 
 const ODOO_STAGE_MAP: Record<string, string> = {
-  draft: "negotiation",
-  sent: "sent",
+  draft: "pending",
+  sent: "pending",
   sale: "closed_won",
   done: "closed_won",
   cancel: "closed_lost",
 };
 
 function normalizeStage(odooState: string): string {
-  return ODOO_STAGE_MAP[odooState] || odooState || "closed_won";
+  return ODOO_STAGE_MAP[odooState] || "closed_won";
 }

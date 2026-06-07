@@ -21,6 +21,25 @@ function computeHash(data: unknown): string {
   return createHash("sha256").update(JSON.stringify(data)).digest("hex");
 }
 
+// ─── Stage normalization ─────────────────────────────────────────────
+
+const VALID_STAGES = ["closed_won", "closed_lost", "pending"] as const;
+
+function normalizeStage(raw: string): string {
+  const lower = raw.toLowerCase().trim();
+
+  // Direct match
+  if (VALID_STAGES.includes(raw as any)) return raw;
+
+  // Common aliases from external systems
+  if (lower === "won" || lower === "closed won" || lower === "sale" || lower === "done") return "closed_won";
+  if (lower === "lost" || lower === "closed lost" || lower === "cancel" || lower === "cancelled") return "closed_lost";
+  if (lower === "draft" || lower === "sent" || lower === "negotiation" || lower === "open") return "pending";
+
+  // Fallback
+  return "closed_won";
+}
+
 // ─── Rep Upsert ─────────────────────────────────────────────────────
 
 export async function upsertReps(
@@ -130,7 +149,7 @@ export async function upsertDeals(
         name: deal.name,
         amount: deal.amount,
         closeDate: deal.closeDate,
-        stage: deal.stage,
+        stage: normalizeStage(deal.stage),
         currency: deal.currency,
         paymentStatus: deal.paymentStatus,
         notes: deal.notes,
@@ -205,7 +224,7 @@ export async function upsertDeals(
           amount: deal.amount,
           closeDate: String(deal.closeDate.toISOString()),
           period,
-          stage: deal.stage,
+          stage: normalizeStage(deal.stage),
           currency: deal.currency || "USD",
           paymentStatus: deal.paymentStatus || "unpaid",
           notes: deal.notes,
