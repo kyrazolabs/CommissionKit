@@ -38,7 +38,11 @@ export class CustomConnector extends BasePlugin {
   private parseConfig(config: ConnectionConfig): CustomConnectorConfig | null {
     try {
       return CustomConnectorConfigSchema.parse(config);
-    } catch {
+    } catch (e: any) {
+      if (process.env.NODE_ENV !== "production") {
+        console.log("[CustomConnector] Config parse failed:", e instanceof Error ? e.message : String(e));
+        console.log("[CustomConnector] Config keys:", Object.keys(config));
+      }
       return null;
     }
   }
@@ -78,7 +82,16 @@ export class CustomConnector extends BasePlugin {
     options?: FetchOptions,
   ): Promise<NormalizedRep[]> {
     const parsed = this.parseConfig(config);
-    if (!parsed || !parsed.entities?.reps?.enabled) return [];
+    if (!parsed) {
+      console.log("[CustomConnector] fetchReps: parseConfig returned null (invalid config)");
+      console.log("[CustomConnector] config keys:", Object.keys(config));
+      return [];
+    }
+    if (!parsed.entities?.reps?.enabled) {
+      console.log("[CustomConnector] fetchReps: reps not enabled or entities missing");
+      console.log("[CustomConnector] parsed.entities:", JSON.stringify(parsed.entities));
+      return [];
+    }
 
     const entity = parsed.entities.reps;
 
@@ -108,7 +121,14 @@ export class CustomConnector extends BasePlugin {
     options?: FetchOptions,
   ): Promise<NormalizedDeal[]> {
     const parsed = this.parseConfig(config);
-    if (!parsed || !parsed.entities?.deals?.enabled) return [];
+    if (!parsed) {
+      console.log("[CustomConnector] fetchDeals: parseConfig returned null (invalid config)");
+      return [];
+    }
+    if (!parsed.entities?.deals?.enabled) {
+      console.log("[CustomConnector] fetchDeals: deals not enabled or entities missing");
+      return [];
+    }
 
     const entity = parsed.entities.deals;
 
