@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const AuthConfigSchema = z.discriminatedUnion("type", [
+export const AuthConfigSchema = z.union([
   z.object({
     type: z.literal("apiKey"),
     headerName: z.string().default("X-API-Key"),
