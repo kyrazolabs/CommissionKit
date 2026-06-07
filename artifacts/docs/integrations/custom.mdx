@@ -8,105 +8,193 @@ The Custom REST connector lets you integrate CommissionKit with any system that 
 ## When to use
 
 - ERP or CRM not in the official connector list
-- In-house / custom ERP systems
+- In-house or custom ERP systems
 - Legacy systems with REST APIs
 - Any system that can expose reps and deals as JSON
 
 ## Setup
 
+### Step 1: Connect
+
 1. Go to **Integrations** and select **Custom REST API**
-2. Enter your API's **Base URL**
-3. Click **Test Connection** to verify
+2. Enter your API's **Base URL** (e.g. `https://api.erp.example.com`)
+3. Click **Test Connection** — the connector sends a HEAD request to verify the URL is reachable
 4. Click **Connect**
 
-## Configuration
+### Step 2: Configure
 
-After connecting, configure the connector via the **⋮** menu. The configuration is a JSON object:
+After connecting, send the full configuration JSON to the API. Open your browser's developer console or use `curl`:
 
-```json
-{
-  "baseUrl": "https://api.erp.example.com",
-  "auth": {
-    "type": "bearer",
-    "token": "sk-abc123"
-  },
-  "pagination": {
-    "type": "offset",
-    "limitParam": "limit",
-    "offsetParam": "offset",
-    "limitValue": 100
-  },
-  "responsePath": "data",
-  "entities": {
-    "reps": {
-      "enabled": true,
-      "endpoint": "/api/v1/users",
-      "fields": {
-        "externalId": "id",
-        "name": "fullName",
-        "email": "emailAddress"
+```bash
+curl -X PATCH http://localhost:8088/api/integrations/YOUR_WORKSPACE_ID/config \
+  -H "Content-Type: application/json" \
+  -H "X-Workspace-ID: YOUR_WORKSPACE_ID" \
+  --cookie "ck_session=..." \
+  -d '{
+    "config": {
+      "baseUrl": "https://api.erp.example.com",
+      "auth": {
+        "type": "bearer",
+        "token": "sk-abc123"
       },
-      "filters": [
-        { "key": "department", "value": "sales" }
-      ]
-    },
-    "deals": {
-      "enabled": true,
-      "endpoint": "/api/v1/orders",
-      "fields": {
-        "externalId": "id",
-        "name": "orderNumber",
-        "amount": "totalAmount",
-        "closeDate": "confirmationDate",
-        "repExternalId": "salesRep.id",
-        "currency": "currencyCode",
-        "paymentStatus": "paymentState"
+      "pagination": {
+        "type": "offset",
+        "limitParam": "limit",
+        "offsetParam": "offset",
+        "limitValue": 100
       },
-      "stageFilter": {
-        "field": "status",
-        "include": ["confirmed", "delivered"]
+      "responsePath": "data",
+      "entities": {
+        "reps": {
+          "enabled": true,
+          "endpoint": "/api/v1/users",
+          "fields": {
+            "externalId": "id",
+            "name": "fullName",
+            "email": "emailAddress"
+          },
+          "filters": [
+            { "key": "department", "value": "sales" }
+          ]
+        },
+        "deals": {
+          "enabled": true,
+          "endpoint": "/api/v1/orders",
+          "fields": {
+            "externalId": "id",
+            "name": "orderNumber",
+            "amount": "totalAmount",
+            "closeDate": "confirmationDate",
+            "repExternalId": "salesRep.id",
+            "currency": "currencyCode",
+            "paymentStatus": "paymentState"
+          },
+          "stageFilter": {
+            "field": "status",
+            "include": ["confirmed", "delivered"]
+          }
+        }
       }
     }
-  }
-}
+  }'
 ```
 
-## Authentication
+Replace `YOUR_WORKSPACE_ID` with your workspace ID (visible in the browser URL when logged in).
 
-Four auth types are supported:
+### Step 3: Sync
 
-| Type | Configuration |
-|---|---|
-| **API Key** | `{ "type": "apiKey", "headerName": "X-API-Key", "apiKey": "..." }` |
-| **Bearer Token** | `{ "type": "bearer", "token": "..." }` |
-| **Basic Auth** | `{ "type": "basic", "username": "...", "password": "..." }` |
-| **OAuth 2.0** | `{ "type": "oauth2", "tokenUrl": "...", "clientId": "...", "clientSecret": "..." }` |
+Once configured, a manual sync is automatically triggered. You can also use the **⋮** menu to manually **Sync Reps** or **Sync Deals**, or set an auto-sync schedule.
 
-## Field mappings
+## Configuration reference
+
+### `baseUrl` (required)
+
+Root URL of your ERP's REST API. All endpoints are relative to this.
+
+### `auth` (required)
+
+| Type | Fields | Description |
+|---|---|---|
+| `apiKey` | `headerName`, `apiKey` | Custom header with API key value |
+| `bearer` | `token` | `Authorization: Bearer <token>` |
+| `basic` | `username`, `password` | HTTP Basic Auth (Base64 encoded) |
+| `oauth2` | `tokenUrl`, `clientId`, `clientSecret`, `scopes` | Client credentials flow with auto token refresh |
+
+### `pagination` (optional)
+
+| Type | How it works | Extra params |
+|---|---|---|
+| `offset` | `?limit=100&offset=0` → `?limit=100&offset=100` | `limitParam`, `offsetParam` |
+| `cursor` | Reads cursor from response JSONPath | `limitParam`, `cursorParam`, `cursorPath` |
+| `page` | `?limit=100&page=1` → `?limit=100&page=2` | `limitParam`, `pageParam` |
+
+Default: `{ "type": "offset", "limitParam": "limit", "offsetParam": "offset", "limitValue": 100 }`
+
+### `responsePath` (optional)
+
+JSONPath to the array of results in the API response. Examples:
+- `"data"` — if the response is `{ "data": [...] }`
+- `"results.items"` — if it's `{ "results": { "items": [...] } }`
+- Omit if the response body is already a top-level array
+
+### `entities` (required)
+
+At least one of `reps` or `deals` must be enabled.
+
+#### Entity fields
+
+| Field | Description | Required |
+|---|---|---|
+| `enabled` | Set to `true` to sync this entity | Yes |
+| `endpoint` | API path relative to `baseUrl` | Yes |
+| `method` | `"GET"` (default) or `"POST"` | No |
+| `fields` | JSONPath mappings for each CKit field | No (defaults shown below) |
+| `filters` | Static query params added to every request | No |
+| `modifiedAfterParam` | Query param for incremental sync | No |
+| `stageFilter` | Only sync records with matching stage values | No |
+| `paymentStatusMapping` | Map custom payment strings to CKit values | No |
+
+#### Field mapping (reps)
+
+| CKit field | Default JSONPath | Description |
+|---|---|---|
+| `externalId` | `"id"` | Unique identifier in your ERP |
+| `name` | `"name"` | Rep's display name |
+| `email` | `"email"` | Rep's email address |
+
+#### Field mapping (deals)
+
+| CKit field | Default JSONPath | Description |
+|---|---|---|
+| `externalId` | `"id"` | Unique deal identifier |
+| `repExternalId` | `"repId"` | Links to the rep who closed the deal |
+| `name` | `"name"` | Deal name |
+| `amount` | `"amount"` | Deal value (numeric) |
+| `closeDate` | `"closeDate"` | Date the deal closed |
+| `stage` | `"stage"` | Deal stage (mapped via stageFilter) |
+| `currency` | `"currency"` | ISO 4217 currency code |
+| `paymentStatus` | `"paymentStatus"` | Payment status string |
+| `notes` | `"notes"` | Optional notes |
 
 Use dot notation for nested fields: `"salesRep.id"` reads `record.salesRep.id`.
 
-### Compute fields
-
-Fields starting with `$` are computed:
-
-| Compute field | Description |
-|---|---|
-| `$period:closeDate` | Derives `YYYY-MM` from a date field |
-| `$constant:USD` | Sets a static value |
-| `$concat:first,last` | Concatenates multiple fields |
-
 ## Payment status mapping
 
-Map your ERP's payment status strings to CommissionKit's values:
+Map your ERP's payment status strings to CommissionKit's four values:
 
 ```json
 {
   "paymentStatusMapping": {
-    "paid": ["fullyPaid", "overpaid"],
-    "unpaid": ["outstanding", "overdue"],
-    "partial": ["partiallyPaid"],
-    "on_hold": ["disputed", "writeOff"]
+    "paid": ["fullyPaid", "overpaid", "settled"],
+    "unpaid": ["outstanding", "overdue", "pending"],
+    "partial": ["partiallyPaid", "partPaid"],
+    "on_hold": ["disputed", "writeOff", "frozen"]
   }
 }
 ```
+
+Strings are matched case-insensitively.
+
+## Stage filtering
+
+Optional filter to only sync deals at certain stages:
+
+```json
+{
+  "stageFilter": {
+    "field": "status",
+    "include": ["confirmed", "delivered"]
+  }
+}
+```
+
+Deals whose `status` field is not `"confirmed"` or `"delivered"` are skipped.
+
+## Testing
+
+After configuring, verify the connector works:
+
+1. Click **Sync Reps** in the **⋮** menu
+2. Check the sync stats — you should see **new** records created
+3. If you see **failed**, check the error banner for details
+4. Adjust field mappings if needed and sync again
