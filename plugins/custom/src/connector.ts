@@ -164,6 +164,7 @@ export class CustomConnector extends BasePlugin {
     options: FetchOptions | undefined,
     mapFn: (item: any, fields: Record<string, string>) => T,
   ): Promise<T[]> {
+    console.log(`[CustomConnector] fetchEntities called: ${endpoint}`);
     let headers = getAuthHeaders(authConfig);
 
     if (authConfig.type === "oauth2") {
@@ -179,7 +180,9 @@ export class CustomConnector extends BasePlugin {
       Object.entries(fields).filter(([_, v]) => v !== undefined),
     ) as Record<string, string>;
 
+    let pageNum = 0;
     while (pagination.hasMore) {
+      pageNum++;
       const params: Record<string, string> = {
         ...getPaginationParams(defaultPagination, pagination),
       };
@@ -221,10 +224,19 @@ export class CustomConnector extends BasePlugin {
       }
       if (!Array.isArray(list)) list = [];
 
+      // Diagnostic
+      if (process.env.NODE_ENV !== "production" && pageNum === 1) {
+        const topKeys = items && typeof items === "object" ? Object.keys(items).join(", ") : "not an object";
+        console.log(`[CustomConnector] ${endpoint} response has keys: ${topKeys}`);
+        console.log(`[CustomConnector] ${endpoint} extracted ${list.length} items, responsePath="${responsePath || "none"}"`);
+      }
+
       // Diagnostic logging
       if (process.env.NODE_ENV !== "production") {
-        const keys = list.length > 0 ? Object.keys(list[0]).slice(0, 5).join(", ") : "none";
-        console.log(`[CustomConnector] ${endpoint} → ${list.length} records, fields: ${keys}`);
+        const statusMsg = list.length > 0
+          ? `${list.length} records, sample keys: ${Object.keys(list[0]).slice(0, 8).join(", ")}`
+          : "0 records (empty or auto-detection failed)";
+        console.log(`[CustomConnector] ${endpoint} page ${pageNum} → ${statusMsg}`);
       }
 
       for (const item of list) {
