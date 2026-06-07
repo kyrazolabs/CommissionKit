@@ -37,9 +37,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Plug, Sprout, Cable, CheckCircle2, XCircle,
-  AlertTriangle, RefreshCw, Trash2, ArrowRight, Ellipsis, Loader,
+  AlertTriangle, RefreshCw, Trash2, ArrowRight, Ellipsis, LoaderCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 const CONNECTOR_ICONS: Record<string, any> = {
   custom: Cable,
@@ -93,6 +94,7 @@ export function IntegrationsPage() {
   const { activeWorkspace } = useWorkspace();
   const { t } = useTranslation();
   const { hasPermission } = useRole();
+  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const [selectedConnector, setSelectedConnector] = useState<string | null>(null);
@@ -154,6 +156,7 @@ export function IntegrationsPage() {
       apiFetch(`/api/integrations/${activeWorkspace?.id}/sync/reps`, { method: "POST" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["integrations"] });
+      toast({ title: "Sync started", description: "Rep sync has been enqueued." });
     },
   });
 
@@ -162,6 +165,7 @@ export function IntegrationsPage() {
       apiFetch(`/api/integrations/${activeWorkspace?.id}/sync/deals`, { method: "POST" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["integrations"] });
+      toast({ title: "Sync started", description: "Deal sync has been enqueued." });
     },
   });
 
@@ -412,7 +416,7 @@ export function IntegrationsPage() {
                         <TableCell className="text-xs">
                           {sync.status === "running" ? (
                             <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-600 dark:bg-blue-950 dark:text-blue-400">
-                              <Loader className="size-3 animate-spin" />
+                              <LoaderCircle className="size-3 animate-spin" />
                               running
                             </span>
                           ) : (
