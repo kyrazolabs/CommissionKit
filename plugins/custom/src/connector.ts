@@ -35,13 +35,18 @@ export class CustomConnector extends BasePlugin {
   readonly description = "Connect CommissionKit to any ERP or CRM that exposes a REST API. Configure field mappings, authentication, and pagination — no code needed.";
   readonly icon = "plug";
 
-  private parseConfig(config: ConnectionConfig): CustomConnectorConfig {
-    return CustomConnectorConfigSchema.parse(config);
+  private parseConfig(config: ConnectionConfig): CustomConnectorConfig | null {
+    try {
+      return CustomConnectorConfigSchema.parse(config);
+    } catch {
+      return null;
+    }
   }
 
   async testConnection(config: ConnectionConfig): Promise<ConnectionTestResult> {
     try {
       const parsed = this.parseConfig(config);
+      if (!parsed) return { success: false, message: "Invalid config — missing baseUrl or auth" };
       const headers = getAuthHeaders(parsed.auth);
 
       if (parsed.auth.type === "oauth2") {
@@ -73,8 +78,9 @@ export class CustomConnector extends BasePlugin {
     options?: FetchOptions,
   ): Promise<NormalizedRep[]> {
     const parsed = this.parseConfig(config);
-    const entity = parsed.entities?.reps;
-    if (!entity?.enabled) return [];
+    if (!parsed || !parsed.entities?.reps?.enabled) return [];
+
+    const entity = parsed.entities.reps;
 
     return this.fetchEntities(
       parsed.baseUrl,
@@ -102,8 +108,9 @@ export class CustomConnector extends BasePlugin {
     options?: FetchOptions,
   ): Promise<NormalizedDeal[]> {
     const parsed = this.parseConfig(config);
-    const entity = parsed.entities?.deals;
-    if (!entity?.enabled) return [];
+    if (!parsed || !parsed.entities?.deals?.enabled) return [];
+
+    const entity = parsed.entities.deals;
 
     const deals: NormalizedDeal[] = await this.fetchEntities(
       parsed.baseUrl,
