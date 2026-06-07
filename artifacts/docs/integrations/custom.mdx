@@ -283,61 +283,57 @@ GET /rest/workspaceMembers?order_by=createdAt&limit=60
 
 ### Step 3: Write the config
 
-```bash
-curl -X PATCH https://commissionk.it/api/integrations/YOUR_WORKSPACE_ID/config \
-  -H "Content-Type: application/json" \
-  -H "X-Workspace-ID: YOUR_WORKSPACE_ID" \
-  --cookie "ck_session=..." \
-  -d '{
-    "config": {
-      "baseUrl": "https://crm.yourcompany.com/rest",
-      "auth": {
-        "type": "bearer",
-        "token": "eyJhbGciOi..."
+Paste this JSON into the **Edit Mapping** editor (⋮ menu) — replace the token and URL with yours:
+
+```json
+{
+  "baseUrl": "https://crm.yourcompany.com/rest",
+  "auth": {
+    "type": "bearer",
+    "token": "eyJhbGciOi..."
+  },
+  "pagination": {
+    "type": "cursor",
+    "limitParam": "limit",
+    "cursorParam": "starting_after",
+    "cursorPath": "pageInfo.endCursor"
+  },
+  "responsePath": "data",
+  "entities": {
+    "reps": {
+      "enabled": true,
+      "endpoint": "/workspaceMembers",
+      "fields": {
+        "externalId": "id",
+        "name": "name.firstName",
+        "email": "userEmail"
       },
-      "pagination": {
-        "type": "cursor",
-        "limitParam": "limit",
-        "cursorParam": "starting_after",
-        "cursorPath": "pageInfo.endCursor"
+      "filters": [
+        { "key": "order_by", "value": "createdAt" }
+      ]
+    },
+    "deals": {
+      "enabled": true,
+      "endpoint": "/opportunities",
+      "fields": {
+        "externalId": "id",
+        "name": "name",
+        "amount": "amount.amountMicros",
+        "closeDate": "closeDate",
+        "stage": "stage",
+        "currency": "amount.currencyCode",
+        "repExternalId": "createdBy.workspaceMemberId"
       },
-      "responsePath": "data",
-      "entities": {
-        "reps": {
-          "enabled": true,
-          "endpoint": "/workspaceMembers",
-          "fields": {
-            "externalId": "id",
-            "name": "name.firstName",
-            "email": "userEmail"
-          },
-          "filters": [
-            { "key": "order_by", "value": "createdAt" }
-          ]
-        },
-        "deals": {
-          "enabled": true,
-          "endpoint": "/opportunities",
-          "fields": {
-            "externalId": "id",
-            "name": "name",
-            "amount": "amount.amountMicros",
-            "closeDate": "closeDate",
-            "stage": "stage",
-            "currency": "amount.currencyCode",
-            "repExternalId": "createdBy.workspaceMemberId"
-          },
-          "filters": [
-            { "key": "order_by", "value": "createdAt" }
-          ],
-          "stageFilter": {
-            "field": "stage",
-            "include": ["ON_HOLD", "NEW", "MEETING"]
-          }
-        }
+      "filters": [
+        { "key": "order_by", "value": "createdAt" }
+      ],
+      "stageFilter": {
+        "field": "stage",
+        "include": ["ON_HOLD", "NEW", "MEETING"]
       }
     }
-  }'
+  }
+}
 ```
 
 ### Step 4: What happens
