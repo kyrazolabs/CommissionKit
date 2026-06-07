@@ -32,8 +32,12 @@ import {
   AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Plug, Sprout, Cable, CheckCircle2, XCircle,
-  AlertTriangle, RefreshCw, Trash2, ArrowRight,
+  AlertTriangle, RefreshCw, Trash2, ArrowRight, Ellipsis,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -283,77 +287,84 @@ export function IntegrationsPage() {
                   </CardDescription>
                 </div>
               </div>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive">
-                    <Trash2 className="size-3.5 mr-1.5" />
-                    Disconnect
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-9 w-9 p-0">
+                    <Ellipsis className="size-4" />
                   </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Disconnect from {status.connectorDisplayName}?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will stop syncing data. Your existing reps and deals will remain in CommissionKit.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => disconnectMutation.mutate()}>
-                      Disconnect
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                    Actions
+                  </DropdownMenuLabel>
+                  <DropdownMenuItem
+                    onClick={() => syncRepsMutation.mutate()}
+                    disabled={syncPending}
+                    className="flex items-center gap-2"
+                  >
+                    <RefreshCw className={cn("size-3.5", syncRepsMutation.isPending && "animate-spin")} />
+                    Sync Reps
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => syncDealsMutation.mutate()}
+                    disabled={syncPending}
+                    className="flex items-center gap-2"
+                  >
+                    <RefreshCw className={cn("size-3.5", syncDealsMutation.isPending && "animate-spin")} />
+                    Sync Deals
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <div className="px-2 py-1.5">
+                    <Label className="text-[11px] text-muted-foreground">Auto Sync</Label>
+                    <Select
+                      value={status.syncSchedule?.deals || "hourly"}
+                      onValueChange={(v) =>
+                        scheduleMutation.mutate({ reps: v, deals: v })
+                      }
+                    >
+                      <SelectTrigger className="h-8 mt-1 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="realtime">Every 10 min</SelectItem>
+                        <SelectItem value="hourly">Hourly</SelectItem>
+                        <SelectItem value="daily">Daily</SelectItem>
+                        <SelectItem value="manual">Manual only</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <DropdownMenuItem
+                        onSelect={(e) => e.preventDefault()}
+                        className="flex items-center gap-2 text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="size-3.5" />
+                        Disconnect
+                      </DropdownMenuItem>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Disconnect from {status.connectorDisplayName}?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will stop syncing data. Your existing reps and deals will remain in CommissionKit.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => disconnectMutation.mutate()}>
+                          Disconnect
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </CardHeader>
 
           <CardContent className="space-y-4">
-            {/* Sync controls */}
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2">
-                <p className="text-[14px] font-medium text-muted-foreground">Auto Sync:</p>
-                <Select
-                  value={status.syncSchedule?.deals || "hourly"}
-                  onValueChange={(v) =>
-                    scheduleMutation.mutate({ reps: v, deals: v })
-                  }
-                >
-                  <SelectTrigger className="w-[150px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="realtime">Every 10 min</SelectItem>
-                    <SelectItem value="hourly">Hourly</SelectItem>
-                    <SelectItem value="daily">Daily</SelectItem>
-                    <SelectItem value="manual">Manual only</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center gap-2 ml-3">
-                <p className="text-[14px] font-medium text-muted-foreground">Manual:</p>
-                <Button
-                  variant="secondary"
-                  onClick={() => syncRepsMutation.mutate()}
-                  disabled={syncPending}
-                  className="text-[13px]"
-                >
-                  <RefreshCw className={cn("size-3.5 mr-1.5", syncRepsMutation.isPending && "animate-spin")} />
-                  Sync Reps
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => syncDealsMutation.mutate()}
-                  disabled={syncPending}
-                  className="text-[13px]"
-                >
-                  <RefreshCw className={cn("size-3.5 mr-1.5", syncDealsMutation.isPending && "animate-spin")} />
-                  Sync Deals
-                </Button>
-              </div>
-            </div>
-
             {status.lastSyncedAt && (
               <p className="text-xs text-muted-foreground">
                 Last synced: {new Date(status.lastSyncedAt).toLocaleString()}
