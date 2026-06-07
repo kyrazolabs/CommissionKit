@@ -195,35 +195,29 @@ router.post(
         trigger: "initial",
       });
 
-      // Schedule periodic syncs (every 10 minutes for realtime-aware, hourly otherwise)
+      // Schedule periodic syncs (every 10 minutes for realtime, hourly otherwise)
       const repInterval = syncSchedule?.reps === "realtime" ? 600_000 : 3_600_000;
       const dealInterval = syncSchedule?.deals === "realtime" ? 600_000 : 3_600_000;
 
-      await syncRepsQueue.upsertJobScheduler(
+      await syncRepsQueue.add(
         `scheduled-reps-${workspaceId}`,
-        { every: repInterval },
+        { workspaceId, connectorName, trigger: "scheduled" },
         {
-          name: `scheduled-reps-${workspaceId}`,
-          data: {
-            workspaceId,
-            connectorName,
-            trigger: "scheduled",
-          },
-          opts: { removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
+          repeat: { every: repInterval },
+          jobId: `scheduled-reps-${workspaceId}`,
+          removeOnComplete: { age: 300 },
+          removeOnFail: { age: 300 },
         },
       );
 
-      await syncDealsQueue.upsertJobScheduler(
+      await syncDealsQueue.add(
         `scheduled-deals-${workspaceId}`,
-        { every: dealInterval },
+        { workspaceId, connectorName, trigger: "scheduled" },
         {
-          name: `scheduled-deals-${workspaceId}`,
-          data: {
-            workspaceId,
-            connectorName,
-            trigger: "scheduled",
-          },
-          opts: { removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
+          repeat: { every: dealInterval },
+          jobId: `scheduled-deals-${workspaceId}`,
+          removeOnComplete: { age: 300 },
+          removeOnFail: { age: 300 },
         },
       );
 
@@ -274,6 +268,29 @@ router.patch(
       await plugin.init(workspaceId, config);
     }
 
+    // Update repeatable jobs if schedule changed
+    if (syncSchedule) {
+      const repInterval = syncSchedule.reps === "realtime" ? 600_000 : 3_600_000;
+      const dealInterval = syncSchedule.deals === "realtime" ? 600_000 : 3_600_000;
+
+      // Remove old repeatable jobs
+      await syncRepsQueue.removeRepeatable("scheduled-reps", { every: 600_000 }).catch(() => {});
+      await syncRepsQueue.removeRepeatable("scheduled-reps", { every: 3_600_000 }).catch(() => {});
+
+      // Create new ones
+      await syncRepsQueue.add(
+        `scheduled-reps-${workspaceId}`,
+        { workspaceId, connectorName: conn.connectorName, trigger: "scheduled" },
+        { repeat: { every: repInterval }, jobId: `scheduled-reps-${workspaceId}`, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
+      ).catch(() => {});
+
+      await syncDealsQueue.add(
+        `scheduled-deals-${workspaceId}`,
+        { workspaceId, connectorName: conn.connectorName, trigger: "scheduled" },
+        { repeat: { every: dealInterval }, jobId: `scheduled-deals-${workspaceId}`, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
+      ).catch(() => {});
+    }
+
     res.json({ success: true });
   },
 );
@@ -298,8 +315,10 @@ router.delete(
     }
 
     // Remove scheduled sync jobs
-    await syncRepsQueue.removeJobScheduler(`scheduled-reps-${workspaceId}`);
-    await syncDealsQueue.removeJobScheduler(`scheduled-deals-${workspaceId}`);
+    await syncRepsQueue.removeRepeatableByKey(`scheduled-reps-${workspaceId}:::${3_600_000}`);
+    await syncRepsQueue.removeRepeatableByKey(`scheduled-reps-${workspaceId}:::${600_000}`);
+    await syncDealsQueue.removeRepeatableByKey(`scheduled-deals-${workspaceId}:::${3_600_000}`);
+    await syncDealsQueue.removeRepeatableByKey(`scheduled-deals-${workspaceId}:::${600_000}`);
 
     await IntegrationConnection.findOneAndUpdate(
       { workspaceId },

@@ -74,23 +74,25 @@ async function boot() {
       const repInterval = conn.syncSchedule?.reps === "realtime" ? 600_000 : 3_600_000;
       const dealInterval = conn.syncSchedule?.deals === "realtime" ? 600_000 : 3_600_000;
 
-      await syncRepsQueue.upsertJobScheduler(
+      await syncRepsQueue.add(
         `scheduled-reps-${wsId}`,
-        { every: repInterval },
+        { workspaceId: wsId, connectorName: conn.connectorName, trigger: "scheduled" },
         {
-          name: `scheduled-reps-${wsId}`,
-          data: { workspaceId: wsId, connectorName: conn.connectorName, trigger: "scheduled" },
-          opts: { removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
+          repeat: { every: repInterval },
+          jobId: `scheduled-reps-${wsId}`,
+          removeOnComplete: { age: 300 },
+          removeOnFail: { age: 300 },
         },
       ).catch(() => {});
 
-      await syncDealsQueue.upsertJobScheduler(
+      await syncDealsQueue.add(
         `scheduled-deals-${wsId}`,
-        { every: dealInterval },
+        { workspaceId: wsId, connectorName: conn.connectorName, trigger: "scheduled" },
         {
-          name: `scheduled-deals-${wsId}`,
-          data: { workspaceId: wsId, connectorName: conn.connectorName, trigger: "scheduled" },
-          opts: { removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
+          repeat: { every: dealInterval },
+          jobId: `scheduled-deals-${wsId}`,
+          removeOnComplete: { age: 300 },
+          removeOnFail: { age: 300 },
         },
       ).catch(() => {});
     }
