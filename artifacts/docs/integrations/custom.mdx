@@ -23,65 +23,57 @@ The Custom REST connector lets you integrate CommissionKit with any system that 
 
 ### Step 2: Configure
 
-After connecting, send the full configuration JSON to the CommissionKit API. This tells CKit how to talk to your ERP — what endpoints to call, how to authenticate, and how to map fields.
+After connecting, paste the full configuration JSON into the **Edit Mapping** editor on the integrations page. This tells CKit how to talk to your ERP — what endpoints to call, how to authenticate, and how to map fields.
 
-Open a terminal or use the browser's developer console:
+Navigate to **Settings > Integrations** in the web UI, find your new connection, and click **Edit Mapping**. Replace the editor contents with the JSON below and click **Save**:
 
-```bash
-curl -X PATCH https://commissionk.it/api/integrations/YOUR_WORKSPACE_ID/config \
-  -H "Content-Type: application/json" \
-  -H "X-Workspace-ID: YOUR_WORKSPACE_ID" \
-  --cookie "ck_session=..." \
-  -d '{
-    "config": {
-      "baseUrl": "https://api.erp.example.com",
-      "auth": {
-        "type": "bearer",
-        "token": "sk-abc123"
+```json
+{
+  "baseUrl": "https://api.erp.example.com",
+  "auth": {
+    "type": "bearer",
+    "token": "sk-abc123"
+  },
+  "pagination": {
+    "type": "offset",
+    "limitParam": "limit",
+    "offsetParam": "offset",
+    "limitValue": 100
+  },
+  "responsePath": "data",
+  "entities": {
+    "reps": {
+      "enabled": true,
+      "endpoint": "/api/v1/users",
+      "fields": {
+        "externalId": "id",
+        "name": "fullName",
+        "email": "emailAddress"
       },
-      "pagination": {
-        "type": "offset",
-        "limitParam": "limit",
-        "offsetParam": "offset",
-        "limitValue": 100
+      "filters": [
+        { "key": "department", "value": "sales" }
+      ]
+    },
+    "deals": {
+      "enabled": true,
+      "endpoint": "/api/v1/orders",
+      "fields": {
+        "externalId": "id",
+        "name": "orderNumber",
+        "amount": "totalAmount",
+        "closeDate": "confirmationDate",
+        "repExternalId": "salesRep.id",
+        "currency": "currencyCode",
+        "paymentStatus": "paymentState"
       },
-      "responsePath": "data",
-      "entities": {
-        "reps": {
-          "enabled": true,
-          "endpoint": "/api/v1/users",
-          "fields": {
-            "externalId": "id",
-            "name": "fullName",
-            "email": "emailAddress"
-          },
-          "filters": [
-            { "key": "department", "value": "sales" }
-          ]
-        },
-        "deals": {
-          "enabled": true,
-          "endpoint": "/api/v1/orders",
-          "fields": {
-            "externalId": "id",
-            "name": "orderNumber",
-            "amount": "totalAmount",
-            "closeDate": "confirmationDate",
-            "repExternalId": "salesRep.id",
-            "currency": "currencyCode",
-            "paymentStatus": "paymentState"
-          },
-          "stageFilter": {
-            "field": "status",
-            "include": ["confirmed", "delivered"]
-          }
-        }
+      "stageFilter": {
+        "field": "status",
+        "include": ["confirmed", "delivered"]
       }
     }
-  }'
+  }
+}
 ```
-
-Replace `YOUR_WORKSPACE_ID` with your workspace ID (visible in the browser URL when logged in).
 
 ### Step 3: Sync
 
