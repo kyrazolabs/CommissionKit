@@ -26,11 +26,48 @@ const ODOO_CURRENCY_MAP: Record<string, string> = {
   "jordanian dinar": "JOD",
 };
 
+const SYMBOL_MAP: Record<string, string> = {
+  "$": "USD",
+  "€": "EUR",
+  "£": "GBP",
+  "¥": "JPY",
+  "₹": "INR",
+  "﷼": "SAR",
+  "₽": "RUB",
+  "₺": "TRY",
+  "R$": "BRL",
+  "CHF": "CHF",
+  "C$": "CAD",
+  "A$": "AUD",
+  "HK$": "HKD",
+  "S$": "SGD",
+};
+
 export function normalizeOdooCurrency(raw: string | undefined | null): string {
   if (!raw) return "USD";
 
-  const upper = raw.trim().toUpperCase();
+  const trimmed = raw.trim();
+
+  // Direct 3-letter ISO code
+  if (trimmed.length === 3 && trimmed === trimmed.toUpperCase() && /^[A-Z]{3}$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  // Symbol lookup
+  if (SYMBOL_MAP[trimmed]) {
+    return SYMBOL_MAP[trimmed];
+  }
+
+  // Full name lookup (case-insensitive)
+  const lower = trimmed.toLowerCase();
+  if (ODOO_CURRENCY_MAP[lower]) {
+    return ODOO_CURRENCY_MAP[lower];
+  }
+
+  // Try uppercase (might be a 3-letter code with mixed case)
+  const upper = trimmed.toUpperCase();
   if (upper.length === 3) return upper;
 
-  return ODOO_CURRENCY_MAP[raw.trim().toLowerCase()] || upper || "USD";
+  // Fallback
+  return upper || "USD";
 }
