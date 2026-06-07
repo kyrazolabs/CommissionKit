@@ -74,10 +74,10 @@ export const syncRepsWorker = new Worker<SyncRepsPayload>(
           lastError: undefined,
         });
 
-        logger.info(
-          { workspaceId, connectorName, stats },
-          "[SyncRepsWorker] Rep sync complete",
-        );
+      logger.info(
+        { workspaceId, connectorName, configKeys: Object.keys(conn.config || {}).slice(0, 10) },
+        "[SyncRepsWorker] Config keys",
+      );
 
         await job.updateProgress(100);
       } catch (err: any) {
