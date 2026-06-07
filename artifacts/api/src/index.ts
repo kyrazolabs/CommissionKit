@@ -66,6 +66,34 @@ async function boot() {
     await import("./workers/sync-reps-worker");
     await import("./workers/sync-deals-worker");
     await import("./workers/webhook-ingress-worker");
+
+    // Restore scheduled sync jobs for connected workspaces
+    const { syncRepsQueue, syncDealsQueue } = await import("@workspace/queue");
+    for (const conn of activeConnections) {
+      const wsId = conn.workspaceId.toString();
+      const repInterval = conn.syncSchedule?.reps === "realtime" ? 600_000 : 3_600_000;
+      const dealInterval = conn.syncSchedule?.deals === "realtime" ? 600_000 : 3_600_000;
+
+      await syncRepsQueue.upsertJobScheduler(
+        `scheduled-reps-${wsId}`,
+        { every: repInterval },
+        {
+          name: `scheduled-reps-${wsId}`,
+          data: { workspaceId: wsId, connectorName: conn.connectorName, trigger: "scheduled" },
+          opts: { removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
+        },
+      ).catch(() => {});
+
+      await syncDealsQueue.upsertJobScheduler(
+        `scheduled-deals-${wsId}`,
+        { every: dealInterval },
+        {
+          name: `scheduled-deals-${wsId}`,
+          data: { workspaceId: wsId, connectorName: conn.connectorName, trigger: "scheduled" },
+          opts: { removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
+        },
+      ).catch(() => {});
+    }
     
     const server = app.listen(port, (err) => {
       if (err) {

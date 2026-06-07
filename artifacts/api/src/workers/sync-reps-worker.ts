@@ -47,10 +47,20 @@ export const syncRepsWorker = new Worker<SyncRepsPayload>(
 
       await job.updateProgress(10);
 
+      // For scheduled syncs, only fetch records modified since last sync
+      const fetchOpts: Record<string, unknown> = {};
+      if (trigger === "scheduled" && conn.lastSyncedAt) {
+        fetchOpts.modifiedAfter = conn.lastSyncedAt;
+      }
+      if (options?.externalIds) {
+        fetchOpts.modifiedAfter = undefined; // Don't use incremental for targeted syncs
+        fetchOpts.limit = 500;
+      }
+
       const reps = await plugin.fetchReps(
         workspaceId,
         conn.config as Record<string, unknown>,
-        options?.externalIds ? { limit: 500 } : {},
+        fetchOpts,
       );
 
       await job.updateProgress(50);

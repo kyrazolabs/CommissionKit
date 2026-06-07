@@ -195,6 +195,38 @@ router.post(
         trigger: "initial",
       });
 
+      // Schedule periodic syncs (every 10 minutes for realtime-aware, hourly otherwise)
+      const repInterval = syncSchedule?.reps === "realtime" ? 600_000 : 3_600_000;
+      const dealInterval = syncSchedule?.deals === "realtime" ? 600_000 : 3_600_000;
+
+      await syncRepsQueue.upsertJobScheduler(
+        `scheduled-reps-${workspaceId}`,
+        { every: repInterval },
+        {
+          name: `scheduled-reps-${workspaceId}`,
+          data: {
+            workspaceId,
+            connectorName,
+            trigger: "scheduled",
+          },
+          opts: { removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
+        },
+      );
+
+      await syncDealsQueue.upsertJobScheduler(
+        `scheduled-deals-${workspaceId}`,
+        { every: dealInterval },
+        {
+          name: `scheduled-deals-${workspaceId}`,
+          data: {
+            workspaceId,
+            connectorName,
+            trigger: "scheduled",
+          },
+          opts: { removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
+        },
+      );
+
       const webhookUrl = `${process.env.API_BASE_URL || "http://localhost:8088"}/api/integrations/webhooks/${connectorName}`;
 
       logger.info({ workspaceId, connectorName }, "[Integrations] Workspace connected");
@@ -264,6 +296,10 @@ router.delete(
     if (plugin) {
       await plugin.destroy(workspaceId);
     }
+
+    // Remove scheduled sync jobs
+    await syncRepsQueue.removeJobScheduler(`scheduled-reps-${workspaceId}`);
+    await syncDealsQueue.removeJobScheduler(`scheduled-deals-${workspaceId}`);
 
     await IntegrationConnection.findOneAndUpdate(
       { workspaceId },

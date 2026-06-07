@@ -78,7 +78,7 @@ export class OdooConnector extends BasePlugin {
   async fetchReps(
     workspaceId: string,
     config: ConnectionConfig,
-    _options?: FetchOptions,
+    options?: FetchOptions,
   ): Promise<NormalizedRep[]> {
     const c = this.parseConfig(config);
     const client = this.getOdooClient(config);
@@ -88,6 +88,10 @@ export class OdooConnector extends BasePlugin {
       ["share", "=", false],
       ["active", "=", true],
     ];
+
+    if (options?.modifiedAfter) {
+      domain.push(["write_date", ">=", options.modifiedAfter.toISOString()]);
+    }
 
     const records = await client.searchRead("res.users", domain, ["name", "email", "login"]);
 
@@ -103,7 +107,7 @@ export class OdooConnector extends BasePlugin {
   async fetchDeals(
     workspaceId: string,
     config: ConnectionConfig,
-    _options?: FetchOptions,
+    options?: FetchOptions,
   ): Promise<NormalizedDeal[]> {
     const c = this.parseConfig(config);
     const client = this.getOdooClient(config);
@@ -117,6 +121,10 @@ export class OdooConnector extends BasePlugin {
       domain.push(["state", "in", closedWonStages]);
     }
 
+    if (options?.modifiedAfter) {
+      domain.push(["write_date", ">=", options.modifiedAfter.toISOString()]);
+    }
+
     const fields = [
       "name",
       "amount_total",
@@ -125,6 +133,7 @@ export class OdooConnector extends BasePlugin {
       "currency_id",
       "user_id",
       "invoice_status",
+      "write_date",
       "note",
     ];
 
