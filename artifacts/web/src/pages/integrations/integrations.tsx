@@ -285,7 +285,7 @@ export function IntegrationsPage() {
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm">
+                  <Button variant="destructive">
                     <Trash2 className="size-3.5 mr-1.5" />
                     Disconnect
                   </Button>
@@ -312,14 +312,14 @@ export function IntegrationsPage() {
             {/* Sync controls */}
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-2">
-                <p className="text-sm font-medium">Auto Sync:</p>
+                <p className="text-[14px] font-medium text-muted-foreground">Auto Sync:</p>
                 <Select
                   value={status.syncSchedule?.deals || "hourly"}
                   onValueChange={(v) =>
                     scheduleMutation.mutate({ reps: v, deals: v })
                   }
                 >
-                  <SelectTrigger className="h-9 w-[140px] text-sm">
+                  <SelectTrigger className="w-[150px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -332,10 +332,9 @@ export function IntegrationsPage() {
               </div>
 
               <div className="flex items-center gap-2 ml-3">
-                <p className="text-sm font-medium">Manual:</p>
+                <p className="text-[14px] font-medium text-muted-foreground">Manual:</p>
                 <Button
                   variant="secondary"
-                  size="sm"
                   onClick={() => syncRepsMutation.mutate()}
                   disabled={syncPending}
                   className="text-[13px]"
@@ -345,7 +344,6 @@ export function IntegrationsPage() {
                 </Button>
                 <Button
                   variant="secondary"
-                  size="sm"
                   onClick={() => syncDealsMutation.mutate()}
                   disabled={syncPending}
                   className="text-[13px]"
@@ -370,7 +368,6 @@ export function IntegrationsPage() {
                 </div>
                 <Button
                   variant="ghost"
-                  size="sm"
                   className="h-6 text-xs shrink-0 ml-2 hover:bg-destructive/20"
                   onClick={() =>
                     apiFetch(`/api/integrations/${activeWorkspace?.id}/dismiss-error`, { method: "POST" })
@@ -604,7 +601,6 @@ export function IntegrationsPage() {
                         <div className="flex gap-2 pt-2">
                           <Button
                             variant="secondary"
-                            size="sm"
                             onClick={() => handleTest(connector.name)}
                             disabled={testing}
                             className="flex-1"
@@ -612,7 +608,6 @@ export function IntegrationsPage() {
                             {testing ? "Testing..." : "Test Connection"}
                           </Button>
                           <Button
-                            size="sm"
                             onClick={() => handleConnect(connector.name)}
                             disabled={connecting}
                             className="flex-1"
