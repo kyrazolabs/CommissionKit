@@ -8,6 +8,7 @@ import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -37,7 +38,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Plug, Sprout, Cable, CheckCircle2, XCircle,
-  AlertTriangle, RefreshCw, Trash2, ArrowRight, Ellipsis, LoaderCircle, Bug,
+  AlertTriangle, RefreshCw, Trash2, ArrowRight, Ellipsis, LoaderCircle, Bug, FileCode,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -104,6 +105,9 @@ export function IntegrationsPage() {
 
   // Form state
   const [formValues, setFormValues] = useState<Record<string, string | boolean>>({});
+  const [mappingOpen, setMappingOpen] = useState(false);
+  const [mappingJson, setMappingJson] = useState("");
+  const [mappingError, setMappingError] = useState<string | null>(null);
 
   const { data: connectors, isLoading: connectorsLoading } = useQuery<{ connectors: Connector[] }>({
     queryKey: ["integrations", "connectors"],
@@ -182,6 +186,50 @@ export function IntegrationsPage() {
       toast({ title: "Auto sync updated", description: `Now syncing ${labels[vars.reps] || vars.reps}.` });
     },
   });
+
+  const configMutation = useMutation({
+    mutationFn: (config: Record<string, unknown>) =>
+      apiFetch(`/api/integrations/${activeWorkspace?.id}/config`, {
+        method: "PATCH",
+        body: JSON.stringify({ config }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["integrations"] });
+      setMappingOpen(false);
+      toast({ title: "Mapping saved", description: "Connector configuration updated." });
+    },
+    onError: (err: Error) => {
+      setMappingError(err.message);
+    },
+  });
+
+  const openMappingEditor = async () => {
+    try {
+      const data = await apiFetch(`/api/integrations/${activeWorkspace?.id}/config`);
+      setMappingJson(JSON.stringify(data?.config || data, null, 2));
+    } catch {
+      setMappingJson(JSON.stringify({
+        baseUrl: "",
+        auth: { type: "bearer", token: "" },
+        entities: {
+          reps: { enabled: false, endpoint: "", fields: { externalId: "id", name: "name", email: "email" } },
+          deals: { enabled: false, endpoint: "", fields: { externalId: "id", name: "name", amount: "amount", closeDate: "closeDate" } },
+        },
+      }, null, 2));
+    }
+    setMappingError(null);
+    setMappingOpen(true);
+  };
+
+  const saveMapping = () => {
+    setMappingError(null);
+    try {
+      const config = JSON.parse(mappingJson);
+      configMutation.mutate(config);
+    } catch (e: any) {
+      setMappingError(e.message || "Invalid JSON");
+    }
+  };
 
   const syncPending = syncRepsMutation.isPending || syncDealsMutation.isPending;
 
@@ -348,6 +396,11 @@ export function IntegrationsPage() {
                       </SelectContent>
                     </Select>
                   </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={openMappingEditor} className="flex items-center gap-2">
+                    <FileCode className="size-3.5" />
+                    Edit Mapping
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -743,6 +796,47 @@ export function IntegrationsPage() {
           Report a bug or request a connector
         </a>
       </div>
+
+      {/* Mapping editor dialog */}
+      <Dialog open={mappingOpen} onOpenChange={setMappingOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileCode className="size-5" />
+              Edit Connector Mapping
+            </DialogTitle>
+            <DialogDescription>
+              Edit the full connector configuration in JSON. This includes endpoints, field mappings, pagination, and filters.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <Textarea
+              value={mappingJson}
+              onChange={(e) => { setMappingJson(e.target.value); setMappingError(null); }}
+              className="min-h-[400px] font-mono text-xs leading-relaxed"
+              placeholder='{ "baseUrl": "...", "auth": { ... }, "entities": { ... } }'
+            />
+            {mappingError && (
+              <div className="rounded-lg bg-destructive/10 p-2 text-xs text-destructive">
+                {mappingError}
+              </div>
+            )}
+            {configMutation.isError && (
+              <div className="rounded-lg bg-destructive/10 p-2 text-xs text-destructive">
+                {(configMutation.error as Error)?.message || "Failed to save"}
+              </div>
+            )}
+            <div className="flex gap-2 justify-end">
+              <Button variant="secondary" onClick={() => setMappingOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={saveMapping} disabled={configMutation.isPending}>
+                {configMutation.isPending ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

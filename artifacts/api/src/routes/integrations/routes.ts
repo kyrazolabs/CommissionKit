@@ -234,6 +234,24 @@ router.post(
   },
 );
 
+// ─── Get config ────────────────────────────────────────────────────
+
+router.get(
+  "/:workspaceId/config",
+  ...requirePermission("workspace", "read"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+
+    const conn = await IntegrationConnection.findOne({ workspaceId });
+    if (!conn) {
+      res.status(404).json({ error: "No connection found" });
+      return;
+    }
+
+    res.json({ config: conn.config });
+  },
+);
+
 // ─── Update config ─────────────────────────────────────────────────
 
 router.patch(
