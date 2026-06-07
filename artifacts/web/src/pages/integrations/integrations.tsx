@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useWorkspace } from "@/hooks/use-workspace";
@@ -31,10 +31,9 @@ import {
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Switch } from "@/components/ui/switch";
 import {
-  Plug, Store, Sprout, Cable, CheckCircle2, XCircle,
-  AlertTriangle, RefreshCw, Trash2, ArrowRight, ExternalLink,
+  Plug, Sprout, Cable, CheckCircle2, XCircle,
+  AlertTriangle, RefreshCw, Trash2, ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -286,7 +285,7 @@ export function IntegrationsPage() {
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="outline">
+                  <Button variant="destructive" size="sm">
                     <Trash2 className="size-3.5 mr-1.5" />
                     Disconnect
                   </Button>
@@ -335,7 +334,7 @@ export function IntegrationsPage() {
               <div className="flex items-center gap-2 ml-3">
                 <p className="text-sm font-medium">Manual:</p>
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={() => syncRepsMutation.mutate()}
                   disabled={syncPending}
@@ -345,7 +344,7 @@ export function IntegrationsPage() {
                   Sync Reps
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={() => syncDealsMutation.mutate()}
                   disabled={syncPending}
@@ -504,7 +503,7 @@ export function IntegrationsPage() {
                   }}>
                     <DialogTrigger asChild>
                       <Button
-                        variant={isConnected ? "outline" : "default"}
+                        variant={isConnected ? "secondary" : "default"}
                         className="w-full"
                       >
                         {isConnected ? "Configure" : "Set Up"}
@@ -604,7 +603,8 @@ export function IntegrationsPage() {
                         {/* Actions */}
                         <div className="flex gap-2 pt-2">
                           <Button
-                            variant="outline"
+                            variant="secondary"
+                            size="sm"
                             onClick={() => handleTest(connector.name)}
                             disabled={testing}
                             className="flex-1"
@@ -612,6 +612,7 @@ export function IntegrationsPage() {
                             {testing ? "Testing..." : "Test Connection"}
                           </Button>
                           <Button
+                            size="sm"
                             onClick={() => handleConnect(connector.name)}
                             disabled={connecting}
                             className="flex-1"
