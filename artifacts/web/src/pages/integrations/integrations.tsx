@@ -188,30 +188,37 @@ export function IntegrationsPage() {
   const handleTest = async (connectorName: string) => {
     setTesting(true);
     setTestResult(null);
-    const config: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(formValues)) {
-      if (k !== "syncClosedOnly" && k !== "writeBackEnabled") {
-        config[k] = v;
-      }
-    }
+    const config = buildConfig();
     testMutation.mutate({ connectorName, config }, { onSettled: () => setTesting(false) });
   };
 
   const handleConnect = async (connectorName: string) => {
     setConnecting(true);
+    const config = buildConfig();
+    connectMutation.mutate({ connectorName, config }, { onSettled: () => setConnecting(false) });
+  };
+
+  const buildConfig = (): Record<string, unknown> => {
     const config: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(formValues)) {
-      if (k !== "syncClosedOnly" && k !== "writeBackEnabled") {
-        config[k] = v;
-      }
+      if (k === "authType" || k === "syncClosedOnly" || k === "writeBackEnabled") continue;
+      config[k] = v;
     }
-    connectMutation.mutate(
-      {
-        connectorName,
-        config,
-      },
-      { onSettled: () => setConnecting(false) },
-    );
+    // Build auth object for custom connector
+    if (formValues.authType) {
+      const auth: Record<string, unknown> = { type: formValues.authType };
+      if (formValues.authType === "apiKey") {
+        auth.headerName = formValues.authHeaderName || "X-API-Key";
+        auth.apiKey = formValues.authApiKey || "";
+      } else if (formValues.authType === "bearer") {
+        auth.token = formValues.authToken || "";
+      } else if (formValues.authType === "basic") {
+        auth.username = formValues.authUsername || "";
+        auth.password = formValues.authPassword || "";
+      }
+      config.auth = auth;
+    }
+    return config;
   };
 
   const isLoading = connectorsLoading || statusLoading;
@@ -587,15 +594,91 @@ export function IntegrationsPage() {
                         )}
 
                         {connector.name === "custom" && (
-                          <div className="space-y-1.5">
-                            <Label className="text-xs">Base URL</Label>
-                            <Input
-                              placeholder="https://api.erp.example.com"
-                              value={String(formValues.baseUrl || "")}
-                              onChange={(e) => setFormValues({ ...formValues, baseUrl: e.target.value })}
-                              className="h-9 text-sm"
-                            />
-                          </div>
+                          <>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs">Base URL</Label>
+                              <Input
+                                placeholder="https://api.erp.example.com"
+                                value={String(formValues.baseUrl || "")}
+                                onChange={(e) => setFormValues({ ...formValues, baseUrl: e.target.value })}
+                                className="h-9 text-sm"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs">Authentication</Label>
+                              <Select
+                                value={String(formValues.authType || "bearer")}
+                                onValueChange={(v) => setFormValues({ ...formValues, authType: v })}
+                              >
+                                <SelectTrigger className="h-9 text-sm">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="bearer">Bearer Token</SelectItem>
+                                  <SelectItem value="apiKey">API Key</SelectItem>
+                                  <SelectItem value="basic">Basic Auth</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            {String(formValues.authType || "bearer") === "bearer" && (
+                              <div className="space-y-1.5">
+                                <Label className="text-xs">Bearer Token</Label>
+                                <Input
+                                  type="password"
+                                  placeholder="sk-abc123..."
+                                  value={String(formValues.authToken || "")}
+                                  onChange={(e) => setFormValues({ ...formValues, authToken: e.target.value })}
+                                  className="h-9 text-sm"
+                                />
+                              </div>
+                            )}
+                            {String(formValues.authType) === "apiKey" && (
+                              <>
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs">Header Name</Label>
+                                  <Input
+                                    placeholder="X-API-Key"
+                                    value={String(formValues.authHeaderName || "")}
+                                    onChange={(e) => setFormValues({ ...formValues, authHeaderName: e.target.value })}
+                                    className="h-9 text-sm"
+                                  />
+                                </div>
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs">API Key</Label>
+                                  <Input
+                                    type="password"
+                                    placeholder="your-api-key"
+                                    value={String(formValues.authApiKey || "")}
+                                    onChange={(e) => setFormValues({ ...formValues, authApiKey: e.target.value })}
+                                    className="h-9 text-sm"
+                                  />
+                                </div>
+                              </>
+                            )}
+                            {String(formValues.authType) === "basic" && (
+                              <>
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs">Username</Label>
+                                  <Input
+                                    placeholder="username"
+                                    value={String(formValues.authUsername || "")}
+                                    onChange={(e) => setFormValues({ ...formValues, authUsername: e.target.value })}
+                                    className="h-9 text-sm"
+                                  />
+                                </div>
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs">Password</Label>
+                                  <Input
+                                    type="password"
+                                    placeholder="password"
+                                    value={String(formValues.authPassword || "")}
+                                    onChange={(e) => setFormValues({ ...formValues, authPassword: e.target.value })}
+                                    className="h-9 text-sm"
+                                  />
+                                </div>
+                              </>
+                            )}
+                          </>
                         )}
 
                         {/* Test result */}
