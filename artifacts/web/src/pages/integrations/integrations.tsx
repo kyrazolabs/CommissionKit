@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Plug, Sprout, Cable, CheckCircle2, XCircle,
-  AlertTriangle, RefreshCw, Trash2, ArrowRight, Ellipsis,
+  AlertTriangle, RefreshCw, Trash2, ArrowRight, Ellipsis, Loader,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -295,8 +295,25 @@ export function IntegrationsPage() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                    Sync & Disconnect
+                    Actions
                   </DropdownMenuLabel>
+                  <DropdownMenuItem
+                    onClick={() => syncRepsMutation.mutate()}
+                    disabled={syncPending}
+                    className="flex items-center gap-2"
+                  >
+                    <RefreshCw className={cn("size-3.5", syncRepsMutation.isPending && "animate-spin")} />
+                    Sync Reps
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => syncDealsMutation.mutate()}
+                    disabled={syncPending}
+                    className="flex items-center gap-2"
+                  >
+                    <RefreshCw className={cn("size-3.5", syncDealsMutation.isPending && "animate-spin")} />
+                    Sync Deals
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <div className="px-2 py-1.5">
                     <Label className="text-[11px] text-muted-foreground">Auto Sync</Label>
                     <Select
@@ -348,28 +365,6 @@ export function IntegrationsPage() {
           </CardHeader>
 
           <CardContent className="space-y-4">
-            {/* Manual sync */}
-            <div className="flex items-center gap-2">
-              <Button
-                variant="secondary"
-                onClick={() => syncRepsMutation.mutate()}
-                disabled={syncPending}
-                className="text-[13px]"
-              >
-                <RefreshCw className={cn("size-3.5 mr-1.5", syncRepsMutation.isPending && "animate-spin")} />
-                Sync Reps
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => syncDealsMutation.mutate()}
-                disabled={syncPending}
-                className="text-[13px]"
-              >
-                <RefreshCw className={cn("size-3.5 mr-1.5", syncDealsMutation.isPending && "animate-spin")} />
-                Sync Deals
-              </Button>
-            </div>
-
             {status.lastSyncedAt && (
               <p className="text-xs text-muted-foreground">
                 Last synced: {new Date(status.lastSyncedAt).toLocaleString()}
@@ -415,14 +410,20 @@ export function IntegrationsPage() {
                         <TableCell className="text-xs font-medium">{sync.entityType}</TableCell>
                         <TableCell className="text-xs capitalize">{sync.trigger}</TableCell>
                         <TableCell className="text-xs">
-                          <Badge variant={
-                            sync.status === "completed" ? "default"
-                            : sync.status === "partial" ? "secondary"
-                            : sync.status === "running" ? "outline"
-                            : "destructive"
-                          } className="text-[10px]">
-                            {sync.status}
-                          </Badge>
+                          {sync.status === "running" ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-600 dark:bg-blue-950 dark:text-blue-400">
+                              <Loader className="size-3 animate-spin" />
+                              running
+                            </span>
+                          ) : (
+                            <Badge variant={
+                              sync.status === "completed" ? "default"
+                              : sync.status === "partial" ? "secondary"
+                              : "destructive"
+                            } className="text-[10px]">
+                              {sync.status}
+                            </Badge>
+                          )}
                         </TableCell>
                         <TableCell className="text-xs">
                           <div className="flex items-center gap-2">
