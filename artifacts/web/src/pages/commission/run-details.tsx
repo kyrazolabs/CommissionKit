@@ -1,4 +1,5 @@
 import { useParams } from "wouter";
+import { useTranslation } from "react-i18next";
 import { useGetRun, getGetRunQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -14,6 +15,7 @@ import { useWorkspace } from "@/hooks/use-workspace";
 import { useRole } from "@/hooks/use-role";
 
 export function RunDetailsPage() {
+  const { t } = useTranslation();
   const { activeWorkspace } = useWorkspace();
   const { hasPermission, isLoading: roleLoading } = useRole();
   const currency = activeWorkspace?.currency || "USD";
@@ -35,13 +37,14 @@ export function RunDetailsPage() {
   if (roleLoading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="size-10" />
-        <div className="grid gap-4 md:grid-cols-3">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-8 w-52" />
         </div>
-        <Skeleton className="h-96 w-full" />
+        <div className="grid gap-4 md:grid-cols-3">
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-32 w-full rounded-2xl" />)}
+        </div>
+        <Skeleton className="h-96 w-full rounded-2xl" />
       </div>
     );
   }
@@ -49,8 +52,8 @@ export function RunDetailsPage() {
   if (!hasPermission("calculations", "read")) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
-        <h2 className="text-lg font-semibold">Access Denied</h2>
-        <p className="text-sm text-muted-foreground">You don't have permission to view run details.</p>
+        <h2 className="text-lg font-semibold">{t("runs.accessDenied")}</h2>
+        <p className="text-sm text-muted-foreground">{t('runs.runDetails.noPermission')}.</p>
       </div>
     );
   }
@@ -69,7 +72,7 @@ export function RunDetailsPage() {
     );
   }
 
-  if (!run || (run as any).error) return <div>Run not found</div>;
+  if (!run || (run as any).error) return <div>{t("runs.runDetails.notFound")}</div>;
 
   const runData = run as any;
 
@@ -86,9 +89,9 @@ export function RunDetailsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <p className="text-[12px] font-semibold text-primary mb-1">Operations</p>
+        <p className="text-[12px] font-semibold text-primary mb-1">{t("runs.operations")}</p>
         <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-semibold tracking-tight">Run Details</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">{t("runs.runDetails.title")}</h1>
           <Badge
             variant="outline"
             className={
@@ -103,7 +106,7 @@ export function RunDetailsPage() {
           </Badge>
         </div>
         <p className="text-muted-foreground mt-1">
-          Executed on {format(new Date(runData.createdAt), "MMMM d, yyyy 'at' h:mm a")} for 
+          {t('runs.runDetails.executedOn')} {format(new Date(runData.createdAt), "MMMM d, yyyy 'at' h:mm a")} for 
           <span className="text-primary px-1 text-base font-medium">
             {runData.period}
           </span> Period
@@ -114,18 +117,18 @@ export function RunDetailsPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Payout</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t("runs.runDetails.totalPayout")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-semibold text-primary">
               {formatCurrency(runData.totalCommission, currency)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">In {currency}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("runs.runDetails.in")} {currency}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Deals Processed</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t("runs.runDetails.dealsProcessed")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-semibold">{runData.totalDeals}</div>
@@ -133,7 +136,7 @@ export function RunDetailsPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Reps Included</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t("runs.runDetails.repsIncluded")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-semibold">{runData.repsCount}</div>
@@ -144,11 +147,11 @@ export function RunDetailsPage() {
       {/* Audit trail */}
       <Card>
         <CardHeader>
-          <CardTitle>Calculation Audit Trail</CardTitle>
+          <CardTitle>{t("runs.runDetails.auditTrail")}</CardTitle>
           <CardDescription>
-            Detailed breakdown of every commission calculation in this run.
+            {t('runs.runDetails.auditDescription')}.
             <span className="ml-2 text-muted-foreground/60 text-xs">
-              Deal amounts shown in their original currency.{" "}
+              {t('runs.runDetails.auditNote')}.{" "}
               <span className="border-b border-dashed border-current cursor-help">Underlined values</span>{" "}
               have a conversion tooltip : hover to see the {currency} equivalent at the rate captured when the deal was entered.
             </span>

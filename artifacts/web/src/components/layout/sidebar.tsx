@@ -1,13 +1,14 @@
 import { Link, useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard, Users, FileText, Briefcase, PlayCircle,
   Settings, CreditCard, LogOut, ChevronsUpDown, Check, Plus,
-  Building2, Shield, Crown, PieChart, Wallet, AlertOctagon,
+  Building2, Shield, Crown, PieChart, Wallet, AlertOctagon, FolderKanban, Grid3X3, Plug,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useWorkspace, type Workspace } from "@/hooks/use-workspace";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRole } from "@/hooks/use-role";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -20,35 +21,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { apiFetch } from "@/lib/api";
 
-const navGroups = [
-  {
-    label: "Main",
-    items: [
-      { name: "Dashboard", href: "/dash",          icon: LayoutDashboard },
-      { name: "Reports",   href: "/dash/reports",  icon: PieChart },
-      { name: "Reps",      href: "/dash/reps",     icon: Users },
-      { name: "Plans",     href: "/dash/plans",    icon: FileText },
-    ],
-  },
-  {
-    label: "Operations",
-    items: [
-      { name: "Deals",    href: "/dash/deals",    icon: Briefcase },
-      { name: "Runs",     href: "/dash/runs",     icon: PlayCircle },
-      { name: "Payouts",  href: "/dash/payouts",  icon: Wallet },
-      { name: "Disputes", href: "/dash/disputes", icon: AlertOctagon },
-    ],
-  },
-  {
-    label: "Account",
-    items: [
-      { name: "Team",     href: "/dash/team",     icon: Users },
-      { name: "Billing",  href: "/dash/billing",  icon: CreditCard },
-      { name: "Settings", href: "/dash/settings", icon: Settings },
-    ],
-  },
-];
+const ICON_MAP: Record<string, any> = {
+  LayoutDashboard, Users, FileText, Briefcase, PlayCircle,
+  Settings, CreditCard, PieChart, Wallet, AlertOctagon, FolderKanban, Building2, Grid3X3,
+  Plug,
+};
 
 const ROLE_ICONS = {
   owner: Crown,
@@ -57,6 +36,7 @@ const ROLE_ICONS = {
 };
 
 function WorkspaceSwitcher() {
+  const { t } = useTranslation();
   const { workspaces, activeWorkspace, setActiveWorkspace, createWorkspace } = useWorkspace();
   const [open, setOpen] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
@@ -120,7 +100,7 @@ function WorkspaceSwitcher() {
               >
                 <div className="px-2 pt-2 pb-1">
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1.5 pb-1">
-                    Workspaces
+                    {t("sidebar.workspaces")}
                   </p>
                   <div className="space-y-0.5 max-h-[200px] overflow-y-auto">
                     {workspaces.map((ws) => (
@@ -146,7 +126,7 @@ function WorkspaceSwitcher() {
                     className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-muted text-left transition-colors"
                   >
                     <Plus className="size-3.5 text-muted-foreground" />
-                    <span className="text-[12.5px] text-muted-foreground">New workspace</span>
+                    <span className="text-[12.5px] text-muted-foreground">{t("sidebar.newWorkspace")}</span>
                   </button>
                 </div>
               </motion.div>
@@ -159,11 +139,11 @@ function WorkspaceSwitcher() {
                 transition={{ duration: 0.2 }}
               >
                 <form onSubmit={handleCreate} className="p-3 space-y-3">
-                  <p className="text-[11px] font-semibold text-foreground">New workspace</p>
+                  <p className="text-[11px] font-semibold text-foreground">{t("sidebar.newWorkspace")}</p>
                   <Input
                     autoFocus
                     type="text"
-                    placeholder="Workspace name"
+                    placeholder={t("sidebar.workspaceNamePlaceholder")}
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     className="h-8! text-[12.5px]"
@@ -176,7 +156,7 @@ function WorkspaceSwitcher() {
                       onClick={() => { setShowCreate(false); setNewName(""); }}
                       className="flex-1 h-7 text-[12px]"
                     >
-                      Cancel
+                      {t("common.cancel")}
                     </Button>
                     <Button
                       type="submit"
@@ -184,7 +164,7 @@ function WorkspaceSwitcher() {
                       disabled={!newName.trim() || creating}
                       className="flex-1 h-7 text-[12px]"
                     >
-                      {creating ? "…" : "Create"}
+                      {creating ? "…" : t("common.create")}
                     </Button>
                   </div>
                 </form>
@@ -198,12 +178,51 @@ function WorkspaceSwitcher() {
 }
 
 export function Sidebar() {
+  const { t } = useTranslation();
   const [location] = useLocation();
   const { user, signOut } = useAuth();
+  const { activeWorkspace, engineNavItems, loading: wsLoading } = useWorkspace();
 
   const initials = user?.email
     ? user.email.slice(0, 2).toUpperCase()
     : "??";
+
+  const replaceMap = new Map(engineNavItems.map(item => [item.replaces, item]));
+
+  const navGroups = [
+    {
+      label: t("sidebar.main"),
+      items: [
+        { name: t("layout.dashboard"), href: "/dash",          icon: "LayoutDashboard" },
+        { name: t("layout.reports"),   href: "/dash/reports",  icon: "PieChart" },
+        { name: t("layout.reps"),      href: "/dash/reps",     icon: "Users" },
+        { name: t("layout.plans"),     href: "/dash/plans",    icon: "FileText" },
+      ],
+    },
+    {
+      label: t("sidebar.operations"),
+      items: [
+        { name: t("layout.deals"),    href: "/dash/deals",    icon: "Briefcase" },
+        { name: t("layout.runs"),     href: "/dash/runs",     icon: "PlayCircle" },
+        { name: t("layout.payouts"),  href: "/dash/payouts",  icon: "Wallet" },
+        { name: t("layout.disputes"), href: "/dash/disputes", icon: "AlertOctagon" },
+      ],
+    },
+    {
+      label: t("sidebar.account"),
+      items: [
+        { name: t("layout.team"),     href: "/dash/team",     icon: "Users" },
+        { name: t("layout.billing"),  href: "/dash/billing",  icon: "CreditCard" },
+        { name: t("layout.integrations"), href: "/dash/integrations", icon: "Plug" },
+        { name: t("layout.settings"), href: "/dash/settings", icon: "Settings" },
+      ],
+    },
+  ];
+
+  const allGroups = navGroups.map(g => ({
+    ...g,
+    items: g.items.map(item => replaceMap.get(item.href) ?? item),
+  }));
 
   return (
     <div className="flex h-full w-[220px] shrink-0 flex-col bg-sidebar">
@@ -213,13 +232,14 @@ export function Sidebar() {
 
       {/* Nav groups */}
       <div className="flex-1 overflow-y-auto px-3 pt-4 space-y-6">
-        {navGroups.map((group) => (
+        {allGroups.map((group) => (
           <div key={group.label}>
             <p className="px-2 mb-1.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-sidebar-muted-foreground select-none">
               {group.label}
             </p>
             <nav className="space-y-0.5">
-              {group.items.map((item) => {
+              {group.items.map((item: any) => {
+                const IconComponent = typeof item.icon === "string" ? ICON_MAP[item.icon] : item.icon;
                 const isActive =
                   location === item.href ||
                   (item.href !== "/dash" && location.startsWith(item.href));
@@ -234,14 +254,16 @@ export function Sidebar() {
                         : "text-sidebar-foreground font-normal border border-transparent hover:bg-muted hover:text-foreground"
                     )}
                   >
-                    <item.icon
-                      className={cn(
-                        "h-[15px] w-[15px] shrink-0",
-                        isActive
-                          ? "text-sidebar-primary"
-                          : "text-sidebar-muted-foreground opacity-70"
-                      )}
-                    />
+                    {IconComponent && (
+                      <IconComponent
+                        className={cn(
+                          "h-[15px] w-[15px] shrink-0",
+                          isActive
+                            ? "text-sidebar-primary"
+                            : "text-sidebar-muted-foreground opacity-70"
+                        )}
+                      />
+                    )}
                     {item.name}
                   </Link>
                 );
@@ -294,7 +316,7 @@ export function Sidebar() {
               <DropdownMenuItem asChild>
                 <Link href="/dash/settings" className="w-full cursor-pointer flex items-center gap-2.5 rounded-lg py-2">
                   <Settings className="size-[15px] opacity-70" />
-                  Account Settings
+                  {t("sidebar.accountSettings")}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -303,7 +325,7 @@ export function Sidebar() {
                 className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer flex items-center gap-2.5 rounded-lg py-2"
               >
                 <LogOut className="size-[15px] opacity-70" />
-                Sign out
+                {t("sidebar.signOut")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -50,18 +51,19 @@ interface Dispute {
 }
 
 // ─── Status config ────────────────────────────────────────────────────────────
-const DISPUTE_STATUS: Record<string, { label: string; class: string; icon: any }> = {
-  open:         { label: "Open",         class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200/50",     icon: AlertTriangle },
-  under_review: { label: "Under Review", class: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200/50", icon: Clock },
-  resolved:     { label: "Resolved",     class: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200/50", icon: CheckCircle2 },
+const DISPUTE_STATUS: Record<string, { label: string; class: string; icon: any; i18nKey: string }> = {
+  open:         { label: "Open",         i18nKey: "disputes.open", class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200/50",     icon: AlertTriangle },
+  under_review: { label: "Under Review", i18nKey: "disputes.underReview", class: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200/50", icon: Clock },
+  resolved:     { label: "Resolved",     i18nKey: "disputes.resolved", class: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200/50", icon: CheckCircle2 },
 };
 
 function DisputeStatusBadge({ status }: { status: string }) {
+  const { t } = useTranslation();
   const cfg = DISPUTE_STATUS[status] ?? DISPUTE_STATUS.open;
   const Icon = cfg.icon;
   return (
     <span className={cn("inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold", cfg.class)}>
-      <Icon className="size-3" />{cfg.label}
+      <Icon className="size-3" />{t(cfg.i18nKey)}
     </span>
   );
 }
@@ -76,6 +78,7 @@ function ResolveModal({
   workspaceId: string;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
   const [adminNotes, setAdminNotes] = useState(dispute.adminNotes ?? "");
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -113,7 +116,7 @@ function ResolveModal({
           queryClient.setQueryData(queryKey, oldData);
         });
       }
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/disputes"] });
@@ -122,7 +125,7 @@ function ResolveModal({
 
   const handleAction = (status: string) => {
     mutation.mutate({ status, adminNotes }, {
-      onSuccess: () => toast({ title: "Dispute updated" })
+      onSuccess: () => toast({ title: t("disputes.disputeUpdated") })
     });
     onClose();
   };
@@ -130,9 +133,9 @@ function ResolveModal({
   return (
     <DialogContent className="sm:max-w-lg">
       <DialogHeader>
-        <DialogTitle>Resolve Dispute</DialogTitle>
+        <DialogTitle>{t("disputes.resolveDispute")}</DialogTitle>
         <DialogDescription>
-          Resolve the dispute from <strong>{dispute.repName}</strong>. The payout will return to "Approved" status
+          {t('disputes.resolveDescription', { name: dispute.repName })} <strong>{dispute.repName}</strong>. The payout will return to "Approved" status
           and the rep will be notified with your notes.
         </DialogDescription>
       </DialogHeader>
@@ -142,7 +145,7 @@ function ResolveModal({
         <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
           {dispute.payout && (
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Payout Period</span>
+              <span className="text-muted-foreground">{t("disputes.payoutPeriod")}</span>
               <span className="font-medium">
                 {format(new Date(dispute.payout.periodStart), "MMM d")}–{format(new Date(dispute.payout.periodEnd), "MMM d, yyyy")}
               </span>
@@ -150,34 +153,34 @@ function ResolveModal({
           )}
           {dispute.payout && (
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Amount</span>
+              <span className="text-muted-foreground">{t("disputes.amount")}</span>
               <span className="font-semibold">{formatCurrency(dispute.payout.finalAmount, dispute.payout.currency)}</span>
             </div>
           )}
           <div className="border-t border-border/60 pt-2 mt-2">
-            <p className="text-xs font-semibold text-muted-foreground mb-1">Rep's Reason</p>
+            <p className="text-xs font-semibold text-muted-foreground mb-1">{t("disputes.repsReason")}</p>
             <p className="text-sm leading-relaxed">{dispute.reason}</p>
           </div>
         </div>
 
         <div className="grid gap-2">
-          <Label>Admin Notes (sent to rep)</Label>
+          <Label>{t("disputes.adminNotesSent")}</Label>
           <Textarea
             value={adminNotes}
             onChange={(e) => setAdminNotes(e.target.value)}
-            placeholder="Explain the resolution…"
+            placeholder={t("disputes.resolutionPlaceholder")}
             rows={4}
           />
         </div>
       </div>
 
       <DialogFooter className="gap-2">
-        <Button variant="outline" onClick={onClose}>Cancel</Button>
+        <Button variant="outline" onClick={onClose}>{t("common.cancel")}</Button>
         <Button
           variant="outline"
           onClick={() => handleAction("under_review")}
         >
-          <Clock className="mr-2 size-4" />Mark Under Review
+          <Clock className="mr-2 size-4" />{t('disputes.markUnderReview')}
         </Button>
         <Button
           onClick={() => handleAction("resolved")}
@@ -192,6 +195,7 @@ function ResolveModal({
 
 // ─── Dispute Row ──────────────────────────────────────────────────────────────
 function DisputeRow({ dispute, onAction }: { dispute: Dispute; onAction: (d: Dispute) => void }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -243,17 +247,17 @@ function DisputeRow({ dispute, onAction }: { dispute: Dispute; onAction: (d: Dis
             >
             <div className="space-y-2 text-sm">
               <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">Reason</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">{t("disputes.reason")}</p>
                 <p className="text-sm whitespace-pre-wrap">{dispute.reason}</p>
               </div>
               {dispute.adminNotes && (
                 <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">Admin Notes</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">{t("disputes.adminNotes")}</p>
                   <p className="text-sm text-muted-foreground whitespace-pre-wrap">{dispute.adminNotes}</p>
                 </div>
               )}
               {dispute.resolvedAt && (
-                <p className="text-xs text-muted-foreground">Resolved on {format(new Date(dispute.resolvedAt), "MMM d, yyyy 'at' h:mm a")}</p>
+                <p className="text-xs text-muted-foreground">{t('disputes.resolvedOn', { date: '' })} {format(new Date(dispute.resolvedAt), "MMM d, yyyy 'at' h:mm a")}</p>
               )}
             </div>
             </motion.div>
@@ -266,10 +270,11 @@ function DisputeRow({ dispute, onAction }: { dispute: Dispute; onAction: (d: Dis
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export function DisputesPage() {
-  usePageMeta({ title: "Disputes", description: "Review and resolve commission disputes.", robots: "noindex, nofollow" });
+  const { t } = useTranslation();
+  usePageMeta({ title: t("disputes.title"), description: "{t('disputes.description')}.", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const { hasPermission, isLoading: roleLoading } = useRole();
-  const { sub } = useBillingStatus();
+  const { sub, loading: subLoading } = useBillingStatus();
   const workspaceId = activeWorkspace?.id ?? "";
   const [resolveTarget, setResolveTarget] = useState<Dispute | null>(null);
   const [showResolved, setShowResolved] = useState(false);
@@ -285,11 +290,27 @@ export function DisputesPage() {
     enabled: Boolean(workspaceId) && hasPermission("disputes", "read") && !roleLoading,
   });
 
-  if (roleLoading) {
+  if (roleLoading || subLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="size-10" />
-        <Skeleton className="h-96 w-full" />
+      <div className="space-y-7">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-8 w-56" />
+          <Skeleton className="h-4 w-72" />
+        </div>
+        <div className="rounded-2xl border border-border/40 p-5 space-y-3">
+          <div className="flex items-center gap-4 pb-3 border-b border-border/40">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-16 ml-auto" />
+          </div>
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full" />)}
+        </div>
       </div>
     );
   }
@@ -298,8 +319,8 @@ export function DisputesPage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
         <AlertTriangle className="size-10 text-muted-foreground" />
-        <h2 className="text-lg font-semibold">Insufficient Permissions</h2>
-        <p className="text-sm text-muted-foreground">You don't have permission to manage disputes.</p>
+        <h2 className="text-lg font-semibold">{t("common.accessDenied")}</h2>
+        <p className="text-sm text-muted-foreground">{t('disputes.noPermission')}</p>
       </div>
     );
   }
@@ -308,8 +329,8 @@ export function DisputesPage() {
     return (
       <div className="space-y-6">
         <div>
-          <p className="text-[12px] font-semibold text-primary mb-1">Operations</p>
-          <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">Dispute Management</h1>
+          <p className="text-[12px] font-semibold text-primary mb-1">{t("disputes.operations") || "Operations"}</p>
+          <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">{t("disputes.title")}</h1>
         </div>
         <Card className="border-primary/20 bg-primary/5">
           <CardHeader className="pb-3">
@@ -318,11 +339,11 @@ export function DisputesPage() {
               Dispute Management : Growth Feature
             </CardTitle>
             <CardDescription>
-              The payout dispute workflow requires the <strong>Growth</strong> plan or above.
+              {t('disputes.growthRequired')}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button asChild><Link href="/dash/billing">Upgrade to Growth</Link></Button>
+            <Button asChild><Link href="/dash/billing">{t("disputes.upgradeToGrowth")}</Link></Button>
           </CardContent>
         </Card>
       </div>
@@ -340,13 +361,13 @@ export function DisputesPage() {
           <p className="text-[12px] font-semibold text-primary mb-1">Operations</p>
           <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">Dispute Management</h1>
           <p className="text-[14px] text-muted-foreground mt-1 leading-relaxed">
-            Review and resolve payout disputes submitted by reps.
+            {t('disputes.description')}
           </p>
         </div>
         {openDisputes.length > 0 && (
           <div className="flex items-center gap-2 px-3 h-10 rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-sm font-semibold border border-red-200/50 shadow-sm">
             <AlertTriangle className="size-4" />
-            {openDisputes.length} open dispute{openDisputes.length !== 1 ? "s" : ""}
+            {openDisputes.length} {t('disputes.openDisputesCount', { count: openDisputes.length })}
           </div>
         )}
       </div>
@@ -354,8 +375,8 @@ export function DisputesPage() {
       {/* Open Disputes */}
       <Card>
         <CardHeader className="pb-3 border-b border-border">
-          <CardTitle className="text-sm font-semibold">Open Disputes</CardTitle>
-          <CardDescription className="text-xs">Disputes requiring your attention.</CardDescription>
+          <CardTitle className="text-sm font-semibold">{t("disputes.openDisputes")}</CardTitle>
+          <CardDescription className="text-xs">{t('disputes.openDisputesDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           {isLoading ? (
@@ -365,21 +386,21 @@ export function DisputesPage() {
           ) : openDisputes.length === 0 ? (
             <div className="text-center py-12">
               <CheckCircle2 className="size-10 text-green-500 mx-auto mb-3" />
-              <h3 className="text-base font-semibold">No open disputes</h3>
-              <p className="text-sm text-muted-foreground mt-1">All disputes have been resolved.</p>
+              <h3 className="text-base font-semibold">{t("disputes.noOpenDisputes")}</h3>
+              <p className="text-sm text-muted-foreground mt-1">{t('disputes.allResolved')}</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-8" />
-                  <TableHead>Rep</TableHead>
-                  <TableHead>Period</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Reason</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Submitted</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("disputes.table.rep")}</TableHead>
+                  <TableHead>{t("disputes.table.period")}</TableHead>
+                  <TableHead>{t("disputes.table.amount")}</TableHead>
+                  <TableHead>{t("disputes.table.reason")}</TableHead>
+                  <TableHead>{t("disputes.table.status")}</TableHead>
+                  <TableHead>{t("disputes.table.submitted")}</TableHead>
+                  <TableHead className="text-right">{t("common.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -400,7 +421,7 @@ export function DisputesPage() {
             className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-3"
           >
             {showResolved ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
-            Resolved Disputes ({resolvedDisputes.length})
+            {t('disputes.resolvedDisputes', { count: resolvedDisputes.length })}
           </button>
 
           {showResolved && (

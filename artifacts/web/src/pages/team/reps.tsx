@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSyncStore } from "@/hooks/use-sync-store";
 import {
@@ -14,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Plus, Search, MoreHorizontal, Edit, Trash, ChevronRight, Users, Mail } from "lucide-react";
@@ -30,7 +32,8 @@ import { usePageMeta } from "@/hooks/use-page-meta";
 
 
 export function RepsPage() {
-  usePageMeta({ title: "Reps", description: "Manage your sales representatives and their commission assignments.", robots: "noindex, nofollow" });
+  const { t } = useTranslation();
+  usePageMeta({ title: t("reps.title"), description: "Manage your sales representatives and their commission assignments.", robots: "noindex, nofollow" });
   const { data: plans } = orvalUseListPlans({ query: { queryKey: getListPlansQueryKey() } });
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -48,7 +51,11 @@ export function RepsPage() {
   if (roleLoading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="size-10" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-64" />
+        </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map(i => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}
         </div>
@@ -60,8 +67,8 @@ export function RepsPage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
         <Users className="size-10 text-muted-foreground" />
-        <h2 className="text-lg font-semibold">Access Denied</h2>
-        <p className="text-sm text-muted-foreground">You don't have permission to view sales representatives.</p>
+        <h2 className="text-lg font-semibold">{t("reps.accessDenied")}</h2>
+        <p className="text-sm text-muted-foreground">{t("reps.noPermissionReps")}</p>
       </div>
     );
   }
@@ -75,9 +82,9 @@ export function RepsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <p className="text-[12px] font-semibold text-primary mb-1">Team</p>
-          <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">Sales Representatives</h1>
-          <p className="text-[14px] text-muted-foreground mt-1">Manage your sales team and their commission plans.</p>
+          <p className="text-[12px] font-semibold text-primary mb-1">{t("reps.team")}</p>
+          <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">{t("reps.title")}</h1>
+          <p className="text-[14px] text-muted-foreground mt-1">{t("reps.description")}</p>
         </div>
         {hasPermission("reps", "create") && (
           <RepFormDialog
@@ -94,7 +101,7 @@ export function RepsPage() {
           <div className="relative max-w-sm">
             <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
             <Input
-              placeholder="Search reps…"
+              placeholder={t("reps.searchReps")}
               className="pl-8"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -203,6 +210,7 @@ export function RepsPage() {
 }
 
 function RepFormDialog({ open, onOpenChange, plans, initialData, isLimitReached }: any) {
+  const { t } = useTranslation();
   const isEditing = !!initialData;
   const [name, setName] = useState(initialData?.name || "");
   const [email, setEmail] = useState(initialData?.email || "");
@@ -248,7 +256,7 @@ function RepFormDialog({ open, onOpenChange, plans, initialData, isLimitReached 
             queryClient.setQueryData(queryKey, oldData);
           });
         }
-        toast({ title: "Failed to create rep", description: "Recovering your input...", variant: "destructive" });
+        toast({ title: t("reps.repCreateFailed"), description: t("reps.recoveringInput"), variant: "destructive" });
         onOpenChange(true);
       },
       onSettled: () => {
@@ -285,7 +293,7 @@ function RepFormDialog({ open, onOpenChange, plans, initialData, isLimitReached 
             queryClient.setQueryData(queryKey, oldData);
           });
         }
-        toast({ title: "Failed to update rep", description: "Recovering your input...", variant: "destructive" });
+        toast({ title: t("reps.repUpdateFailed"), description: "Recovering your input...", variant: "destructive" });
         onOpenChange(true);
       },
       onSettled: () => {
@@ -303,13 +311,13 @@ function RepFormDialog({ open, onOpenChange, plans, initialData, isLimitReached 
 
     if (isEditing) {
       updateMutation.mutate({ id: initialData.id, data }, {
-        onSuccess: () => toast({ title: "Rep updated successfully" })
+        onSuccess: () => toast({ title: t("reps.repUpdated") })
       });
       onOpenChange(false);
     } else {
       createMutation.mutate({ data }, {
         onSuccess: () => {
-          toast({ title: "Rep created successfully" });
+          toast({ title: t("reps.repCreated") });
           setName(""); setEmail(""); setRole("Account Executive"); setPlanId("none");
         }
       });
@@ -323,14 +331,14 @@ function RepFormDialog({ open, onOpenChange, plans, initialData, isLimitReached 
         <DialogTrigger asChild>
           <Button disabled={isLimitReached} title={isLimitReached ? "Limit reached. Upgrade plan." : ""}>
             <Plus className="mr-2 size-4" />
-            {isLimitReached ? "Limit Reached" : "Add Rep"}
+            {isLimitReached ? t("common.limitReached") : t("reps.addRep")}
           </Button>
         </DialogTrigger>
       )}
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>{isEditing ? "Edit Representative" : "Add Representative"}</DialogTitle>
+            <DialogTitle>{isEditing ? t("reps.editRepresentative") : t("reps.addRepresentative")}</DialogTitle>
             <DialogDescription>
               {isEditing ? "Update details for this sales representative." : "Create a new sales representative and assign them a commission plan."}
             </DialogDescription>
@@ -351,7 +359,7 @@ function RepFormDialog({ open, onOpenChange, plans, initialData, isLimitReached 
             <div className="grid gap-2">
               <Label>Commission Plan</Label>
               <Select value={planId} onValueChange={setPlanId}>
-                <SelectTrigger><SelectValue placeholder="Select a plan" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("reps.selectPlan")} /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">No plan assigned</SelectItem>
                   {Array.isArray(plans) && plans.map((p: any) => (
@@ -385,6 +393,7 @@ function RepEditAction({ rep, plans }: { rep: any, plans: any[] }) {
 
 function SendPortalLinkAction({ rep }: { rep: any }) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [sending, setSending] = useState(false);
   const { activeWorkspace } = useWorkspace();
 
@@ -398,13 +407,13 @@ function SendPortalLinkAction({ rep }: { rep: any }) {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/reps"] });
       toast({
-        title: "Portal link sent",
+        title: t("reps.portalLinkSent"),
         description: `A new portal link has been emailed to ${rep.email}.`,
       });
     } catch {
       toast({
-        title: "Failed to send",
-        description: "Could not send the portal link. Please try again.",
+        title: t("reps.failedToSend"),
+        description: t("reps.failedToSendDescription"),
         variant: "destructive",
       });
     } finally {
@@ -418,13 +427,14 @@ function SendPortalLinkAction({ rep }: { rep: any }) {
       disabled={sending}
     >
       <Mail className="mr-2 size-4" />
-      {sending ? "Sending…" : "Send Portal Link"}
+      {sending ? t("common.sending2") : t("reps.sendPortalLink")}
     </DropdownMenuItem>
   );
 }
 
 function RepDeleteAction({ rep }: { rep: any }) {
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { setSyncError } = useSyncStore();
@@ -449,7 +459,7 @@ function RepDeleteAction({ rep }: { rep: any }) {
             queryClient.setQueryData(queryKey, oldData);
           });
         }
-        toast({ title: "Failed to delete rep", description: "The server encountered an error.", variant: "destructive" });
+        toast({ title: t("reps.repDeleteFailed"), description: "The server encountered an error.", variant: "destructive" });
       },
       onSettled: () => {
         queryClient.invalidateQueries({ queryKey: ["/api/reps"] });
@@ -470,22 +480,14 @@ function RepDeleteAction({ rep }: { rep: any }) {
       >
         <Trash className="mr-2 size-4" />Delete Rep
       </DropdownMenuItem>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Are you absolutely sure?</DialogTitle>
-            <DialogDescription>
-              This will permanently delete <strong>{rep.name}</strong>. Their historical deals and commissions will be retained, but they will no longer appear in the active roster.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              Delete Representative
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={open}
+        onOpenChange={setOpen}
+        title={t("reps.deleteRepTitle")}
+        description={<>This will permanently delete <strong>{rep.name}</strong>. Their historical deals and commissions will be retained, but they will no longer appear in the active roster.</>}
+        confirmLabel={t("reps.deleteRepConfirm")}
+        onConfirm={handleDelete}
+      />
     </>
   );
 }

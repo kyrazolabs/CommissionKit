@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import * as XLSX from 'xlsx';
 import { downloadTemplate } from "@/lib/templates";
@@ -20,13 +21,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DatePicker, DateRangePicker } from "@/components/ui/date-picker";
 import { parseISO } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Trash, UploadCloud, FileDown, Briefcase, Loader2, ChevronDown, ChevronRight } from "lucide-react";
+import { Search, Trash, UploadCloud, FileDown, Briefcase, Loader2, ChevronDown, ChevronRight, Pencil } from "lucide-react";
 import { HelpTooltip } from "@/components/help-tooltip";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/format";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import Papa from "papaparse";
@@ -41,7 +43,8 @@ import { usePageMeta } from "@/hooks/use-page-meta";
 
 
 export function DealsPage() {
-  usePageMeta({ title: "Deals", description: "Track deals and calculate commissions across your team.", robots: "noindex, nofollow" });
+  const { t } = useTranslation();
+  usePageMeta({ title: t("deals.title"), description: "Track deals and calculate commissions across your team.", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const currency = activeWorkspace?.currency || "USD";
   const [period, setPeriod] = useState<string>(format(new Date(), "yyyy-MM"));
@@ -65,13 +68,12 @@ export function DealsPage() {
   if (roleLoading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="size-10" />
-        <div className="grid gap-4 md:grid-cols-3">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-64" />
         </div>
-        <Skeleton className="h-96 w-full" />
+        <Skeleton className="h-96 w-full rounded-2xl" />
       </div>
     );
   }
@@ -80,8 +82,8 @@ export function DealsPage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
         <Briefcase className="size-10 text-muted-foreground" />
-        <h2 className="text-lg font-semibold">Access Denied</h2>
-        <p className="text-sm text-muted-foreground">You don't have permission to view deals.</p>
+        <h2 className="text-lg font-semibold">{t("deals.accessDenied")}</h2>
+        <p className="text-sm text-muted-foreground">{t("deals.noPermissionDeals")}</p>
       </div>
     );
   }
@@ -95,9 +97,9 @@ export function DealsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <p className="text-[12px] font-semibold text-primary mb-1">Operations</p>
-          <h1 className="text-3xl font-semibold tracking-tight">Deals</h1>
-          <p className="text-muted-foreground">Manage revenue events for commission calculation.</p>
+          <p className="text-[12px] font-semibold text-primary mb-1">{t("deals.operations")}</p>
+          <h1 className="text-3xl font-semibold tracking-tight">{t("deals.title")}</h1>
+          <p className="text-muted-foreground">{t("deals.description")}</p>
         </div>
         <div className="flex gap-2">
           {hasPermission("deals", "create") && (
@@ -116,7 +118,7 @@ export function DealsPage() {
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
               <Input
-                placeholder="Search deals…"
+                placeholder={t("deals.searchDeals")}
                 className="pl-8"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -127,7 +129,7 @@ export function DealsPage() {
             <div className="w-40">
               <Select value={repId} onValueChange={setRepId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="All Reps" />
+                  <SelectValue placeholder={t("deals.allReps")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Reps</SelectItem>
@@ -140,7 +142,7 @@ export function DealsPage() {
             <div className="w-40">
               <Select value={paymentStatus} onValueChange={setPaymentStatus}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Payment Status" />
+                  <SelectValue placeholder={t("common.paymentStatus")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Payments</SelectItem>
@@ -155,7 +157,7 @@ export function DealsPage() {
               <MonthPicker 
                 value={period} 
                 onChange={setPeriod} 
-                placeholder="Pick a month"
+                placeholder={t("common.pickMonth")}
                 className="w-full h-9"
               />
             </div>
@@ -230,6 +232,11 @@ export function DealsPage() {
                         }`}>
                           {deal.stage.replace('_', ' ').toUpperCase()}
                         </span>
+                        {(deal as any).clawbackApplied && (
+                          <span className="ml-1 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-orange-100 text-orange-800 border border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800/30">
+                            CLAWBACK
+                          </span>
+                        )}
                       </TableCell>
                       <TableCell>
                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
@@ -243,7 +250,7 @@ export function DealsPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
-                          {hasPermission("deals", "edit") && (
+                          {hasPermission("deals", "edit") && deal.paymentStatus !== "paid" && (
                             <UpdateDealDialog deal={deal} queryParams={queryParams} reps={reps} workspaceCurrency={currency} />
                           )}
                           {hasPermission("deals", "delete") && (
@@ -284,6 +291,7 @@ export function DealsPage() {
 function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal: any, queryParams: any, reps: any, workspaceCurrency: string }) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const updateMutation = useUpdateDeal({
     mutation: {
@@ -293,7 +301,7 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
         const previousDealsQueries = queryClient.getQueriesData<any[]>({ queryKey: ['/api/deals'] });
 
         const rep = reps?.find((r: any) => String(r.id || r._id) === String(data.repId));
-        const repName = rep ? rep.name : "Unknown Rep";
+        const repName = rep ? rep.name : t("deals.creator.title");
 
         queryClient.setQueriesData<any[]>({ queryKey: ['/api/deals'] }, (old) => {
           if (!old) return [];
@@ -319,14 +327,14 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
         }
         useSyncStore.getState().setSyncError(true);
         toast({
-          title: "Sync Error",
-          description: "Failed to update deal. Reverted changes.",
+          title: t("deals.dealUpdateFailed"),
+          description: t("deals.dealUpdateFailedDescription"),
           variant: "destructive",
         });
       },
       onSuccess: () => {
         useSyncStore.getState().setSyncError(false);
-        toast({ title: "Deal updated successfully" });
+        toast({ title: t("deals.dealUpdated") });
       },
       onSettled: () => {
         queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
@@ -345,9 +353,21 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
     paymentStatus: deal.paymentStatus || "unpaid",
     notes: deal.notes || ""
   });
+  const [showClawbackConfirm, setShowClawbackConfirm] = useState(false);
+  const [showPaidConfirm, setShowPaidConfirm] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const stageChangedToLost = deal.stage === "closed_won" && formData.stage === "closed_lost";
+    const markingPaid = deal.paymentStatus !== "paid" && formData.paymentStatus === "paid";
+    if (stageChangedToLost) {
+      setShowClawbackConfirm(true);
+      return;
+    }
+    if (markingPaid) {
+      setShowPaidConfirm(true);
+      return;
+    }
     updateMutation.mutate({ id: deal.id, data: formData });
     setOpen(false);
   };
@@ -359,7 +379,7 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
 
   if (!isEditable) return null;
 
-  return (
+  return (<>
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button 
@@ -367,28 +387,39 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
           size="icon" 
           className="size-8 text-muted-foreground hover:text-primary"
           disabled={!isEditable}
-          title={isPending ? "Edit deal" : "Update payment status"}
+          title={t("deals.editDealTitle")}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+          <Pencil />
+          
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader>
-          <DialogTitle>{isPaymentOnly ? "Update Payment Status" : "Edit Deal"}</DialogTitle>
-          <DialogDescription>{isPaymentOnly ? "Update the payment status for this closed won deal." : "Update deal details."}</DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          {isPaymentOnly ? (
-            <>
-              <div className="rounded-md bg-muted/50 p-3 text-sm text-muted-foreground border">
-                This deal is <strong>closed won</strong>. Only payment status can be changed.
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-paymentStatus">Payment Status</Label>
-                <Select value={formData.paymentStatus} onValueChange={(val) => setFormData(prev => ({ ...prev, paymentStatus: val }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unpaid">UNPAID</SelectItem>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle>{isPaymentOnly ? t("deals.updatePaymentStatus") : "Edit Deal"}</DialogTitle>
+            <DialogDescription>{isPaymentOnly ? "Update the stage or payment status for this closed won deal. Changing to Closed Lost triggers clawback." : "Update deal details."}</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4 py-4">
+            {isPaymentOnly ? (
+              <>
+                <div className="rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 p-3 text-sm text-amber-800 dark:text-amber-300">
+                  This deal is <strong>closed won</strong>. Changing the stage to <strong>Closed Lost</strong> will trigger a <strong>clawback</strong> if the plan has a clawback period configured.
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-stage">Stage</Label>
+                  <Select value={formData.stage} onValueChange={(val) => setFormData(prev => ({ ...prev, stage: val }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="closed_won">CLOSED WON</SelectItem>
+                      <SelectItem value="closed_lost">CLOSED LOST</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-paymentStatus">Payment Status</Label>
+                  <Select value={formData.paymentStatus} onValueChange={(val) => setFormData(prev => ({ ...prev, paymentStatus: val }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unpaid">UNPAID</SelectItem>
                     <SelectItem value="paid">PAID</SelectItem>
                     <SelectItem value="partial">PARTIAL</SelectItem>
                     <SelectItem value="on_hold">ON HOLD</SelectItem>
@@ -405,11 +436,15 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
               value={formData.repId} 
               onValueChange={(val) => setFormData(prev => ({ ...prev, repId: val }))}
             >
-              <SelectTrigger><SelectValue placeholder="Select a representative" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder={t("common.selectRep")} /></SelectTrigger>
               <SelectContent>
-                {Array.isArray(reps) && reps.map((rep: any) => (
-                  <SelectItem key={rep.id || rep._id} value={(rep.id || rep._id).toString()}>{rep.name}</SelectItem>
-                ))}
+                {!Array.isArray(reps) || reps.length === 0 ? (
+                  <div className="p-2 text-sm text-muted-foreground text-center">No reps yet — create one in Reps first.</div>
+                ) : (
+                  Array.isArray(reps) && reps.map((rep: any) => (
+                    <SelectItem key={rep.id || rep._id} value={(rep.id || rep._id).toString()}>{rep.name}</SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -467,24 +502,52 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
             <MarkdownEditor
               value={formData.notes}
               onChange={(val) => setFormData(prev => ({ ...prev, notes: val }))}
-              placeholder="Add notes in Markdown... (optional)"
+              placeholder={t("deals.notesPlaceholder")}
             />
           </div>
             </>
           )}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={updateMutation.isPending}>{updateMutation.isPending ? "Saving…" : "Save Changes"}</Button>
+            <Button type="submit" disabled={updateMutation.isPending}>{updateMutation.isPending ? t("common.saving") : t("common.saveChanges")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
+      <ConfirmDialog
+        open={showClawbackConfirm}
+        onOpenChange={setShowClawbackConfirm}
+        title={t("deals.triggerClawback")}
+        description={<>Changing this deal from <strong>Closed Won</strong> to <strong>Closed Lost</strong> will trigger a clawback if the plan has a clawback period configured. The commission paid for this deal will be deducted from the rep's next payout.</>}
+        confirmLabel={t("deals.changeToClosedLost")}
+        variant="destructive"
+        onConfirm={() => {
+          setShowClawbackConfirm(false);
+          updateMutation.mutate({ id: deal.id, data: formData });
+          setOpen(false);
+        }}
+      />
+      <ConfirmDialog
+        open={showPaidConfirm}
+        onOpenChange={setShowPaidConfirm}
+        title={t("deals.markAsPaid")}
+        description={<>Marking <strong>{deal.name}</strong> as paid will lock it from further edits and set the stage to <strong>Closed Won</strong>. This cannot be undone.</>}
+        confirmLabel={t("deals.markAsPaidConfirm")}
+        variant="default"
+        onConfirm={() => {
+          setShowPaidConfirm(false);
+          updateMutation.mutate({ id: deal.id, data: { ...formData, stage: "closed_won" } });
+          setOpen(false);
+        }}
+      />
+      </>
   );
 }
 
 function DealDeleteAction({ deal, queryParams, currency }: { deal: any, queryParams: any, currency: string }) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const deleteMutation = useDeleteDeal({
     mutation: {
@@ -509,13 +572,13 @@ function DealDeleteAction({ deal, queryParams, currency }: { deal: any, queryPar
         useSyncStore.getState().setSyncError(true);
         toast({
           title: "Sync Error",
-          description: "Failed to delete deal. Reverted changes.",
+          description: t("deals.dealDeleteFailedDescription"),
           variant: "destructive",
         });
       },
       onSuccess: () => {
         useSyncStore.getState().setSyncError(false);
-        toast({ title: "Deal deleted" });
+        toast({ title: t("deals.dealDeleted") });
       },
       onSettled: () => {
         queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
@@ -561,6 +624,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { data: reps } = useListReps({ query: { queryKey: getListRepsQueryKey() } });
+  const { t } = useTranslation();
   const importMutation = useImportDeals();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -659,7 +723,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
     const invalidRows = parsedData.filter(d => !d.repId);
     if (invalidRows.length > 0) {
       toast({ 
-        title: "Validation error", 
+        title: t("deals.validationError"), 
         description: `Please select a Sales Rep for all rows (missing for ${invalidRows.length} rows).`,
         variant: "destructive" 
       });
@@ -672,7 +736,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
       onSuccess: (res) => {
         queryClient.invalidateQueries({ queryKey: getListDealsQueryKey({ period }) });
         toast({ 
-          title: res.skipped > 0 ? "Import partially successful" : "Import complete", 
+          title: res.skipped > 0 ? t("deals.importPartial") : t("deals.importComplete"), 
           description: `Imported ${res.imported} deals.`,
         });
         setOpen(false);
@@ -737,7 +801,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
                   className="hidden" 
                 />
                 <Button onClick={() => fileInputRef.current?.click()} disabled={isParsing} className="w-full">
-                  {isParsing ? "Parsing…" : "Select File"}
+                  {isParsing ? t("deals.parsing") : t("deals.selectFile")}
                 </Button>
               </div>
             </div>
@@ -772,12 +836,16 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
                         <TableCell>
                           <Select value={row.repId} onValueChange={(val) => updateRow(row.id, 'repId', val)}>
                             <SelectTrigger className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent">
-                              <SelectValue placeholder="Select rep" />
+                              <SelectValue placeholder={t("deals.selectRep")} />
                             </SelectTrigger>
                             <SelectContent>
-                              {Array.isArray(reps) && reps.map(rep => (
-                                <SelectItem key={rep.id} value={rep.id.toString()}>{rep.name}</SelectItem>
-                              ))}
+                              {!Array.isArray(reps) || reps.length === 0 ? (
+                                <div className="p-2 text-sm text-muted-foreground text-center">No reps yet — create one in Reps first.</div>
+                              ) : (
+                                Array.isArray(reps) && reps.map(rep => (
+                                  <SelectItem key={rep.id} value={rep.id.toString()}>{rep.name}</SelectItem>
+                                ))
+                              )}
                             </SelectContent>
                           </Select>
                           {!row.repId && <p className="text-[10px] text-destructive mt-0.5 ml-2">Unknown email: {row.repEmail}</p>}
@@ -804,11 +872,9 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
                           />
                         </TableCell>
                         <TableCell>
-                          <Input 
-                            type="date" 
-                            value={row.closeDate} 
-                            onChange={(e) => updateRow(row.id, 'closeDate', e.target.value)}
-                            className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent"
+                          <DatePicker
+                            date={row.closeDate ? parseISO(row.closeDate) : undefined}
+                            onChange={(d) => updateRow(row.id, 'closeDate', d ? format(d, "yyyy-MM-dd") : "")}
                           />
                         </TableCell>
                         <TableCell>
@@ -870,6 +936,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
 function CreateDealDialog({ period, workspaceCurrency }: { period: string, workspaceCurrency: string }) {
   const [open, setOpen] = useState(false);
   const { data: reps } = useListReps({ query: { queryKey: getListRepsQueryKey() } });
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const createMutation = useImportDeals({
@@ -987,9 +1054,13 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
             <Select value={formData.repId} onValueChange={(val) => setFormData(prev => ({ ...prev, repId: val }))}>
               <SelectTrigger><SelectValue placeholder="Select a representative" /></SelectTrigger>
               <SelectContent>
-                {Array.isArray(reps) && reps.map(rep => (
-                  <SelectItem key={rep.id} value={rep.id.toString()}>{rep.name}</SelectItem>
-                ))}
+                {!Array.isArray(reps) || reps.length === 0 ? (
+                  <div className="p-2 text-sm text-muted-foreground text-center">No reps yet — create one in Reps first.</div>
+                ) : (
+                  Array.isArray(reps) && reps.map(rep => (
+                    <SelectItem key={rep.id} value={rep.id.toString()}>{rep.name}</SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -1061,6 +1132,7 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
 }
 
 function ExportDealsButton() {
+  const { t } = useTranslation();
   const { sub } = useBillingStatus();
   const { activeWorkspace } = useWorkspace();
   const { toast } = useToast();
@@ -1071,7 +1143,7 @@ function ExportDealsButton() {
   const handleExport = async () => {
     if (!isGrowth) {
       toast({
-        title: "Growth Plan Required",
+        title: t("deals.growthPlanRequired"),
         description: "Bulk CSV export is a premium feature. Please upgrade to the Growth plan to export your data.",
         variant: "destructive",
       });

@@ -24,5 +24,8 @@
     "@types/node": "^25.3.3",
     "@types/nodemailer": "^6.4.17",
     "typescript": "~5.9.2"
+  },
+  "scripts": {
+    "test": "bun test"
   }
 }

@@ -23,3 +23,9 @@ export const EXCHANGE_RATE_QUEUE = "{ck-exchange-rate}";
 export const WEBHOOK_QUEUE = "{ck-webhook}";
 export const LOGS_FLUSH_QUEUE = "{ck-logs-flush}";
 
+// ─── Sync queues (plugin integration) ─────────────────────────────────────────
+export const SYNC_REPS_QUEUE = "{ck-sync-reps}";
+export const SYNC_DEALS_QUEUE = "{ck-sync-deals}";
+export const WEBHOOK_INGRESS_QUEUE = "{ck-webhook-ingress}";
+export const SYNC_EGRESS_QUEUE = "{ck-sync-egress}";
+

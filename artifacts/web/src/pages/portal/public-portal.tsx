@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useParams } from "wouter";
 import { format } from "date-fns";
 import { formatCurrency, formatPercent } from "@/lib/format";
@@ -21,6 +22,8 @@ import {
   Lock,
   MessageSquare,
   Loader2,
+  LogOut,
+  User,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -109,7 +112,7 @@ function portalFetch(url: string, accessCode: string, init: RequestInit = {}): P
 
 // ─── Login View ─────────────────────────────────────────────────────────────
 
-function PortalLogin({ accessCode, onLogin }: { accessCode: string; onLogin: (password: string, mustChangePassword: boolean) => void }) {
+function PortalLogin({ accessCode, onLogin }: { accessCode: string; onLogin: (password: string, mustChangePassword: boolean, workspaceName: string) => void }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -133,7 +136,7 @@ function PortalLogin({ accessCode, onLogin }: { accessCode: string; onLogin: (pa
       // Store the portal-scoped JWT in localStorage : NOT a cookie.
       // This never conflicts with the dashboard admin session.
       setPortalToken(accessCode, data.token);
-      onLogin(password, data.mustChangePassword);
+      onLogin(password, data.mustChangePassword, data.workspaceName || "Workspace");
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -395,6 +398,7 @@ function DisputeModal({
 // ─── Page ───────────────────────────────────────────────────────────────────
 
 export function PublicRepPortal() {
+  const { t } = useTranslation();
   const params = useParams<{ accessCode: string }>();
   const accessCode = params.accessCode ?? "";
   const [period, setPeriod] = useState<string>(format(new Date(), "yyyy-MM"));
@@ -406,6 +410,12 @@ export function PublicRepPortal() {
   const [tempPassword, setTempPassword] = useState<string>("");
   const [mustChangePassword, setMustChangePassword] = useState(false);
   const [disputeTarget, setDisputeTarget] = useState<any | null>(null);
+  const [workspaceName, setWsName] = useState("");
+  const { toast } = useToast();
+  const [showProfile, setShowProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
+  const [profileError, setProfileError] = useState("");
+  const [profileSaving, setProfileSaving] = useState(false);
 
   const base = import.meta.env.VITE_API_URL ?? "";
 
@@ -434,7 +444,10 @@ export function PublicRepPortal() {
         return data;
       })
       .then((data) => {
-        if (data) setSummary(data);
+        if (data) {
+        setSummary(data);
+        if (data.workspaceName) setWsName(data.workspaceName);
+      }
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -454,40 +467,68 @@ export function PublicRepPortal() {
     refreshData();
   }, [accessCode, period]);
 
+  const handleLogout = () => {
+    clearPortalToken(accessCode);
+    setPasswordRequired(true);
+    setSummary(null);
+    setPayouts([]);
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setProfileError("");
+    if (profileForm.newPassword !== profileForm.confirmPassword) {
+      setProfileError("Passwords do not match");
+      return;
+    }
+    if (profileForm.newPassword.length < 8) {
+      setProfileError("Password must be at least 8 characters");
+      return;
+    }
+    setProfileSaving(true);
+    try {
+      const res = await portalFetch(`${base}/api/portal/${encodeURIComponent(accessCode)}/change-password`, accessCode, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword: profileForm.currentPassword, newPassword: profileForm.newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update password");
+      setPortalToken(accessCode, data.token);
+      toast({ title: "Password changed successfully" });
+      setShowProfile(false);
+      setProfileForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (err: any) {
+      setProfileError(err.message);
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-sidebar">
-      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-20">
-        <div className="max-w-5xl mx-auto p-6 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <svg width="32" height="32" viewBox="0 0 56 56" fill="none">
-              <rect width="56" height="56" rx="14" fill="#111827" />
-              <line x1="16" y1="40" x2="40" y2="16" stroke="#0D9488" strokeWidth="3.5" strokeLinecap="round" />
-              <circle cx="20" cy="20" r="5" fill="#0D9488" />
-              <circle cx="36" cy="36" r="7" fill="none" stroke="#0D9488" strokeWidth="3" />
-              <circle cx="36" cy="36" r="2.5" fill="#0D9488" />
-            </svg>
-            <span className="font-semibold text-[15px] text-foreground tracking-tight">
-              Commission<span className="text-primary">Kit</span>
-            </span>
+      {!loading && !passwordRequired && !mustChangePassword && !error && summary && (
+        <div className="max-w-5xl mx-auto px-6 pt-6 flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">
+            <span>{workspaceName || "Workspace"}</span>
+            <span className="mx-1">·</span>
+            <a href="https://commissionk.it" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">CommissionKit</a>
+          </p>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="sm" onClick={() => setShowProfile(true)} className="h-7 text-xs gap-1 text-muted-foreground"><User className="size-3" /> Password</Button>
+            <span className="text-muted-foreground/30">|</span>
+            <Button variant="ghost" size="sm" onClick={handleLogout} className="h-7 text-xs gap-1 text-muted-foreground"><LogOut className="size-3" /> Sign Out</Button>
           </div>
-
-          {!loading && summary && !passwordRequired && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <div className="size-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold border border-primary/20">
-                {summary.repName.charAt(0)}
-              </div>
-              <span className="hidden sm:inline font-medium text-foreground">{summary.repName}</span>
-            </div>
-          )}
         </div>
-      </header>
+      )}
 
       <main className="max-w-5xl mx-auto p-6">
         {loading && <PortalSkeleton />}
 
         {!loading && passwordRequired && !mustChangePassword && (
-          <PortalLogin accessCode={accessCode} onLogin={(pwd, mustChange) => {
+          <PortalLogin accessCode={accessCode} onLogin={(pwd, mustChange, wsName) => {
             setTempPassword(pwd);
+            setWsName(wsName);
             if (mustChange) {
               setPasswordRequired(false);
               setMustChangePassword(true);
@@ -544,7 +585,7 @@ export function PublicRepPortal() {
                 <MonthPicker 
                   value={period}
                   onChange={setPeriod}
-                  placeholder="Pick a month"
+                  placeholder={t("common.pickMonth")}
                   className="w-40 h-9"
                 />
               </div>
@@ -821,6 +862,25 @@ export function PublicRepPortal() {
             onSuccess={refreshData}
           />
         )}
+      </Dialog>
+
+      <Dialog open={showProfile} onOpenChange={setShowProfile}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Change Password</DialogTitle>
+            <DialogDescription>Update your portal password.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleChangePassword} className="space-y-4 py-4">
+            <div className="space-y-2"><Label>Current Password</Label><Input type="password" value={profileForm.currentPassword} onChange={e => setProfileForm(p => ({...p, currentPassword: e.target.value}))} required /></div>
+            <div className="space-y-2"><Label>New Password</Label><Input type="password" value={profileForm.newPassword} onChange={e => setProfileForm(p => ({...p, newPassword: e.target.value}))} required /></div>
+            <div className="space-y-2"><Label>Confirm Password</Label><Input type="password" value={profileForm.confirmPassword} onChange={e => setProfileForm(p => ({...p, confirmPassword: e.target.value}))} required /></div>
+            {profileError && <p className="text-[12px] text-destructive">{profileError}</p>}
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowProfile(false)}>Cancel</Button>
+              <Button type="submit" disabled={profileSaving}>{profileSaving ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}Change Password</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
       </Dialog>
     </div>
   );

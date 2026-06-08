@@ -388,25 +388,54 @@ export const GetReportsResponse = zod.object({
   "totalCommission": zod.number(),
   "margin": zod.number(),
   "winRate": zod.number(),
-  "avgDealSize": zod.number()
+  "avgDealSize": zod.number(),
+  "totalDeals": zod.number(),
+  "pendingRevenue": zod.number(),
+  "avgDaysToClose": zod.number(),
+  "commissionRatio": zod.number()
 }),
   "dealStages": zod.array(zod.object({
   "name": zod.string(),
   "value": zod.number()
 })),
+  "dealValueDistribution": zod.array(zod.object({
+  "label": zod.string(),
+  "count": zod.number(),
+  "value": zod.number()
+})).optional(),
+  "paymentStatusBreakdown": zod.array(zod.object({
+  "name": zod.string(),
+  "value": zod.number()
+})).optional(),
   "monthlyTrends": zod.array(zod.object({
   "period": zod.string(),
   "revenue": zod.number(),
   "commission": zod.number(),
   "deals": zod.number()
 })),
+  "monthlyGrowth": zod.object({
+  "revenueGrowth": zod.number(),
+  "commissionGrowth": zod.number(),
+  "dealGrowth": zod.number()
+}).optional(),
   "topPerformers": zod.array(zod.object({
   "name": zod.string(),
   "commission": zod.number(),
   "revenue": zod.number(),
   "dealsWon": zod.number(),
   "winRate": zod.number()
-}))
+})),
+  "repCommissionBreakdown": zod.array(zod.object({
+  "name": zod.string(),
+  "commission": zod.number(),
+  "revenue": zod.number()
+})).optional(),
+  "topDeals": zod.array(zod.object({
+  "name": zod.string(),
+  "repName": zod.string(),
+  "amount": zod.number(),
+  "closeDate": zod.string()
+})).optional()
 })
 
 

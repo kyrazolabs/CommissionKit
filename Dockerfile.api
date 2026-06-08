@@ -14,6 +14,10 @@ COPY lib/email-templates/package.json ./lib/email-templates/
 COPY lib/api-spec/package.json ./lib/api-spec/
 COPY lib/queue/package.json ./lib/queue/
 COPY scripts/package.json ./scripts/
+COPY plugins/core/package.json ./plugins/core/
+COPY plugins/custom/package.json ./plugins/custom/
+COPY plugins/odoo/package.json ./plugins/odoo/
+COPY plugins/hubspot/package.json ./plugins/hubspot/
 
 # Install dependencies
 RUN bun i --ignore-scripts

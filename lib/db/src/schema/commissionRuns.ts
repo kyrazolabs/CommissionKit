@@ -31,7 +31,9 @@ const CommissionResultSchema = new Schema({
   exchangeRateSnapshot: { type: Number },
   /** ISO date string of the ExchangeRate record used for conversion */
   rateSnapshotDate: { type: String },
-}, { timestamps: { createdAt: true, updatedAt: false } });
+  /** Engine-specific opaque metadata */
+  meta: { type: Schema.Types.Mixed },
+});
 
 export const CommissionRun = model("CommissionRun", CommissionRunSchema);
 export const CommissionResult = model("CommissionResult", CommissionResultSchema);
@@ -66,6 +68,8 @@ export type CommissionResult = mongoose.Document & {
   convertedCommission?: number;
   exchangeRateSnapshot?: number;
   rateSnapshotDate?: string;
+  /** Engine-specific opaque metadata */
+  meta?: Record<string, unknown>;
 };
 
 export const insertCommissionRunSchema = z.object({

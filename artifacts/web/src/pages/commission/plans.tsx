@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSyncStore } from "@/hooks/use-sync-store";
 import { 
@@ -25,7 +26,8 @@ import { usePageMeta } from "@/hooks/use-page-meta";
 
 
 export function PlansPage() {
-  usePageMeta({ title: "Plans", description: "Create and manage commission plans for your sales team.", robots: "noindex, nofollow" });
+  const { t } = useTranslation();
+  usePageMeta({ title: t("plans.title"), description: "Create and manage commission plans for your sales team.", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const currency = activeWorkspace?.currency || "USD";
   const { data: plans, isLoading } = useListPlans({ query: { queryKey: getListPlansQueryKey() } });
@@ -36,7 +38,11 @@ export function PlansPage() {
   if (roleLoading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="size-10" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-64" />
+        </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map(i => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}
         </div>
@@ -48,8 +54,8 @@ export function PlansPage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
         <FileText className="size-10 text-muted-foreground" />
-        <h2 className="text-lg font-semibold">Access Denied</h2>
-        <p className="text-sm text-muted-foreground">You don't have permission to view commission plans.</p>
+        <h2 className="text-lg font-semibold">{t("plans.accessDenied")}</h2>
+        <p className="text-sm text-muted-foreground">{t("plans.noPermissionPlans")}</p>
       </div>
     );
   }
@@ -60,18 +66,18 @@ export function PlansPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <p className="text-[12px] font-semibold text-primary mb-1">Operations</p>
-          <h1 className="text-3xl font-semibold tracking-tight">Commission Plans</h1>
-          <p className="text-muted-foreground">Design and manage compensation structures.</p>
+          <p className="text-[12px] font-semibold text-primary mb-1">{t("plans.operations")}</p>
+          <h1 className="text-3xl font-semibold tracking-tight">{t("plans.title")}</h1>
+          <p className="text-muted-foreground">{t("plans.description")}</p>
         </div>
         {hasPermission("plans", "create") && (
           <Button 
             onClick={() => setIsCreateOpen(true)}
             disabled={isLimitReached}
-            title={isLimitReached ? "Limit reached. Upgrade plan." : ""}
+            title={isLimitReached ? t("common.limitReachedUpgrade") : ""}
           >
             <Plus className="mr-2 size-4" />
-            {isLimitReached ? "Limit Reached" : "Create Plan"}
+            {isLimitReached ? t("common.limitReached") : t("plans.createPlan")}
           </Button>
         )}
       </div>
@@ -99,10 +105,10 @@ export function PlansPage() {
           <Button 
             onClick={() => setIsCreateOpen(true)}
             disabled={isLimitReached}
-            title={isLimitReached ? "Limit reached. Upgrade plan." : ""}
+            title={isLimitReached ? t("common.limitReachedUpgrade") : ""}
           >
             <Plus className="mr-2 size-4" />
-            {isLimitReached ? "Limit Reached" : "Create Plan"}
+            {isLimitReached ? t("common.limitReached") : t("plans.createPlan")}
           </Button>
         </div>
       ) : (
@@ -565,10 +571,6 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
               )}
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="clawback">Clawback Period (Days) <span className="text-muted-foreground font-normal">- Optional</span></Label>
-              <NumberInput id="clawback" decimals={0} value={clawbackDays} onChange={e => setClawbackDays(e.target.value)} placeholder="e.g. 90" />
-            </div>
           </div>
           
           <DialogFooter>

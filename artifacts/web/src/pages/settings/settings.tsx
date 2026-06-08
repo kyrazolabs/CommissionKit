@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
+import { SUPPORTED_LANGS } from "@/i18n";
 import { useTheme } from "@/hooks/use-theme";
 import { useRole } from "@/hooks/use-role";
 import { useWorkspace } from "@/hooks/use-workspace";
@@ -13,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CurrencyCombobox } from "@/components/currency-combobox";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -22,26 +23,32 @@ import { Skeleton } from "@/components/ui/skeleton";
 import SettingsRoles from "./settings-roles";
 import { apiFetch } from "@/lib/api";
 
-const ROLE_META = {
-  owner: { label: "Owner", description: "Full access including billing and workspace deletion.", Icon: Crown, color: "text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/30" },
-  admin: { label: "Admin", description: "Manage members, plans, deals and calculation runs.", Icon: Shield, color: "text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/30" },
-  member: { label: "Member", description: "Read-only access to dashboards and reports.", Icon: Users, color: "text-muted-foreground bg-muted border-border" },
-};
+const ROLE_ICONS = {
+  owner: Crown,
+  admin: Shield,
+  member: Users,
+} as const;
+
+const ROLE_STYLES = {
+  owner: "text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/30",
+  admin: "text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/30",
+  member: "text-muted-foreground bg-muted border-border",
+} as const;
 
 import { CURRENCIES } from "@/lib/currencies";
 import { usePageMeta } from "@/hooks/use-page-meta";
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-const NOTIFICATION_TYPES: { key: string; label: string; description: string }[] = [
-  { key: "commission_run_completed", label: "Commission run completed",   description: "When a calculation run finishes." },
-  { key: "new_rep_added",            label: "New rep added",              description: "When a sales rep is created." },
-  { key: "deal_imported",            label: "Deals imported",             description: "When a CSV batch import succeeds." },
-  { key: "clawback_triggered",       label: "Clawback triggered",         description: "When a deal enters clawback." },
-  { key: "member_invited",           label: "Member invited",             description: "When a team invite is sent." },
-  { key: "member_role_changed",      label: "Member role changed",        description: "When a member's role is updated." },
-  { key: "plan_created",             label: "Plan created",               description: "When a new commission plan is added." },
-  { key: "plan_updated",             label: "Plan updated",               description: "When an existing plan is modified." },
+const NOTIFICATION_KEYS = [
+  { key: "commission_run_completed", i18nKey: "settings.notifications.types.commissionRunCompleted", i18nDescKey: "settings.notifications.types.commissionRunCompletedDesc" },
+  { key: "new_rep_added",            i18nKey: "settings.notifications.types.newRepAdded",            i18nDescKey: "settings.notifications.types.newRepAddedDesc" },
+  { key: "deal_imported",            i18nKey: "settings.notifications.types.dealImported",            i18nDescKey: "settings.notifications.types.dealImportedDesc" },
+  { key: "clawback_triggered",       i18nKey: "settings.notifications.types.clawbackTriggered",       i18nDescKey: "settings.notifications.types.clawbackTriggeredDesc" },
+  { key: "member_invited",           i18nKey: "settings.notifications.types.memberInvited",           i18nDescKey: "settings.notifications.types.memberInvitedDesc" },
+  { key: "member_role_changed",      i18nKey: "settings.notifications.types.memberRoleChanged",      i18nDescKey: "settings.notifications.types.memberRoleChangedDesc" },
+  { key: "plan_created",             i18nKey: "settings.notifications.types.planCreated",             i18nDescKey: "settings.notifications.types.planCreatedDesc" },
+  { key: "plan_updated",             i18nKey: "settings.notifications.types.planUpdated",             i18nDescKey: "settings.notifications.types.planUpdatedDesc" },
 ];
 
 type NotifPrefs = Record<string, { email: boolean; inApp: boolean }>;
@@ -81,7 +88,8 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
 
 
 export function SettingsPage() {
-  usePageMeta({ title: "Settings", description: "Configure your workspace and personal preferences.", robots: "noindex, nofollow" });
+  const { t, i18n } = useTranslation();
+  usePageMeta({ title: t("settings.title"), description: t("settings.description"), robots: "noindex, nofollow" });
   const { theme, toggle } = useTheme();
   const { role, hasPermission, isLoading: roleLoading } = useRole();
   const { activeWorkspace } = useWorkspace();
@@ -90,6 +98,7 @@ export function SettingsPage() {
   const [wsState, setWsState] = useState({
     currency: "USD",
     fiscalYear: "January",
+    commissionEngine: "standard",
     loading: false,
     saving: false,
     saved: false
@@ -116,7 +125,7 @@ export function SettingsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { // Increased to 5MB since we compress it anyway
-      toast({ title: "Image too large", description: "Max size is 5MB", variant: "destructive" });
+      toast({ title: t("settings.account.imageTooLarge"), description: t("settings.account.imageMaxSize"), variant: "destructive" });
       return;
     }
     const reader = new FileReader();
@@ -163,11 +172,11 @@ export function SettingsPage() {
       });
       if (error) throw error;
       setProfileState(prev => ({ ...prev, saving: false, saved: true }));
-      toast({ title: "Profile updated successfully" });
+      toast({ title: t("settings.account.profileUpdated") });
       setTimeout(() => setProfileState(prev => ({ ...prev, saved: false })), 2000);
       setTimeout(() => window.location.reload(), 500); // Reload to update auth context across app
     } catch (err: any) {
-      toast({ title: "Failed to update profile", description: err.message, variant: "destructive" });
+      toast({ title: t("settings.account.profileUpdateFailed"), description: err.message, variant: "destructive" });
       setProfileState(prev => ({ ...prev, saving: false }));
     }
   };
@@ -205,13 +214,13 @@ export function SettingsPage() {
         callbackURL: window.location.href,
       });
       toast({
-        title: "Redirecting to Google...",
-        description: "Please authenticate to link your account.",
+        title: t("settings.account.redirectingToGoogle"),
+        description: t("settings.account.googleAuthDescription"),
       });
     } catch (err: any) {
       toast({
-        title: "Linking failed",
-        description: err.message || "Failed to link Google account.",
+        title: t("settings.account.linkingFailed"),
+        description: err.message || t("settings.account.linkingFailed"),
         variant: "destructive",
       });
       setLinkingProvider(null);
@@ -225,14 +234,14 @@ export function SettingsPage() {
         providerId: "google",
       });
       toast({
-        title: "Google disconnected",
-        description: "Your Google account has been unlinked successfully.",
+        title: t("settings.account.googleDisconnected"),
+        description: t("settings.account.googleDisconnectedDescription"),
       });
       await fetchLinkedAccounts();
     } catch (err: any) {
       toast({
-        title: "Unlinking failed",
-        description: err.message || "Failed to unlink Google account.",
+        title: t("settings.account.unlinkingFailed"),
+        description: err.message || t("settings.account.unlinkingFailed"),
         variant: "destructive",
       });
     } finally {
@@ -249,6 +258,7 @@ export function SettingsPage() {
           ...prev,
           currency: d.currency ?? "USD",
           fiscalYear: d.fiscalYearStart ?? "January",
+          commissionEngine: d.commissionEngine ?? "standard",
           loading: false
         }));
       })
@@ -264,19 +274,19 @@ export function SettingsPage() {
     try {
       await apiFetch(`/api/workspaces/${activeWorkspace.id}/settings`, {
         method: "PATCH",
-        body: JSON.stringify({ currency: wsState.currency, fiscalYearStart: wsState.fiscalYear }),
+        body: JSON.stringify({ fiscalYearStart: wsState.fiscalYear }),
       });
       setWsState(prev => ({ ...prev, saving: false, saved: true }));
-      toast({ title: "Workspace settings saved" });
+      toast({ title: t("settings.workspace.workspaceSettingsSaved") });
       setTimeout(() => setWsState(prev => ({ ...prev, saved: false })), 2000);
     } catch {
-      toast({ title: "Failed to save settings", variant: "destructive" });
+      toast({ title: t("settings.workspace.failedToSaveSettings"), variant: "destructive" });
       setWsState(prev => ({ ...prev, saving: false }));
     }
   };
 
   const [prefs, setPrefs] = useState<NotifPrefs>(() =>
-    Object.fromEntries(NOTIFICATION_TYPES.map((t) => [t.key, { email: true, inApp: true }])),
+    Object.fromEntries(NOTIFICATION_KEYS.map((t) => [t.key, { email: true, inApp: true }])),
   );
   const [prefsState, setPrefsState] = useState({ saving: false, saved: false });
 
@@ -288,14 +298,23 @@ export function SettingsPage() {
 
   if (roleLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="size-10" />
-        <Skeleton className="h-96 w-full" />
+      <div className="space-y-7 max-w-2xl">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <div className="flex gap-2 pb-4">
+          {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-8 w-24 rounded-full" />)}
+        </div>
+        <Skeleton className="h-64 w-full rounded-2xl" />
+        <Skeleton className="h-48 w-full rounded-2xl" />
       </div>
     );
   }
 
-  const roleMeta = ROLE_META[role];
+  const RoleIcon = role ? ROLE_ICONS[role as keyof typeof ROLE_ICONS] : Users;
+  const roleStyle = role ? ROLE_STYLES[role as keyof typeof ROLE_STYLES] : "text-muted-foreground bg-muted border-border";
   const isAdmin = hasPermission("workspace", "edit");
 
   const saveNotifPrefs = async () => {
@@ -306,10 +325,10 @@ export function SettingsPage() {
         body: JSON.stringify({ prefs }),
       });
       setPrefsState(prev => ({ ...prev, saving: false, saved: true }));
-      toast({ title: "Notification preferences saved" });
+      toast({ title: t("settings.notifications.preferencesSaved") });
       setTimeout(() => setPrefsState(prev => ({ ...prev, saved: false })), 2000);
     } catch {
-      toast({ title: "Failed to save preferences", variant: "destructive" });
+      toast({ title: t("settings.notifications.failedToSavePreferences"), variant: "destructive" });
       setPrefsState(prev => ({ ...prev, saving: false }));
     }
   };
@@ -319,22 +338,22 @@ export function SettingsPage() {
   };
 
   return (
-    <div className="space-y-7 max-w-2xl">
+    <div className="space-y-7 max-w-3xl">
       <div>
-        <p className="text-[12px] font-semibold text-primary mb-1">Configuration</p>
-        <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">Settings</h1>
-        <p className="text-[14px] text-muted-foreground mt-1">Manage your workspace and personal preferences.</p>
+        <p className="text-[12px] font-semibold text-primary mb-1">{t("settings.configuration")}</p>
+        <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">{t("settings.title")}</h1>
+        <p className="text-[14px] text-muted-foreground mt-1">{t("settings.description")}</p>
       </div>
 
       <Tabs defaultValue="account" className="w-full">
-        <TabsList className="mb-6 bg-muted/50 w-full sm:w-auto overflow-x-auto justify-start flex">
-          <TabsTrigger value="account" className="min-w-fit px-4">Account</TabsTrigger>
-          <TabsTrigger value="appearance" className="min-w-fit px-4">Appearance</TabsTrigger>
-          <TabsTrigger value="workspace" className="min-w-fit px-4">Workspace</TabsTrigger>
-          <TabsTrigger value="notifications" className="min-w-fit px-4">Notifications</TabsTrigger>
-          <TabsTrigger value="security" className="min-w-fit px-4">Security</TabsTrigger>
+        <TabsList className="mb-6 bg-muted/50 w-full sm:w-auto overflow-x-auto justify-between flex">
+          <TabsTrigger value="account" className="min-w-fit px-4">{t("settings.tabs.account")}</TabsTrigger>
+          <TabsTrigger value="appearance" className="min-w-fit px-4">{t("settings.tabs.appearance")}</TabsTrigger>
+          <TabsTrigger value="workspace" className="min-w-fit px-4">{t("settings.tabs.workspace")}</TabsTrigger>
+          <TabsTrigger value="notifications" className="min-w-fit px-4">{t("settings.tabs.notifications")}</TabsTrigger>
+          <TabsTrigger value="security" className="min-w-fit px-4">{t("settings.tabs.security")}</TabsTrigger>
           {hasPermission("roles", "read") && (
-            <TabsTrigger value="roles" className="min-w-fit px-4">Roles & Permissions</TabsTrigger>
+            <TabsTrigger value="roles" className="min-w-fit px-4">{t("settings.tabs.roles")}</TabsTrigger>
           )}
         </TabsList>
 
@@ -343,8 +362,8 @@ export function SettingsPage() {
           {/* Account */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base"><Users className="size-4 text-primary" /> Account</CardTitle>
-          <CardDescription>Your identity in this workspace.</CardDescription>
+          <CardTitle className="flex items-center gap-2 text-base"><Users className="size-4 text-primary" /> {t("settings.account.title")}</CardTitle>
+          <CardDescription>{t("settings.account.description")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex flex-col md:flex-row gap-8 pb-4 border-b border-border">
@@ -359,35 +378,35 @@ export function SettingsPage() {
                   className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer" 
                   onClick={() => document.getElementById('avatar-upload')?.click()}
                 >
-                  <span className="text-white text-[11px] font-semibold">Upload</span>
+                  <span className="text-white text-[11px] font-semibold">{t("common.upload")}</span>
                 </div>
               </div>
               <input type="file" id="avatar-upload" className="hidden" accept="image/*" onChange={handleAvatarUpload} />
               {profileState.image && (
-                <button type="button" onClick={() => setProfileState(prev => ({...prev, image: ""}))} className="text-[11px] font-medium text-destructive hover:underline">Remove</button>
+                <button type="button" onClick={() => setProfileState(prev => ({...prev, image: ""}))} className="text-[11px] font-medium text-destructive hover:underline">{t("common.remove")}</button>
               )}
             </div>
             
             <div className="flex-1 space-y-4">
               <div className="grid gap-2">
-                <Label htmlFor="profile-name">Full Name</Label>
+                <Label htmlFor="profile-name">{t("settings.account.fullName")}</Label>
                 <Input 
                   id="profile-name" 
                   value={profileState.name} 
                   onChange={e => setProfileState(prev => ({ ...prev, name: e.target.value }))} 
-                  placeholder="Your name" 
+                  placeholder={t("settings.account.namePlaceholder")} 
                   className="max-w-md"
                 />
               </div>
               <div className="grid gap-2">
-                <Label>Email</Label>
+                <Label>{t("settings.account.email")}</Label>
                 <Input value={user?.email || ""} disabled className="bg-muted max-w-md" />
-                <p className="text-[11px] text-muted-foreground">Email address cannot be changed here.</p>
+                <p className="text-[11px] text-muted-foreground">{t("settings.account.emailCannotBeChanged")}</p>
               </div>
               <div className="pt-2">
-                <Button size="sm" onClick={saveProfile} disabled={profileState.saving} className="gap-2">
+                <Button onClick={saveProfile} disabled={profileState.saving} className="gap-2">
                   {profileState.saving ? <Loader2 className="size-3.5 animate-spin" /> : profileState.saved ? <Check className="size-3.5" /> : <Save className="size-3.5" />}
-                  {profileState.saved ? "Saved!" : "Save Profile"}
+                  {profileState.saved ? t("common.saved") : t("settings.account.saveProfile")}
                 </Button>
               </div>
             </div>
@@ -395,20 +414,38 @@ export function SettingsPage() {
 
           <div className="flex items-center justify-between py-1 border-t border-border mt-4">
             <div>
-              <p className="text-sm font-medium">Your role</p>
-              <p className="text-sm text-muted-foreground mt-0.5">Access level in <span className="font-medium text-foreground">{activeWorkspace?.name}</span></p>
+              <p className="text-sm font-medium">{t("settings.account.yourRole")}</p>
+              <p className="text-sm text-muted-foreground mt-0.5">{t("settings.account.accessLevelIn", { workspace: activeWorkspace?.name })}</p>
             </div>
-            <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-semibold", roleMeta.color)}>
-              <roleMeta.Icon className="size-3.5" />{roleMeta.label}
+            <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-semibold", roleStyle)}>
+              <RoleIcon className="size-3.5" />{t(`settings.roles.${role}`)}
             </span>
           </div>
           <div className="flex items-center justify-between py-1 border-t border-border">
             <div>
-              <p className="text-sm font-medium">Team members</p>
-              <p className="text-sm text-muted-foreground mt-0.5">Invite members, manage roles and access.</p>
+              <p className="text-sm font-medium">{t("settings.account.language")}</p>
+              <p className="text-sm text-muted-foreground mt-0.5">{t("settings.account.languageDescription")}</p>
             </div>
-            <Button variant="outline" size="sm" asChild className="gap-1.5">
-              <Link href="/dash/team">Manage <ArrowRight className="size-3.5" /></Link>
+            <Select value={i18n.language} onValueChange={(v) => i18n.changeLanguage(v)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SUPPORTED_LANGS.map((l) => (
+                  <SelectItem key={l.code} value={l.code}>
+                    {l.nativeLabel} ({l.label})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center justify-between py-1 border-t border-border">
+            <div>
+              <p className="text-sm font-medium">{t("settings.account.teamMembers")}</p>
+              <p className="text-sm text-muted-foreground mt-0.5">{t("settings.account.teamMembersDescription")}</p>
+            </div>
+            <Button variant="outline" asChild className="gap-1.5">
+              <Link href="/dash/team">{t("settings.account.manage")} <ArrowRight className="size-3.5" /></Link>
             </Button>
           </div>
         </CardContent>
@@ -421,9 +458,9 @@ export function SettingsPage() {
             <svg className="size-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
             </svg>
-            Connected Accounts
+            {t("settings.account.connectedAccounts")}
           </CardTitle>
-          <CardDescription>Link your CommissionKit account with external authentication providers.</CardDescription>
+          <CardDescription>{t("settings.account.connectedAccountsDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between py-1">
@@ -450,10 +487,10 @@ export function SettingsPage() {
                 <p className="text-sm font-medium">Google</p>
                 {linkedAccounts.some(acc => acc.providerId === "google") ? (
                   <p className="text-xs text-emerald-500 flex items-center gap-1 font-medium mt-0.5">
-                    <Check className="size-3" /> Connected
+                    <Check className="size-3" /> {t("settings.account.connected")}
                   </p>
                 ) : (
-                  <p className="text-xs text-muted-foreground mt-0.5">Not connected</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t("settings.account.notConnected")}</p>
                 )}
               </div>
             </div>
@@ -462,24 +499,22 @@ export function SettingsPage() {
             ) : linkedAccounts.some(acc => acc.providerId === "google") ? (
               <Button
                 variant="outline"
-                size="sm"
                 onClick={handleUnlinkGoogle}
                 disabled={unlinkingProvider === "google"}
                 className="text-destructive hover:text-destructive hover:bg-destructive/10 border-border/50 transition-colors"
               >
                 {unlinkingProvider === "google" && <Loader2 className="size-3.5 animate-spin mr-1.5" />}
-                Disconnect
+                {t("settings.account.disconnect")}
               </Button>
             ) : (
               <Button
                 variant="outline"
-                size="sm"
                 onClick={handleLinkGoogle}
                 disabled={linkingProvider === "google"}
                 className="hover:bg-muted transition-colors"
               >
                 {linkingProvider === "google" && <Loader2 className="size-3.5 animate-spin mr-1.5" />}
-                Link Google
+                {t("settings.account.linkGoogle")}
               </Button>
             )}
           </div>
@@ -493,17 +528,17 @@ export function SettingsPage() {
       {/* Appearance */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base"><Sun className="size-4 text-primary" /> Appearance</CardTitle>
-          <CardDescription>Control how CommissionKit looks for you.</CardDescription>
+          <CardTitle className="flex items-center gap-2 text-base"><Sun className="size-4 text-primary" /> {t("settings.appearance.title")}</CardTitle>
+          <CardDescription>{t("settings.appearance.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
             <div>
-              <Label className="text-sm font-medium">Theme</Label>
-              <p className="text-sm text-muted-foreground mt-0.5">Currently using <span className="font-medium text-foreground">{theme === "dark" ? "dark" : "light"}</span> mode.</p>
+              <Label className="text-sm font-medium">{t("settings.appearance.theme")}</Label>
+              <p className="text-sm text-muted-foreground mt-0.5">{t("settings.appearance.currentlyUsing", { mode: theme === "dark" ? t("settings.appearance.darkMode") : t("settings.appearance.lightMode") })}</p>
             </div>
-            <Button variant="outline" size="sm" onClick={toggle} className="gap-2">
-              {theme === "dark" ? <><Sun className="size-4" /> Light mode</> : <><Moon className="size-4" /> Dark mode</>}
+            <Button variant="outline" onClick={toggle} className="gap-2">
+              {theme === "dark" ? <><Sun className="size-4" /> {t("settings.appearance.lightMode")}</> : <><Moon className="size-4" /> {t("settings.appearance.darkMode")}</>}
             </Button>
           </div>
         </CardContent>
@@ -516,18 +551,20 @@ export function SettingsPage() {
       {/* Workspace settings */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base"><Building2 className="size-4 text-primary" /> Workspace</CardTitle>
-          <CardDescription>Organisation-level settings.{!isAdmin && " Admin or above required to edit."}</CardDescription>
+          <CardTitle className="flex items-center gap-2 text-base"><Building2 className="size-4 text-primary" /> {t("settings.workspace.title")}</CardTitle>
+          <CardDescription>{t("settings.workspace.description")}{!isAdmin && ` ${t("settings.workspace.adminRequired")}`}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Currency</Label>
-              <CurrencyCombobox value={wsState.currency} onChange={(v) => setWsState(prev => ({ ...prev, currency: v }))} disabled={!isAdmin || wsState.loading} />
-              <p className="text-xs text-muted-foreground">Used for all amount formatting.</p>
+              <Label className="text-sm font-medium">{t("settings.workspace.currency")}</Label>
+              <div className="flex h-9 items-center rounded-md border bg-muted/50 px-3 text-sm text-muted-foreground">
+                {CURRENCIES.find(c => c.code === wsState.currency)?.code ?? wsState.currency} — {CURRENCIES.find(c => c.code === wsState.currency)?.name ?? "United States Dollar"}
+              </div>
+              <p className="text-xs text-muted-foreground">{t("settings.workspace.currencyImmutable")}</p>
             </div>
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Fiscal year start</Label>
+              <Label className="text-sm font-medium">{t("settings.workspace.fiscalYearStart")}</Label>
               <Select value={wsState.fiscalYear} onValueChange={(v) => setWsState(prev => ({ ...prev, fiscalYear: v }))} disabled={!isAdmin || wsState.loading}>
                 <SelectTrigger className="h-9">
                   <SelectValue />
@@ -538,14 +575,14 @@ export function SettingsPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">Used for YTD calculations.</p>
+              <p className="text-xs text-muted-foreground">{t("settings.workspace.fiscalYearHelp")}</p>
             </div>
           </div>
           {isAdmin && (
             <div className="flex justify-end pt-1">
-              <Button size="sm" onClick={saveWorkspaceSettings} disabled={wsState.saving || wsState.loading} className="gap-2">
+              <Button onClick={saveWorkspaceSettings} disabled={wsState.saving || wsState.loading} className="gap-2">
                 {wsState.saving ? <Loader2 className="size-3.5 animate-spin" /> : wsState.saved ? <Check className="size-3.5" /> : <Save className="size-3.5" />}
-                {wsState.saved ? "Saved!" : "Save workspace settings"}
+                {wsState.saved ? t("common.saved") : t("settings.workspace.saveWorkspaceSettings")}
               </Button>
             </div>
           )}
@@ -559,46 +596,46 @@ export function SettingsPage() {
       {/* Notifications */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base"><Bell className="size-4 text-primary" /> Notifications</CardTitle>
-          <CardDescription>Choose which events trigger alerts for you.</CardDescription>
+          <CardTitle className="flex items-center gap-2 text-base"><Bell className="size-4 text-primary" /> {t("settings.notifications.title")}</CardTitle>
+          <CardDescription>{t("settings.notifications.description")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-1">
           {/* Column headers */}
           <div className="flex items-center pb-2 border-b border-border">
             <div className="flex-1" />
             <div className="flex gap-6 pr-1">
-              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide w-10 text-center">Email</span>
-              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide w-10 text-center">In-app</span>
+              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide w-10 text-center">{t("settings.notifications.email")}</span>
+              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide w-10 text-center">{t("settings.notifications.inApp")}</span>
             </div>
           </div>
 
-          {NOTIFICATION_TYPES.map((t, i) => (
+          {NOTIFICATION_KEYS.map((tItem, i) => (
             <div
-              key={t.key}
+              key={tItem.key}
               className={cn(
                 "flex items-center py-3",
-                i < NOTIFICATION_TYPES.length - 1 && "border-b border-border/50",
+                i < NOTIFICATION_KEYS.length - 1 && "border-b border-border/50",
               )}
             >
               <div className="flex-1">
-                <p className="text-sm font-medium">{t.label}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{t.description}</p>
+                <p className="text-sm font-medium">{t(tItem.i18nKey)}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{t(tItem.i18nDescKey)}</p>
               </div>
               <div className="flex gap-6 pr-1">
                 <div className="w-10 flex justify-center">
-                  <Toggle on={prefs[t.key]?.email ?? true} onChange={(v) => setTypePref(t.key, "email", v)} />
+                  <Toggle on={prefs[tItem.key]?.email ?? true} onChange={(v) => setTypePref(tItem.key, "email", v)} />
                 </div>
                 <div className="w-10 flex justify-center">
-                  <Toggle on={prefs[t.key]?.inApp ?? true} onChange={(v) => setTypePref(t.key, "inApp", v)} />
+                  <Toggle on={prefs[tItem.key]?.inApp ?? true} onChange={(v) => setTypePref(tItem.key, "inApp", v)} />
                 </div>
               </div>
             </div>
           ))}
 
           <div className="flex justify-end pt-4">
-            <Button size="sm" onClick={saveNotifPrefs} disabled={prefsState.saving} className="gap-2">
+            <Button onClick={saveNotifPrefs} disabled={prefsState.saving} className="gap-2">
               {prefsState.saving ? <Loader2 className="size-3.5 animate-spin" /> : prefsState.saved ? <Check className="size-3.5" /> : <Save className="size-3.5" />}
-              {prefsState.saved ? "Saved!" : "Save preferences"}
+              {prefsState.saved ? t("common.saved") : t("settings.notifications.savePreferences")}
             </Button>
           </div>
         </CardContent>
@@ -611,16 +648,16 @@ export function SettingsPage() {
       {/* Security */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base"><Shield className="size-4 text-primary" /> Security</CardTitle>
-          <CardDescription>Account access and data controls.</CardDescription>
+          <CardTitle className="flex items-center gap-2 text-base"><Shield className="size-4 text-primary" /> {t("settings.security.title")}</CardTitle>
+          <CardDescription>{t("settings.security.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium">Session timeout</p>
-              <p className="text-sm text-muted-foreground">Automatically sign out after inactivity.</p>
+              <p className="text-sm font-medium">{t("settings.security.sessionTimeout")}</p>
+              <p className="text-sm text-muted-foreground">{t("settings.security.sessionTimeoutDescription")}</p>
             </div>
-            <span className="text-sm text-muted-foreground bg-muted p-3 rounded-md">8 hours</span>
+            <span className="text-sm text-muted-foreground bg-muted p-3 rounded-md">{t("settings.security.eightHours")}</span>
           </div>
         </CardContent>
       </Card>

@@ -1,7 +1,7 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -30,19 +30,22 @@ export function CurrencyCombobox({
   disabled,
   className,
 }: CurrencyComboboxProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const selected = CURRENCIES.find((c) => c.code === value);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
+        <button
           role="combobox"
           aria-expanded={open}
-          aria-controls="currency-list"
           disabled={disabled}
-          className={cn("w-full justify-between h-9 px-3 font-normal", className)}
+          className={cn(
+            "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+            !selected && "text-muted-foreground",
+            className
+          )}
         >
           <span className="truncate">
             {selected ? (
@@ -50,17 +53,17 @@ export function CurrencyCombobox({
                 <span className="font-mono font-medium">{selected.code}</span> : {selected.name}
               </>
             ) : (
-              "Select currency…"
+              t("common.selectCurrency")
             )}
           </span>
           <ChevronsUpDown className="ml-2 size-3.5 shrink-0 opacity-50" />
-        </Button>
+        </button>
       </PopoverTrigger>
       <PopoverContent id="currency-list" className="w-[300px] p-0" align="start">
         <Command>
-          <CommandInput placeholder="Search currency…" />
+          <CommandInput placeholder={t("common.searchCurrency")} />
           <CommandList className="max-h-60">
-            <CommandEmpty>No currency found.</CommandEmpty>
+            <CommandEmpty>{t('common.noCurrencyFound')}</CommandEmpty>
             <CommandGroup>
               {CURRENCIES.map((c) => (
                 <CommandItem

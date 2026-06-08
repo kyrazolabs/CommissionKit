@@ -5,6 +5,11 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { getRedisClient, verifySmtp, enqueueExchangeRateSync, enqueueLogsFlush } from "@workspace/queue";
 import { connectDB } from "@workspace/db";
+import { bootstrapEngines } from "./workers/engines/registry";
+import { pluginRegistry } from "@workspace/plugins-core";
+import { CustomConnector } from "@workspace/plugins-custom";
+import { OdooConnector } from "@workspace/plugins-odoo";
+import { HubSpotConnector } from "@workspace/plugins-hubspot";
 
 // ─── Boot workers (moved to boot() function) ──────────────────────────────────
 
@@ -29,11 +34,92 @@ async function boot() {
   try {
     await connectDB();
 
+    // Register all commission engines
+    await bootstrapEngines();
+
+    // Register plugins
+    pluginRegistry.register(new CustomConnector());
+    pluginRegistry.register(new OdooConnector());
+    pluginRegistry.register(new HubSpotConnector());
+
+    // Rehydrate connected workspaces
+    const { IntegrationConnection, IntegrationSync } = await import("@workspace/db");
+
+    // Mark any "running" syncs as failed (stuck from previous crash)
+    await IntegrationSync.updateMany(
+      { status: "running" },
+      { status: "failed", error: "Worker restarted", completedAt: new Date() },
+    );
+    const activeConnections = await IntegrationConnection.find({ status: "connected" });
+    for (const conn of activeConnections) {
+      try {
+        const plugin = pluginRegistry.get(conn.connectorName);
+        if (plugin) {
+          await plugin.init(
+            conn.workspaceId.toString(),
+            conn.config as Record<string, unknown>,
+          );
+          logger.info({ workspaceId: conn.workspaceId, connector: conn.connectorName }, "[Boot] Rehydrated plugin connection");
+        }
+      } catch (err) {
+        logger.error({ err, workspaceId: conn.workspaceId, connector: conn.connectorName }, "[Boot] Failed to rehydrate plugin");
+      }
+    }
+
     // ─── Boot workers ─────────────────────────────────────────────────────────────
     // Register BullMQ workers only AFTER DB is connected.
     await import("@workspace/queue/worker");
     await import("./workers/calc-worker");
     await import("./workers/logs-worker");
+    await import("./workers/sync-reps-worker");
+    await import("./workers/sync-deals-worker");
+    await import("./workers/webhook-ingress-worker");
+
+    // Restore scheduled sync jobs for connected workspaces
+    const { syncRepsQueue, syncDealsQueue, commissionCalcQueue, exchangeRateQueue } = await import("@workspace/queue");
+
+    // Sweep all existing scheduled-* repeatable jobs (cleanup stale ones)
+    for (const q of [syncRepsQueue, syncDealsQueue, commissionCalcQueue, exchangeRateQueue]) {
+      const jobs = await q.getRepeatableJobs().catch(() => []);
+      for (const j of jobs) {
+        if (j.name?.startsWith("scheduled-")) {
+          await q.removeRepeatableByKey(j.key).catch(() => {});
+        }
+      }
+    }
+
+    for (const conn of activeConnections) {
+      const wsId = conn.workspaceId.toString();
+      const repSchedule = conn.syncSchedule?.reps || "hourly";
+      const dealSchedule = conn.syncSchedule?.deals || "hourly";
+
+      // Clean up any stale repeatable jobs first
+      if (repSchedule === "manual") {
+        for (const ms of [600_000, 3_600_000, 86_400_000]) {
+          await syncRepsQueue.removeRepeatable(`scheduled-reps-${wsId}`, { every: ms }).catch(() => {});
+        }
+      } else {
+        const repInterval = repSchedule === "realtime" ? 600_000 : repSchedule === "daily" ? 86_400_000 : 3_600_000;
+        await syncRepsQueue.add(
+          `scheduled-reps-${wsId}`,
+          { workspaceId: wsId, connectorName: conn.connectorName, trigger: "scheduled" },
+          { repeat: { every: repInterval }, jobId: `scheduled-reps-${wsId}`, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
+        ).catch(() => {});
+      }
+
+      if (dealSchedule === "manual") {
+        for (const ms of [600_000, 3_600_000, 86_400_000]) {
+          await syncDealsQueue.removeRepeatable(`scheduled-deals-${wsId}`, { every: ms }).catch(() => {});
+        }
+      } else {
+        const dealInterval = dealSchedule === "realtime" ? 600_000 : dealSchedule === "daily" ? 86_400_000 : 3_600_000;
+        await syncDealsQueue.add(
+          `scheduled-deals-${wsId}`,
+          { workspaceId: wsId, connectorName: conn.connectorName, trigger: "scheduled" },
+          { repeat: { every: dealInterval }, jobId: `scheduled-deals-${wsId}`, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
+        ).catch(() => {});
+      }
+    }
     
     const server = app.listen(port, (err) => {
       if (err) {
@@ -58,10 +144,31 @@ async function boot() {
         try {
           const { closeWorkers } = await import("@workspace/queue/worker");
           await closeWorkers();
-          
-          // Close local logs worker
+
+          // Close sync workers
+          const { syncRepsWorker } = await import("./workers/sync-reps-worker");
+          const { syncDealsWorker } = await import("./workers/sync-deals-worker");
+          const { webhookIngressWorker } = await import("./workers/webhook-ingress-worker");
+          await syncRepsWorker.close();
+          await syncDealsWorker.close();
+          await webhookIngressWorker.close();
+
+          // Close calc + logs workers
+          const { calcWorker } = await import("./workers/calc-worker");
           const { logsWorker } = await import("./workers/logs-worker");
+          await calcWorker.close();
           await logsWorker.close();
+
+          // Destroy all plugin connections
+          for (const plugin of pluginRegistry.list()) {
+            const connections = await IntegrationConnection.find({
+              connectorName: plugin.name,
+              status: "connected",
+            });
+            for (const conn of connections) {
+              await plugin.destroy(conn.workspaceId.toString()).catch(() => {});
+            }
+          }
 
           await getRedisClient().quit();
           logger.info("Shutdown complete");

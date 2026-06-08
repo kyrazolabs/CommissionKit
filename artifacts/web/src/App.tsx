@@ -1,7 +1,9 @@
-import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation, useParams } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,6 +24,14 @@ import { PublicRepPortal } from "@/pages/portal/public-portal";
 
 import { SettingsPage } from "@/pages/settings/settings";
 import { BillingPage } from "@/pages/settings/billing";
+import { AissolProjectsPage } from "@/pages/enterprise/aissol/projects";
+import { AissolProjectDetailPage } from "@/pages/enterprise/aissol/project-detail";
+import { AissolMatrixPage } from "@/pages/enterprise/aissol/matrix";
+import { AissolReportsPage } from "@/pages/enterprise/aissol/reports";
+import { EnterpriseRunDetailsPage } from "@/pages/enterprise/aissol/run-details";
+import { EnterpriseRunsPage } from "@/pages/enterprise/aissol/runs";
+import { EnterpriseRepPortal } from "@/pages/enterprise/aissol/rep-portal";
+import { EnterprisePublicRepPortal } from "@/pages/enterprise/aissol/public-portal";
 
 import { TeamPage } from "@/pages/team/team";
 import { RepsPage } from "@/pages/team/reps";
@@ -36,6 +46,7 @@ import { LandingPage } from "@/pages/landing";
 
 import { PayoutsPage } from "@/pages/payouts/payouts";
 import { DisputesPage } from "@/pages/payouts/disputes";
+import { IntegrationsPage } from "@/pages/integrations/integrations";
 
 import { CommissionCalculator } from "@/pages/commission-calculator";
 import { PrivacyPage } from "@/pages/legal/privacy";
@@ -63,6 +74,7 @@ const queryClient = new QueryClient({
 });
 
 function Layout({ children }: { children: React.ReactNode }) {
+  const [location] = useLocation();
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-sidebar">
       <Header />
@@ -72,7 +84,14 @@ function Layout({ children }: { children: React.ReactNode }) {
           <div className="bg-card rounded-2xl border border-card-border flex-1 flex flex-col overflow-hidden shadow-xs">
             <div className="flex-1 overflow-y-auto custom-scrollbar">
               <main className="mx-auto p-8 lg:px-10 max-w-6xl min-h-full">
-                {children}
+                <motion.div
+                  key={location}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                >
+                  {children}
+                </motion.div>
               </main>
             </div>
           </div>
@@ -83,6 +102,7 @@ function Layout({ children }: { children: React.ReactNode }) {
 }
 
 function CreateWorkspaceScreen() {
+  const { t } = useTranslation();
   const { createWorkspace } = useWorkspace();
   const [name, setName] = useState("");
   const [currency, setCurrency] = useState("USD");
@@ -97,7 +117,7 @@ function CreateWorkspaceScreen() {
     try {
       await createWorkspace(name.trim(), currency);
     } catch {
-      setError("Failed to create workspace. Please try again.");
+      setError(t("createWorkspace.failedToCreate"));
       setCreating(false);
     }
   };
@@ -115,27 +135,27 @@ function CreateWorkspaceScreen() {
               <circle cx="36" cy="36" r="2.5" fill="#0D9488" />
             </svg>
           </div>
-          <CardTitle className="text-[18px] font-semibold text-center mb-1">Create your workspace</CardTitle>
+          <CardTitle className="text-[18px] font-semibold text-center mb-1">{t("createWorkspace.title")}</CardTitle>
           <CardDescription className="text-[13px] text-center">
-            A workspace holds your team's reps, plans, and deals.
+            {t("createWorkspace.description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleCreate} className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Workspace Name</Label>
+              <Label className="text-sm font-medium">{t("createWorkspace.workspaceName")}</Label>
               <Input
                 type="text"
-                placeholder="e.g. Acme Sales"
+                placeholder={t("createWorkspace.workspaceNamePlaceholder")}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Currency</Label>
+              <Label className="text-sm font-medium">{t("createWorkspace.currency")}</Label>
               <CurrencyCombobox value={currency} onChange={setCurrency} />
-              <p className="text-xs text-muted-foreground">Used for all amount formatting.</p>
+              <p className="text-xs text-muted-foreground">{t("createWorkspace.currencyHelp")}</p>
             </div>
             {error && <p className="text-[12px] text-destructive">{error}</p>}
             <Button
@@ -143,7 +163,7 @@ function CreateWorkspaceScreen() {
               disabled={!name.trim() || creating}
               className="w-full font-semibold"
             >
-              {creating ? "Creating…" : "Create workspace"}
+              {creating ? t("createWorkspace.creating") : t("createWorkspace.createWorkspace")}
             </Button>
           </form>
         </CardContent>
@@ -153,76 +173,86 @@ function CreateWorkspaceScreen() {
 }
 
 function AppLoader() {
+  const { t } = useTranslation();
+  const messages = [
+    t("appLoader.calculatingCommissions"),
+    t("appLoader.roundingUpReps"),
+    t("appLoader.crunchingNumbers"),
+    t("appLoader.preparingWorkspace"),
+    t("appLoader.loadingDashboard"),
+    t("appLoader.almostThere"),
+  ];
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setIdx(i => (i + 1) % messages.length), 2000);
+    return () => clearInterval(t);
+  }, []);
+
   return (
-
     <div className="min-h-screen flex items-center justify-center bg-sidebar">
-      <style>{`
-      @keyframes textShimmer {
-    0% {
-        background-position: 200% center;
-    }
-    100% {
-        background-position: -200% center;
-    }
-}
-
-.animate-shimmer-text {
-    background: linear-gradient(
-        90deg,
-        currentColor 0%,
-        color-mix(in srgb, currentColor, transparent 60%) 50%,
-        currentColor 100%
-    );
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: textShimmer 2s linear infinite;
-}
-@keyframes fadeInUpSmall {
-    from {
-        opacity: 0;
-        transform: translateY(4px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.animate-message-fade {
-    animation: fadeInUpSmall 0.3s ease-out forwards;
-}
-
-.loader-container {
-    interpolate-size: allow-keywords;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-      `}</style>
-      <div className="flex flex-col items-center gap-3">
-        {/* <svg width="24" height="24" viewBox="11 11 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <line x1="16" y1="40" x2="40" y2="16" stroke="#0D9488" stroke-width="3.5" stroke-linecap="round"/>
-          <circle cx="20" cy="20" r="5" fill="#0D9488"/>
-          <circle cx="36" cy="36" r="7" fill="none" stroke="#0D9488" stroke-width="3"/>
-          <circle cx="36" cy="36" r="2.5" fill="#0D9488"/>
-        </svg> */}
-        <p className="text-base font-semibold animate-shimmer-text animate-pulse">Loading…</p>
+      <div className="h-5 overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={idx}
+            initial={{ y: 16, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -16, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="text-sm text-muted-foreground"
+          >
+            {messages[idx]}
+          </motion.p>
+        </AnimatePresence>
       </div>
     </div>
   );
 }
 
 function PublicOrRedirectLanding() {
-  const { session, loading } = useAuth();
-  const [, setLocation] = useLocation();
-
-  useEffect(() => {
-    if (!loading && session) {
-      setLocation("/dash");
-    }
-  }, [session, loading, setLocation]);
-
   return <LandingPage />;
+}
+
+function EnterprisePlansGuard() {
+  const { activeWorkspace } = useWorkspace();
+  const [, setLocation] = useLocation();
+  useEffect(() => {
+    if (activeWorkspace?.commissionEngine && activeWorkspace.commissionEngine !== "standard") {
+      setLocation("/dash/enterprise/matrix");
+    }
+  }, [activeWorkspace?.commissionEngine]);
+  if (!activeWorkspace || activeWorkspace?.commissionEngine !== "standard") return null;
+  return <PlansPage />;
+}
+
+function EnterpriseDealsGuard() {
+  const { activeWorkspace } = useWorkspace();
+  const [, setLocation] = useLocation();
+  useEffect(() => {
+    if (activeWorkspace?.commissionEngine && activeWorkspace.commissionEngine !== "standard") {
+      setLocation("/dash/enterprise/projects");
+    }
+  }, [activeWorkspace?.commissionEngine]);
+  if (!activeWorkspace || activeWorkspace?.commissionEngine !== "standard") return null;
+  return <DealsPage />;
+}
+
+function EnterpriseRunsListGuard() {
+  const { activeWorkspace } = useWorkspace();
+  if (!activeWorkspace || activeWorkspace?.commissionEngine !== "standard") return <EnterpriseRunsPage />;
+  return <RunsPage />;
+}
+
+function EnterpriseRunsGuard() {
+  const { activeWorkspace } = useWorkspace();
+  if (!activeWorkspace || activeWorkspace?.commissionEngine !== "standard") return <EnterpriseRunDetailsPage />;
+  return <RunDetailsPage />;
+}
+
+function EnterpriseRepPortalGuard() {
+  const { activeWorkspace } = useWorkspace();
+  if (!activeWorkspace || activeWorkspace?.commissionEngine !== "standard") return <EnterpriseRepPortal />;
+  return <RepPortal />;
 }
 
 function ProtectedRouter() {
@@ -232,7 +262,7 @@ function ProtectedRouter() {
 
   useEffect(() => {
     if (!authLoading && session) {
-      if (location === "/" || location === "" || location === "/home" || location === "/login" || location === "/register") {
+      if (location === "/login" || location === "/register") {
         setLocation("/dash");
       }
     }
@@ -240,40 +270,38 @@ function ProtectedRouter() {
 
   // Render public pages immediately (no auth-wait flash that would replace pre-rendered HTML)
   if (!session) {
-    if (authLoading) {
-      if (location === "/" || location === "" || location === "/home") return <LandingPage />;
-      if (location === "/register") return <AuthPage initialMode="signup" />;
-      if (location === "/login") return <AuthPage initialMode="login" />;
-    }
-    if (location === "/" || location === "" || location === "/home") return <LandingPage />;
+    if (authLoading) return <AppLoader />;
     if (location === "/register") return <AuthPage initialMode="signup" />;
+    if (location === "/login") return <AuthPage initialMode="login" />;
+    if (location === "/" || location === "" || location === "/home") return <LandingPage />;
     return <AuthPage initialMode="login" />;
   }
 
-  if (authLoading) return <AppLoader />;
-
-  if (location === "/login" || location === "/register" || location === "/home" || location === "/" || location === "") {
-    return <AppLoader />;
-  }
-  if (wsLoading) return <AppLoader />;
+  if (authLoading || wsLoading) return <AppLoader />;
   if (!activeWorkspace) return <CreateWorkspaceScreen />;
+  if (location === "/login" || location === "/register") return <AppLoader />;
 
   return (
-    <Layout>
+      <Layout>
       <Switch>
+        <Route path="/dash/enterprise/projects" component={AissolProjectsPage} />
+        <Route path="/dash/enterprise/projects/:id" component={AissolProjectDetailPage} />
+        <Route path="/dash/enterprise/matrix" component={AissolMatrixPage} />
+        <Route path="/dash/enterprise/reports" component={AissolReportsPage} />
         <Route path="/dash" component={Dashboard} />
         <Route path="/dash/reps" component={RepsPage} />
-        <Route path="/dash/plans" component={PlansPage} />
-        <Route path="/dash/deals" component={DealsPage} />
-        <Route path="/dash/runs" component={RunsPage} />
-        <Route path="/dash/runs/:id" component={RunDetailsPage} />
+        <Route path="/dash/plans" component={EnterprisePlansGuard} />
+        <Route path="/dash/deals" component={EnterpriseDealsGuard} />
+        <Route path="/dash/runs" component={EnterpriseRunsListGuard} />
+        <Route path="/dash/runs/:id" component={EnterpriseRunsGuard} />
         <Route path="/dash/reports" component={ReportsPage} />
-        <Route path="/dash/reps/:id" component={RepPortal} />
+        <Route path="/dash/reps/:id" component={EnterpriseRepPortalGuard} />
         <Route path="/dash/team" component={TeamPage} />
         <Route path="/dash/settings" component={SettingsPage} />
         <Route path="/dash/billing" component={BillingPage} />
         <Route path="/dash/payouts" component={PayoutsPage} />
         <Route path="/dash/disputes" component={DisputesPage} />
+        <Route path="/dash/integrations" component={IntegrationsPage} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
@@ -304,7 +332,15 @@ function App() {
             <CanonicalTag />
             {/* Public routes : no auth required directly here */}
             <Switch>
-              <Route path="/portal/:accessCode" component={PublicRepPortal} />
+              <Route path="/portal/:accessCode" component={() => {
+                const { accessCode } = useParams();
+                const token = localStorage.getItem(`ck_portal_${accessCode}`);
+                let engine = "standard";
+                if (token) {
+                  try { engine = JSON.parse(atob(token.split(".")[1])).commissionEngine || "standard"; } catch {}
+                }
+                return engine !== "standard" ? <EnterprisePublicRepPortal /> : <PublicRepPortal />;
+              }} />
               <Route path="/accept-invite" component={AcceptInvite} />
               <Route path="/home" component={() => (
                 <AuthProvider>

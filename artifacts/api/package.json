@@ -7,7 +7,8 @@
     "dev": "NODE_ENV=development bun --watch src/index.ts",
     "build": "bun build ./src/index.ts --outdir ./dist --target bun --sourcemap=external && sentry-cli sourcemaps inject ./dist && (sentry-cli sourcemaps upload --org kyrazo --project ckserver ./dist || echo 'Sentry sourcemap upload skipped (auth token not found)')",
     "start": "NODE_ENV=production bun ./dist/index.js",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "bun test"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1048.0",
@@ -15,11 +16,15 @@
     "@better-auth/mongo-adapter": "^1.6.9",
     "@bull-board/api": "^7.1.5",
     "@bull-board/express": "^7.1.5",
-    "@bull-board/ui": "^7.1.5",
+    "@bull-board/ui": "^7.2.0",
     "@sentry/bun": "^10.53.1",
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",
     "@workspace/email-templates": "workspace:*",
+    "@workspace/plugins-core": "workspace:*",
+    "@workspace/plugins-custom": "workspace:*",
+    "@workspace/plugins-odoo": "workspace:*",
+    "@workspace/plugins-hubspot": "workspace:*",
     "@workspace/queue": "workspace:*",
     "better-auth": "^1.6.9",
     "bson": "6.10.1",

@@ -28,24 +28,29 @@ if (!db) {
 }
 
 const APP_URL = process.env.APP_URL || "http://localhost:3000";
+const AUTH_URL = process.env.BETTER_AUTH_URL || APP_URL;
 
 export const auth = betterAuth({
   database: mongodbAdapter(db),
-  baseURL: APP_URL,
+  baseURL: AUTH_URL,
   trustedOrigins: [APP_URL],
 
-  user: {
-    additionalFields: {
-      mustChangePassword: {
-        type: "boolean",
-        defaultValue: false,
+      user: {
+        additionalFields: {
+          mustChangePassword: {
+            type: "boolean",
+            defaultValue: false,
+          },
+          repId: {
+            type: "string",
+            required: false,
+          },
+          lang: {
+            type: "string",
+            defaultValue: "en",
+          },
+        },
       },
-      repId: {
-        type: "string",
-        required: false,
-      },
-    },
-  },
   emailVerification: {
     sendOnSignUp: true,
     sendVerificationEmail: async ({ user, token }) => {
@@ -178,6 +183,14 @@ export const auth = betterAuth({
   ],
   advanced: {
     useSecureCookies: process.env.NODE_ENV === "production",
+    crossSubDomainCookies: {
+      enabled: true,
+      domain: process.env.COOKIE_DOMAIN || undefined,
+    },
+    defaultCookieAttributes: {
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
+    },
   },
   onResponse: async (context: any) => {
     if (context.response.status >= 400) {

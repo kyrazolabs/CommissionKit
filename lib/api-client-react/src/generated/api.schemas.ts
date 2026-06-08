@@ -290,9 +290,24 @@ export type ReportDataExecutiveSummary = {
   margin: number;
   winRate: number;
   avgDealSize: number;
+  totalDeals: number;
+  pendingRevenue: number;
+  avgDaysToClose: number;
+  commissionRatio: number;
 };
 
 export type ReportDataDealStagesItem = {
+  name: string;
+  value: number;
+};
+
+export type ReportDataDealValueDistributionItem = {
+  label: string;
+  count: number;
+  value: number;
+};
+
+export type ReportDataPaymentStatusBreakdownItem = {
   name: string;
   value: number;
 };
@@ -304,6 +319,12 @@ export type ReportDataMonthlyTrendsItem = {
   deals: number;
 };
 
+export type ReportDataMonthlyGrowth = {
+  revenueGrowth: number;
+  commissionGrowth: number;
+  dealGrowth: number;
+};
+
 export type ReportDataTopPerformersItem = {
   name: string;
   commission: number;
@@ -312,11 +333,29 @@ export type ReportDataTopPerformersItem = {
   winRate: number;
 };
 
+export type ReportDataRepCommissionBreakdownItem = {
+  name: string;
+  commission: number;
+  revenue: number;
+};
+
+export type ReportDataTopDealsItem = {
+  name: string;
+  repName: string;
+  amount: number;
+  closeDate: string;
+};
+
 export interface ReportData {
   executiveSummary: ReportDataExecutiveSummary;
   dealStages: ReportDataDealStagesItem[];
+  dealValueDistribution?: ReportDataDealValueDistributionItem[];
+  paymentStatusBreakdown?: ReportDataPaymentStatusBreakdownItem[];
   monthlyTrends: ReportDataMonthlyTrendsItem[];
+  monthlyGrowth?: ReportDataMonthlyGrowth;
   topPerformers: ReportDataTopPerformersItem[];
+  repCommissionBreakdown?: ReportDataRepCommissionBreakdownItem[];
+  topDeals?: ReportDataTopDealsItem[];
 }
 
 export type ListDealsParams = {

@@ -29,7 +29,7 @@ const buttonVariants = cva(
       },
       size: {
         // @replit changed sizes
-        default: "min-h-8 rounded-md py-1! px-3",
+        default: "min-h-7 rounded-md py-1! px-3",
         md: "min-h-9 px-4 py-2",
         sm: "min-h-6 rounded-md py-1! px-3 text-xs",
         lg: "min-h-10 rounded-md px-8",

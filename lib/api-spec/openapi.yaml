@@ -868,8 +868,38 @@ components:
               type: number
             avgDealSize:
               type: number
-          required: [totalRevenue, totalCommission, margin, winRate, avgDealSize]
+            totalDeals:
+              type: integer
+            pendingRevenue:
+              type: number
+            avgDaysToClose:
+              type: integer
+            commissionRatio:
+              type: number
+          required: [totalRevenue, totalCommission, margin, winRate, avgDealSize, totalDeals, pendingRevenue, avgDaysToClose, commissionRatio]
         dealStages:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: integer
+            required: [name, value]
+        dealValueDistribution:
+          type: array
+          items:
+            type: object
+            properties:
+              label:
+                type: string
+              count:
+                type: integer
+              value:
+                type: number
+            required: [label, count, value]
+        paymentStatusBreakdown:
           type: array
           items:
             type: object
@@ -893,6 +923,16 @@ components:
               deals:
                 type: integer
             required: [period, revenue, commission, deals]
+        monthlyGrowth:
+          type: object
+          properties:
+            revenueGrowth:
+              type: number
+            commissionGrowth:
+              type: number
+            dealGrowth:
+              type: number
+          required: [revenueGrowth, commissionGrowth, dealGrowth]
         topPerformers:
           type: array
           items:
@@ -909,4 +949,30 @@ components:
               winRate:
                 type: number
             required: [name, commission, revenue, dealsWon, winRate]
-      required: [executiveSummary, dealStages, monthlyTrends, topPerformers]
+        repCommissionBreakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              commission:
+                type: number
+              revenue:
+                type: number
+            required: [name, commission, revenue]
+        topDeals:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              repName:
+                type: string
+              amount:
+                type: number
+              closeDate:
+                type: string
+            required: [name, repName, amount, closeDate]
+      required: [executiveSummary, dealStages, monthlyTrends, monthlyGrowth, topPerformers]

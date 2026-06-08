@@ -2,23 +2,24 @@ import { useState } from "react";
 import { useGetReports, getGetReportsQueryKey } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FileText, Download, Calendar as CalendarIcon, TrendingUp, DollarSign, Target, PieChart as PieIcon } from "lucide-react";
+import { FileText, Download, TrendingUp, DollarSign, Target, PieChart as PieIcon, HandCoins, Clock, GitCompareArrows, Medal, ListOrdered } from "lucide-react";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import { format, subDays } from "date-fns";
 import { DateRange } from "react-day-picker";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend
+  PieChart, Pie, Cell, Legend, BarChart, Bar
 } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DateRangePicker } from "@/components/ui/date-picker";
 import { cn } from "@/lib/utils";
 
-const COLORS = ['#0D9488', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'];
+const COLORS = ['#0D9488', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316', '#6366F1', '#84CC16'];
 
 import { useRole } from "@/hooks/use-role";
 import { usePageMeta } from "@/hooks/use-page-meta";
+import { useTranslation } from "react-i18next";
 
 
 const CustomTooltip = ({ active, payload, label, currency }: any) => {
@@ -41,8 +42,45 @@ const CustomTooltip = ({ active, payload, label, currency }: any) => {
   return null;
 };
 
+const SimpleBarTooltip = ({ active, payload, label, currency }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-popover text-popover-foreground border border-border p-3 rounded-lg shadow-lg text-sm">
+        <p className="font-semibold mb-1">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <div key={index} className="flex items-center gap-2">
+            <div className="size-2 rounded-full" style={{ backgroundColor: entry.color }} />
+            <span className="text-muted-foreground">{entry.name}:</span>
+            <span className="font-medium">{formatCurrency(entry.value, currency)}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
+const CountTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-popover text-popover-foreground border border-border p-3 rounded-lg shadow-lg text-sm">
+        <p className="font-semibold mb-1">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <div key={index} className="flex items-center gap-2">
+            <div className="size-2 rounded-full" style={{ backgroundColor: entry.color }} />
+            <span className="text-muted-foreground">{entry.name}:</span>
+            <span className="font-medium">{entry.name === 'Value' ? formatCurrency(entry.value, 'USD') : entry.value}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
 export function ReportsPage() {
-  usePageMeta({ title: "Reports", description: "Detailed commission reports and analytics for your workspace.", robots: "noindex, nofollow" });
+  const { t } = useTranslation();
+  usePageMeta({ title: t("reports.title"), description: "Detailed commission reports and analytics for your workspace.", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const { hasPermission, isLoading: roleLoading } = useRole();
   const currency = activeWorkspace?.currency || "USD";
@@ -61,17 +99,21 @@ export function ReportsPage() {
 
   const { data: reportData, isLoading } = useGetReports(
     queryParams,
-    { query: { queryKey: [...getGetReportsQueryKey(queryParams)] } }
+    { query: { queryKey: [...getGetReportsQueryKey(queryParams)], staleTime: 0 } }
   );
 
   if (roleLoading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="size-10" />
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-8 w-56" />
+          <Skeleton className="h-4 w-64" />
         </div>
-        <Skeleton className="h-96 w-full" />
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map(i => <Skeleton key={i} className="h-28 rounded-2xl" />)}
+        </div>
+        <Skeleton className="h-96 w-full rounded-2xl" />
       </div>
     );
   }
@@ -91,6 +133,7 @@ export function ReportsPage() {
   };
 
   const exec = reportData?.executiveSummary;
+  const growth = reportData?.monthlyGrowth;
 
   return (
     <>
@@ -115,11 +158,9 @@ export function ReportsPage() {
           .print-hide {
             display: none !important;
           }
-          /* Ensure charts render nicely */
           .recharts-responsive-container {
             width: 100% !important;
           }
-          /* Strip dark mode styles on print */
           .bg-card { background: white !important; border-color: #e5e7eb !important; box-shadow: none !important; }
           .text-foreground { color: black !important; }
           .text-muted-foreground { color: #4b5563 !important; }
@@ -127,7 +168,7 @@ export function ReportsPage() {
           .border-border { border-color: #e5e7eb !important; }
         }
       `}</style>
-      
+
       <div className="space-y-7" id="printable-report">
         {/* Page Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4">
@@ -138,27 +179,27 @@ export function ReportsPage() {
               Data-driven insights for compensation and revenue decisions.
             </p>
           </div>
-          
+
           <div className="flex flex-wrap items-center gap-3 print-hide">
             <div className="flex items-center gap-2 bg-card border border-border rounded-lg p-1 shadow-sm">
-              <DateRangePicker 
-                from={dateRange?.from} 
-                to={dateRange?.to} 
+              <DateRangePicker
+                from={dateRange?.from}
+                to={dateRange?.to}
                 onRangeChange={(range) => {
                   if (range && range.from) {
                     setDateRange(range as DateRange);
                   } else {
                     setDateRange(undefined);
                   }
-                }} 
-                className="w-[260px] border-none bg-transparent shadow-none h-8 text-sm" 
+                }}
+                className="w-[260px] border-none bg-transparent shadow-none h-8 text-sm"
               />
 
               <div className="w-px h-5 bg-border mx-1" />
 
               <Select value={interval} onValueChange={(v: "day" | "month") => setInterval(v)}>
                 <SelectTrigger className="w-[110px] h-8 border-none bg-transparent shadow-none text-sm focus:ring-0 focus:ring-offset-0">
-                  <SelectValue placeholder="Interval" />
+                  <SelectValue placeholder={t("reports.interval")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="day">Daily</SelectItem>
@@ -176,10 +217,7 @@ export function ReportsPage() {
 
         {isLoading ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Skeleton className="h-32 col-span-1 rounded-2xl" />
-            <Skeleton className="h-32 col-span-1 rounded-2xl" />
-            <Skeleton className="h-32 col-span-1 rounded-2xl" />
-            <Skeleton className="h-32 col-span-1 rounded-2xl" />
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => <Skeleton key={i} className="h-32 col-span-1 rounded-2xl" />)}
             <Skeleton className="h-[400px] col-span-2 lg:col-span-4 rounded-2xl" />
             <Skeleton className="h-[300px] col-span-2 lg:col-span-4 rounded-2xl" />
           </div>
@@ -191,8 +229,8 @@ export function ReportsPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            
-            {/* KPI Cards */}
+
+            {/* KPI Cards - 2 rows x 4 columns */}
             <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
               <div className="bg-card border border-card-border rounded-2xl px-[22px] py-5" style={{ boxShadow: "var(--shadow-card)" }}>
                 <div className="flex items-center justify-between mb-3.5">
@@ -200,6 +238,13 @@ export function ReportsPage() {
                   <div className="flex size-7 items-center justify-center rounded-[10px] bg-secondary"><TrendingUp className="size-3.5 text-primary" /></div>
                 </div>
                 <div className="text-[26px] font-semibold tracking-tight text-foreground leading-none">{formatCurrency(exec.totalRevenue, currency)}</div>
+                {growth && Math.abs(growth.revenueGrowth) >= 0.5 && (
+                  <div className={cn("flex items-center gap-1 mt-2 text-[11px]", growth.revenueGrowth >= 0 ? "text-emerald-600" : "text-red-500")}>
+                    <span>{growth.revenueGrowth >= 0 ? "↑" : "↓"}</span>
+                    <span className="font-medium">{Math.abs(growth.revenueGrowth).toFixed(1)}%</span>
+                    <span className="text-muted-foreground">vs prior avg</span>
+                  </div>
+                )}
               </div>
               <div className="bg-card border border-card-border rounded-2xl px-[22px] py-5" style={{ boxShadow: "var(--shadow-card)" }}>
                 <div className="flex items-center justify-between mb-3.5">
@@ -207,6 +252,10 @@ export function ReportsPage() {
                   <div className="flex size-7 items-center justify-center rounded-[10px] bg-secondary"><DollarSign className="size-3.5 text-primary" /></div>
                 </div>
                 <div className="text-[26px] font-semibold tracking-tight text-foreground leading-none">{formatCurrency(exec.totalCommission, currency)}</div>
+                <div className={cn("flex items-center gap-1 mt-2 text-[11px]", exec.commissionRatio <= 30 ? "text-emerald-600" : "text-amber-500")}>
+                  <span className="font-medium">{exec.commissionRatio.toFixed(1)}%</span>
+                  <span className="text-muted-foreground">of revenue</span>
+                </div>
               </div>
               <div className="bg-card border border-card-border rounded-2xl px-[22px] py-5" style={{ boxShadow: "var(--shadow-card)" }}>
                 <div className="flex items-center justify-between mb-3.5">
@@ -214,6 +263,9 @@ export function ReportsPage() {
                   <div className="flex size-7 items-center justify-center rounded-[10px] bg-secondary"><Target className="size-3.5 text-primary" /></div>
                 </div>
                 <div className="text-[26px] font-semibold tracking-tight text-foreground leading-none">{exec.winRate.toFixed(1)}%</div>
+                <div className="mt-2 text-[11px] text-muted-foreground">
+                  <span className="font-medium text-foreground">{exec.totalDeals}</span> total deals
+                </div>
               </div>
               <div className="bg-card border border-card-border rounded-2xl px-[22px] py-5" style={{ boxShadow: "var(--shadow-card)" }}>
                 <div className="flex items-center justify-between mb-3.5">
@@ -221,6 +273,57 @@ export function ReportsPage() {
                   <div className="flex size-7 items-center justify-center rounded-[10px] bg-secondary"><PieIcon className="size-3.5 text-primary" /></div>
                 </div>
                 <div className="text-[26px] font-semibold tracking-tight text-foreground leading-none">{formatCurrency(exec.avgDealSize, currency)}</div>
+                {exec.avgDaysToClose > 0 && (
+                  <div className="flex items-center gap-1 mt-2 text-[11px] text-muted-foreground">
+                    <Clock className="size-3" />
+                    <span>Avg <span className="font-medium text-foreground">{exec.avgDaysToClose} days</span> to close</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-card border border-card-border rounded-2xl px-[22px] py-5" style={{ boxShadow: "var(--shadow-card)" }}>
+                <div className="flex items-center justify-between mb-3.5">
+                  <span className="text-[12px] font-medium text-muted-foreground">Total Deals</span>
+                  <div className="flex size-7 items-center justify-center rounded-[10px] bg-secondary"><ListOrdered className="size-3.5 text-primary" /></div>
+                </div>
+                <div className="text-[26px] font-semibold tracking-tight text-foreground leading-none">{formatNumber(exec.totalDeals)}</div>
+                {growth && Math.abs(growth.dealGrowth) >= 0.5 && (
+                  <div className={cn("flex items-center gap-1 mt-2 text-[11px]", growth.dealGrowth >= 0 ? "text-emerald-600" : "text-red-500")}>
+                    <span>{growth.dealGrowth >= 0 ? "↑" : "↓"}</span>
+                    <span className="font-medium">{Math.abs(growth.dealGrowth).toFixed(1)}%</span>
+                    <span className="text-muted-foreground">vs prior avg</span>
+                  </div>
+                )}
+              </div>
+              <div className="bg-card border border-card-border rounded-2xl px-[22px] py-5" style={{ boxShadow: "var(--shadow-card)" }}>
+                <div className="flex items-center justify-between mb-3.5">
+                  <span className="text-[12px] font-medium text-muted-foreground">Pending Revenue</span>
+                  <div className="flex size-7 items-center justify-center rounded-[10px] bg-secondary"><HandCoins className="size-3.5 text-primary" /></div>
+                </div>
+                <div className="text-[26px] font-semibold tracking-tight text-foreground leading-none">{formatCurrency(exec.pendingRevenue, currency)}</div>
+                <div className="mt-2 text-[11px] text-muted-foreground">
+                  uncollected & pipeline revenue
+                </div>
+              </div>
+              <div className="bg-card border border-card-border rounded-2xl px-[22px] py-5" style={{ boxShadow: "var(--shadow-card)" }}>
+                <div className="flex items-center justify-between mb-3.5">
+                  <span className="text-[12px] font-medium text-muted-foreground">Avg Days to Close</span>
+                  <div className="flex size-7 items-center justify-center rounded-[10px] bg-secondary"><Clock className="size-3.5 text-primary" /></div>
+                </div>
+                <div className="text-[26px] font-semibold tracking-tight text-foreground leading-none">{exec.avgDaysToClose}</div>
+                <div className="mt-2 text-[11px] text-muted-foreground">
+                  days from creation to close
+                </div>
+              </div>
+              <div className="bg-card border border-card-border rounded-2xl px-[22px] py-5" style={{ boxShadow: "var(--shadow-card)" }}>
+                <div className="flex items-center justify-between mb-3.5">
+                  <span className="text-[12px] font-medium text-muted-foreground">Net Margin</span>
+                  <div className="flex size-7 items-center justify-center rounded-[10px] bg-secondary"><GitCompareArrows className="size-3.5 text-primary" /></div>
+                </div>
+                <div className="text-[26px] font-semibold tracking-tight text-foreground leading-none">{exec.margin.toFixed(1)}%</div>
+                <div className="mt-2 text-[11px] text-muted-foreground">
+                  revenue minus commission
+                </div>
               </div>
             </div>
 
@@ -230,7 +333,7 @@ export function ReportsPage() {
                 <h3 className="text-[14.5px] font-semibold text-foreground">Revenue & Margin Trends</h3>
                 <p className="text-[12px] text-muted-foreground mt-0.5">Tracking pipeline impact against commission cost</p>
               </div>
-              
+
               <div className="h-[380px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={reportData.monthlyTrends} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -244,130 +347,232 @@ export function ReportsPage() {
                         <stop offset="95%" stopColor={COLORS[1]} stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <XAxis 
-                      dataKey="period" 
-                      stroke="#888888" 
-                      fontSize={11} 
-                      tickLine={false} 
+                    <XAxis
+                      dataKey="period"
+                      stroke="#888888"
+                      fontSize={11}
+                      tickLine={false}
                       axisLine={false}
                       tickFormatter={(val) => {
                         if (interval === "month") return format(new Date(val + "-01"), "MMM yyyy");
                         return format(new Date(val), "MMM d");
                       }}
                     />
-                    <YAxis 
+                    <YAxis
                       yAxisId="left"
-                      stroke="#888888" 
-                      fontSize={11} 
-                      tickLine={false} 
-                      axisLine={false} 
-                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} 
+                      stroke="#888888"
+                      fontSize={11}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
                     />
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" opacity={0.5} />
                     <RechartsTooltip content={<CustomTooltip currency={currency} />} />
                     <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
-                    <Area 
+                    <Area
                       yAxisId="left"
-                      type="monotone" 
-                      dataKey="revenue" 
-                      name="Revenue" 
-                      stroke={COLORS[0]} 
+                      type="monotone"
+                      dataKey="revenue"
+                      name="Revenue"
+                      stroke={COLORS[0]}
                       strokeWidth={2}
-                      fillOpacity={1} 
-                      fill="url(#colorRevenue)" 
+                      fillOpacity={1}
+                      fill="url(#colorRevenue)"
                     />
-                    <Area 
+                    <Area
                       yAxisId="left"
-                      type="monotone" 
-                      dataKey="commission" 
-                      name="Commission" 
-                      stroke={COLORS[1]} 
+                      type="monotone"
+                      dataKey="commission"
+                      name="Commission"
+                      stroke={COLORS[1]}
                       strokeWidth={2}
-                      fillOpacity={1} 
-                      fill="url(#colorCommission)" 
+                      fillOpacity={1}
+                      fill="url(#colorCommission)"
                     />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {/* Top Performers Table */}
-              <div className="col-span-2 bg-card border border-card-border rounded-2xl overflow-hidden" style={{ boxShadow: "var(--shadow-card)" }}>
-                <div className="px-[22px] py-[18px] border-b border-border">
-                  <h3 className="text-[14.5px] font-semibold text-foreground">Rep Performance Matrix</h3>
-                  <p className="text-[12px] text-muted-foreground mt-0.5">Decision metrics for sales leadership</p>
+            {/* Row: Rep Commissions Bar + Deal Value Distribution */}
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Rep Commission Breakdown */}
+              {reportData.repCommissionBreakdown && reportData.repCommissionBreakdown.length > 0 && (
+                <div className="bg-card border border-card-border rounded-2xl p-[22px]" style={{ boxShadow: "var(--shadow-card)" }}>
+                  <div className="mb-6">
+                    <h3 className="text-[14.5px] font-semibold text-foreground">Commission by Rep</h3>
+                    <p className="text-[12px] text-muted-foreground mt-0.5">Top earners ranked by total commission paid</p>
+                  </div>
+                  <div className="h-[350px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={reportData.repCommissionBreakdown}
+                        layout="vertical"
+                        margin={{ top: 0, right: 20, left: 20, bottom: 0 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e7eb" opacity={0.5} />
+                        <XAxis type="number" stroke="#888888" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
+                        <YAxis type="category" dataKey="name" stroke="#888888" fontSize={11} tickLine={false} axisLine={false} width={100} />
+                        <RechartsTooltip content={<SimpleBarTooltip currency={currency} />} />
+                        <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+                        <Bar dataKey="commission" name="Commission" fill={COLORS[0]} radius={[0, 4, 4, 0]} barSize={20} />
+                        <Bar dataKey="revenue" name="Revenue" fill={COLORS[1]} radius={[0, 4, 4, 0]} barSize={20} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
-                
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="bg-muted/60">
-                        {["Representative", "Deals Won", "Win Rate", "Revenue Driven", "Commissions Paid", "Effective Rate"].map((h) => (
-                          <th key={h} className="px-[22px] py-3 text-left text-[11.5px] font-semibold uppercase tracking-[0.03em] text-muted-foreground">
-                            {h}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {reportData.topPerformers.length === 0 ? (
-                        <tr><td colSpan={6} className="text-center py-8 text-sm text-muted-foreground">No rep data available for this period.</td></tr>
-                      ) : reportData.topPerformers.map((rep, i) => {
-                        const effRate = rep.revenue > 0 ? (rep.commission / rep.revenue) * 100 : 0;
-                        return (
-                          <tr key={rep.name} className="border-t border-border hover:bg-muted/30 transition-colors">
-                            <td className="px-[22px] py-3.5 text-[13.5px] font-semibold text-foreground flex items-center gap-2">
-                              {i === 0 && <span className="text-[10px] font-semibold text-primary bg-secondary rounded p-1 print-hide">#1</span>}
-                              {rep.name}
+              )}
+
+              {/* Deal Value Distribution */}
+              {reportData.dealValueDistribution && reportData.dealValueDistribution.length > 0 && (
+                <div className="bg-card border border-card-border rounded-2xl p-[22px]" style={{ boxShadow: "var(--shadow-card)" }}>
+                  <div className="mb-6">
+                    <h3 className="text-[14.5px] font-semibold text-foreground">Deal Value Distribution</h3>
+                    <p className="text-[12px] text-muted-foreground mt-0.5">How won deals are distributed across value bands</p>
+                  </div>
+                  <div className="h-[350px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={reportData.dealValueDistribution}
+                        margin={{ top: 0, right: 10, left: 0, bottom: 0 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" opacity={0.5} />
+                        <XAxis dataKey="label" stroke="#888888" fontSize={10} tickLine={false} axisLine={false} />
+                        <YAxis yAxisId="left" stroke="#888888" fontSize={11} tickLine={false} axisLine={false} />
+                        <RechartsTooltip content={<CountTooltip />} />
+                        <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+                        <Bar yAxisId="left" dataKey="count" name="Deals" fill={COLORS[2]} radius={[4, 4, 0, 0]} barSize={36} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Row: Payment Status + Top Deals */}
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Payment Status Breakdown */}
+              {reportData.paymentStatusBreakdown && reportData.paymentStatusBreakdown.length > 0 && (
+                <div className="bg-card border border-card-border rounded-2xl p-[22px]" style={{ boxShadow: "var(--shadow-card)" }}>
+                  <div className="mb-6">
+                    <h3 className="text-[14.5px] font-semibold text-foreground">Payment Status</h3>
+                    <p className="text-[12px] text-muted-foreground mt-0.5">Breakdown of deals by payment status</p>
+                  </div>
+                  <div className="h-[280px] w-full flex items-center justify-center">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={reportData.paymentStatusBreakdown}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={55}
+                          outerRadius={90}
+                          paddingAngle={2}
+                          dataKey="value"
+                          stroke="none"
+                        >
+                          {reportData.paymentStatusBreakdown.map((_, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <RechartsTooltip
+                          formatter={(value: number, name: string) => [value, name]}
+                          contentStyle={{ borderRadius: '12px', border: '1px solid var(--border)', fontSize: '13px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+                        />
+                        <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+
+              {/* Top Deals */}
+              {reportData.topDeals && reportData.topDeals.length > 0 && (
+                <div className="col-span-1 bg-card border border-card-border rounded-2xl overflow-hidden" style={{ boxShadow: "var(--shadow-card)" }}>
+                  <div className="px-[22px] py-[18px] border-b border-border">
+                    <h3 className="text-[14.5px] font-semibold text-foreground">Top Won Deals</h3>
+                    <p className="text-[12px] text-muted-foreground mt-0.5">Highest-value closed-won deals this period</p>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="bg-muted/60">
+                          {["#", t("deals.dealName"), t("deals.rep"), t("deals.amount"), t("deals.closeDate")].map((h) => (
+                            <th key={h} className="px-[22px] py-3 text-left text-[11.5px] font-semibold uppercase tracking-[0.03em] text-muted-foreground">
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {reportData.topDeals.map((deal, i) => (
+                          <tr key={deal.name + i} className="border-t border-border hover:bg-muted/30 transition-colors">
+                            <td className="px-[22px] py-3.5">
+                              <span className={cn(
+                                "inline-flex items-center justify-center size-6 rounded-full text-[11px] font-bold",
+                                i === 0 ? "bg-amber-100 text-amber-700" :
+                                i === 1 ? "bg-slate-100 text-slate-600" :
+                                i === 2 ? "bg-orange-100 text-orange-700" :
+                                "bg-muted text-muted-foreground"
+                              )}>
+                                {i + 1}
+                              </span>
                             </td>
-                            <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground">{formatNumber(rep.dealsWon)}</td>
-                            <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground">{rep.winRate.toFixed(1)}%</td>
-                            <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground">{formatCurrency(rep.revenue, currency)}</td>
-                            <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground">{formatCurrency(rep.commission, currency)}</td>
-                            <td className="px-[22px] py-3.5 text-[13px] font-medium text-muted-foreground">{effRate.toFixed(1)}%</td>
+                            <td className="px-[22px] py-3.5 text-[13px] font-semibold text-foreground">{deal.name}</td>
+                            <td className="px-[22px] py-3.5 text-[13px] text-muted-foreground">{deal.repName}</td>
+                            <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground">{formatCurrency(deal.amount, currency)}</td>
+                            <td className="px-[22px] py-3.5 text-[13px] text-muted-foreground">{format(new Date(deal.closeDate), "MMM d, yyyy")}</td>
                           </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
+              )}
+            </div>
+
+            {/* Rep Performance Matrix */}
+            <div className="bg-card border border-card-border rounded-2xl overflow-hidden" style={{ boxShadow: "var(--shadow-card)" }}>
+              <div className="px-[22px] py-[18px] border-b border-border">
+                <h3 className="text-[14.5px] font-semibold text-foreground">Rep Performance Matrix</h3>
+                <p className="text-[12px] text-muted-foreground mt-0.5">Decision metrics for sales leadership</p>
               </div>
 
-              {/* Deal Stages Pie */}
-              <div className="col-span-2 lg:col-span-1 bg-card border border-card-border rounded-2xl p-[22px]" style={{ boxShadow: "var(--shadow-card)" }}>
-                <div className="mb-6">
-                  <h3 className="text-[14.5px] font-semibold text-foreground">Pipeline Health</h3>
-                  <p className="text-[12px] text-muted-foreground mt-0.5">Overall distribution of deal outcomes</p>
-                </div>
-                <div className="h-[300px] w-full flex items-center justify-center">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={reportData.dealStages}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={65}
-                        outerRadius={95}
-                        paddingAngle={2}
-                        dataKey="value"
-                        stroke="none"
-                      >
-                        {reportData.dealStages.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <RechartsTooltip 
-                        formatter={(value: number, name: string) => [value, name]}
-                        contentStyle={{ borderRadius: '12px', border: '1px solid var(--border)', fontSize: '13px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
-                      />
-                      <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-muted/60">
+                      {[t("deals.rep"), "Deals Won", "Win Rate", "Revenue Driven", "Commissions Paid", "Effective Rate"].map((h) => (
+                        <th key={h} className="px-[22px] py-3 text-left text-[11.5px] font-semibold uppercase tracking-[0.03em] text-muted-foreground">
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reportData.topPerformers.length === 0 ? (
+                      <tr><td colSpan={6} className="text-center py-8 text-sm text-muted-foreground">No rep data available for this period.</td></tr>
+                    ) : reportData.topPerformers.map((rep, i) => {
+                      const effRate = rep.revenue > 0 ? (rep.commission / rep.revenue) * 100 : 0;
+                      return (
+                        <tr key={rep.name} className="border-t border-border hover:bg-muted/30 transition-colors">
+                          <td className="px-[22px] py-3.5 text-[13.5px] font-semibold text-foreground flex items-center gap-2">
+                            {i === 0 && <Medal className="size-4 text-amber-500 print-hide" />}
+                            {rep.name}
+                          </td>
+                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground">{formatNumber(rep.dealsWon)}</td>
+                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground">{rep.winRate.toFixed(1)}%</td>
+                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground">{formatCurrency(rep.revenue, currency)}</td>
+                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground">{formatCurrency(rep.commission, currency)}</td>
+                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-muted-foreground">{effRate.toFixed(1)}%</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             </div>
-            
+
           </div>
         )}
       </div>
