@@ -104,7 +104,7 @@ export function IntegrationsPage() {
             </div>
             <div className="flex-1">
               <p className="text-sm font-semibold text-foreground">Need a custom connector?</p>
-              <p className="text-xs text-muted-foreground mt-0.5">We build integrations for any ERP or CRM — one-time payment, starting at $499.</p>
+              <p className="text-xs text-muted-foreground mt-0.5">We build integrations for any ERP or CRM — contact sales to get started.</p>
             </div>
             <span className="shrink-0 text-xs font-medium text-primary group-hover:underline">Contact sales</span>
           </div>
