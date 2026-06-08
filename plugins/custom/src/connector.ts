@@ -33,6 +33,8 @@ function resolveFieldValue(item: any, fieldDef: string): any {
   return jsonpathGet(item, fieldDef);
 }
 
+export { resolveFieldValue }; // exported for tests
+
 const DEFAULT_PAGINATION = {
   type: "offset" as const,
   limitParam: "limit",
