@@ -34,6 +34,7 @@
         "@workspace/email-templates": "workspace:*",
         "@workspace/plugins-core": "workspace:*",
         "@workspace/plugins-custom": "workspace:*",
+        "@workspace/plugins-hubspot": "workspace:*",
         "@workspace/plugins-odoo": "workspace:*",
         "@workspace/queue": "workspace:*",
         "better-auth": "^1.6.9",
@@ -227,6 +228,16 @@
       "dependencies": {
         "@workspace/plugins-core": "workspace:*",
         "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@types/node": "catalog:",
+      },
+    },
+    "plugins/hubspot": {
+      "name": "@workspace/plugins-hubspot",
+      "version": "0.0.0",
+      "dependencies": {
+        "@workspace/plugins-core": "workspace:*",
       },
       "devDependencies": {
         "@types/node": "catalog:",
@@ -508,7 +519,7 @@
 
     "@bramus/specificity": ["@bramus/specificity@2.4.2", "", { "dependencies": { "css-tree": "^3.0.0" }, "bin": { "specificity": "bin/cli.js" } }, "sha512-ctxtJ/eA+t+6q2++vj5j7FYX3nRu311q1wfYH3xjlLOsczhlhxAg2FWNUXhpGvAw3BWo1xBcvOV6/YLc2r5FJw=="],
 
-    "@bull-board/api": ["@bull-board/api@7.1.5", "", { "dependencies": { "redis-info": "^3.1.0" }, "peerDependencies": { "@bull-board/ui": "7.1.5" } }, "sha512-EW0sbTtGIysu9vipdVpPQeToPqOpPgVZTt+pn1Ut3gbSS/GLWbEgIfFtMmSQDUoSL9WH00RzjgUY5K+43nWh0A=="],
+    "@bull-board/api": ["@bull-board/api@7.2.0", "", { "dependencies": { "redis-info": "^3.1.0" }, "peerDependencies": { "@bull-board/ui": "7.2.0" } }, "sha512-BTuVY7hDJ69zuZlfxNP1JlSOszhZKNI33uiiGAMpxFcR1cRMNdJS7XNqODEyNouwEtmDAq4IjxyryDBgGb9sRA=="],
 
     "@bull-board/express": ["@bull-board/express@7.1.5", "", { "dependencies": { "@bull-board/api": "7.1.5", "@bull-board/ui": "7.1.5", "ejs": "^5.0.2", "express": "^5.2.1" } }, "sha512-kp4SzhVjZlykryiQwcOhJjDhiLbBnZoAMoSgEstzqQ0raLw+jERRC6ryJ0MIQO+SO+Jv9EjjxrXCR8O2YSP/eg=="],
 
@@ -1365,6 +1376,8 @@
     "@workspace/plugins-core": ["@workspace/plugins-core@workspace:plugins/core"],
 
     "@workspace/plugins-custom": ["@workspace/plugins-custom@workspace:plugins/custom"],
+
+    "@workspace/plugins-hubspot": ["@workspace/plugins-hubspot@workspace:plugins/hubspot"],
 
     "@workspace/plugins-odoo": ["@workspace/plugins-odoo@workspace:plugins/odoo"],
 
@@ -2558,11 +2571,9 @@
 
     "@better-auth/sso/tldts": ["tldts@6.1.86", "", { "dependencies": { "tldts-core": "^6.1.86" }, "bin": { "tldts": "bin/cli.js" } }, "sha512-WMi/OQ2axVTf/ykqCQgXiIct+mSQDFdH2fkwhPwgEwvJ1kSzZRiinb0zF2Xb8u4+OqPChmyI6MEu4EezNJz+FQ=="],
 
-    "@bull-board/api/@bull-board/ui": ["@bull-board/ui@7.1.5", "", { "dependencies": { "@bull-board/api": "7.1.5" } }, "sha512-2IkatKwNRx/1M9/lAZIptcxS1FPNq6icpp2M46Upwd4olVxs/ujF9Kvs+Ff9ExtIO/OgYfwx7mG2IprGZ+nQCg=="],
+    "@bull-board/express/@bull-board/api": ["@bull-board/api@7.1.5", "", { "dependencies": { "redis-info": "^3.1.0" }, "peerDependencies": { "@bull-board/ui": "7.1.5" } }, "sha512-EW0sbTtGIysu9vipdVpPQeToPqOpPgVZTt+pn1Ut3gbSS/GLWbEgIfFtMmSQDUoSL9WH00RzjgUY5K+43nWh0A=="],
 
     "@bull-board/express/@bull-board/ui": ["@bull-board/ui@7.1.5", "", { "dependencies": { "@bull-board/api": "7.1.5" } }, "sha512-2IkatKwNRx/1M9/lAZIptcxS1FPNq6icpp2M46Upwd4olVxs/ujF9Kvs+Ff9ExtIO/OgYfwx7mG2IprGZ+nQCg=="],
-
-    "@bull-board/ui/@bull-board/api": ["@bull-board/api@7.2.0", "", { "dependencies": { "redis-info": "^3.1.0" }, "peerDependencies": { "@bull-board/ui": "7.2.0" } }, "sha512-BTuVY7hDJ69zuZlfxNP1JlSOszhZKNI33uiiGAMpxFcR1cRMNdJS7XNqODEyNouwEtmDAq4IjxyryDBgGb9sRA=="],
 
     "@eslint-community/eslint-utils/eslint-visitor-keys": ["eslint-visitor-keys@3.4.3", "", {}, "sha512-wpc+LXeiyiisxPlEkUzU6svyS1frIO3Mgxj1fdy7Pm8Ygzguax2N3Fa/D/ag1WqbOprdI+uY6wMUl8/a2G+iag=="],
 

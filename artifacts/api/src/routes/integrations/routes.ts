@@ -553,4 +553,122 @@ router.post(
   },
 );
 
+// ─── HubSpot OAuth callback ──────────────────────────────────────────
+
+router.get(
+  "/hubspot/callback",
+  async (req, res) => {
+    const code = req.query.code as string;
+    const workspaceId = req.query.state as string;
+
+    if (!code || !workspaceId) {
+      res.status(400).json({ error: "Missing code or state (workspaceId)" });
+      return;
+    }
+
+    try {
+      const conn = await IntegrationConnection.findOne({ workspaceId, connectorName: "hubspot" });
+      if (!conn) {
+        res.status(404).send("No pending HubSpot connection found. Please connect first.");
+        return;
+      }
+
+      const config = conn.config as any;
+      const clientId = config?.clientId;
+      const clientSecret = config?.clientSecret;
+      const redirectUri = config?.redirectUri || `${req.protocol}://${req.get("host")}/api/integrations/hubspot/callback`;
+
+      if (!clientId || !clientSecret) {
+        res.status(400).send("HubSpot OAuth credentials not configured. Set clientId and clientSecret first.");
+        return;
+      }
+
+      const { HubSpotClient } = await import("@workspace/plugins-hubspot");
+      const tokens = await HubSpotClient.exchangeCode(clientId, clientSecret, redirectUri, code);
+
+      await IntegrationConnection.findOneAndUpdate(
+        { workspaceId, connectorName: "hubspot" },
+        {
+          status: "connected",
+          $set: {
+            "config.accessToken": tokens.accessToken,
+            "config.refreshToken": tokens.refreshToken,
+          },
+        },
+      );
+
+      // Trigger initial sync
+      syncRepsQueue.add(`sync-reps:${workspaceId}`, { workspaceId, connectorName: "hubspot", trigger: "manual" });
+      syncDealsQueue.add(`sync-deals:${workspaceId}`, { workspaceId, connectorName: "hubspot", trigger: "manual" });
+
+      res.redirect(`${process.env.APP_URL || "http://localhost:3000"}/dash/integrations?connected=hubspot`);
+    } catch (err: any) {
+      res.status(500).send(`OAuth failed: ${err.message}`);
+    }
+  },
+);
+
+// ─── HubSpot stage mapping ──────────────────────────────────────────
+
+router.get(
+  "/:workspaceId/hubspot/stages",
+  ...requirePermission("workspace", "edit"),
+  async (req: AuthenticatedRequest, res) => {
+    const workspaceId = req.workspaceId!;
+
+    try {
+      const conn = await IntegrationConnection.findOne({ workspaceId, connectorName: "hubspot" });
+      if (!conn) {
+        res.status(404).json({ error: "HubSpot not connected" });
+        return;
+      }
+
+      const config = conn.config as any;
+      if (!config?.accessToken) {
+        res.status(400).json({ error: "HubSpot access token not configured" });
+        return;
+      }
+
+      const { HubSpotClient } = await import("@workspace/plugins-hubspot");
+      const client = new HubSpotClient(config.accessToken);
+      const pipelines = await client.getPipelines();
+
+      const stages: Array<{ id: string; label: string; pipeline: string }> = [];
+      for (const p of pipelines) {
+        for (const s of p.stages) {
+          stages.push({ id: s.id, label: s.label, pipeline: p.label });
+        }
+      }
+
+      const savedMapping = (conn.metadata as any)?.stageMapping || {};
+
+      res.json({ stages, mapping: savedMapping });
+    } catch (err: any) {
+      logger.error({ err, workspaceId }, "[HubSpot] Failed to fetch pipeline stages");
+      res.status(500).json({ error: err.message || "Failed to fetch stages" });
+    }
+  },
+);
+
+router.patch(
+  "/:workspaceId/hubspot/stages",
+  ...requirePermission("workspace", "edit"),
+  async (req: AuthenticatedRequest, res) => {
+    const workspaceId = req.workspaceId!;
+    const { mapping } = req.body; // { "hubspot_stage_id": "closed_won" }
+
+    if (!mapping || typeof mapping !== "object") {
+      res.status(400).json({ error: "mapping object required" });
+      return;
+    }
+
+    await IntegrationConnection.findOneAndUpdate(
+      { workspaceId, connectorName: "hubspot" },
+      { $set: { "metadata.stageMapping": mapping } },
+    );
+
+    res.json({ success: true, mapping });
+  },
+);
+
 export default router;

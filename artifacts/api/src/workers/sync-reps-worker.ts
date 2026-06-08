@@ -4,6 +4,7 @@ import { getRedisClient, SYNC_REPS_QUEUE } from "@workspace/queue";
 import type { SyncRepsPayload } from "@workspace/queue";
 import { pluginRegistry } from "@workspace/plugins-core";
 import { logger } from "../lib/logger";
+import * as Sentry from "@sentry/bun";
 import { acquireWorkspaceLock } from "../lib/sync/lock";
 import { upsertReps } from "../lib/sync/upsert-engine";
 
@@ -48,9 +49,14 @@ export const syncRepsWorker = new Worker<SyncRepsPayload>(
       try {
         await job.updateProgress(10);
 
+        const pluginConfig = {
+          ...(conn.config as Record<string, unknown> || {}),
+          _metadata: conn.metadata || {},
+        };
+
         const reps = await plugin.fetchReps(
           workspaceId,
-          conn.config as Record<string, unknown>,
+          pluginConfig,
           {},
         );
 
@@ -82,6 +88,10 @@ export const syncRepsWorker = new Worker<SyncRepsPayload>(
         await job.updateProgress(100);
       } catch (err: any) {
         logger.error({ err, workspaceId, connectorName }, "[SyncRepsWorker] Rep sync failed");
+        Sentry.captureException(err, {
+          tags: { worker: "sync-reps", connectorName },
+          extra: { workspaceId, trigger },
+        });
 
         await IntegrationSync.findByIdAndUpdate(syncRecord._id, {
           status: "failed",

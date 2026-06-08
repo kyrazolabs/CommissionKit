@@ -27,7 +27,7 @@ export class OdooConnector extends BasePlugin {
   readonly name = "odoo";
   readonly displayName = "Odoo ERP";
   readonly version = "1.0.0";
-  readonly description = "Connect CommissionKit to your Odoo instance. Syncs sales reps and confirmed sales orders from the Sales or CRM app.";
+  readonly description = "Connect CKit to your Odoo instance. Syncs sales reps and confirmed sales orders from the Sales or CRM app.";
   readonly icon = "store";
 
   private getOdooClient(config: ConnectionConfig): OdooClient {
@@ -320,7 +320,8 @@ const ODOO_STAGE_MAP: Record<string, string> = {
   cancel: "closed_lost",
 };
 
-function normalizeStage(odooState: string): string {
+function normalizeStage(odooState: string, mapping?: Record<string, string>): string {
+  if (mapping?.[odooState]) return mapping[odooState];
   return ODOO_STAGE_MAP[odooState] || "closed_won";
 }
 
