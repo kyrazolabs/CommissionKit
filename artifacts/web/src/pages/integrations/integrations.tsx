@@ -138,9 +138,15 @@ export function IntegrationsPage() {
             transition={{ type: "tween", duration: 0.35, ease: "easeInOut" }}
           >
             {sortedConnectors?.map((connector, i) => (
-              <div key={connector.name} ref={i === 0 ? cardRef : undefined} className="w-full min-w-full md:min-w-[calc(50%-8px)]">
+              <motion.div
+                key={connector.name}
+                ref={i === 0 ? cardRef : undefined}
+                animate={{ opacity: i === carouselIndex || (i === carouselIndex + 1 && typeof window !== "undefined" && window.innerWidth >= 768) ? 1 : 0.4 }}
+                transition={{ duration: 0.35 }}
+                className="w-full min-w-full md:min-w-[calc(50%-8px)]"
+              >
                 <ConnectorCard connector={connector} isConnected={status?.connectorName === connector.name} />
-              </div>
+              </motion.div>
             ))}
           </motion.div>
         </div>
