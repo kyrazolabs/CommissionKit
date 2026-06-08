@@ -1,14 +1,10 @@
 <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="56" height="56" rx="14" fill="#111827"/>
-  <!-- Left node -->
-  <circle cx="18" cy="28" r="4" stroke="#0D9488" stroke-width="3.5"/>
-  <circle cx="18" cy="28" r="1.5" fill="#0D9488"/>
-  <!-- Right node -->
-  <circle cx="38" cy="28" r="4" stroke="#0D9488" stroke-width="3.5"/>
-  <circle cx="38" cy="28" r="1.5" fill="#0D9488"/>
-  <!-- Connection line -->
-  <line x1="22" y1="28" x2="34" y2="28" stroke="#0D9488" stroke-width="3.5" stroke-linecap="round"/>
-  <!-- Brackets to represent custom/config -->
-  <path d="M10 16 L16 16 L16 40 L10 40" stroke="#0D9488" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M46 16 L40 16 L40 40 L46 40" stroke="#0D9488" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Cable / connector icon -->
+  <!-- Top-right socket -->
+  <path d="M42 16L42 20C42 23 39 25 36 25L33 25C30 25 28 22 28 19L28 14" stroke="#0D9488" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Bottom-left socket -->
+  <path d="M14 42L14 38C14 35 17 33 20 33L23 33C26 33 28 36 28 39L28 44" stroke="#0D9488" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Center connector plug -->
+  <rect x="22" y="24" width="12" height="4" rx="2" stroke="#0D9488" stroke-width="3.5" fill="#0D9488" fill-opacity="0.2"/>
 </svg>
