@@ -175,32 +175,7 @@ Stay informed with a real-time notification system.
 
 ---
 
-## 4. Pricing & Plans
-
-CommissionKit offers flexible pricing tiers to match your team's size and needs.
-
-| Feature | Free | Starter | Growth | Pro |
-|---|---|---|---|---|
-| Commission runs | ✓ | ✓ | ✓ | ✓ |
-| Deal management | ✓ | ✓ | ✓ | ✓ |
-| ERP/CRM connectors (Odoo, HubSpot, Custom REST) | ✓ | ✓ | ✓ | ✓ |
-| Rep management | Limited | ✓ | ✓ | ✓ |
-| Multi-currency | ✓ | ✓ | ✓ | ✓ |
-| Commission plans (Flat / Tiered / Accelerator) | ✓ | ✓ | ✓ | ✓ |
-| Payouts & disputes | — | — | ✓ | ✓ |
-| CSV exports | — | — | ✓ | ✓ |
-| Custom roles (RBAC) | — | ✓ | ✓ | ✓ |
-| Advanced reporting | — | — | ✓ | ✓ |
-| Custom engine | — | — | — | Add-on |
-
-- **14-Day Free Trial**: One-time trial per workspace on first paid subscription.
-- **Billing Intervals**: Monthly and yearly billing available.
-- **Self-Service**: Manage your subscription via Stripe Customer Portal.
-- **Extra Rep Seats**: Add additional seats beyond your plan's included limit with automatic proration.
-
----
-
-## 5. Reliability & Security
+## 4. Reliability & Security
 
 CommissionKit is built for modern business requirements:
 
@@ -212,7 +187,7 @@ CommissionKit is built for modern business requirements:
 
 ---
 
-## 6. The Result: A Motivated, High-Performance Sales Team
+## 5. The Result: A Motivated, High-Performance Sales Team
 
 By removing the friction of commission management, CommissionKit allows your leadership to focus on strategy and your sales reps to focus on what they do best: **closing deals.**
 
