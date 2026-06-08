@@ -95,3 +95,26 @@ After connecting, choose a sync interval from the **⋮** menu:
 | Hourly | Recommended for active pipelines |
 | Daily | For stable pipelines |
 | Manual only | No automatic sync |
+
+## Troubleshooting
+
+### "Deal sync shows 0 total"
+
+Check that at least one deal in HubSpot has these three things:
+
+* **Stage is closed-won** — the connector auto-discovers your pipeline stages. If no stages are marked as closed-won, it syncs all deals instead. Go to **Settings > Objects > Deals > Pipelines** and confirm your "Closed Won" stage has `Is closed won` enabled.
+* **Deal owner is assigned** — deals with no owner are skipped. Open the deal in HubSpot, click the **Deal owner** dropdown, and assign someone.
+* **Sync order matters** — sync **Reps first**, then Deals. The connector needs to pull owners into CKit before it can link deals to them. Use the dropdown menu on the integrations page: Sync Reps → Sync Deals.
+
+### "0 reps found"
+
+The scopes on your token might not include owners. Go to your Service Key or Legacy App and confirm these are selected:
+
+* `crm.objects.owners.read`
+* `crm.objects.deals.read`
+
+### "Connection test fails"
+
+* **Service Key**: the token starts with `pat-` — make sure you copied the full value
+* **Legacy App**: confirm the app was created (not in draft mode). The access token is visible under the app's credentials after creation
+* Both token types expire — Service Keys have no expiry but Legacy App tokens expire; if you get `HTTP 401`, regenerate the token in HubSpot and update it in CKit
