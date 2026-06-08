@@ -72,9 +72,7 @@ The Custom REST connector allows CommissionKit to integrate with any ERP or CRM 
       "title": "Entity Mappings",
       "properties": {
         "reps": { "$ref": "#/definitions/entityMapping" },
-        "deals": { "$ref": "#/definitions/entityMapping" },
-        "projects": { "$ref": "#/definitions/entityMapping" },
-        "invoices": { "$ref": "#/definitions/entityMapping" }
+        "deals": { "$ref": "#/definitions/entityMapping" }
       },
       "required": []
     },
@@ -103,39 +101,6 @@ The Custom REST connector allows CommissionKit to integrate with any ERP or CRM 
       "type": "string",
       "title": "Response Data JSONPath",
       "description": "JSONPath to the array of results in the response, e.g. 'data' or 'results.items'"
-    },
-    "webhook": {
-      "type": "object",
-      "title": "Webhook (Optional)",
-      "properties": {
-        "enabled": { "type": "boolean", "title": "Enable Webhooks" },
-        "signatureHeader": {
-          "type": "string",
-          "title": "Signature Header",
-          "description": "Header containing the HMAC signature, e.g. 'X-Webhook-Signature'"
-        },
-        "signatureAlgorithm": {
-          "type": "string",
-          "enum": ["hmac-sha256", "hmac-sha512", "plain"],
-          "title": "Signature Algorithm"
-        },
-        "eventTypePath": {
-          "type": "string",
-          "title": "Event Type JSONPath",
-          "description": "Where to find the event type in the webhook payload"
-        },
-        "entityIdPath": {
-          "type": "string",
-          "title": "Entity ID JSONPath",
-          "description": "Where to find the entity ID"
-        },
-        "eventMapping": {
-          "type": "object",
-          "title": "Event Type Mapping",
-          "additionalProperties": true,
-          "description": "Maps raw event type strings to CKit events. e.g. { 'order.created': 'deal.created' }"
-        }
-      }
     }
   }
 }
@@ -164,18 +129,14 @@ The Custom REST connector allows CommissionKit to integrate with any ERP or CRM 
             "externalId": { "type": "string", "title": "External ID", "default": "id" },
             "name": { "type": "string", "title": "Name" },
             "email": { "type": "string", "title": "Email" },
+            "role": { "type": "string", "title": "Role" },
             "amount": { "type": "string", "title": "Amount" },
             "closeDate": { "type": "string", "title": "Close Date" },
             "stage": { "type": "string", "title": "Stage" },
             "currency": { "type": "string", "title": "Currency" },
             "repExternalId": { "type": "string", "title": "Rep External ID" },
-            "projectExternalId": { "type": "string", "title": "Project External ID" },
-            "invoiceNumber": { "type": "string", "title": "Invoice Number" },
             "paymentStatus": { "type": "string", "title": "Payment Status" },
-            "dueDate": { "type": "string", "title": "Due Date" },
-            "notes": { "type": "string", "title": "Notes" },
-            "totalValue": { "type": "string", "title": "Total Value" },
-            "totalCost": { "type": "string", "title": "Total Cost" }
+            "notes": { "type": "string", "title": "Notes" }
           }
         },
         "filters": {
@@ -285,7 +246,9 @@ The Custom REST connector allows CommissionKit to integrate with any ERP or CRM 
 }
 ```
 
-### Example 2: ERP with Invoices
+---
+
+### Example 2: ERP with Cursor Pagination
 
 ```json
 {
@@ -341,38 +304,6 @@ The Custom REST connector allows CommissionKit to integrate with any ERP or CRM 
         "on_hold": ["disputed", "writeOff"]
       },
       "modifiedAfterParam": "modifiedSince"
-    },
-    "invoices": {
-      "enabled": true,
-      "endpoint": "/api/v2/invoices",
-      "fields": {
-        "externalId": "invoiceId",
-        "invoiceNumber": "invoiceRef",
-        "amount": "total",
-        "closeDate": "issueDate",
-        "currency": "currency",
-        "paymentStatus": "paymentState",
-        "dueDate": "dueDate",
-        "projectExternalId": "project.relatedId",
-        "repExternalId": "salesRep.employeeId"
-      },
-      "modifiedAfterParam": "modifiedSince"
-    }
-  },
-  "webhook": {
-    "enabled": true,
-    "signatureHeader": "X-Webhook-Signature",
-    "signatureAlgorithm": "hmac-sha256",
-    "eventTypePath": "eventType",
-    "entityIdPath": "payload.id",
-    "eventMapping": {
-      "order.confirmed": "deal.created",
-      "order.updated": "deal.updated",
-      "order.cancelled": "deal.deleted",
-      "employee.hired": "rep.created",
-      "employee.updated": "rep.updated",
-      "invoice.created": "invoice.created",
-      "invoice.paid": "invoice.updated"
     }
   }
 }
@@ -429,10 +360,7 @@ Fields starting with `$` are computed, not mapped directly:
 
 | Compute Field | Description |
 |---|---|
-| `$period` | Derives "YYYY-MM" from another date field. Syntax: `"$period:closeDate"` |
-| `$constant` | Sets a static value. Syntax: `"$constant:USD"` |
-| `$concat` | Concatenates multiple fields. Syntax: `"$concat:firstName,lastName"` |
-| `$fromEmail` | Extracts domain from email. Syntax: `"$fromEmail:email"` |
+| `$div:N:path` | Extracts `path` value and divides by N. Essential for APIs that store amounts in fractional units (e.g. micros, cents). Syntax: `"$div:1000000:amount.amountMicros"` converts `999000000` → `999`. |
 
 ---
 
@@ -440,34 +368,26 @@ Fields starting with `$` are computed, not mapped directly:
 
 1. **Nested pagination**: Doesn't support APIs that require following links (HATEOAS). Requires a flat pagination model.
 2. **Batch endpoints**: Not supported. Expects list endpoints.
-3. **GraphQL**: Not supported. REST-only.
-4. **SOAP/XML**: Not supported. JSON-only.
-5. **Custom authentication flows**: Only the four predefined auth types are supported.
-6. **Very large datasets**: Max 500,000 records per sync (configurable). Beyond that, batch into multiple syncs by date range.
-7. **Rate limiting**: The connector auto-throttles if it receives HTTP 429 responses.
-8. **TLS**: HTTPS with valid certificates only. Self-signed certificates can be allowed via a config flag: `"allowInsecureTLS": true`.
+3. **SOAP/XML**: Not supported. JSON-only.
+4. **Custom authentication flows**: Only the four predefined auth types are supported.
 
 ---
 
 ## Testing the Custom Connector
 
-The "Test Connection" button performs these checks:
-1. Reachability: HEAD request to `baseUrl`
-2. Authentication: GET request to any enabled entity endpoint with auth headers
-3. Schema validation: Parse the response and verify field mappings resolve correctly
-4. Sample data: Return the first record from each entity type as a preview
+The "Test Connection" button performs a HEAD request to the `baseUrl` with the configured auth headers. Success means the URL is reachable and the auth is accepted.
+
+Sync behavior is verified via the sync history table on the integrations page, showing records created, updated, skipped, and failed per sync run.
 
 ---
 
 ## Files
 
 ```
-plugins/custom/
-├── index.ts                  # Default export: CustomConnector
-├── connector.ts              # Main connector class
-├── config-parser.ts          # Parse and validate the JSON config
-├── jsonpath.ts               # Simple JSONPath extractor
-├── pagination.ts             # Pagination strategies (offset, cursor, page)
-├── auth.ts                   # Auth handler (apiKey, bearer, basic, oauth2)
-└── types.ts                  # Custom connector types + config Zod schema
+plugins/custom/src/
+├── connector.ts         # Main connector class (CustomConnector extends BasePlugin)
+├── config-parser.ts     # Zod schemas for config validation (CustomConnectorConfigSchema)
+├── jsonpath.ts          # JSONPath extractor (dot notation + array index)
+├── pagination.ts        # Pagination strategies (offset, cursor, page)
+└── auth.ts              # Auth handlers (apiKey, bearer, basic, oauth2)
 ```
