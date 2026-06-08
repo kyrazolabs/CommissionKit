@@ -86,13 +86,29 @@ export function IntegrationsPage() {
         <p className="text-sm text-muted-foreground mt-1">Connect CommissionKit to your ERP or CRM. Synced reps and deals are ready for commission calculation.</p>
       </div>
 
-      {status?.connected && (
-        <ConnectedCard
-          status={status}
-          onOpenMappingEditor={openMappingEditor}
-          onOpenStageMapping={() => setStageMappingOpen(true)}
-        />
-      )}
+        {status?.connected && (
+          <ConnectedCard
+            status={status}
+            onOpenMappingEditor={openMappingEditor}
+            onOpenStageMapping={() => setStageMappingOpen(true)}
+          />
+        )}
+
+        <a
+          href="mailto:sales@commissionk.it?subject=Custom Connector Request"
+          className="block w-full mb-6 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 px-5 py-4 hover:from-primary/15 hover:to-primary/10 transition-all group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/20">
+              <BadgeCheck className="size-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-foreground">Need a custom connector?</p>
+              <p className="text-xs text-muted-foreground mt-0.5">We build integrations for any ERP or CRM — one-time payment, starting at $499.</p>
+            </div>
+            <span className="shrink-0 text-xs font-medium text-primary group-hover:underline">Contact sales</span>
+          </div>
+        </a>
 
       <div>
         <h2 className="text-lg font-semibold mb-3">{status?.connected ? "Switch Connector" : "Choose a Connector"}</h2>
