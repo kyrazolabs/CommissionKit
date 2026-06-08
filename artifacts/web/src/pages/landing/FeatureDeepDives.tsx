@@ -147,11 +147,11 @@ export function FeatureDeepDives() {
             </div>
             <div className="flex items-center gap-3 pt-2">
               <div className="flex size-8 items-center justify-center rounded-lg bg-muted">
-                <Cable className="size-4 text-muted-foreground" />
+                <Cable className="size-4 text-primary" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">HubSpot</p>
-                <p className="text-xs text-muted-foreground">Coming soon</p>
+                <p className="text-sm font-semibold text-foreground">HubSpot CRM</p>
+                <p className="text-xs text-muted-foreground">Sync owners and deals via OAuth</p>
               </div>
             </div>
           </div>

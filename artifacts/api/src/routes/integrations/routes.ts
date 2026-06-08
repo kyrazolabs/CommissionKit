@@ -553,4 +553,59 @@ router.post(
   },
 );
 
+// ─── HubSpot OAuth callback ──────────────────────────────────────────
+
+router.get(
+  "/hubspot/callback",
+  async (req, res) => {
+    const code = req.query.code as string;
+    const workspaceId = req.query.state as string;
+
+    if (!code || !workspaceId) {
+      res.status(400).json({ error: "Missing code or state (workspaceId)" });
+      return;
+    }
+
+    try {
+      const conn = await IntegrationConnection.findOne({ workspaceId, connectorName: "hubspot" });
+      if (!conn) {
+        res.status(404).send("No pending HubSpot connection found. Please connect first.");
+        return;
+      }
+
+      const config = conn.config as any;
+      const clientId = config?.clientId;
+      const clientSecret = config?.clientSecret;
+      const redirectUri = config?.redirectUri || `${req.protocol}://${req.get("host")}/api/integrations/hubspot/callback`;
+
+      if (!clientId || !clientSecret) {
+        res.status(400).send("HubSpot OAuth credentials not configured. Set clientId and clientSecret first.");
+        return;
+      }
+
+      const { HubSpotClient } = await import("@workspace/plugins-hubspot");
+      const tokens = await HubSpotClient.exchangeCode(clientId, clientSecret, redirectUri, code);
+
+      await IntegrationConnection.findOneAndUpdate(
+        { workspaceId, connectorName: "hubspot" },
+        {
+          status: "connected",
+          $set: {
+            "config.accessToken": tokens.accessToken,
+            "config.refreshToken": tokens.refreshToken,
+          },
+        },
+      );
+
+      // Trigger initial sync
+      syncRepsQueue.add(`sync-reps:${workspaceId}`, { workspaceId, connectorName: "hubspot", trigger: "manual" });
+      syncDealsQueue.add(`sync-deals:${workspaceId}`, { workspaceId, connectorName: "hubspot", trigger: "manual" });
+
+      res.redirect(`${process.env.APP_URL || "http://localhost:3000"}/dash/integrations?connected=hubspot`);
+    } catch (err: any) {
+      res.status(500).send(`OAuth failed: ${err.message}`);
+    }
+  },
+);
+
 export default router;
