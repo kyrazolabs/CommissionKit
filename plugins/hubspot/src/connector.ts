@@ -14,17 +14,12 @@ import type {
 import { HubSpotClient } from "./client";
 
 interface HubSpotConfig {
-  authType: "private_app" | "oauth2";
-  accessToken?: string;
-  refreshToken?: string;
-  clientId?: string;
-  clientSecret?: string;
+  accessToken: string;
   syncClosedOnly?: boolean;
   closedWonStageIds?: string[];
 }
 
 const HUBSPOT_STAGE_MAP: Record<string, string> = {
-  // Default HubSpot deal stages (will be overridden by pipeline discovery)
   appointmentscheduled: "pending",
   qualifiedtobuy: "pending",
   presentationscheduled: "pending",
@@ -47,22 +42,14 @@ export class HubSpotConnector extends BasePlugin {
 
   private getClient(config: ConnectionConfig): HubSpotClient {
     const c = this.parseConfig(config);
-    if (c.authType === "oauth2" && (!c.accessToken && !c.refreshToken)) {
-      throw new Error("HubSpot OAuth2 requires client credentials (authorize first)");
-    }
-    if (!c.accessToken && c.authType !== "oauth2") {
-      throw new Error("HubSpot config requires an access token");
-    }
-    return new HubSpotClient(c.accessToken || "", c.refreshToken, c.clientId, c.clientSecret);
+    if (!c.accessToken) throw new Error("HubSpot config requires an access token");
+    return new HubSpotClient(c.accessToken);
   }
 
   async testConnection(config: ConnectionConfig): Promise<ConnectionTestResult> {
     try {
       const c = this.parseConfig(config);
       if (!c.accessToken) {
-        if (c.authType === "oauth2" && c.clientId && c.clientSecret) {
-          return { success: true, message: "OAuth credentials valid — authorize to complete" };
-        }
         return { success: false, message: "Missing access token" };
       }
 
@@ -118,7 +105,6 @@ export class HubSpotConnector extends BasePlugin {
     try {
       let closedWonStageIds = c.closedWonStageIds;
 
-      // If no explicit stages configured, discover them from pipelines
       if (!closedWonStageIds || closedWonStageIds.length === 0) {
         try {
           const pipelines = await client.getPipelines();
@@ -131,7 +117,7 @@ export class HubSpotConnector extends BasePlugin {
             }
           }
         } catch {
-          // Fall back to default stage name
+          // Fall back to default stage mapping
         }
       }
 
@@ -179,31 +165,12 @@ export class HubSpotConnector extends BasePlugin {
   getSettingsSchema(): JsonSchema {
     return {
       type: "object",
-      required: ["authType"],
+      required: ["accessToken"],
       properties: {
-        authType: {
-          type: "string",
-          title: "Authentication Type",
-          enum: ["private_app", "oauth2"],
-          description: "Private App token or OAuth 2.0",
-          default: "oauth2",
-        },
         accessToken: {
           type: "string",
           title: "Access Token",
-          description: "HubSpot Private App access token or OAuth access token",
-          format: "password",
-          "x-sensitive": true,
-        },
-        clientId: {
-          type: "string",
-          title: "Client ID (OAuth2)",
-          description: "Your HubSpot app's client ID",
-        },
-        clientSecret: {
-          type: "string",
-          title: "Client Secret (OAuth2)",
-          description: "Your HubSpot app's client secret",
+          description: "Service Key or Legacy App access token from HubSpot",
           format: "password",
           "x-sensitive": true,
         },
@@ -223,7 +190,7 @@ export class HubSpotConnector extends BasePlugin {
       description: this.description,
       icon: this.icon,
       category: "crm",
-      features: ["sync_reps", "sync_deals", "oauth_support"],
+      features: ["sync_reps", "sync_deals"],
       setupGuideUrl: "https://docs.commissionkit.com/integrations/hubspot",
     };
   }

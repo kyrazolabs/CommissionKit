@@ -44,65 +44,33 @@ The connector automatically discovers your pipeline stages via HubSpot's API. An
 
 ## Authentication
 
-CommissionKit supports two HubSpot auth methods. Both are configured in your HubSpot account under **Settings > Integrations > Development** (you can also find **Development** in the left sidebar menu).
+CommissionKit uses token-based auth — a single access token from HubSpot. Two ways to get one:
 
-### Method 1: Service Key (simplest)
-
-A Service Key is a single token — no OAuth redirect, no app registration. Best for testing or single-user accounts.
+### Method 1: Service Key
 
 1. In HubSpot, navigate to **Development** → **Service Keys**
-2. Click **Create service key**
-3. Name it (e.g. "CommissionKit")
-4. Select these scopes:
-   - `crm.objects.owners.read`
-   - `crm.objects.deals.read`
-5. Click **Create**
-6. Copy the generated token
-7. In CommissionKit, go to **Integrations** → select **HubSpot CRM**
-8. Choose **Private App Token** as the auth mode
-9. Paste the token into **Access Token**
-10. Click **Connect**
+2. Click **Create service key**, name it "CommissionKit"
+3. Select scopes: `crm.objects.owners.read`, `crm.objects.deals.read`
+4. Click **Create** → copy the token
+5. In CommissionKit, paste it and click **Connect**
 
-### Method 2: Legacy App (OAuth 2.0)
+### Method 2: Legacy App
 
-A Legacy App uses OAuth 2.0 — users are redirected to HubSpot to authorize CommissionKit, then redirected back. Supports webhook subscriptions for real-time deal updates.
-
-<Warning>
-HubSpot is sunsetting legacy public app creation. New HubSpot accounts created after May 26 2026 cannot create new legacy public apps. Existing accounts can create them until June 23 2026. Existing legacy apps continue to work. Learn more on the [HubSpot Developer Changelog](https://developers.hubspot.com/changelog/legacy-public-app-creation-sunset).
-</Warning>
+A Legacy App also provides an access token you can use directly.
 
 1. In HubSpot, navigate to **Development** → **Legacy Apps**
-2. Click **Create app** → select **Public app**
-3. On the **Basic Info** tab, enter:
-   - **App name**: CommissionKit
-   - **Description**: (optional)
-   - **Logo**: (optional)
-4. Switch to the **Auth** tab:
-   - Enter a **Redirect URL**: `https://your-domain.com/api/integrations/hubspot/callback`
-   - In the **Scopes** section, click **Add new scope** and add:
-     - `crm.objects.owners.read`
-     - `crm.objects.deals.read`
-   - Set both as **Required** scopes
-5. Click **Create app** at the bottom left
-6. After creation, the Auth tab now shows your **Client ID** and **Client secret**. Copy them.
-7. In CommissionKit, go to **Integrations** → select **HubSpot CRM**
-8. Choose **OAuth 2.0 (Sign in with HubSpot)** as the auth mode
-9. Enter your **Client ID** and **Client Secret**
-10. Click **Connect with HubSpot** — you'll be redirected to HubSpot to authorize the app
-11. After granting access, you'll be redirected back to CommissionKit. Sync begins automatically.
+2. Click **Create app** → **Public app**
+3. Fill in the **Basic Info** tab (name: CommissionKit)
+4. On the **Auth** tab, set a redirect URL (can be `http://localhost` for testing) and add scopes:
+   - `crm.objects.owners.read`
+   - `crm.objects.deals.read`
+5. Click **Create app**
+6. Copy the **Access Token** from the app's credentials
+7. In CommissionKit, paste it and click **Connect**
 
 <Note>
-Credentials (Client ID, Client secret) are only visible **after** you click **Create app** — they're hidden while the app is in draft mode.
+Legacy app credentials (including the access token) are only visible **after** clicking **Create app** — not in draft mode.
 </Note>
-
-The Redirect URL and scopes are both configured on the **Auth** tab. Webhooks can be set up separately for your connected app to receive real-time deal change notifications.
-
-### Localhost development
-
-For testing locally:
-- Redirect URL: `http://localhost:3000/api/integrations/hubspot/callback`
-- HubSpot allows `http` for `localhost` redirects
-- Set `APP_URL=http://localhost:3000` in your API `.env` file
 
 ## What syncs
 

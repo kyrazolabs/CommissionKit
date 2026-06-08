@@ -54,45 +54,9 @@ interface TokenResponse {
 
 export class HubSpotClient {
   private accessToken: string;
-  private refreshToken: string | null;
-  private clientId?: string;
-  private clientSecret?: string;
-  private tokenExpiresAt: number = 0;
 
-  constructor(accessToken: string, refreshToken?: string, clientId?: string, clientSecret?: string) {
+  constructor(accessToken: string) {
     this.accessToken = accessToken;
-    this.refreshToken = refreshToken || null;
-    this.clientId = clientId;
-    this.clientSecret = clientSecret;
-  }
-
-  private async ensureAccessToken(): Promise<void> {
-    if (!this.refreshToken || !this.clientId || !this.clientSecret) return;
-    if (Date.now() < this.tokenExpiresAt - 60000) return; // 1min buffer
-    await this.refreshAccessToken();
-  }
-
-  async refreshAccessToken(): Promise<void> {
-    if (!this.refreshToken || !this.clientId || !this.clientSecret) {
-      throw new Error("Cannot refresh token: missing refresh token or client credentials");
-    }
-    const params = new URLSearchParams({
-      grant_type: "refresh_token",
-      client_id: this.clientId,
-      client_secret: this.clientSecret,
-      refresh_token: this.refreshToken,
-      redirect_uri: `https://app.hubspot.com/oauth/authorize`, // required by HubSpot refresh endpoint
-    });
-    const res = await fetch(`${HUBSPOT_API}/oauth/v1/token`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: params.toString(),
-    });
-    if (!res.ok) throw new Error(`Token refresh failed: HTTP ${res.status}`);
-    const data = (await res.json()) as TokenResponse;
-    this.accessToken = data.access_token;
-    this.refreshToken = data.refresh_token;
-    this.tokenExpiresAt = Date.now() + data.expires_in * 1000;
   }
 
   static async exchangeCode(clientId: string, clientSecret: string, redirectUri: string, code: string): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
@@ -114,7 +78,6 @@ export class HubSpotClient {
   }
 
   async getOwners(): Promise<HubSpotOwner[]> {
-    await this.ensureAccessToken();
     const owners: HubSpotOwner[] = [];
     let after: string | undefined;
     do {
@@ -131,7 +94,6 @@ export class HubSpotClient {
     closedWonStageIds?: string[],
     modifiedAfter?: Date,
   ): Promise<HubSpotDeal[]> {
-    await this.ensureAccessToken();
     const filterGroups: any[] = [];
     const filters: any[] = [];
 
@@ -179,7 +141,6 @@ export class HubSpotClient {
   }
 
   async getPipelines(): Promise<Pipeline[]> {
-    await this.ensureAccessToken();
     const url = `${HUBSPOT_API}/crm/v3/pipelines/deals?limit=100`;
     const res = await this.get<PipelinesResponse>(url);
     return res?.results || [];
@@ -193,17 +154,10 @@ export class HubSpotClient {
         "Content-Type": "application/json",
       },
     });
-
-    if (res.status === 401 && this.refreshToken) {
-      await this.refreshAccessToken();
-      return this.get<T>(url);
-    }
-
     if (!res.ok) {
       const text = await res.text().catch(() => "");
       throw new Error(`HubSpot HTTP ${res.status}: ${text.slice(0, 500)}`);
     }
-
     return res.json() as Promise<T>;
   }
 
@@ -216,17 +170,10 @@ export class HubSpotClient {
       },
       body: JSON.stringify(body),
     });
-
-    if (res.status === 401 && this.refreshToken) {
-      await this.refreshAccessToken();
-      return this.post<T>(url, body);
-    }
-
     if (!res.ok) {
       const text = await res.text().catch(() => "");
       throw new Error(`HubSpot HTTP ${res.status}: ${text.slice(0, 500)}`);
     }
-
     return res.json() as Promise<T>;
   }
 }

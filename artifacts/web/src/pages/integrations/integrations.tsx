@@ -244,22 +244,6 @@ export function IntegrationsPage() {
   const handleConnect = async (connectorName: string) => {
     setConnecting(true);
     const config = buildConfig();
-
-    // HubSpot OAuth2 flow: save pending config + redirect to HubSpot
-    if (connectorName === "hubspot" && config.authType === "oauth2" && config.clientId && config.clientSecret) {
-      try {
-        await connectMutation.mutateAsync({ connectorName, config: { ...config, status: "pending_oauth" } as any });
-        const redirectUri = `${window.location.origin}/api/integrations/hubspot/callback`;
-        const scopes = "crm.objects.owners.read crm.objects.deals.read";
-        const authUrl = `https://app.hubspot.com/oauth/authorize?client_id=${encodeURIComponent(config.clientId as string)}&scope=${encodeURIComponent(scopes)}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${encodeURIComponent(activeWorkspace?.id || "")}`;
-        window.location.href = authUrl;
-        return;
-      } catch {
-        setConnecting(false);
-      }
-      return;
-    }
-
     connectMutation.mutate({ connectorName, config }, { onSettled: () => setConnecting(false) });
   };
 
@@ -272,21 +256,19 @@ export function IntegrationsPage() {
       if (k === "syncClosedOnly" || k === "writeBackEnabled") continue;
       config[k] = v;
     }
-    // Build auth object (skip for connectors that have their own auth schema)
-    if (!["hubspot"].includes(String(formValues._connector || ""))) {
-      const authType = String(formValues.authType || "bearer");
-      const auth: Record<string, unknown> = { type: authType };
-      if (authType === "apiKey") {
-        auth.headerName = formValues.authHeaderName || "X-API-Key";
-        auth.apiKey = formValues.authApiKey || "";
-      } else if (authType === "bearer") {
-        auth.token = formValues.authToken || "";
-      } else if (authType === "basic") {
-        auth.username = formValues.authUsername || "";
-        auth.password = formValues.authPassword || "";
-      }
-      config.auth = auth;
+    // Build auth object
+    const authType = String(formValues.authType || "bearer");
+    const auth: Record<string, unknown> = { type: authType };
+    if (authType === "apiKey") {
+      auth.headerName = formValues.authHeaderName || "X-API-Key";
+      auth.apiKey = formValues.authApiKey || "";
+    } else if (authType === "bearer") {
+      auth.token = formValues.authToken || "";
+    } else if (authType === "basic") {
+      auth.username = formValues.authUsername || "";
+      auth.password = formValues.authPassword || "";
     }
+    config.auth = auth;
     return config;
   };
 
@@ -762,62 +744,16 @@ export function IntegrationsPage() {
                           </>
                         )}
                         {connector.name === "hubspot" && (
-                          <>
-                            <div className="space-y-1.5">
-                              <Label className="text-xs">Authentication Mode</Label>
-                              <Select
-                                value={String(formValues.authType || "private_app")}
-                                onValueChange={(v) => setFormValues({ ...formValues, authType: v })}
-                              >
-                                <SelectTrigger className="h-9 text-sm">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="private_app">Service Key (Access Token)</SelectItem>
-                                  <SelectItem value="oauth2">OAuth 2.0 (Client ID + Client Secret)</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            {String(formValues.authType || "private_app") === "private_app" && (
-                              <div className="space-y-1.5">
-                                <Label className="text-xs">Access Token</Label>
-                                <Input
-                                  type="password"
-                                  placeholder="pat-na1-xxxx..."
-                                  value={String(formValues.accessToken || "")}
-                                  onChange={(e) => setFormValues({ ...formValues, accessToken: e.target.value })}
-                                  className="h-9 text-sm"
-                                />
-                              </div>
-                            )}
-                            {String(formValues.authType || "private_app") === "oauth2" && (
-                              <>
-                                <div className="space-y-1.5">
-                                  <Label className="text-xs">Client ID</Label>
-                                  <Input
-                                    placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                                    value={String(formValues.clientId || "")}
-                                    onChange={(e) => setFormValues({ ...formValues, clientId: e.target.value })}
-                                    className="h-9 text-sm"
-                                  />
-                                </div>
-                                <div className="space-y-1.5">
-                                  <Label className="text-xs">Client Secret</Label>
-                                  <Input
-                                    type="password"
-                                    placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                                    value={String(formValues.clientSecret || "")}
-                                    onChange={(e) => setFormValues({ ...formValues, clientSecret: e.target.value })}
-                                    className="h-9 text-sm"
-                                  />
-                                </div>
-                                <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground space-y-1">
-                                  <p>Clicking <strong>Connect with HubSpot</strong> will redirect you to HubSpot to authorize CommissionKit.</p>
-                                  <p>You'll be redirected back after granting access.</p>
-                                </div>
-                              </>
-                            )}
-                          </>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Access Token</Label>
+                            <Input
+                              type="password"
+                              placeholder="Service Key or Legacy App token"
+                              value={String(formValues.accessToken || "")}
+                              onChange={(e) => setFormValues({ ...formValues, accessToken: e.target.value })}
+                              className="h-9 text-sm"
+                            />
+                          </div>
                         )}
 
                         {/* Test result */}
@@ -858,11 +794,7 @@ export function IntegrationsPage() {
                             disabled={connecting}
                             className="flex-1"
                           >
-                            {connecting
-                              ? "Connecting..."
-                              : connector.name === "hubspot" && String(formValues.authType || "private_app") === "oauth2"
-                              ? "Connect with HubSpot"
-                              : "Connect"}
+                            {connecting ? "Connecting..." : "Connect"}
                           </Button>
                         </div>
                       </div>
