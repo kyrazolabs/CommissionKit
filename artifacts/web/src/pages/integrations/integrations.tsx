@@ -45,8 +45,6 @@ export function IntegrationsPage() {
     return () => window.removeEventListener("resize", update);
   }, []);
 
-  const maxIndex = Math.max(0, (sortedConnectors?.length || 1) - visibleCards);
-
   const { data: connectors, isLoading: connectorsLoading } = useQuery<{ connectors: Connector[] }>({
     queryKey: ["integrations", "connectors"],
     queryFn: () => apiFetch("/api/integrations/connectors"),
@@ -84,6 +82,8 @@ export function IntegrationsPage() {
     const bCustom = b.name === "custom" ? 2 : bConnected;
     return aCustom - bCustom;
   });
+
+  const maxIndex = Math.max(0, (sortedConnectors?.length || 1) - visibleCards);
 
   if (isLoading) {
     return (
