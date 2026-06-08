@@ -7,7 +7,7 @@ import { usePageMeta } from "@/hooks/use-page-meta";
 import { apiFetch } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
-import { Bug } from "lucide-react";
+import { Bug, BadgeCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ConnectorCard } from "./connector-card";
 import { ConnectedCard } from "./connected-card";
@@ -96,6 +96,15 @@ export function IntegrationsPage() {
 
       <div>
         <h2 className="text-lg font-semibold mb-3">{status?.connected ? "Switch Connector" : "Choose a Connector"}</h2>
+        {!status?.connected && (
+          <a
+            href="mailto:sales@commissionk.it?subject=Custom Connector Request"
+            className="inline-flex items-center gap-2 px-3 py-2 mb-4 rounded-lg bg-primary/5 border border-primary/20 text-xs text-primary hover:bg-primary/10 transition-colors"
+          >
+            <BadgeCheck className="size-3.5" />
+            Need a custom connector? Contact sales — we build integrations for any ERP or CRM.
+          </a>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {connectors?.connectors?.map((connector) => (
             <ConnectorCard key={connector.name} connector={connector} isConnected={status?.connectorName === connector.name} />
