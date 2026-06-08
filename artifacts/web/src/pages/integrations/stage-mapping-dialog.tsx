@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export function StageMappingDialog({ open, onOpenChange }: Props) {
+  const { t } = useTranslation();
   const { activeWorkspace } = useWorkspace();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -40,9 +42,9 @@ export function StageMappingDialog({ open, onOpenChange }: Props) {
     try {
       await apiFetch(`/api/integrations/${activeWorkspace?.id}/hubspot/stages`, { method: "PATCH", body: JSON.stringify({ mapping }) });
       onOpenChange(false);
-      toast({ title: "Stage mapping saved" });
+      toast({ title: t("integrations.stageMappingSaved") });
     } catch (err: any) {
-      toast({ title: "Failed to save", description: err.message, variant: "destructive" });
+      toast({ title: t("integrations.connectionFailed"), description: err.message, variant: "destructive" });
     }
   };
 
@@ -54,8 +56,8 @@ export function StageMappingDialog({ open, onOpenChange }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><GitBranch className="size-5" />Stage Mapping</DialogTitle>
-          <DialogDescription>Map HubSpot pipeline stages to CommissionKit stages.</DialogDescription>
+          <DialogTitle className="flex items-center gap-2"><GitBranch className="size-5" />{t("integrations.stageMappingTitle")}</DialogTitle>
+          <DialogDescription>{t("integrations.stageMappingDesc")}</DialogDescription>
         </DialogHeader>
         <div className="space-y-3 py-2 max-h-[400px] overflow-y-auto">
           {loading ? (
@@ -63,7 +65,7 @@ export function StageMappingDialog({ open, onOpenChange }: Props) {
           ) : loadError ? (
             <p className="text-sm text-destructive text-center py-8">{loadError}</p>
           ) : stages.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">No stages found.</p>
+            <p className="text-sm text-muted-foreground text-center py-8">{t("integrations.noStages")}</p>
           ) : (
             stages.map((stage) => (
               <div key={stage.id} className="flex items-center gap-3">
@@ -84,8 +86,8 @@ export function StageMappingDialog({ open, onOpenChange }: Props) {
           )}
         </div>
         <div className="flex gap-2 justify-end pt-2">
-          <Button variant="secondary" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={save} disabled={loading}>Save</Button>
+          <Button variant="secondary" onClick={() => onOpenChange(false)}>{t("integrations.cancel")}</Button>
+          <Button onClick={save} disabled={loading}>{t("integrations.save")}</Button>
         </div>
       </DialogContent>
     </Dialog>

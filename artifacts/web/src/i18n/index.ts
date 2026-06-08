@@ -3,7 +3,6 @@ import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import en from "./locales/en.json";
 import es from "./locales/es.json";
-import ar from "./locales/ar.json";
 import hi from "./locales/hi.json";
 
 const STORAGE_KEY = "ck-lang";
@@ -11,7 +10,6 @@ const STORAGE_KEY = "ck-lang";
 export const SUPPORTED_LANGS = [
   { code: "en", label: "English", nativeLabel: "English", rtl: false },
   { code: "es", label: "Spanish", nativeLabel: "Español", rtl: false },
-  { code: "ar", label: "Arabic", nativeLabel: "العربية", rtl: true },
   { code: "hi", label: "Hindi", nativeLabel: "हिन्दी", rtl: false },
 ] as const;
 
@@ -24,7 +22,6 @@ i18n
     resources: {
       en: { translation: en },
       es: { translation: es },
-      ar: { translation: ar },
       hi: { translation: hi },
     },
     fallbackLng: "en",

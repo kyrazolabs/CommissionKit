@@ -108,9 +108,9 @@ export function IntegrationsPage() {
     <div className="mx-auto max-w-4xl px-6 py-8 space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-baseline gap-2">
-          Integrations <span className="text-base px-1 tracking-[0.07em] font-medium text-primary">Beta</span>
+          {t("integrations.title")} <span className="text-base px-1 tracking-[0.07em] font-medium text-primary">{t("integrations.beta")}</span>
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">Connect CommissionKit to your ERP or CRM. Synced reps and deals are ready for commission calculation.</p>
+        <p className="text-sm text-muted-foreground mt-1">{t("integrations.description")}</p>
       </div>
 
       {status?.connected && (
@@ -123,7 +123,7 @@ export function IntegrationsPage() {
 
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold">{status?.connected ? "Switch Connector" : "Choose a Connector"}</h2>
+          <h2 className="text-lg font-semibold">{status?.connected ? t("integrations.switchConnector") : t("integrations.chooseConnector")}</h2>
           {sortedConnectors && sortedConnectors.length > 1 && (
             <div className="flex gap-1">
               <button onClick={() => setCarouselIndex((i) => Math.max(0, i - 1))} disabled={carouselIndex === 0} className="flex size-8 items-center justify-center rounded-lg border hover:bg-muted disabled:opacity-30 transition-colors">
@@ -156,27 +156,25 @@ export function IntegrationsPage() {
         </div>
       </div>
 
-      {!status?.connected && (
-        <a
-          href="mailto:sales@commissionk.it?subject=Custom Connector Request"
-          className="block w-full rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 px-5 py-4 hover:from-primary/15 hover:to-primary/10 transition-all group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/20">
-              <BadgeCheck className="size-5 text-primary" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-foreground">Need a custom connector?</p>
-              <p className="text-xs text-muted-foreground mt-0.5">We build integrations for any ERP or CRM. Contact sales to get started.</p>
-            </div>
-            <span className="ml-auto text-xs font-medium text-primary group-hover:underline">Contact sales</span>
+      <a
+        href="mailto:sales@commissionk.it?subject=Custom Connector Request"
+        className="block w-full rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 px-5 py-4 hover:from-primary/15 hover:to-primary/10 transition-all group"
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/20">
+            <BadgeCheck className="size-5 text-primary" />
           </div>
-        </a>
-      )}
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-foreground">{t("integrations.needCustom")}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{t("integrations.customDescription")}</p>
+          </div>
+          <span className="ml-auto text-xs font-medium text-primary group-hover:underline">{t("integrations.contactSales")}</span>
+        </div>
+      </a>
 
       <div className="mt-8 pt-6 border-t border-border">
         <a href="mailto:support@commissionk.it?subject=Integration Bug Report" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
-          <Bug className="size-3.5" />Report a bug or request a connector
+          <Bug className="size-3.5" />{t("integrations.reportBug")}
         </a>
       </div>
 
