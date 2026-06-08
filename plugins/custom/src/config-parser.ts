@@ -38,6 +38,7 @@ export const EntityFieldMappingSchema = z.object({
   externalId: z.string().optional().default("id"),
   name: z.string().optional(),
   email: z.string().optional(),
+  role: z.string().optional(),
   amount: z.string().optional(),
   closeDate: z.string().optional(),
   stage: z.string().optional(),

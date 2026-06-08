@@ -9,6 +9,7 @@ import { bootstrapEngines } from "./workers/engines/registry";
 import { pluginRegistry } from "@workspace/plugins-core";
 import { CustomConnector } from "@workspace/plugins-custom";
 import { OdooConnector } from "@workspace/plugins-odoo";
+import { HubSpotConnector } from "@workspace/plugins-hubspot";
 
 // ─── Boot workers (moved to boot() function) ──────────────────────────────────
 
@@ -39,6 +40,7 @@ async function boot() {
     // Register plugins
     pluginRegistry.register(new CustomConnector());
     pluginRegistry.register(new OdooConnector());
+    pluginRegistry.register(new HubSpotConnector());
 
     // Rehydrate connected workspaces
     const { IntegrationConnection, IntegrationSync } = await import("@workspace/db");

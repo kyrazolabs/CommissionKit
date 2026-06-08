@@ -43,6 +43,7 @@
         "pages": [
           "integrations/overview",
           "integrations/odoo",
+          "integrations/hubspot",
           "integrations/custom"
         ]
       },

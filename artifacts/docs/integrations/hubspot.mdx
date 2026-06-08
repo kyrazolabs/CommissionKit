@@ -1,0 +1,126 @@
+---
+title: "HubSpot CRM"
+description: "Connect CommissionKit to HubSpot CRM to sync owners as reps and deals for commission calculation"
+---
+
+Connect your HubSpot CRM to CommissionKit. The connector syncs **owners as sales reps** and **closed-won deals** for commission calculation.
+
+## How data flows
+
+```
+HubSpot CRM                    CommissionKit
+──────────                     ──────────────
+
+Contacts / Company              (not synced)
+
+Deal created               →    Deal created (stage mapped from HubSpot pipeline)
+        │
+        ▼
+Deal stage changes         →    Stage updates on next sync
+        │
+        ▼
+Deal marked closed-won     →    Payment status = "paid"
+Deal in other stages       →    Payment status = "unpaid"
+```
+
+HubSpot is a CRM, not an ERP — it doesn't track payments. CommissionKit assigns `paymentStatus: "paid"` to closed-won deals and `"unpaid"` to deals in other stages. You can override this with manual payment tracking in CommissionKit.
+
+## Stage behavior
+
+HubSpot deal stages are mapped to CommissionKit's canonical stages:
+
+| HubSpot stage | CKit stage |
+|---|---|
+| `appointmentscheduled` | `pending` |
+| `qualifiedtobuy` | `pending` |
+| `presentationscheduled` | `pending` |
+| `decisionmakerboughtin` | `pending` |
+| `contractsent` | `pending` |
+| `closedwon` | `closed_won` |
+| `closedlost` | `closed_lost` |
+| Custom pipeline stages | `closed_won` (fallback) |
+
+**Which deals get synced**: the connector auto-discovers your pipeline via HubSpot's API. By default (`syncClosedOnly: true`), only deals in stages marked as closed-won are synced. If no stages have `isClosed = true`, the connector falls back to syncing all deals. Set `syncClosedOnly: false` in the config to sync every deal regardless of stage.
+
+## Authentication
+
+CommissionKit uses token-based auth — a single access token from HubSpot. Two ways to get one:
+
+### Method 1: Service Key
+
+1. In HubSpot, navigate to **Development** → **Service Keys**
+2. Click **Create service key**, name it "CommissionKit"
+3. Select scopes: `crm.objects.owners.read`, `crm.objects.deals.read`, `crm.schemas.deals.read`
+4. Click **Create** → copy the token
+5. In CommissionKit, paste it and click **Connect**
+
+### Method 2: Legacy App
+
+A Legacy App also provides an access token you can use directly.
+
+1. In HubSpot, navigate to **Development** → **Legacy Apps**
+2. Click **Create app** → **Public app**
+3. Fill in the **Basic Info** tab (name: CommissionKit)
+4. On the **Auth** tab, set a redirect URL (can be `http://localhost` for testing) and add scopes:
+   - `crm.objects.owners.read`
+   - `crm.objects.deals.read`
+   - `crm.schemas.deals.read`
+5. Click **Create app**
+6. Copy the **Access Token** from the app's credentials
+7. In CommissionKit, paste it and click **Connect**
+
+<Note>
+Legacy app credentials (including the access token) are only visible **after** clicking **Create app** — not in draft mode.
+</Note>
+
+## What syncs
+
+| Entity | HubSpot source | CKit equivalent |
+|---|---|---|
+| **Reps** | `crm/v3/owners` — all non-archived owners | Rep (name = firstName + lastName, role = "Sales Rep") |
+| **Deals** | `crm/v3/objects/deals/search` — by stage filter | Deal (amount, close date, owner, pipeline stage) |
+
+## Required scopes
+
+| Scope | Why |
+|---|---|
+| `crm.objects.owners.read` | Fetch owners → map to sales reps |
+| `crm.objects.deals.read` | Fetch deals via search API |
+| `crm.schemas.deals.read` | Discover pipeline stages for stage mapping |
+
+These three scopes are needed for both Service Keys and Legacy Apps.
+
+## Sync schedule
+
+After connecting, choose a sync interval from the **⋮** menu:
+
+| Option | Interval |
+|---|---|
+| Every 10 min | Real-time sync |
+| Hourly | Recommended for active pipelines |
+| Daily | For stable pipelines |
+| Manual only | No automatic sync |
+
+## Troubleshooting
+
+### "Deal sync shows 0 total"
+
+Check these three things:
+
+* **Deal owner is assigned** — deals with no owner are skipped. Open the deal in HubSpot, click the **Deal owner** dropdown, and assign someone.
+* **Sync order matters** — sync **Reps first**, then Deals. The connector needs to pull owners into CKit before it can link deals to them.
+* **Stage includes your deal** — see [Stage behavior](#stage-behavior) above. Verify your deal's pipeline stage is marked as closed-won in HubSpot, or set `syncClosedOnly: false` in the connector config to sync all deals.
+
+### "HTTP 403 — required scopes" or "No stages found"
+
+Your token is missing `crm.schemas.deals.read`. This scope is required to discover pipeline stages. Go to your Service Key or Legacy App and add it. The three scopes you need are listed in [Required scopes](#required-scopes) above.
+
+### "0 reps found"
+
+Your token might be missing `crm.objects.owners.read`. Check your Service Key or Legacy App scopes.
+
+### "Connection test fails"
+
+* **Service Key**: the token starts with `pat-` — make sure you copied the full value
+* **Legacy App**: confirm the app was created (not in draft mode). The access token is visible under the app's credentials after creation
+* Both token types expire — Service Keys have no expiry but Legacy App tokens expire; if you get `HTTP 401`, regenerate the token in HubSpot and update it in CKit

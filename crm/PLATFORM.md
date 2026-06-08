@@ -143,7 +143,26 @@ Built for collaboration and growth.
 - **Permission Caching**: Redis-backed permission cache with automatic invalidation for high-performance authorization.
 - **Easy Onboarding**: Invite new team members with a single email invitation. Pending invitations auto-accept when the invited user signs in.
 
-### In-App Notifications
+### Integrations & Connectors
+
+CommissionKit plugs directly into the tools you already use — no manual data entry, no spreadsheets. Native connectors sync your sales reps and deals automatically from your ERP or CRM.
+
+**Native Connectors:**
+
+- **Odoo ERP** — Syncs sales reps (`res.users`) and confirmed sales orders (`sale.order`). Maps Odoo states to CKit stages, resolves payment status from actual invoice data (not just invoice status), and supports all major currencies. Works with Odoo 15+ Community and Enterprise.
+- **HubSpot CRM** — Syncs owners as reps and deals by pipeline stage. Auto-discovers your pipeline stages and fetches payment-relevant metadata. Works with Service Keys or Legacy App tokens.
+- **Custom REST API** — Connect any ERP or CRM that exposes a REST API. Configure authentication (Bearer, API Key, Basic Auth), field mappings via JSONPath, pagination (offset, cursor, page), and stage/payment status mappings — all through a JSON config. Supports `$div` compute fields for fractional amounts (e.g., micros → dollars).
+
+**Sync Capabilities:**
+
+- **Scheduled auto-sync** — Pull updates every 10 minutes, hourly, daily, or on-demand
+- **Hash-based change detection** — Only syncs records that actually changed in the source system
+- **Stage mapping** — Customize how your system's stages map to CKit stages (HubSpot)
+- **Field mapping** — JSONPath-based extraction from any response shape (Custom REST)
+- **Dedicated sync workers** — BullMQ-powered background processing with retry and error tracking
+- **Sync history** — Full audit trail of every sync with created/updated/skipped/failed counts
+
+For ERPs or CRMs not in the list above, our team builds custom connectors on demand.
 
 Stay informed with a real-time notification system.
 
@@ -156,31 +175,7 @@ Stay informed with a real-time notification system.
 
 ---
 
-## 4. Pricing & Plans
-
-CommissionKit offers flexible pricing tiers to match your team's size and needs.
-
-| Feature | Free | Starter | Growth | Pro |
-|---|---|---|---|---|
-| Commission runs | ✓ | ✓ | ✓ | ✓ |
-| Deal management | ✓ | ✓ | ✓ | ✓ |
-| Rep management | Limited | ✓ | ✓ | ✓ |
-| Multi-currency | ✓ | ✓ | ✓ | ✓ |
-| Commission plans (Flat / Tiered / Accelerator) | ✓ | ✓ | ✓ | ✓ |
-| Payouts & disputes | — | — | ✓ | ✓ |
-| CSV exports | — | — | ✓ | ✓ |
-| Custom roles (RBAC) | — | ✓ | ✓ | ✓ |
-| Advanced reporting | — | — | ✓ | ✓ |
-| Custom engine | — | — | — | Add-on |
-
-- **14-Day Free Trial**: One-time trial per workspace on first paid subscription.
-- **Billing Intervals**: Monthly and yearly billing available.
-- **Self-Service**: Manage your subscription via Stripe Customer Portal.
-- **Extra Rep Seats**: Add additional seats beyond your plan's included limit with automatic proration.
-
----
-
-## 5. Reliability & Security
+## 4. Reliability & Security
 
 CommissionKit is built for modern business requirements:
 
@@ -192,7 +187,7 @@ CommissionKit is built for modern business requirements:
 
 ---
 
-## 6. The Result: A Motivated, High-Performance Sales Team
+## 5. The Result: A Motivated, High-Performance Sales Team
 
 By removing the friction of commission management, CommissionKit allows your leadership to focus on strategy and your sales reps to focus on what they do best: **closing deals.**
 

@@ -14,6 +14,11 @@ describe("normalizeStage", () => {
     expect(normalizeStage("banana")).toBe("closed_won");
     expect(normalizeStage("")).toBe("closed_won");
   });
+
+  test("custom mapping overrides default", () => {
+    expect(normalizeStage("draft", { draft: "closed_won" })).toBe("closed_won");
+    expect(normalizeStage("done", { done: "pending" })).toBe("pending");
+  });
 });
 
 describe("ODOO_STAGE_MAP", () => {

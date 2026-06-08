@@ -15,6 +15,7 @@ const IntegrationConnectionSchema = new Schema({
     default: "disconnected",
   },
   config: { type: Schema.Types.Mixed, default: {} },
+  metadata: { type: Schema.Types.Mixed, default: {} },
   webhookSecret: { type: String },
   syncSchedule: { type: SyncScheduleSchema, default: () => ({ reps: "hourly", deals: "hourly" }) },
   writeBackEnabled: { type: Boolean, default: false },
@@ -33,6 +34,7 @@ export type IntegrationConnection = mongoose.Document & {
   connectorName: string;
   status: "disconnected" | "connecting" | "connected" | "error";
   config: Record<string, unknown>;
+  metadata: Record<string, unknown>;
   webhookSecret?: string;
   syncSchedule: {
     reps: "realtime" | "hourly" | "daily" | "manual";
