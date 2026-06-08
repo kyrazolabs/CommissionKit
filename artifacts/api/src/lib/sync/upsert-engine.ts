@@ -2,6 +2,7 @@ import { createHash } from "crypto";
 import { Rep, Deal, IntegrationLog } from "@workspace/db";
 import type { NormalizedRep, NormalizedDeal } from "@workspace/plugins-core";
 import { logger } from "../logger";
+import * as Sentry from "@sentry/bun";
 
 // ─── Sync Stats ─────────────────────────────────────────────────────
 
@@ -115,7 +116,11 @@ export async function upsertReps(
       }
     } catch (err: any) {
       stats.failed++;
-      logger.error({ err, externalId: rep.externalId }, "[SyncEngine] Failed to upsert rep");
+      logger.error({ err, externalId: rep.externalId, connectorName }, "[SyncEngine] Failed to upsert rep");
+      Sentry.captureException(err, {
+        tags: { phase: "upsert-rep", connectorName },
+        extra: { externalId: rep.externalId, workspaceId },
+      });
 
       await IntegrationLog.create({
         workspaceId,
@@ -165,6 +170,15 @@ export async function upsertDeals(
 
       if (!rep) {
         stats.failed++;
+        logger.error(
+          { dealExternalId: deal.externalId, repExternalId: deal.repExternalId, connectorName },
+          "[SyncEngine] Rep not found for deal — sync reps first",
+        );
+        Sentry.captureMessage("Rep not found for deal", {
+          level: "warning",
+          tags: { phase: "upsert-deal", connectorName },
+          extra: { dealExternalId: deal.externalId, repExternalId: deal.repExternalId, workspaceId },
+        });
         await IntegrationLog.create({
           workspaceId,
           syncId: syncId || undefined,
@@ -246,7 +260,11 @@ export async function upsertDeals(
       }
     } catch (err: any) {
       stats.failed++;
-      logger.error({ err, externalId: deal.externalId }, "[SyncEngine] Failed to upsert deal");
+      logger.error({ err, externalId: deal.externalId, connectorName }, "[SyncEngine] Failed to upsert deal");
+      Sentry.captureException(err, {
+        tags: { phase: "upsert-deal", connectorName },
+        extra: { externalId: deal.externalId, workspaceId },
+      });
 
       await IntegrationLog.create({
         workspaceId,

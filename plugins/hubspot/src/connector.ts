@@ -33,7 +33,7 @@ export class HubSpotConnector extends BasePlugin {
   readonly name = "hubspot";
   readonly displayName = "HubSpot CRM";
   readonly version = "1.0.0";
-  readonly description = "Connect CommissionKit to your HubSpot CRM. Syncs sales reps (owners) and deals automatically.";
+  readonly description = "Connect CKit to your HubSpot CRM. Syncs sales reps (owners) and deals automatically.";
   readonly icon = "sprout";
 
   private parseConfig(config: ConnectionConfig): HubSpotConfig {

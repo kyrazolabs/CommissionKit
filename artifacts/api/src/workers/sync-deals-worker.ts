@@ -4,6 +4,7 @@ import { getRedisClient, SYNC_DEALS_QUEUE } from "@workspace/queue";
 import type { SyncDealsPayload } from "@workspace/queue";
 import { pluginRegistry } from "@workspace/plugins-core";
 import { logger } from "../lib/logger";
+import * as Sentry from "@sentry/bun";
 import { acquireWorkspaceLock } from "../lib/sync/lock";
 import { upsertDeals } from "../lib/sync/upsert-engine";
 
@@ -82,6 +83,10 @@ export const syncDealsWorker = new Worker<SyncDealsPayload>(
         await job.updateProgress(100);
       } catch (err: any) {
         logger.error({ err, workspaceId, connectorName }, "[SyncDealsWorker] Deal sync failed");
+        Sentry.captureException(err, {
+          tags: { worker: "sync-deals", connectorName },
+          extra: { workspaceId, trigger },
+        });
 
         await IntegrationSync.findByIdAndUpdate(syncRecord._id, {
           status: "failed",

@@ -119,6 +119,8 @@ export function IntegrationsPage() {
     queryKey: ["integrations", "status", activeWorkspace?.id],
     queryFn: () => apiFetch(`/api/integrations/${activeWorkspace?.id}/status`),
     enabled: !!activeWorkspace?.id,
+    refetchInterval: 10000,
+    refetchOnWindowFocus: false,
   });
 
   const testMutation = useMutation({
@@ -749,7 +751,7 @@ export function IntegrationsPage() {
                             <Label className="text-xs">Access Token</Label>
                             <Input
                               type="password"
-                              placeholder="Service Key or Legacy App token"
+                              placeholder="Service Key or Legacy App token e.g. (pat-na1-xxxx...)"
                               value={String(formValues.accessToken || "")}
                               onChange={(e) => setFormValues({ ...formValues, accessToken: e.target.value })}
                               className="h-9 text-sm"

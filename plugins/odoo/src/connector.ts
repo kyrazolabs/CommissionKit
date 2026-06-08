@@ -27,7 +27,7 @@ export class OdooConnector extends BasePlugin {
   readonly name = "odoo";
   readonly displayName = "Odoo ERP";
   readonly version = "1.0.0";
-  readonly description = "Connect CommissionKit to your Odoo instance. Syncs sales reps and confirmed sales orders from the Sales or CRM app.";
+  readonly description = "Connect CKit to your Odoo instance. Syncs sales reps and confirmed sales orders from the Sales or CRM app.";
   readonly icon = "store";
 
   private getOdooClient(config: ConnectionConfig): OdooClient {
