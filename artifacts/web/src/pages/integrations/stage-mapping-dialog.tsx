@@ -19,14 +19,20 @@ export function StageMappingDialog({ open, onOpenChange }: Props) {
   const [loading, setLoading] = useState(false);
   const [stages, setStages] = useState<StageOption[]>([]);
   const [mapping, setMapping] = useState<Record<string, string>>({});
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const data = await apiFetch(`/api/integrations/${activeWorkspace?.id}/hubspot/stages`);
       setStages(data.stages || []);
       setMapping(data.mapping || {});
-    } catch { setStages([]); setMapping({}); }
+    } catch (err: any) {
+      setLoadError(err.message || "Failed to fetch stages");
+      setStages([]);
+      setMapping({});
+    }
     finally { setLoading(false); }
   };
 
@@ -55,6 +61,8 @@ export function StageMappingDialog({ open, onOpenChange }: Props) {
         <div className="space-y-3 py-2 max-h-[400px] overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center py-8"><LoaderCircle className="size-5 animate-spin text-muted-foreground" /></div>
+          ) : loadError ? (
+            <p className="text-sm text-destructive text-center py-8">{loadError}</p>
           ) : stages.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">No stages found.</p>
           ) : (

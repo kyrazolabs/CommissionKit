@@ -644,6 +644,7 @@ router.get(
 
       res.json({ stages, mapping: savedMapping });
     } catch (err: any) {
+      logger.error({ err, workspaceId }, "[HubSpot] Failed to fetch pipeline stages");
       res.status(500).json({ error: err.message || "Failed to fetch stages" });
     }
   },
