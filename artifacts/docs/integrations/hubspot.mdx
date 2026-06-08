@@ -25,9 +25,9 @@ Deal in other stages       →    Payment status = "unpaid"
 
 HubSpot is a CRM, not an ERP — it doesn't track payments. CommissionKit assigns `paymentStatus: "paid"` to closed-won deals and `"unpaid"` to deals in other stages. You can override this with manual payment tracking in CommissionKit.
 
-## Stage mapping
+## Stage behavior
 
-HubSpot deal stages are normalized to CommissionKit's canonical stages:
+HubSpot deal stages are mapped to CommissionKit's canonical stages:
 
 | HubSpot stage | CKit stage |
 |---|---|
@@ -38,9 +38,9 @@ HubSpot deal stages are normalized to CommissionKit's canonical stages:
 | `contractsent` | `pending` |
 | `closedwon` | `closed_won` |
 | `closedlost` | `closed_lost` |
-| Custom pipeline stages | `closed_won` (default fallback) |
+| Custom pipeline stages | `closed_won` (fallback) |
 
-The connector automatically discovers your pipeline stages via HubSpot's API. Any stage with `metadata.isClosed = true` is treated as closed-won and synced (if `syncClosedOnly` is enabled).
+**Which deals get synced**: the connector auto-discovers your pipeline via HubSpot's API. By default (`syncClosedOnly: true`), only deals in stages marked as closed-won are synced. If no stages have `isClosed = true`, the connector falls back to syncing all deals. Set `syncClosedOnly: false` in the config to sync every deal regardless of stage.
 
 ## Authentication
 
@@ -100,11 +100,11 @@ After connecting, choose a sync interval from the **⋮** menu:
 
 ### "Deal sync shows 0 total"
 
-Check that at least one deal in HubSpot has these three things:
+Check these three things:
 
-* **Stage is closed-won** — the connector auto-discovers your pipeline stages. If no stages are marked as closed-won, it syncs all deals instead. Go to **Settings > Objects > Deals > Pipelines** and confirm your "Closed Won" stage has `Is closed won` enabled.
 * **Deal owner is assigned** — deals with no owner are skipped. Open the deal in HubSpot, click the **Deal owner** dropdown, and assign someone.
-* **Sync order matters** — sync **Reps first**, then Deals. The connector needs to pull owners into CKit before it can link deals to them. Use the dropdown menu on the integrations page: Sync Reps → Sync Deals.
+* **Sync order matters** — sync **Reps first**, then Deals. The connector needs to pull owners into CKit before it can link deals to them.
+* **Stage includes your deal** — see [Stage behavior](#stage-behavior) above. Verify your deal's pipeline stage is marked as closed-won in HubSpot, or set `syncClosedOnly: false` in the connector config to sync all deals.
 
 ### "0 reps found"
 
