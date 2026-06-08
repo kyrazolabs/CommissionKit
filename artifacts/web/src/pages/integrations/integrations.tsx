@@ -132,14 +132,6 @@ export function IntegrationsPage() {
             ))}
           </motion.div>
         </div>
-        {sortedConnectors && sortedConnectors.length > 1 && (
-          <div className="flex justify-center gap-1.5 mt-4">
-            {sortedConnectors.map((_, i) => (
-              <button key={i} onClick={() => setCarouselIndex(i)} className={cn("w-2 h-2 rounded-full transition-colors", i === carouselIndex ? "bg-primary" : "bg-muted-foreground/30")} />
-            ))}
-          </div>
-        )}
-      </div>
 
       {!status?.connected && (
         <a
