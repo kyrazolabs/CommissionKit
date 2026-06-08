@@ -35,6 +35,18 @@ function resolveFieldValue(item: any, fieldDef: string): any {
 
 export { resolveFieldValue }; // exported for tests
 
+function invertPaymentStatusMapping(
+  ckitToRaw: Record<string, string[]>,
+): Record<string, import("@workspace/plugins-core").PaymentStatus> {
+  const rawToCkit: Record<string, import("@workspace/plugins-core").PaymentStatus> = {};
+  for (const [ckitStatus, rawStatuses] of Object.entries(ckitToRaw)) {
+    for (const raw of rawStatuses) {
+      rawToCkit[raw.toLowerCase()] = ckitStatus as import("@workspace/plugins-core").PaymentStatus;
+    }
+  }
+  return rawToCkit;
+}
+
 const DEFAULT_PAGINATION = {
   type: "offset" as const,
   limitParam: "limit",
@@ -155,6 +167,9 @@ export class CustomConnector extends BasePlugin {
         const rawStage = resolveFieldValue(item, fields.stage || "stage");
         const rawPaymentStatus = fields.paymentStatus ? resolveFieldValue(item, fields.paymentStatus) : undefined;
 
+        // Invert paymentStatusMapping: config is CKit→raw[], derivePaymentStatus expects raw→CKit
+        const paymentMapping = entity.paymentStatusMapping ? invertPaymentStatusMapping(entity.paymentStatusMapping as any) : undefined;
+
         return {
           externalId: String(resolveFieldValue(item, fields.externalId || "id") || ""),
           repExternalId: String(resolveFieldValue(item, fields.repExternalId || "repId") || ""),
@@ -164,7 +179,7 @@ export class CustomConnector extends BasePlugin {
           stage: rawStage || "closed_won",
           currency: fields.currency ? resolveFieldValue(item, fields.currency) : undefined,
           paymentStatus: rawPaymentStatus
-            ? derivePaymentStatus(rawPaymentStatus, entity.paymentStatusMapping as any)
+            ? derivePaymentStatus(rawPaymentStatus, paymentMapping)
             : undefined,
           notes: fields.notes ? resolveFieldValue(item, fields.notes) : undefined,
         } as NormalizedDeal;
