@@ -81,6 +81,7 @@ export class HubSpotClient {
       client_id: this.clientId,
       client_secret: this.clientSecret,
       refresh_token: this.refreshToken,
+      redirect_uri: `https://app.hubspot.com/oauth/authorize`, // required by HubSpot refresh endpoint
     });
     const res = await fetch(`${HUBSPOT_API}/oauth/v1/token`, {
       method: "POST",
