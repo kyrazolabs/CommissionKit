@@ -31,19 +31,9 @@ export function IntegrationsPage() {
   const [stageMappingOpen, setStageMappingOpen] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [visibleCards, setVisibleCards] = useState(1);
+  const [slidePx, setSlidePx] = useState(0);
   const trackRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
-  const [slidePx, setSlidePx] = useState(0);
-
-  useEffect(() => {
-    const update = () => {
-      if (cardRef.current) setSlidePx(cardRef.current.offsetWidth + 16);
-      setVisibleCards(window.innerWidth >= 768 ? 2 : 1);
-    };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, [sortedConnectors]);
 
   const { data: connectors, isLoading: connectorsLoading } = useQuery<{ connectors: Connector[] }>({
     queryKey: ["integrations", "connectors"],
@@ -84,6 +74,16 @@ export function IntegrationsPage() {
   });
 
   const maxIndex = Math.max(0, (sortedConnectors?.length || 1) - visibleCards);
+
+  useEffect(() => {
+    const update = () => {
+      if (cardRef.current) setSlidePx(cardRef.current.offsetWidth + 16);
+      setVisibleCards(window.innerWidth >= 768 ? 2 : 1);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [sortedConnectors]);
 
   if (isLoading) {
     return (
