@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export function ConnectDialog({ connector, isConnected }: Props) {
+  const { t } = useTranslation();
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -88,7 +90,7 @@ export function ConnectDialog({ connector, isConnected }: Props) {
     }}>
       <DialogTrigger asChild>
         <Button variant={isConnected ? "secondary" : "default"} className="w-full">
-          {isConnected ? "Configure" : "Set Up"}
+          {isConnected ? t("integrations.configure") : t("integrations.setUp")}
           <ArrowRight className="size-3.5 ml-1.5" />
         </Button>
       </DialogTrigger>
@@ -96,10 +98,10 @@ export function ConnectDialog({ connector, isConnected }: Props) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ConnectorImage name={connector.name} className="size-5 object-contain" />
-            Connect to {connector.displayName}
+            {t("integrations.connectTo")} {connector.displayName}
           </DialogTitle>
           <DialogDescription>
-            Enter your {connector.displayName} credentials to start syncing data.
+            {t("integrations.enterCredentials")} {connector.displayName} {t("integrations.credentialsHint")}
           </DialogDescription>
         </DialogHeader>
 
@@ -113,22 +115,22 @@ export function ConnectDialog({ connector, isConnected }: Props) {
               testResult.success ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300" : "bg-destructive/10 text-destructive",
             )}>
               {testResult.success ? <CheckCircle2 className="size-4 shrink-0" /> : <XCircle className="size-4 shrink-0" />}
-              {testResult.message || (testResult.success ? "Connection successful" : "Connection failed")}
+              {testResult.message || (testResult.success ? t("integrations.connectionSuccessful") : t("integrations.connectionFailed"))}
             </div>
           )}
 
           {connectMutation.isError && (
             <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-              {(connectMutation.error as Error)?.message || "Connection failed"}
+              {(connectMutation.error as Error)?.message || t("integrations.connectionFailed")}
             </div>
           )}
 
           <div className="flex gap-2 pt-2">
             <Button variant="secondary" onClick={handleTest} disabled={testing} className="flex-1">
-              {testing ? "Testing..." : "Test Connection"}
+              {testing ? t("integrations.testing") : t("integrations.testConnection")}
             </Button>
             <Button onClick={handleConnect} disabled={connecting} className="flex-1">
-              {connecting ? "Connecting..." : "Connect"}
+              {connecting ? t("integrations.connecting") : t("integrations.connect")}
             </Button>
           </div>
         </div>
