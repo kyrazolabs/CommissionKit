@@ -35,16 +35,10 @@ function SyncIndicator() {
 
   if (isMutating > 0) {
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="flex size-8 items-center justify-center">
-            <LoaderCircle className="size-3.5 animate-spin text-amber-500 dark:text-amber-400" />
-          </div>
-        </TooltipTrigger>
-        <TooltipContent side="bottom" align="end">
-          Syncing in background...
-        </TooltipContent>
-      </Tooltip>
+      <div className="flex items-center gap-1.5 mr-1">
+        <LoaderCircle className="size-3.5 animate-spin text-amber-500 dark:text-amber-400" />
+        <span className="text-xs text-muted-foreground">Saving...</span>
+      </div>
     );
   }
 
