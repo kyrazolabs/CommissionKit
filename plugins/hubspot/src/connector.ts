@@ -47,14 +47,22 @@ export class HubSpotConnector extends BasePlugin {
 
   private getClient(config: ConnectionConfig): HubSpotClient {
     const c = this.parseConfig(config);
-    if (!c.accessToken) throw new Error("HubSpot config requires an access token");
-    return new HubSpotClient(c.accessToken, c.refreshToken, c.clientId, c.clientSecret);
+    if (c.authType === "oauth2" && (!c.accessToken && !c.refreshToken)) {
+      throw new Error("HubSpot OAuth2 requires client credentials (authorize first)");
+    }
+    if (!c.accessToken && c.authType !== "oauth2") {
+      throw new Error("HubSpot config requires an access token");
+    }
+    return new HubSpotClient(c.accessToken || "", c.refreshToken, c.clientId, c.clientSecret);
   }
 
   async testConnection(config: ConnectionConfig): Promise<ConnectionTestResult> {
     try {
       const c = this.parseConfig(config);
       if (!c.accessToken) {
+        if (c.authType === "oauth2" && c.clientId && c.clientSecret) {
+          return { success: true, message: "OAuth credentials valid — authorize to complete" };
+        }
         return { success: false, message: "Missing access token" };
       }
 

@@ -47,13 +47,23 @@ describe("HubSpotConnector", () => {
   });
 
   describe("testConnection", () => {
-    test("fails with missing access token", async () => {
-      const result = await connector.testConnection({});
+    test("fails with missing access token (private_app)", async () => {
+      const result = await connector.testConnection({ authType: "private_app" });
       expect(result.success).toBe(false);
       expect(result.message).toBe("Missing access token");
     });
 
-    test("fails when API returns error", async () => {
+    test("returns success for oauth2 with client credentials (pre-authorization)", async () => {
+      const result = await connector.testConnection({
+        authType: "oauth2",
+        clientId: "my-client-id",
+        clientSecret: "my-client-secret",
+      });
+      expect(result.success).toBe(true);
+      expect(result.message).toContain("authorize to complete");
+    });
+
+    test("fails when API returns error (private_app)", async () => {
       globalThis.fetch = (async () => {
         return new Response("Unauthorized", { status: 401 });
       }) as any;
