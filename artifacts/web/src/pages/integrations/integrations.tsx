@@ -130,7 +130,9 @@ export function IntegrationsPage() {
           </a>
         )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {connectors?.connectors?.map((connector) => (
+          {connectors?.connectors?.slice().sort((a, b) =>
+            (status?.connectorName === a.name ? -1 : 0) - (status?.connectorName === b.name ? -1 : 0)
+          ).map((connector) => (
             <ConnectorCard key={connector.name} connector={connector} isConnected={status?.connectorName === connector.name} />
           ))}
         </div>
