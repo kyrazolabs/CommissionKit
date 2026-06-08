@@ -7,7 +7,9 @@ import { usePageMeta } from "@/hooks/use-page-meta";
 import { apiFetch } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
-import { Bug, BadgeCheck } from "lucide-react";
+import { Bug, BadgeCheck, ChevronLeft, ChevronRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { ConnectorCard } from "./connector-card";
 import { ConnectedCard } from "./connected-card";
@@ -27,6 +29,7 @@ export function IntegrationsPage() {
   const [mappingJson, setMappingJson] = useState("");
   const [mappingError, setMappingError] = useState<string | null>(null);
   const [stageMappingOpen, setStageMappingOpen] = useState(false);
+  const [carouselIndex, setCarouselIndex] = useState(0);
 
   const { data: connectors, isLoading: connectorsLoading } = useQuery<{ connectors: Connector[] }>({
     queryKey: ["integrations", "connectors"],
@@ -58,6 +61,14 @@ export function IntegrationsPage() {
 
   const isLoading = connectorsLoading || statusLoading;
 
+  const sortedConnectors = connectors?.connectors?.slice().sort((a, b) => {
+    const aConnected = status?.connectorName === a.name ? 0 : 1;
+    const bConnected = status?.connectorName === b.name ? 0 : 1;
+    const aCustom = a.name === "custom" ? 2 : aConnected;
+    const bCustom = b.name === "custom" ? 2 : bConnected;
+    return aCustom - bCustom;
+  });
+
   if (isLoading) {
     return (
       <div className="mx-auto max-w-4xl px-6 py-8 space-y-6">
@@ -86,17 +97,54 @@ export function IntegrationsPage() {
         <p className="text-sm text-muted-foreground mt-1">Connect CommissionKit to your ERP or CRM. Synced reps and deals are ready for commission calculation.</p>
       </div>
 
-        {status?.connected && (
-          <ConnectedCard
-            status={status}
-            onOpenMappingEditor={openMappingEditor}
-            onOpenStageMapping={() => setStageMappingOpen(true)}
-          />
-        )}
+      {status?.connected && (
+        <ConnectedCard
+          status={status}
+          onOpenMappingEditor={openMappingEditor}
+          onOpenStageMapping={() => setStageMappingOpen(true)}
+        />
+      )}
 
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold">{status?.connected ? "Switch Connector" : "Choose a Connector"}</h2>
+          {sortedConnectors && sortedConnectors.length > 1 && (
+            <div className="flex gap-1">
+              <button onClick={() => setCarouselIndex((i) => Math.max(0, i - 1))} disabled={carouselIndex === 0} className="flex size-8 items-center justify-center rounded-lg border hover:bg-muted disabled:opacity-30 transition-colors">
+                <ChevronLeft className="size-4" />
+              </button>
+              <button onClick={() => setCarouselIndex((i) => Math.min(sortedConnectors.length - 1, i + 1))} disabled={carouselIndex >= sortedConnectors.length - 1} className="flex size-8 items-center justify-center rounded-lg border hover:bg-muted disabled:opacity-30 transition-colors">
+                <ChevronRight className="size-4" />
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="overflow-hidden">
+          <motion.div
+            className="flex gap-4"
+            animate={{ x: `-${carouselIndex * 100}%` }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          >
+            {sortedConnectors?.map((connector) => (
+              <div key={connector.name} className="w-full min-w-full md:min-w-[calc(50%-8px)]">
+                <ConnectorCard connector={connector} isConnected={status?.connectorName === connector.name} />
+              </div>
+            ))}
+          </motion.div>
+        </div>
+        {sortedConnectors && sortedConnectors.length > 1 && (
+          <div className="flex justify-center gap-1.5 mt-4">
+            {sortedConnectors.map((_, i) => (
+              <button key={i} onClick={() => setCarouselIndex(i)} className={cn("w-2 h-2 rounded-full transition-colors", i === carouselIndex ? "bg-primary" : "bg-muted-foreground/30")} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {!status?.connected && (
         <a
           href="mailto:sales@commissionk.it?subject=Custom Connector Request"
-          className="block w-full mb-6 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 px-5 py-4 hover:from-primary/15 hover:to-primary/10 transition-all group"
+          className="block w-full rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 px-5 py-4 hover:from-primary/15 hover:to-primary/10 transition-all group"
         >
           <div className="flex items-center gap-3">
             <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/20">
@@ -104,43 +152,12 @@ export function IntegrationsPage() {
             </div>
             <div className="flex-1">
               <p className="text-sm font-semibold text-foreground">Need a custom connector?</p>
-              <p className="text-xs text-muted-foreground mt-0.5">We build integrations for any ERP or CRM — contact sales to get started.</p>
+              <p className="text-xs text-muted-foreground mt-0.5">We build integrations for any ERP or CRM. Contact sales to get started.</p>
             </div>
-            <span className="shrink-0 text-xs font-medium text-primary group-hover:underline">Contact sales</span>
+            <span className="ml-auto text-xs font-medium text-primary group-hover:underline">Contact sales</span>
           </div>
         </a>
-
-      <div>
-        <h2 className="text-lg font-semibold mb-3">{status?.connected ? "Switch Connector" : "Choose a Connector"}</h2>
-        {!status?.connected && (
-          <a
-            href="mailto:sales@commissionk.it?subject=Custom Connector Request"
-            className="block w-full mb-6 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 px-5 py-4 hover:from-primary/15 hover:to-primary/10 transition-all group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/20">
-                <BadgeCheck className="size-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">Need a custom connector?</p>
-                <p className="text-xs text-muted-foreground mt-0.5">We build integrations for any ERP or CRM. Contact sales to get started.</p>
-              </div>
-              <span className="ml-auto text-xs font-medium text-primary group-hover:underline">Contact sales</span>
-            </div>
-          </a>
-        )}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {connectors?.connectors?.slice().sort((a, b) => {
-            const aConnected = status?.connectorName === a.name ? 0 : 1;
-            const bConnected = status?.connectorName === b.name ? 0 : 1;
-            const aCustom = a.name === "custom" ? 2 : aConnected;
-            const bCustom = b.name === "custom" ? 2 : bConnected;
-            return aCustom - bCustom;
-          }).map((connector) => (
-            <ConnectorCard key={connector.name} connector={connector} isConnected={status?.connectorName === connector.name} />
-          ))}
-        </div>
-      </div>
+      )}
 
       <div className="mt-8 pt-6 border-t border-border">
         <a href="mailto:support@commissionk.it?subject=Integration Bug Report" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
