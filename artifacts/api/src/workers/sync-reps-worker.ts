@@ -49,9 +49,14 @@ export const syncRepsWorker = new Worker<SyncRepsPayload>(
       try {
         await job.updateProgress(10);
 
+        const pluginConfig = {
+          ...(conn.config as Record<string, unknown> || {}),
+          _metadata: conn.metadata || {},
+        };
+
         const reps = await plugin.fetchReps(
           workspaceId,
-          conn.config as Record<string, unknown>,
+          pluginConfig,
           {},
         );
 

@@ -210,11 +210,11 @@ export function IntegrationsPage() {
     },
   });
 
-  const openStageMapping = async () => {
+  const openStageMapping = async (connectorName: string) => {
     setStageMappingLoading(true);
     setStageMappingOpen(true);
     try {
-      const data = await apiFetch(`/api/integrations/${activeWorkspace?.id}/hubspot/stages`);
+      const data = await apiFetch(`/api/integrations/${activeWorkspace?.id}/${connectorName}/stages`);
       setStageOptions(data.stages || []);
       setStageMapping(data.mapping || {});
     } catch {
@@ -225,9 +225,11 @@ export function IntegrationsPage() {
     }
   };
 
+  const [stageMappingConnector, setStageMappingConnector] = useState<string>("");
+
   const saveStageMapping = async () => {
     try {
-      await apiFetch(`/api/integrations/${activeWorkspace?.id}/hubspot/stages`, {
+      await apiFetch(`/api/integrations/${activeWorkspace?.id}/${stageMappingConnector}/stages`, {
         method: "PATCH",
         body: JSON.stringify({ mapping: stageMapping }),
       });
@@ -445,9 +447,9 @@ export function IntegrationsPage() {
                       <DropdownMenuSeparator />
                     </>
                   )}
-                  {status?.connectorName === "hubspot" && (
+                  {(status?.connectorName === "hubspot" || status?.connectorName === "odoo") && (
                     <>
-                      <DropdownMenuItem onClick={openStageMapping} className="flex items-center gap-2">
+                      <DropdownMenuItem onClick={() => { setStageMappingConnector(status.connectorName!); openStageMapping(status.connectorName!); }} className="flex items-center gap-2">
                         <GitBranch className="size-3.5" />
                         Stage Mapping
                       </DropdownMenuItem>
@@ -913,7 +915,7 @@ export function IntegrationsPage() {
               Stage Mapping
             </DialogTitle>
             <DialogDescription>
-              Map HubSpot pipeline stages to CommissionKit stages. Select a CKit stage for each HubSpot stage below.
+              Map {stageMappingConnector === "odoo" ? "Odoo" : "HubSpot"} states to CommissionKit stages.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2 max-h-[400px] overflow-y-auto">
@@ -923,7 +925,7 @@ export function IntegrationsPage() {
               </div>
             ) : stageOptions.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">
-                No stages found in HubSpot pipelines.
+                No stages found.
               </p>
             ) : (
               stageOptions.map((stage) => (
