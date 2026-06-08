@@ -30,6 +30,7 @@ export function IntegrationsPage() {
   const [mappingError, setMappingError] = useState<string | null>(null);
   const [stageMappingOpen, setStageMappingOpen] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [visibleCards, setVisibleCards] = useState(1);
   const trackRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const [slidePx, setSlidePx] = useState(0);
@@ -37,11 +38,14 @@ export function IntegrationsPage() {
   useEffect(() => {
     const update = () => {
       if (cardRef.current) setSlidePx(cardRef.current.offsetWidth + 16);
+      setVisibleCards(window.innerWidth >= 768 ? 2 : 1);
     };
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, []);
+
+  const maxIndex = Math.max(0, (sortedConnectors?.length || 1) - visibleCards);
 
   const { data: connectors, isLoading: connectorsLoading } = useQuery<{ connectors: Connector[] }>({
     queryKey: ["integrations", "connectors"],
@@ -125,7 +129,7 @@ export function IntegrationsPage() {
               <button onClick={() => setCarouselIndex((i) => Math.max(0, i - 1))} disabled={carouselIndex === 0} className="flex size-8 items-center justify-center rounded-lg border hover:bg-muted disabled:opacity-30 transition-colors">
                 <ChevronLeft className="size-4" />
               </button>
-              <button onClick={() => setCarouselIndex((i) => Math.min(sortedConnectors.length - 1, i + 1))} disabled={carouselIndex >= sortedConnectors.length - 1} className="flex size-8 items-center justify-center rounded-lg border hover:bg-muted disabled:opacity-30 transition-colors">
+              <button onClick={() => setCarouselIndex((i) => Math.min(maxIndex, i + 1))} disabled={carouselIndex >= maxIndex} className="flex size-8 items-center justify-center rounded-lg border hover:bg-muted disabled:opacity-30 transition-colors">
                 <ChevronRight className="size-4" />
               </button>
             </div>
@@ -141,7 +145,7 @@ export function IntegrationsPage() {
               <motion.div
                 key={connector.name}
                 ref={i === 0 ? cardRef : undefined}
-                animate={{ opacity: i === carouselIndex || (i === carouselIndex + 1 && typeof window !== "undefined" && window.innerWidth >= 768) ? 1 : 0.4 }}
+                animate={{ opacity: i >= carouselIndex && i < carouselIndex + visibleCards ? 1 : 0.4 }}
                 transition={{ duration: 0.35 }}
                 className="w-full min-w-full md:min-w-[calc(50%-8px)]"
               >
