@@ -126,7 +126,9 @@ export class HubSpotConnector extends BasePlugin {
         options?.modifiedAfter,
       );
 
-      return deals.map((d) => {
+      return deals
+        .filter((d) => d.properties.hubspot_owner_id)
+        .map((d) => {
         const p = d.properties;
         const amount = parseFloat(p.amount) || 0;
         const stage = normalizeHubSpotStage(p.dealstage);
