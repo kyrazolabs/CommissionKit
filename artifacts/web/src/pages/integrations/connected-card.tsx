@@ -55,11 +55,11 @@ export function ConnectedCard({ status, onOpenMappingEditor, onOpenStageMapping 
   };
 
   return (
-    <Card className="border-primary/40">
+    <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-muted p-1.5">
+            <div className="flex size-10 items-center justify-center rounded-xl p-1.5">
               <ConnectorImage name={status.connectorName || ""} className="size-full object-contain" />
             </div>
             <div>
