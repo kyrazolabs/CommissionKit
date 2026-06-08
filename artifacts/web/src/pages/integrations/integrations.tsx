@@ -132,6 +132,7 @@ export function IntegrationsPage() {
             ))}
           </motion.div>
         </div>
+      </div>
 
       {!status?.connected && (
         <a
