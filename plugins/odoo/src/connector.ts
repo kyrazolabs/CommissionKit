@@ -110,18 +110,7 @@ export class OdooConnector extends BasePlugin {
     const client = this.getOdooClient(config);
     await client.authenticate(c.username, c.apiKey);
 
-    const stageMapping = (config as any)._metadata?.stageMapping as Record<string, string> | undefined;
-
-    // Resolve closed-won stages: use explicit config, or derive from mapping, or default
-    let closedWonStages = c.closedWonStages;
-    if (!closedWonStages && stageMapping) {
-      closedWonStages = Object.entries(stageMapping)
-        .filter(([_, ckit]) => ckit === "closed_won")
-        .map(([odoo]) => odoo);
-    }
-    if (!closedWonStages) {
-      closedWonStages = ["sale", "done"];
-    }
+    const closedWonStages = c.closedWonStages || ["sale", "done"];
     const syncClosedOnly = c.syncClosedOnly !== false;
 
     const domain: any[] = [];
@@ -194,9 +183,8 @@ export class OdooConnector extends BasePlugin {
         }
       }
 
-      // Normalize Odoo state to CKit stage (use saved mapping if available)
-      const stageMapping = (config as any)._metadata?.stageMapping as Record<string, string> | undefined;
-      const stage = normalizeStage(r.state, stageMapping);
+      // Normalize Odoo state to CKit stage
+      const stage = normalizeStage(r.state);
 
       return {
         externalId: String(r.id),

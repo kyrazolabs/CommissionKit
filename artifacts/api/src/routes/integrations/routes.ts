@@ -608,45 +608,6 @@ router.get(
   },
 );
 
-// ─── Odoo stage mapping ────────────────────────────────────────────
-
-const ODOO_STATES = ["draft", "sent", "sale", "done", "cancel"];
-
-router.get(
-  "/:workspaceId/odoo/stages",
-  ...requirePermission("workspace", "edit"),
-  async (req: AuthenticatedRequest, res) => {
-    const workspaceId = req.workspaceId!;
-
-    const conn = await IntegrationConnection.findOne({ workspaceId, connectorName: "odoo" });
-    const savedMapping = (conn?.metadata as any)?.stageMapping || {};
-
-    const stages = ODOO_STATES.map((state) => ({ id: state, label: state, pipeline: "Odoo" }));
-    res.json({ stages, mapping: savedMapping });
-  },
-);
-
-router.patch(
-  "/:workspaceId/odoo/stages",
-  ...requirePermission("workspace", "edit"),
-  async (req: AuthenticatedRequest, res) => {
-    const workspaceId = req.workspaceId!;
-    const { mapping } = req.body;
-
-    if (!mapping || typeof mapping !== "object") {
-      res.status(400).json({ error: "mapping object required" });
-      return;
-    }
-
-    await IntegrationConnection.findOneAndUpdate(
-      { workspaceId, connectorName: "odoo" },
-      { $set: { "metadata.stageMapping": mapping } },
-    );
-
-    res.json({ success: true, mapping });
-  },
-);
-
 // ─── HubSpot stage mapping ──────────────────────────────────────────
 
 router.get(
