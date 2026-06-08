@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -46,13 +46,12 @@ export function StageMappingDialog({ open, onOpenChange }: Props) {
     }
   };
 
-  const handleOpen = (o: boolean) => {
-    onOpenChange(o);
-    if (o) load();
-  };
+  useEffect(() => {
+    if (open) load();
+  }, [open]);
 
   return (
-    <Dialog open={open} onOpenChange={handleOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2"><GitBranch className="size-5" />Stage Mapping</DialogTitle>
