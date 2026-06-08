@@ -122,8 +122,8 @@ export function IntegrationsPage() {
         <div className="overflow-hidden">
           <motion.div
             className="flex gap-4"
-            animate={{ x: `-${carouselIndex * 100}%` }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            animate={{ x: `${-carouselIndex * 100}%` }}
+            transition={{ type: "tween", duration: 0.35, ease: "easeInOut" }}
           >
             {sortedConnectors?.map((connector) => (
               <div key={connector.name} className="w-full min-w-full md:min-w-[calc(50%-8px)]">
