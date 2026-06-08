@@ -49,7 +49,8 @@ const CONNECTOR_ICONS: Record<string, any> = {
 };
 
 const ICON_SRC: Record<string, string> = {
-  odoo: "/odoo/odoo.png",
+  odoo: "/plugins/odoo.webp",
+  hubspot: "/plugins/hubspot.webp",
 };
 
 function ConnectorImage({ name, className }: { name: string; className?: string }) {
