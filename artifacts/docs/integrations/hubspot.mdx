@@ -1,0 +1,112 @@
+---
+title: "HubSpot CRM"
+description: "Connect CommissionKit to HubSpot CRM to sync owners as reps and deals for commission calculation"
+---
+
+Connect your HubSpot CRM to CommissionKit. The connector syncs **owners as sales reps** and **closed-won deals** for commission calculation.
+
+## How data flows
+
+```
+HubSpot CRM                    CommissionKit
+──────────                     ──────────────
+
+Contacts / Company              (not synced)
+
+Deal created               →    Deal created (stage mapped from HubSpot pipeline)
+        │
+        ▼
+Deal stage changes         →    Stage updates on next sync
+        │
+        ▼
+Deal marked closed-won     →    Payment status = "paid"
+Deal in other stages       →    Payment status = "unpaid"
+```
+
+HubSpot is a CRM, not an ERP — it doesn't track payments. CommissionKit assigns `paymentStatus: "paid"` to closed-won deals and `"unpaid"` to deals in other stages. You can override this with manual payment tracking in CommissionKit.
+
+## Stage mapping
+
+HubSpot deal stages are normalized to CommissionKit's canonical stages:
+
+| HubSpot stage | CKit stage |
+|---|---|
+| `appointmentscheduled` | `pending` |
+| `qualifiedtobuy` | `pending` |
+| `presentationscheduled` | `pending` |
+| `decisionmakerboughtin` | `pending` |
+| `contractsent` | `pending` |
+| `closedwon` | `closed_won` |
+| `closedlost` | `closed_lost` |
+| Custom pipeline stages | `closed_won` (default fallback) |
+
+The connector automatically discovers your pipeline stages via HubSpot's API. Any stage with `metadata.isClosed = true` is treated as closed-won and synced (if `syncClosedOnly` is enabled).
+
+## Authentication
+
+CommissionKit supports two HubSpot auth methods. Both are configured under **Settings > Integrations > Development** in your HubSpot account.
+
+### Method 1: Service Key (recommended for testing)
+
+Formerly called "Private App Token". This is the simplest method — one token, no OAuth redirect.
+
+1. In HubSpot, go to **Settings** (gear icon) → **Integrations** → **Development** → **Service Keys**
+2. Click **Create service key**
+3. Name it (e.g. "CommissionKit")
+4. Check these scopes:
+   - `crm.objects.owners.read`
+   - `crm.objects.deals.read`
+5. Click **Create**
+6. Copy the generated token
+7. In CommissionKit, go to **Integrations** → select **HubSpot CRM**
+8. Choose **Private App Token** as the auth mode
+9. Paste the token into **Access Token**
+10. Click **Connect**
+
+### Method 2: Legacy App (OAuth 2.0)
+
+For multi-user installations or the HubSpot Marketplace.
+
+1. In HubSpot, go to **Settings** → **Integrations** → **Development** → **Legacy Apps**
+2. Click **Create app**
+3. Fill in:
+   - **App name**: CommissionKit
+   - **Logo**: (optional)
+   - **Redirect URL**: `https://your-domain.com/api/integrations/hubspot/callback`
+   - **Scopes**: `crm.objects.owners.read`, `crm.objects.deals.read`
+4. Click **Create app**
+5. Copy the **Client ID** and **Client Secret**
+6. In CommissionKit, go to **Integrations** → select **HubSpot CRM**
+7. Choose **OAuth 2.0 (Sign in with HubSpot)** as the auth mode
+8. Enter your **Client ID** and **Client Secret**
+9. Click **Connect with HubSpot**
+10. You'll be redirected to HubSpot to authorize CommissionKit
+11. After granting access, you'll be redirected back — sync begins automatically
+
+<Note>
+**Localhost development**: For testing locally, set the Redirect URL to `http://localhost:3000/api/integrations/hubspot/callback`. HubSpot allows `http` for `localhost` redirects. You'll also need to configure `APP_URL=http://localhost:3000` in your API `.env` file.
+</Note>
+
+## What syncs
+
+| Entity | HubSpot source | CKit equivalent |
+|---|---|---|
+| **Reps** | `crm/v3/owners` — all non-archived owners | Rep (name = firstName + lastName, role = "Sales Rep") |
+| **Deals** | `crm/v3/objects/deals/search` — by stage filter | Deal (amount, close date, owner, pipeline stage) |
+
+## Prerequisites
+
+- HubSpot account with access to **Deals** and **Owners**
+- API access enabled (all HubSpot accounts have this by default)
+- Either a Service Key or a Legacy App with the required scopes
+
+## Sync schedule
+
+After connecting, choose a sync interval from the **⋮** menu:
+
+| Option | Interval |
+|---|---|
+| Every 10 min | Real-time sync |
+| Hourly | Recommended for active pipelines |
+| Daily | For stable pipelines |
+| Manual only | No automatic sync |
