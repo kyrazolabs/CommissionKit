@@ -49,9 +49,14 @@ export const syncDealsWorker = new Worker<SyncDealsPayload>(
       try {
         await job.updateProgress(10);
 
+        const pluginConfig = {
+          ...(conn.config as Record<string, unknown> || {}),
+          _metadata: conn.metadata || {},
+        };
+
         const deals = await plugin.fetchDeals(
           workspaceId,
-          conn.config as Record<string, unknown>,
+          pluginConfig,
           {},
         );
 

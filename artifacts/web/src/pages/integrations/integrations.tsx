@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Plug, Sprout, Cable, CheckCircle2, XCircle,
-  AlertTriangle, RefreshCw, Trash2, ArrowRight, Ellipsis, LoaderCircle, Bug, FileCode,
+  AlertTriangle, RefreshCw, Trash2, ArrowRight, Ellipsis, LoaderCircle, Bug, FileCode, GitBranch,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -109,6 +109,11 @@ export function IntegrationsPage() {
   const [mappingOpen, setMappingOpen] = useState(false);
   const [mappingJson, setMappingJson] = useState("");
   const [mappingError, setMappingError] = useState<string | null>(null);
+
+  const [stageMappingOpen, setStageMappingOpen] = useState(false);
+  const [stageOptions, setStageOptions] = useState<Array<{ id: string; label: string; pipeline: string }>>([]);
+  const [stageMapping, setStageMapping] = useState<Record<string, string>>({});
+  const [stageMappingLoading, setStageMappingLoading] = useState(false);
 
   const { data: connectors, isLoading: connectorsLoading } = useQuery<{ connectors: Connector[] }>({
     queryKey: ["integrations", "connectors"],
@@ -204,6 +209,34 @@ export function IntegrationsPage() {
       setMappingError(err.message);
     },
   });
+
+  const openStageMapping = async () => {
+    setStageMappingLoading(true);
+    setStageMappingOpen(true);
+    try {
+      const data = await apiFetch(`/api/integrations/${activeWorkspace?.id}/hubspot/stages`);
+      setStageOptions(data.stages || []);
+      setStageMapping(data.mapping || {});
+    } catch {
+      setStageOptions([]);
+      setStageMapping({});
+    } finally {
+      setStageMappingLoading(false);
+    }
+  };
+
+  const saveStageMapping = async () => {
+    try {
+      await apiFetch(`/api/integrations/${activeWorkspace?.id}/hubspot/stages`, {
+        method: "PATCH",
+        body: JSON.stringify({ mapping: stageMapping }),
+      });
+      setStageMappingOpen(false);
+      toast({ title: "Stage mapping saved" });
+    } catch (err: any) {
+      toast({ title: "Failed to save", description: err.message, variant: "destructive" });
+    }
+  };
 
   const openMappingEditor = async () => {
     try {
@@ -408,6 +441,15 @@ export function IntegrationsPage() {
                       <DropdownMenuItem onClick={openMappingEditor} className="flex items-center gap-2">
                         <FileCode className="size-3.5" />
                         Edit Mapping
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+                  {status?.connectorName === "hubspot" && (
+                    <>
+                      <DropdownMenuItem onClick={openStageMapping} className="flex items-center gap-2">
+                        <GitBranch className="size-3.5" />
+                        Stage Mapping
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                     </>
@@ -858,6 +900,62 @@ export function IntegrationsPage() {
                 {configMutation.isPending ? "Saving..." : "Save"}
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Stage mapping dialog (HubSpot) */}
+      <Dialog open={stageMappingOpen} onOpenChange={setStageMappingOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <GitBranch className="size-5" />
+              Stage Mapping
+            </DialogTitle>
+            <DialogDescription>
+              Map HubSpot pipeline stages to CommissionKit stages. Select a CKit stage for each HubSpot stage below.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2 max-h-[400px] overflow-y-auto">
+            {stageMappingLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <LoaderCircle className="size-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : stageOptions.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                No stages found in HubSpot pipelines.
+              </p>
+            ) : (
+              stageOptions.map((stage) => (
+                <div key={stage.id} className="flex items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{stage.label}</p>
+                    <p className="text-[11px] text-muted-foreground">{stage.pipeline}</p>
+                  </div>
+                  <Select
+                    value={stageMapping[stage.id] || ""}
+                    onValueChange={(v) => setStageMapping((prev) => ({ ...prev, [stage.id]: v }))}
+                  >
+                    <SelectTrigger className="w-36 h-8 text-xs">
+                      <SelectValue placeholder="Select..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="closed_won">closed_won</SelectItem>
+                      <SelectItem value="closed_lost">closed_lost</SelectItem>
+                      <SelectItem value="pending">pending</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))
+            )}
+          </div>
+          <div className="flex gap-2 justify-end pt-2">
+            <Button variant="secondary" onClick={() => setStageMappingOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={saveStageMapping} disabled={stageMappingLoading}>
+              Save
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

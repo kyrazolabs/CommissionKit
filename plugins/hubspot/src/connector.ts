@@ -103,10 +103,13 @@ export class HubSpotConnector extends BasePlugin {
     const client = this.getClient(config);
 
     try {
+      // Use saved stage mapping from metadata, or auto-discover, or fall back to all
       let closedWonStageIds = c.closedWonStageIds;
+      const savedMapping = (config as any)._metadata?.stageMapping as Record<string, string> | undefined;
 
-      // If no explicit stages configured, discover them from pipelines
-      if (!closedWonStageIds || closedWonStageIds.length === 0) {
+      if (savedMapping) {
+        closedWonStageIds = Object.keys(savedMapping);
+      } else if (!closedWonStageIds || closedWonStageIds.length === 0) {
         try {
           const pipelines = await client.getPipelines();
           closedWonStageIds = [];
@@ -134,7 +137,7 @@ export class HubSpotConnector extends BasePlugin {
         .map((d) => {
         const p = d.properties;
         const amount = parseFloat(p.amount) || 0;
-        const stage = normalizeHubSpotStage(p.dealstage);
+        const stage = savedMapping?.[p.dealstage] || normalizeHubSpotStage(p.dealstage);
 
         return {
           externalId: d.id,

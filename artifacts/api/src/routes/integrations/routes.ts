@@ -608,4 +608,66 @@ router.get(
   },
 );
 
+// ─── HubSpot stage mapping ──────────────────────────────────────────
+
+router.get(
+  "/:workspaceId/hubspot/stages",
+  ...requirePermission("workspace", "edit"),
+  async (req: AuthenticatedRequest, res) => {
+    const workspaceId = req.workspaceId!;
+
+    try {
+      const conn = await IntegrationConnection.findOne({ workspaceId, connectorName: "hubspot" });
+      if (!conn) {
+        res.status(404).json({ error: "HubSpot not connected" });
+        return;
+      }
+
+      const config = conn.config as any;
+      if (!config?.accessToken) {
+        res.status(400).json({ error: "HubSpot access token not configured" });
+        return;
+      }
+
+      const { HubSpotClient } = await import("@workspace/plugins-hubspot");
+      const client = new HubSpotClient(config.accessToken);
+      const pipelines = await client.getPipelines();
+
+      const stages: Array<{ id: string; label: string; pipeline: string }> = [];
+      for (const p of pipelines) {
+        for (const s of p.stages) {
+          stages.push({ id: s.id, label: s.label, pipeline: p.label });
+        }
+      }
+
+      const savedMapping = (conn.metadata as any)?.stageMapping || {};
+
+      res.json({ stages, mapping: savedMapping });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || "Failed to fetch stages" });
+    }
+  },
+);
+
+router.patch(
+  "/:workspaceId/hubspot/stages",
+  ...requirePermission("workspace", "edit"),
+  async (req: AuthenticatedRequest, res) => {
+    const workspaceId = req.workspaceId!;
+    const { mapping } = req.body; // { "hubspot_stage_id": "closed_won" }
+
+    if (!mapping || typeof mapping !== "object") {
+      res.status(400).json({ error: "mapping object required" });
+      return;
+    }
+
+    await IntegrationConnection.findOneAndUpdate(
+      { workspaceId, connectorName: "hubspot" },
+      { $set: { "metadata.stageMapping": mapping } },
+    );
+
+    res.json({ success: true, mapping });
+  },
+);
+
 export default router;
