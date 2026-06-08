@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { ConnectorImage } from "./icons";
 import { ConnectDialog } from "./connect-dialog";
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export function ConnectorCard({ connector, isConnected }: Props) {
+  const { t } = useTranslation();
   return (
     <Card className={cn("transition-colors", isConnected && "border-primary/40")}>
       <CardHeader className="pb-2">
@@ -22,7 +24,7 @@ export function ConnectorCard({ connector, isConnected }: Props) {
             <CardTitle className="text-base flex items-center gap-2">
               {connector.displayName}
               {isConnected && (
-                <Badge variant="default" className="text-[10px] bg-teal-600/10 text-teal-600 border-teal-600/20">Connected</Badge>
+                <Badge variant="default" className="text-[10px] bg-teal-600/10 text-teal-600 border-teal-600/20">{t("integrations.connected")}</Badge>
               )}
             </CardTitle>
             <CardDescription className="text-xs line-clamp-2">{connector.description}</CardDescription>
