@@ -12,10 +12,10 @@ interface Props {
 
 export function ConnectorCard({ connector, isConnected }: Props) {
   return (
-    <Card className={cn("transition-colors", isConnected && "ring-2 ring-teal-600/50")}>
+    <Card className={cn("transition-colors", isConnected && "border-primary/40")}>
       <CardHeader className="pb-2">
         <div className="flex items-center gap-3">
-          <div className={cn("flex size-10 items-center justify-center rounded-xl shrink-0 overflow-hidden border", isConnected ? "border-primary/40 bg-background" : "bg-muted border-transparent")}>
+          <div className="flex size-10 items-center justify-center rounded-xl shrink-0 overflow-hidden bg-muted">
             <ConnectorImage name={connector.name} className={cn("size-6 object-contain", !isConnected && "opacity-50")} />
           </div>
           <div className="flex-1 min-w-0">
