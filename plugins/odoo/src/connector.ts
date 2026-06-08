@@ -323,3 +323,5 @@ const ODOO_STAGE_MAP: Record<string, string> = {
 function normalizeStage(odooState: string): string {
   return ODOO_STAGE_MAP[odooState] || "closed_won";
 }
+
+export { normalizeStage, ODOO_STAGE_MAP }; // exported for tests
