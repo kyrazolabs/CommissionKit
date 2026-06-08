@@ -766,19 +766,19 @@ export function IntegrationsPage() {
                             <div className="space-y-1.5">
                               <Label className="text-xs">Authentication Mode</Label>
                               <Select
-                                value={String(formValues.authType || "oauth2")}
+                                value={String(formValues.authType || "private_app")}
                                 onValueChange={(v) => setFormValues({ ...formValues, authType: v })}
                               >
                                 <SelectTrigger className="h-9 text-sm">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="oauth2">OAuth 2.0 (Sign in with HubSpot)</SelectItem>
-                                  <SelectItem value="private_app">Private App Token</SelectItem>
+                                  <SelectItem value="private_app">Service Key (Access Token)</SelectItem>
+                                  <SelectItem value="oauth2">OAuth 2.0 (Client ID + Client Secret)</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
-                            {String(formValues.authType || "oauth2") === "private_app" && (
+                            {String(formValues.authType || "private_app") === "private_app" && (
                               <div className="space-y-1.5">
                                 <Label className="text-xs">Access Token</Label>
                                 <Input
@@ -790,12 +790,12 @@ export function IntegrationsPage() {
                                 />
                               </div>
                             )}
-                            {String(formValues.authType || "oauth2") === "oauth2" && (
+                            {String(formValues.authType || "private_app") === "oauth2" && (
                               <>
                                 <div className="space-y-1.5">
                                   <Label className="text-xs">Client ID</Label>
                                   <Input
-                                    placeholder="Your HubSpot app client ID"
+                                    placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
                                     value={String(formValues.clientId || "")}
                                     onChange={(e) => setFormValues({ ...formValues, clientId: e.target.value })}
                                     className="h-9 text-sm"
@@ -805,7 +805,7 @@ export function IntegrationsPage() {
                                   <Label className="text-xs">Client Secret</Label>
                                   <Input
                                     type="password"
-                                    placeholder="Your HubSpot app client secret"
+                                    placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
                                     value={String(formValues.clientSecret || "")}
                                     onChange={(e) => setFormValues({ ...formValues, clientSecret: e.target.value })}
                                     className="h-9 text-sm"
@@ -860,7 +860,7 @@ export function IntegrationsPage() {
                           >
                             {connecting
                               ? "Connecting..."
-                              : connector.name === "hubspot" && String(formValues.authType || "oauth2") === "oauth2"
+                              : connector.name === "hubspot" && String(formValues.authType || "private_app") === "oauth2"
                               ? "Connect with HubSpot"
                               : "Connect"}
                           </Button>
