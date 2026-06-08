@@ -105,6 +105,7 @@ export class HubSpotConnector extends BasePlugin {
     try {
       let closedWonStageIds = c.closedWonStageIds;
 
+      // If no explicit stages configured, discover them from pipelines
       if (!closedWonStageIds || closedWonStageIds.length === 0) {
         try {
           const pipelines = await client.getPipelines();
@@ -117,14 +118,16 @@ export class HubSpotConnector extends BasePlugin {
             }
           }
         } catch {
-          // Fall back to default stage mapping
+          // Fall back — sync all deals
         }
       }
 
-      const deals = await client.getDeals(
-        c.syncClosedOnly !== false ? closedWonStageIds : undefined,
-        options?.modifiedAfter,
-      );
+      // If syncClosedOnly but no stages found, sync ALL deals instead of none
+      const stageFilter = (c.syncClosedOnly !== false && closedWonStageIds && closedWonStageIds.length > 0)
+        ? closedWonStageIds
+        : undefined;
+
+      const deals = await client.getDeals(stageFilter, options?.modifiedAfter);
 
       return deals
         .filter((d) => d.properties.hubspot_owner_id)
