@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useWorkspace } from "@/hooks/use-workspace";
@@ -30,6 +30,18 @@ export function IntegrationsPage() {
   const [mappingError, setMappingError] = useState<string | null>(null);
   const [stageMappingOpen, setStageMappingOpen] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [slidePx, setSlidePx] = useState(0);
+
+  useEffect(() => {
+    const update = () => {
+      if (cardRef.current) setSlidePx(cardRef.current.offsetWidth + 16);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
   const { data: connectors, isLoading: connectorsLoading } = useQuery<{ connectors: Connector[] }>({
     queryKey: ["integrations", "connectors"],
@@ -119,14 +131,14 @@ export function IntegrationsPage() {
             </div>
           )}
         </div>
-        <div className="overflow-hidden">
+        <div className="overflow-hidden" ref={trackRef}>
           <motion.div
             className="flex gap-4"
-            animate={{ x: `${-carouselIndex * 100}%` }}
+            animate={{ x: -carouselIndex * slidePx }}
             transition={{ type: "tween", duration: 0.35, ease: "easeInOut" }}
           >
-            {sortedConnectors?.map((connector) => (
-              <div key={connector.name} className="w-full min-w-full md:min-w-[calc(50%-8px)]">
+            {sortedConnectors?.map((connector, i) => (
+              <div key={connector.name} ref={i === 0 ? cardRef : undefined} className="w-full min-w-full md:min-w-[calc(50%-8px)]">
                 <ConnectorCard connector={connector} isConnected={status?.connectorName === connector.name} />
               </div>
             ))}
