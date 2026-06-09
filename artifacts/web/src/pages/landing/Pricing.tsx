@@ -11,8 +11,8 @@ const PLANS = [
     name: "Starter",
     priceMonthly: 49.99,
     priceYearly: 499.99,
-    discountMonthly: 19.90,
-    discountYearly: 199,
+    discountMonthly: 19.99,
+    discountYearly: 199.99,
     tagline: "Perfect for testing the product or tiny teams.",
     reps: "Includes up to 10 reps",
     features: [
@@ -31,8 +31,8 @@ const PLANS = [
     name: "Growth",
     priceMonthly: 99.99,
     priceYearly: 999.99,
-    discountMonthly: 39.90,
-    discountYearly: 399,
+    discountMonthly: 39.99,
+    discountYearly: 399.99,
     tagline: "For stable teams of 10+ reps.",
     reps: "Includes up to 30 reps",
     features: [
@@ -52,8 +52,8 @@ const PLANS = [
     name: "Professional",
     priceMonthly: 249.99,
     priceYearly: 2499.99,
-    discountMonthly: 99.90,
-    discountYearly: 999,
+    discountMonthly: 99.99,
+    discountYearly: 999.99,
     tagline: "For serious sales organizations with advanced needs.",
     reps: "Includes up to 100 reps",
     features: [
