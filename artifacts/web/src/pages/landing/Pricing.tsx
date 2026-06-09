@@ -75,7 +75,7 @@ export function Pricing() {
     <section className="py-24 px-6 md:px-12 bg-white/50 backdrop-blur-sm border-b border-border/60" id="pricing">
       <div ref={ref} className="max-w-[1440px] mx-auto">
         {/* Limited-time launch offer */}
-        <div className="mb-8" style={fadeIn(inView)}>
+        <div className="mb-8 max-w-5xl mx-auto" style={fadeIn(inView)}>
           <div className="inline-flex w-full items-center justify-between gap-4 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/30 px-6 py-4">
             <div className="flex items-center gap-3">
               <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/20">
