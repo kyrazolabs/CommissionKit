@@ -154,8 +154,6 @@ const DB_SUB_STATUSES_BLOCKING_NEW_CHECKOUT = new Set([
 
 function getAppUrl(): string {
   if (process.env.APP_URL) return process.env.APP_URL.replace(/\/$/, "");
-  if (process.env.REPLIT_DOMAINS)
-    return `https://${process.env.REPLIT_DOMAINS.split(",")[0]}`;
   return "http://localhost:3000";
 }
 
@@ -401,10 +399,15 @@ router.post(
         workspaceOwnerName: ownerName,
       };
 
+      const couponId = process.env.STRIPE_COUPON;
+
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
         mode: checkoutMode,
         line_items: lineItems,
+        ...(couponId
+          ? { discounts: [{ coupon: couponId }] }
+          : { allow_promotion_codes: true }),
         metadata: {
           ...workspaceMeta,
           userId: req.userId ?? "",
@@ -416,7 +419,6 @@ router.post(
             extraRepsPriceId: extraRepsStripePriceId,
           }),
         },
-        allow_promotion_codes: true,
         billing_address_collection: "auto",
         success_url: `${appUrl}/dash/billing?checkout=success&plan=${plan}`,
         cancel_url: `${appUrl}/dash/billing?checkout=cancelled`,
