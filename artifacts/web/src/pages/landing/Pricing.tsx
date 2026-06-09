@@ -11,6 +11,8 @@ const PLANS = [
     name: "Starter",
     priceMonthly: 49,
     priceYearly: 490,
+    discountMonthly: 19.90,
+    discountYearly: 199,
     tagline: "Perfect for testing the product or tiny teams.",
     reps: "Includes up to 10 reps",
     features: [
@@ -28,6 +30,8 @@ const PLANS = [
     name: "Growth",
     priceMonthly: 99,
     priceYearly: 990,
+    discountMonthly: 39.90,
+    discountYearly: 399,
     tagline: "For stable teams of 10+ reps.",
     reps: "Includes up to 30 reps",
     features: [
@@ -46,6 +50,8 @@ const PLANS = [
     name: "Professional",
     priceMonthly: 249,
     priceYearly: 2490,
+    discountMonthly: 99.90,
+    discountYearly: 999,
     tagline: "For serious sales organizations with advanced needs.",
     reps: "Includes up to 100 reps",
     features: [
@@ -77,7 +83,7 @@ export function Pricing() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">Limited-Time Launch Offer — 60% Off Forever</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Use code <strong className="text-primary">LAUNCH60</strong> at checkout. Lifetime discount on any plan.</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Lock in 60% off forever — limited time for new customers. Applied automatically.</p>
               </div>
             </div>
             <span className="shrink-0 rounded-full bg-primary/20 px-3 py-1.5 text-[11px] font-bold text-primary uppercase tracking-wider">60% OFF</span>
@@ -122,6 +128,7 @@ export function Pricing() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto items-center">
           {PLANS.map((plan, i) => {
             const price = payYearly ? plan.priceYearly : plan.priceMonthly;
+            const discountPrice = payYearly ? plan.discountYearly : plan.discountMonthly;
             const period = payYearly ? "/yr" : "/mo";
 
             return (
@@ -145,8 +152,14 @@ export function Pricing() {
                 <p className="text-sm text-muted-foreground mb-6">{plan.tagline}</p>
                 
                 <div className="mb-6">
-                  <span className="text-4xl font-extrabold text-foreground tracking-tight">${price}</span>
-                  <span className="text-sm text-muted-foreground">{period}</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-extrabold text-primary tracking-tight">${discountPrice}</span>
+                    <span className="text-sm text-muted-foreground">{period}</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-lg text-muted-foreground line-through">${price}</span>
+                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">60% OFF</span>
+                  </div>
                   {payYearly && (
                     <p className="text-[11px] font-bold text-primary mt-1">
                       Includes 2 months free
