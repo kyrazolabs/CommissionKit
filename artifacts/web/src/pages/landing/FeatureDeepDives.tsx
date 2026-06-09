@@ -1,4 +1,4 @@
-import { Settings, User, Database, ShieldCheck, Check, Cable } from "lucide-react";
+import { Settings, User, Database, ShieldCheck, Check } from "lucide-react";
 import { useInView, fadeIn } from "./hooks";
 import { LazyVideo } from "@/components/lazy-video";
 
@@ -122,61 +122,6 @@ export function FeatureDeepDives() {
 
         <div style={fadeIn(inView, 700)}>
           <LazyVideo src="/videos/payouts-disputes-zoom.webm" />
-        </div>
-      </div>
-
-      {/* Feature 5: Integrations & Connectors */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-        <div className="order-2 lg:order-1" style={fadeIn(inView, 900)}>
-          <div className="rounded-xl border border-border/60 bg-card/30 p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <img src="/odoo/odoo.png" alt="Odoo" className="size-8 rounded-lg" />
-              <div>
-                <p className="text-sm font-semibold text-foreground">Odoo ERP</p>
-                <p className="text-xs text-muted-foreground">Sync repos and deals automatically</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 pt-2">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-muted">
-                <Cable className="size-4 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">Custom REST API</p>
-                <p className="text-xs text-muted-foreground">Connect any ERP or CRM — no code needed</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 pt-2">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-muted">
-                <Cable className="size-4 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">HubSpot CRM</p>
-                <p className="text-xs text-muted-foreground">Sync owners and deals via OAuth</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="order-1 lg:order-2 space-y-6" style={fadeIn(inView, 800)}>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/60 backdrop-blur-sm border border-border/60 text-xs font-medium text-muted-foreground">
-            <Cable className="size-4 text-primary" />
-            Integrations
-          </div>
-          <h2 className="text-3xl font-bold text-foreground tracking-tight">Connect Your Existing Tools</h2>
-          <p className="text-base text-muted-foreground">
-            CommissionKit plugs directly into the tools you already use. Sync your sales reps and deals automatically — no manual data entry, no spreadsheets, no errors.
-          </p>
-          <ul className="space-y-4 pt-4">
-            {[
-              "Native Odoo connector — sync reps and deals in one click.",
-              "Custom REST API connector — connect any ERP or CRM with configurable field mapping, authentication, and pagination.",
-              "Automatic sync scheduling — keep data fresh with hourly, daily, or real-time polling.",
-            ].map(item => (
-              <li key={item} className="flex items-start gap-3">
-                <Check className="size-5 text-primary shrink-0 mt-0.5" />
-                <span className="text-sm text-foreground">{item}</span>
-              </li>
-            ))}
-          </ul>
         </div>
       </div>
     </section>
