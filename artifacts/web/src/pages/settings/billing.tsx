@@ -28,6 +28,8 @@ import { usePageMeta } from "@/hooks/use-page-meta";
 
 const EXTRA_REP_UNIT_MONTHLY_USD = 8;
 const EXTRA_REP_UNIT_YEARLY_USD = 80;
+const EXTRA_REP_DISCOUNT_MONTHLY = 3.20;
+const EXTRA_REP_DISCOUNT_YEARLY = 32;
 
 // ─── Stripe price IDs (mirror API env: STRIPE_* → STRIPE_* for Vite) ───
 const STRIPE_PRICE = {
@@ -49,8 +51,10 @@ const plans = [
   {
     id: "starter",
     name: "Starter",
-    priceMonthlyUsd: 49,
-    priceYearlyUsd: 490,
+    priceMonthlyUsd: 49.99,
+    priceYearlyUsd: 499.99,
+    discountMonthly: 19.99,
+    discountYearly: 199.99,
     description: "Perfect for testing the product or tiny teams.",
     icon: Zap,
     iconBg: "bg-blue-50 dark:bg-blue-900/20",
@@ -61,6 +65,7 @@ const plans = [
       "Up to 3 commission plans",
       "Deal & commission tracking",
       "Unlimited calculation runs",
+      "ERP/CRM integrations",
       "Email support (48h response)",
     ],
     priceIdMonthly: STRIPE_PRICE.starter.monthly,
@@ -71,8 +76,10 @@ const plans = [
   {
     id: "growth",
     name: "Growth",
-    priceMonthlyUsd: 99,
-    priceYearlyUsd: 990,
+    priceMonthlyUsd: 99.99,
+    priceYearlyUsd: 999.99,
+    discountMonthly: 39.99,
+    discountYearly: 399.99,
     description: "For stable teams of 10+ reps.",
     icon: Building2,
     iconBg: "bg-primary/10",
@@ -83,6 +90,7 @@ const plans = [
       "Unlimited commission plans",
       "Advanced tiered plans",
       "Accelerator & clawback rules",
+      "ERP/CRM integrations",
       "Rep self-service portal",
       "Priority support (24h)",
       "CSV export",
@@ -95,8 +103,10 @@ const plans = [
   {
     id: "pro",
     name: "Pro",
-    priceMonthlyUsd: 249,
-    priceYearlyUsd: 2490,
+    priceMonthlyUsd: 249.99,
+    priceYearlyUsd: 2499.99,
+    discountMonthly: 99.99,
+    discountYearly: 999.99,
     description: "For serious sales organizations with advanced needs.",
     icon: Crown,
     iconBg: "bg-purple-50 dark:bg-purple-900/20",
@@ -479,8 +489,8 @@ export function BillingPage() {
   const extraRepsQty = Math.max(0, Math.floor(Number(extraReps || 0)));
   
   const extraRepUnitDisplayUsd = payYearly
-    ? EXTRA_REP_UNIT_YEARLY_USD
-    : EXTRA_REP_UNIT_MONTHLY_USD;
+    ? EXTRA_REP_DISCOUNT_YEARLY
+    : EXTRA_REP_DISCOUNT_MONTHLY;
   const extraRepsAddonTotalUsd = extraRepsQty * extraRepUnitDisplayUsd;
 
   return (
@@ -510,6 +520,20 @@ export function BillingPage() {
           </div>
         </div>
       )}
+
+      {/* Launch offer banner */}
+      <div className="flex items-start gap-4 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 to-primary/5 p-4">
+        <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/20 text-primary">
+          <Gift className="size-4" />
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-foreground">Limited-Time Launch Offer — 60% Off Forever</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Lock in 60% off for life on any plan. Applied automatically — no code needed.
+          </p>
+        </div>
+        <span className="shrink-0 rounded-full bg-primary/20 px-3 py-1.5 text-[11px] font-bold text-primary uppercase tracking-wider">60% OFF</span>
+      </div>
 
       {/* Growth yearly upsell : only for workspaces not already on a paid subscription */}
       {!alreadySubscribed && (
@@ -710,17 +734,27 @@ export function BillingPage() {
                   <CardTitle className="text-base">{plan.name}</CardTitle>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-semibold text-foreground">
+                  <span className="text-3xl font-semibold text-primary">
                     {showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] ? (
                       <span className="flex items-baseline gap-1">
                         <span className="text-xl text-muted-foreground font-normal">≈</span>
-                        {formatCurrency((payYearly ? plan.priceYearlyUsd : plan.priceMonthlyUsd) * rates[workspaceCurrency], workspaceCurrency)}
+                        {formatCurrency((payYearly ? plan.discountYearly : plan.discountMonthly) * rates[workspaceCurrency], workspaceCurrency)}
                       </span>
+                    ) : (
+                      "$" + (payYearly ? plan.discountYearly : plan.discountMonthly)
+                    )}
+                  </span>
+                  <span className="text-sm text-muted-foreground">{payYearly ? t("billing.perYear") : t("billing.perMonth")}</span>
+                </div>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-sm text-muted-foreground line-through">
+                    {showLocalCurrency && workspaceCurrency !== "USD" ? (
+                      "≈" + formatCurrency((payYearly ? plan.priceYearlyUsd : plan.priceMonthlyUsd) * (rates[workspaceCurrency] || 1), workspaceCurrency)
                     ) : (
                       "$" + (payYearly ? plan.priceYearlyUsd : plan.priceMonthlyUsd)
                     )}
                   </span>
-                  <span className="text-sm text-muted-foreground">{payYearly ? t("billing.perYear") : t("billing.perMonth")}</span>
+                  <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">60% OFF</span>
                 </div>
                 <CardDescription className="mt-1 text-[13px]">{plan.description}</CardDescription>
               </CardHeader>
@@ -808,7 +842,10 @@ export function BillingPage() {
                 ) : (
                   formatCurrency(extraRepUnitDisplayUsd)
                 )} {t("billing.perExtraRep")}
-                {payYearly ? t("billing.perYear") : t("billing.perMonth")}
+                <span className="text-xs text-muted-foreground line-through ml-1">
+                  {payYearly ? "$79.99" : "$7.99"}
+                </span>
+                <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded ml-1.5">60% OFF</span>
               </p>
             </div>
             <p className="text-xs text-muted-foreground">

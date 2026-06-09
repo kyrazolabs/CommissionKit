@@ -4,6 +4,7 @@ import { Hero } from "./Hero";
 import { SocialProof } from "./SocialProof";
 import { ValueProps } from "./ValueProps";
 import { FeatureDeepDives } from "./FeatureDeepDives";
+import { Integrations } from "./Integrations";
 import { GlobalSupport } from "./GlobalSupport";
 import { Pricing } from "./Pricing";
 import { CustomEngine } from "./CustomEngine";
@@ -48,6 +49,7 @@ export function LandingPage() {
           <SocialProof />
           <ValueProps />
           <FeatureDeepDives />
+          <Integrations />
           <GlobalSupport />
           <Pricing />
           <CustomEngine />
