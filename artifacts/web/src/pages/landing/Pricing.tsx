@@ -59,7 +59,6 @@ const PLANS = [
     features: [
       "Up to 50 workspace members",
       "Everything in Growth",
-      "ERP/CRM integrations",
       "SAML/SSO Authentication",
       "Custom API limits",
       "Dedicated account manager",
@@ -104,23 +103,23 @@ export function Pricing() {
 
         {/* Toggle */}
         <div className="flex items-center justify-center gap-3 mb-16" style={fadeIn(inView, 100)}>
-          <Label 
-            htmlFor="billing-toggle" 
+          <Label
+            htmlFor="billing-toggle"
             className={`text-sm font-medium ${!payYearly ? 'text-foreground' : 'text-muted-foreground'}`}
           >
             Monthly
           </Label>
           <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/40 rounded-full border border-border/60">
-            <Checkbox 
-              id="billing-toggle" 
-              checked={payYearly} 
+            <Checkbox
+              id="billing-toggle"
+              checked={payYearly}
               onCheckedChange={(v) => setPayYearly(v === true)}
               className="size-4"
             />
             <span className="text-[11px] font-bold text-primary uppercase tracking-wider">Save 17%</span>
           </div>
-          <Label 
-            htmlFor="billing-toggle" 
+          <Label
+            htmlFor="billing-toggle"
             className={`text-sm font-medium ${payYearly ? 'text-foreground' : 'text-muted-foreground'}`}
           >
             Yearly
@@ -153,7 +152,7 @@ export function Pricing() {
 
                 <h3 className="text-xl font-bold text-foreground mb-2">{plan.name}</h3>
                 <p className="text-sm text-muted-foreground mb-6">{plan.tagline}</p>
-                
+
                 <div className="mb-6">
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl font-extrabold text-primary tracking-tight">${discountPrice}</span>
@@ -169,9 +168,9 @@ export function Pricing() {
                     </p>
                   )}
                 </div>
-                
+
                 <p className="text-xs font-semibold text-muted-foreground mb-8">{plan.reps}</p>
-                
+
                 <ul className="space-y-4 flex-grow mb-8">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-start gap-3">
@@ -181,9 +180,9 @@ export function Pricing() {
                   ))}
                 </ul>
 
-                <Button 
-                  size="lg" 
-                  variant={plan.highlighted ? "default" : "outline"} 
+                <Button
+                  size="lg"
+                  variant={plan.highlighted ? "default" : "outline"}
                   className={`w-full font-bold ${plan.highlighted ? 'shadow-sm' : ''}`}
                 >
                   {plan.id === "pro" ? "Contact Sales" : plan.highlighted ? "Start Free Trial" : "Get Started"}
