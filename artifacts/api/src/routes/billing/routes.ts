@@ -405,9 +405,9 @@ router.post(
         customer: customerId,
         mode: checkoutMode,
         line_items: lineItems,
-        ...(couponId && {
-          discounts: [{ coupon: couponId }],
-        }),
+        ...(couponId
+          ? { discounts: [{ coupon: couponId }] }
+          : { allow_promotion_codes: true }),
         metadata: {
           ...workspaceMeta,
           userId: req.userId ?? "",
@@ -419,7 +419,6 @@ router.post(
             extraRepsPriceId: extraRepsStripePriceId,
           }),
         },
-        allow_promotion_codes: true,
         billing_address_collection: "auto",
         success_url: `${appUrl}/dash/billing?checkout=success&plan=${plan}`,
         cancel_url: `${appUrl}/dash/billing?checkout=cancelled`,
