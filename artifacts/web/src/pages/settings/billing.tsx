@@ -115,7 +115,6 @@ const plans = [
       "Up to 100 sales reps",
       "Up to 50 workspace members",
       "Everything in Growth",
-      "ERP/CRM integrations",
       "SAML/SSO Authentication",
       "Custom API limits",
       "Dedicated account manager",
