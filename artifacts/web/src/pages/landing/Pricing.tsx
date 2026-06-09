@@ -9,8 +9,8 @@ const PLANS = [
   {
     id: "starter",
     name: "Starter",
-    priceMonthly: 49,
-    priceYearly: 490,
+    priceMonthly: 49.99,
+    priceYearly: 499.99,
     discountMonthly: 19.90,
     discountYearly: 199,
     tagline: "Perfect for testing the product or tiny teams.",
@@ -28,8 +28,8 @@ const PLANS = [
   {
     id: "growth",
     name: "Growth",
-    priceMonthly: 99,
-    priceYearly: 990,
+    priceMonthly: 99.99,
+    priceYearly: 999.99,
     discountMonthly: 39.90,
     discountYearly: 399,
     tagline: "For stable teams of 10+ reps.",
@@ -48,8 +48,8 @@ const PLANS = [
   {
     id: "pro",
     name: "Professional",
-    priceMonthly: 249,
-    priceYearly: 2490,
+    priceMonthly: 249.99,
+    priceYearly: 2499.99,
     discountMonthly: 99.90,
     discountYearly: 999,
     tagline: "For serious sales organizations with advanced needs.",
@@ -219,7 +219,7 @@ export function Pricing() {
             <Plus className="size-4 inline-block" />
             <span className="text-primary font-bold">${payYearly ? "32" : "3.20"}</span>
             <span className="text-muted-foreground">per additional rep/{payYearly ? "year" : "month"}</span>
-            <span className="text-xs text-muted-foreground line-through">${payYearly ? "80" : "8"}</span>
+            <span className="text-xs text-muted-foreground line-through">${payYearly ? "79.99" : "7.99"}</span>
             <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">60% OFF</span>
           </p>
         </div>
