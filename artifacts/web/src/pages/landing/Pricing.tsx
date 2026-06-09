@@ -20,6 +20,7 @@ const PLANS = [
       "Up to 3 commission plans",
       "Deal & commission tracking",
       "Unlimited calculation runs",
+      "ERP/CRM integrations",
       "Email support (48h response)",
     ],
     highlighted: false,
@@ -39,6 +40,7 @@ const PLANS = [
       "Unlimited commission plans",
       "Advanced tiered plans",
       "Accelerator & clawback rules",
+      "ERP/CRM integrations",
       "Rep self-service portal",
       "Priority support",
     ],
@@ -57,6 +59,7 @@ const PLANS = [
     features: [
       "Up to 50 workspace members",
       "Everything in Growth",
+      "ERP/CRM integrations",
       "SAML/SSO Authentication",
       "Custom API limits",
       "Dedicated account manager",
