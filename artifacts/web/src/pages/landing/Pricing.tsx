@@ -215,9 +215,12 @@ export function Pricing() {
 
         {/* Extra reps add-on */}
         <div className="text-center mt-12" style={fadeIn(inView, 600)}>
-          <p className="text-sm text-muted-foreground font-medium bg-muted/50 inline-block px-4 py-2 rounded-lg border">
-            <Plus className="size-4 inline-block align-text-bottom mr-1" />
-            ${payYearly ? "80" : "8"} per additional rep/{payYearly ? "year" : "month"} on all plans
+          <p className="text-sm font-medium inline-flex items-center gap-2 bg-muted/50 px-4 py-2 rounded-lg border">
+            <Plus className="size-4 inline-block" />
+            <span className="text-primary font-bold">${payYearly ? "32" : "3.20"}</span>
+            <span className="text-muted-foreground">per additional rep/{payYearly ? "year" : "month"}</span>
+            <span className="text-xs text-muted-foreground line-through">${payYearly ? "80" : "8"}</span>
+            <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">60% OFF</span>
           </p>
         </div>
       </div>
