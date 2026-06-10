@@ -1,0 +1,127 @@
+---
+title: "Salesforce CRM"
+description: "Connect CommissionKit to Salesforce Sales Cloud to sync users as reps and opportunities for commission calculation"
+---
+
+Connect your Salesforce Sales Cloud to CommissionKit. The connector syncs **users as sales reps** and **opportunities as deals** automatically.
+
+## How data flows
+
+```
+Salesforce                         CommissionKit
+──────────                         ──────────────
+
+Accounts / Contacts                 (not synced)
+
+Opportunity created            →    Deal created (stage mapped from Salesforce stage)
+        │
+        ▼
+Stage changes                  →    Stage updates on next sync
+        │
+        ▼
+Opportunity marked Closed Won  →    Payment status = "paid"
+Opportunity in other stages    →    Payment status = "unpaid"
+```
+
+Salesforce doesn't track payments directly. CommissionKit assigns `paymentStatus: "paid"` to closed-won opportunities and `"unpaid"` to deals in other stages.
+
+## Authentication
+
+CommissionKit uses token-based auth — a single access token from your Salesforce Connected App or Security Token.
+
+### Getting an Access Token
+
+**From a Connected App (recommended):**
+1. In Salesforce Setup, go to **Apps > App Manager**
+2. Click **New Connected App**
+3. Fill in:
+   - **Connected App Name**: CommissionKit
+   - **API Name**: CommissionKit
+   - **Contact Email**: your email
+4. Check **Enable OAuth Settings**
+   - Callback URL: `https://login.salesforce.com/services/oauth2/success`
+   - Add OAuth scopes: `Access and manage your data (api)`
+5. Save → click **Manage** → **Edit Policies**
+   - Set **IP Relaxation** to "Relax IP restrictions"
+   - Set **Permitted Users** to "Admin approved users are pre-authorized"
+6. Under **Profiles** or **Permission Sets**, add yourself
+7. Go back to App Manager → find your app → click **View** next to Consumer Key
+8. Click **Manage Consumer Details** → copy the Consumer Key and Consumer Secret
+9. Use them with the Username-Password OAuth flow to get a token, or use Salesforce CLI:
+   ```
+   sfdx auth:web:login --instanceurl https://login.salesforce.com
+   ```
+
+**From a Security Token (simpler for testing):**
+1. In Salesforce, go to **Settings** → **My Personal Information** → **Reset My Security Token**
+2. Check your email for the security token
+3. Your access token = password + security token (concatenated)
+
+### Connecting to CommissionKit
+
+1. In CommissionKit, go to **Integrations** → select **Salesforce CRM**
+2. Enter:
+   - **Instance URL** — `https://yourinstance.my.salesforce.com`
+   - **Access Token** — from your Connected App or Security Token
+3. Click **Connect** — initial sync begins immediately
+
+## Stage behavior
+
+Salesforce stages are auto-discovered via the OpportunityStage metadata object:
+
+| Salesforce stage | CKit stage |
+|---|---|
+| Any stage with `IsWon = true` | `closed_won` |
+| Any stage with `IsClosed = true` (not won) | `closed_lost` |
+| All other active stages | `pending` |
+
+**Which opportunities get synced**: by default (`syncClosedOnly: true`), only opportunities marked as Closed Won are synced. Custom stages can be mapped via the **Stage Mapping** dialog on the integrations page.
+
+## Required scopes
+
+| Scope | Why |
+|---|---|
+| API access (`api`) | Read User, Opportunity, and OpportunityStage objects |
+| `Id`, `Name`, `Email` on User | Map to reps |
+| `Id`, `Name`, `Amount`, `CloseDate`, `StageName`, `OwnerId`, `CurrencyIsoCode` on Opportunity | Map to deals |
+
+## What syncs
+
+| Entity | Salesforce source | CKit equivalent |
+|---|---|---|
+| **Reps** | `SELECT FROM User WHERE IsActive = true` | Rep (name, email, role from UserRole) |
+| **Deals** | `SELECT FROM Opportunity WHERE IsWon = true` | Deal (amount, close date, stage, currency) |
+
+## Prerequisites
+
+- Salesforce Sales Cloud (Professional, Enterprise, or Unlimited edition)
+- API access enabled (included in Enterprise and above; available as add-on for Professional)
+- A Connected App with API scope, or a Security Token
+
+## Sync schedule
+
+| Option | Interval |
+|---|---|
+| Every 10 min | Real-time sync |
+| Hourly | Recommended for active pipelines |
+| Daily | For stable pipelines |
+| Manual only | No automatic sync |
+
+## Troubleshooting
+
+### "Connection test fails"
+
+- **Instance URL**: make sure it includes `https://` and your instance subdomain (e.g., `https://na123.my.salesforce.com`)
+- **Access Token**: for Security Tokens, it's `password + token` concatenated with no space
+- **API access**: ensure your user profile has API Enabled (Setup → Users → Profile → Administrative Permissions)
+
+### "0 reps found"
+
+- Check that users have `IsActive = true` in Salesforce
+- The authenticating user must have read access to the User object
+
+### "0 deals found"
+
+- Make sure opportunities are marked as Closed Won (`IsWon = true`)
+- Opportunities without an Owner are skipped — assign an owner in Salesforce
+- Sync **Reps first**, then Deals
