@@ -92,6 +92,21 @@ export function CustomConnectForm({ values, onChange }: Props) {
   );
 }
 
+export function SalesforceConnectForm({ values, onChange }: Props) {
+  return (
+    <>
+      <Field label="Instance URL">
+        <Input placeholder="https://yourinstance.my.salesforce.com"
+          value={String(values.instanceUrl || "")} onChange={(e) => onChange({ ...values, instanceUrl: e.target.value })} className="h-9 text-sm" />
+      </Field>
+      <Field label="Access Token">
+        <Input type="password" placeholder="Connected App or Security Token"
+          value={String(values.accessToken || "")} onChange={(e) => onChange({ ...values, accessToken: e.target.value })} className="h-9 text-sm" />
+      </Field>
+    </>
+  );
+}
+
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <div className="space-y-1.5"><Label className="text-xs">{label}</Label>{children}</div>;
 }

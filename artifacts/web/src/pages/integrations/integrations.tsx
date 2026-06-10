@@ -28,6 +28,7 @@ export function IntegrationsPage() {
   const [mappingOpen, setMappingOpen] = useState(false);
   const [mappingJson, setMappingJson] = useState("");
   const [mappingError, setMappingError] = useState<string | null>(null);
+  const [stageMappingConnector, setStageMappingConnector] = useState<string>("");
   const [stageMappingOpen, setStageMappingOpen] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [visibleCards, setVisibleCards] = useState(1);
@@ -117,7 +118,7 @@ export function IntegrationsPage() {
         <ConnectedCard
           status={status}
           onOpenMappingEditor={openMappingEditor}
-          onOpenStageMapping={() => setStageMappingOpen(true)}
+          onOpenStageMapping={() => { setStageMappingConnector(status.connectorName!); setStageMappingOpen(true); }}
         />
       )}
 
@@ -179,7 +180,7 @@ export function IntegrationsPage() {
       </div>
 
       <MappingDialog open={mappingOpen} onOpenChange={setMappingOpen} json={mappingJson} onJsonChange={setMappingJson} error={mappingError} onErrorChange={setMappingError} />
-      <StageMappingDialog open={stageMappingOpen} onOpenChange={setStageMappingOpen} />
+      <StageMappingDialog open={stageMappingOpen} onOpenChange={setStageMappingOpen} connectorName={stageMappingConnector} />
     </div>
   );
 }

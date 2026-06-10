@@ -8,7 +8,7 @@ import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { ConnectorImage } from "./icons";
-import { OdooConnectForm, HubspotConnectForm, CustomConnectForm } from "./connect-forms";
+import { OdooConnectForm, HubspotConnectForm, CustomConnectForm, SalesforceConnectForm } from "./connect-forms";
 import type { Connector } from "./types";
 
 interface Props {
@@ -109,6 +109,7 @@ export function ConnectDialog({ connector, isConnected }: Props) {
           {connector.name === "odoo" && <OdooConnectForm values={formValues} onChange={setFormValues} />}
           {connector.name === "custom" && <CustomConnectForm values={formValues} onChange={setFormValues} />}
           {connector.name === "hubspot" && <HubspotConnectForm values={formValues} onChange={setFormValues} />}
+          {connector.name === "salesforce" && <SalesforceConnectForm values={formValues} onChange={setFormValues} />}
 
           {testResult && (
             <div className={cn("rounded-lg p-3 text-sm flex items-center gap-2",

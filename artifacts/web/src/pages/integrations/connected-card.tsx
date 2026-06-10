@@ -101,7 +101,7 @@ export function ConnectedCard({ status, onOpenMappingEditor, onOpenStageMapping 
                   <DropdownMenuSeparator />
                 </>
               )}
-              {status.connectorName === "hubspot" && (
+              {(status.connectorName === "hubspot" || status.connectorName === "salesforce") && (
                 <>
                   <DropdownMenuItem onClick={onOpenStageMapping} className="flex items-center gap-2"><GitBranch className="size-3.5" />{t("integrations.stageMapping")}</DropdownMenuItem>
                   <DropdownMenuSeparator />

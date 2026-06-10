@@ -12,9 +12,10 @@ import type { StageOption } from "./types";
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  connectorName: string;
 }
 
-export function StageMappingDialog({ open, onOpenChange }: Props) {
+export function StageMappingDialog({ open, onOpenChange, connectorName }: Props) {
   const { t } = useTranslation();
   const { activeWorkspace } = useWorkspace();
   const { toast } = useToast();
@@ -27,7 +28,7 @@ export function StageMappingDialog({ open, onOpenChange }: Props) {
     setLoading(true);
     setLoadError(null);
     try {
-      const data = await apiFetch(`/api/integrations/${activeWorkspace?.id}/hubspot/stages`);
+      const data = await apiFetch(`/api/integrations/${activeWorkspace?.id}/${connectorName}/stages`);
       setStages(data.stages || []);
       setMapping(data.mapping || {});
     } catch (err: any) {
@@ -40,7 +41,7 @@ export function StageMappingDialog({ open, onOpenChange }: Props) {
 
   const save = async () => {
     try {
-      await apiFetch(`/api/integrations/${activeWorkspace?.id}/hubspot/stages`, { method: "PATCH", body: JSON.stringify({ mapping }) });
+      await apiFetch(`/api/integrations/${activeWorkspace?.id}/${connectorName}/stages`, { method: "PATCH", body: JSON.stringify({ mapping }) });
       onOpenChange(false);
       toast({ title: t("integrations.stageMappingSaved") });
     } catch (err: any) {

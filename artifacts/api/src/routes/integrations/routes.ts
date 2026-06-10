@@ -608,6 +608,67 @@ router.get(
   },
 );
 
+// ─── Salesforce stage mapping ──────────────────────────────────────
+
+router.get(
+  "/:workspaceId/salesforce/stages",
+  ...requirePermission("workspace", "edit"),
+  async (req: AuthenticatedRequest, res) => {
+    const workspaceId = req.workspaceId!;
+
+    try {
+      const conn = await IntegrationConnection.findOne({ workspaceId, connectorName: "salesforce" });
+      if (!conn) {
+        res.status(404).json({ error: "Salesforce not connected" });
+        return;
+      }
+
+      const config = conn.config as any;
+      if (!config?.accessToken || !config?.instanceUrl) {
+        res.status(400).json({ error: "Salesforce access token or instance URL not configured" });
+        return;
+      }
+
+      const { SalesforceClient } = await import("@workspace/plugins-salesforce");
+      const client = new SalesforceClient(config.accessToken, config.instanceUrl);
+      const records = await client.query("SELECT MasterLabel, IsWon, IsClosed FROM OpportunityStage WHERE IsActive = true");
+
+      const stages = records.map((s: any) => ({
+        id: s.MasterLabel,
+        label: s.MasterLabel,
+        pipeline: s.IsWon === true ? "Won" : s.IsClosed === true ? "Lost" : "Open",
+      }));
+
+      const savedMapping = (conn.metadata as any)?.stageMapping || {};
+      res.json({ stages, mapping: savedMapping });
+    } catch (err: any) {
+      logger.error({ err, workspaceId }, "[Salesforce] Failed to fetch opportunity stages");
+      res.status(500).json({ error: err.message || "Failed to fetch stages" });
+    }
+  },
+);
+
+router.patch(
+  "/:workspaceId/salesforce/stages",
+  ...requirePermission("workspace", "edit"),
+  async (req: AuthenticatedRequest, res) => {
+    const workspaceId = req.workspaceId!;
+    const { mapping } = req.body;
+
+    if (!mapping || typeof mapping !== "object") {
+      res.status(400).json({ error: "mapping object required" });
+      return;
+    }
+
+    await IntegrationConnection.findOneAndUpdate(
+      { workspaceId, connectorName: "salesforce" },
+      { $set: { "metadata.stageMapping": mapping } },
+    );
+
+    res.json({ success: true, mapping });
+  },
+);
+
 // ─── HubSpot stage mapping ──────────────────────────────────────────
 
 router.get(

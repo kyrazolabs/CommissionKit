@@ -36,6 +36,7 @@
         "@workspace/plugins-custom": "workspace:*",
         "@workspace/plugins-hubspot": "workspace:*",
         "@workspace/plugins-odoo": "workspace:*",
+        "@workspace/plugins-salesforce": "workspace:*",
         "@workspace/queue": "workspace:*",
         "better-auth": "^1.6.9",
         "bson": "6.10.1",
@@ -245,6 +246,16 @@
     },
     "plugins/odoo": {
       "name": "@workspace/plugins-odoo",
+      "version": "0.0.0",
+      "dependencies": {
+        "@workspace/plugins-core": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/node": "catalog:",
+      },
+    },
+    "plugins/salesforce": {
+      "name": "@workspace/plugins-salesforce",
       "version": "0.0.0",
       "dependencies": {
         "@workspace/plugins-core": "workspace:*",
@@ -1380,6 +1391,8 @@
     "@workspace/plugins-hubspot": ["@workspace/plugins-hubspot@workspace:plugins/hubspot"],
 
     "@workspace/plugins-odoo": ["@workspace/plugins-odoo@workspace:plugins/odoo"],
+
+    "@workspace/plugins-salesforce": ["@workspace/plugins-salesforce@workspace:plugins/salesforce"],
 
     "@workspace/queue": ["@workspace/queue@workspace:lib/queue"],
 

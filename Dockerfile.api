@@ -18,6 +18,7 @@ COPY plugins/core/package.json ./plugins/core/
 COPY plugins/custom/package.json ./plugins/custom/
 COPY plugins/odoo/package.json ./plugins/odoo/
 COPY plugins/hubspot/package.json ./plugins/hubspot/
+COPY plugins/salesforce/package.json ./plugins/salesforce/
 
 # Install dependencies
 RUN bun i --ignore-scripts
