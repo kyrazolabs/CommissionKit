@@ -3,6 +3,7 @@ import "dotenv/config";
 import "./instrument";
 import app from "./app";
 import { logger } from "./lib/logger";
+import { decryptConfig } from "./lib/crypto";
 import { getRedisClient, verifySmtp, enqueueExchangeRateSync, enqueueLogsFlush } from "@workspace/queue";
 import { connectDB } from "@workspace/db";
 import { bootstrapEngines } from "./workers/engines/registry";
@@ -57,9 +58,10 @@ async function boot() {
       try {
         const plugin = pluginRegistry.get(conn.connectorName);
         if (plugin) {
+          const config = decryptConfig(conn.config as any) ?? {};
           await plugin.init(
             conn.workspaceId.toString(),
-            conn.config as Record<string, unknown>,
+            config as Record<string, unknown>,
           );
           logger.info({ workspaceId: conn.workspaceId, connector: conn.connectorName }, "[Boot] Rehydrated plugin connection");
         }

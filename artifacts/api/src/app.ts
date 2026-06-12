@@ -6,6 +6,7 @@ import { toNodeHandler } from "better-auth/node";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { auth } from "./lib/auth";
+import { defaultRateLimit } from "./middleware/rate-limiter";
 
 const app: Express = express();
 
@@ -36,6 +37,7 @@ app.use(
     credentials: true,
   }),
 );
+app.use(defaultRateLimit);
 import { secureBullBoard, serverAdapter } from "./lib/bull-board";
 app.use("/api/admin/queues", secureBullBoard, serverAdapter.getRouter());
 

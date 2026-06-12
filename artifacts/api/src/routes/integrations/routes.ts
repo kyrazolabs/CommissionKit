@@ -11,6 +11,8 @@ import {
   type AuthenticatedRequest,
 } from "../../middleware/auth";
 import { logger } from "../../lib/logger";
+import { encryptConfig, decryptConfig, stripSensitiveFields } from "../../lib/crypto";
+import { webhookRateLimit } from "../../middleware/rate-limiter";
 
 const router: IRouter = Router();
 
@@ -160,6 +162,9 @@ router.post(
       // Init plugin
       await plugin.init(workspaceId, config);
 
+      // Encrypt sensitive config before persistence
+      const encryptedConfig = encryptConfig(config);
+
       // Upsert connection record
       const webhookSecret = Array.from(
         { length: 32 },
@@ -172,7 +177,7 @@ router.post(
           workspaceId,
           connectorName,
           status: "connected",
-          config,
+          config: encryptedConfig,
           webhookSecret,
           syncSchedule: syncSchedule || { reps: "hourly", deals: "hourly" },
           writeBackEnabled: writeBackEnabled ?? false,
@@ -248,7 +253,8 @@ router.get(
       return;
     }
 
-    res.json({ config: conn.config });
+    const decrypted = decryptConfig(conn.config as any);
+    res.json({ config: stripSensitiveFields(decrypted ?? {}) });
   },
 );
 
@@ -267,7 +273,11 @@ router.patch(
       return;
     }
 
-    if (config) conn.config = config;
+    if (config) {
+      const existing = decryptConfig(conn.config as any) ?? {};
+      const merged = { ...existing, ...config };
+      conn.config = encryptConfig(merged) as any;
+    }
     if (syncSchedule) conn.syncSchedule = syncSchedule;
     if (writeBackEnabled !== undefined) conn.writeBackEnabled = writeBackEnabled;
 
@@ -276,7 +286,9 @@ router.patch(
     // Re-init plugin with new config
     const plugin = pluginRegistry.get(conn.connectorName);
     if (plugin && config) {
-      await plugin.init(workspaceId, config);
+      const existing = decryptConfig(conn.config as any) ?? {};
+      const merged = { ...existing, ...(typeof config === "object" ? config : {}) };
+      await plugin.init(workspaceId, merged);
     }
 
     // Update repeatable jobs if schedule changed
@@ -481,8 +493,9 @@ router.get(
 
 router.post(
   "/webhooks/:connectorName",
+  webhookRateLimit,
   async (req, res): Promise<void> => {
-    const { connectorName } = req.params;
+    const connectorName = String(req.params.connectorName);
 
     const plugin = pluginRegistry.get(connectorName);
     if (!plugin) {
@@ -573,10 +586,10 @@ router.get(
         return;
       }
 
-      const config = conn.config as any;
-      const clientId = config?.clientId;
-      const clientSecret = config?.clientSecret;
-      const redirectUri = config?.redirectUri || `${req.protocol}://${req.get("host")}/api/integrations/hubspot/callback`;
+      const config = decryptConfig(conn.config as any);
+      const clientId = config?.clientId as string | undefined;
+      const clientSecret = config?.clientSecret as string | undefined;
+      const redirectUri = (config?.redirectUri as string) || `${req.protocol}://${req.get("host")}/api/integrations/hubspot/callback`;
 
       if (!clientId || !clientSecret) {
         res.status(400).send("HubSpot OAuth credentials not configured. Set clientId and clientSecret first.");
@@ -586,14 +599,15 @@ router.get(
       const { HubSpotClient } = await import("@workspace/plugins-hubspot");
       const tokens = await HubSpotClient.exchangeCode(clientId, clientSecret, redirectUri, code);
 
+      const decrypted = decryptConfig(conn.config as any) ?? {};
+      const updatedConfig = { ...decrypted, accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
+      const encrypted = encryptConfig(updatedConfig);
+
       await IntegrationConnection.findOneAndUpdate(
         { workspaceId, connectorName: "hubspot" },
         {
           status: "connected",
-          $set: {
-            "config.accessToken": tokens.accessToken,
-            "config.refreshToken": tokens.refreshToken,
-          },
+          config: encrypted,
         },
       );
 
@@ -623,14 +637,14 @@ router.get(
         return;
       }
 
-      const config = conn.config as any;
+      const config = decryptConfig(conn.config as any);
       if (!config?.accessToken || !config?.instanceUrl) {
         res.status(400).json({ error: "Salesforce access token or instance URL not configured" });
         return;
       }
 
       const { SalesforceClient } = await import("@workspace/plugins-salesforce");
-      const client = new SalesforceClient(config.accessToken, config.instanceUrl);
+      const client = new SalesforceClient(config.accessToken as string, config.instanceUrl as string);
       const records = await client.query("SELECT MasterLabel, IsWon, IsClosed FROM OpportunityStage WHERE IsActive = true");
 
       const stages = records.map((s: any) => ({
@@ -684,14 +698,14 @@ router.get(
         return;
       }
 
-      const config = conn.config as any;
+      const config = decryptConfig(conn.config as any);
       if (!config?.accessToken) {
         res.status(400).json({ error: "HubSpot access token not configured" });
         return;
       }
 
       const { HubSpotClient } = await import("@workspace/plugins-hubspot");
-      const client = new HubSpotClient(config.accessToken);
+      const client = new HubSpotClient(config.accessToken as string);
       const pipelines = await client.getPipelines();
 
       const stages: Array<{ id: string; label: string; pipeline: string }> = [];
