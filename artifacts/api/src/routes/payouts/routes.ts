@@ -44,7 +44,7 @@ async function requireGrowthPlan(workspaceId: string, res: any): Promise<boolean
 function formatPayout(payout: any) {
   return {
     id: payout._id.toString(),
-    repId: (payout.repId?._id ?? payout.repId).toString(),
+    repId: payout.repId ? (payout.repId._id ?? payout.repId).toString() : null,
     repName: payout.repId?.name ?? "Unknown",
     periodStart: payout.periodStart.toISOString(),
     periodEnd: payout.periodEnd.toISOString(),
@@ -131,7 +131,7 @@ router.get(
     if (req.query.periodEnd) query.periodEnd = { $lte: new Date(String(req.query.periodEnd)) };
 
     const payouts = await Payout.find(query).populate("repId").sort({ periodStart: -1 });
-    res.json(payouts.map(formatPayout));
+    res.json(payouts.filter((p) => p.repId != null).map(formatPayout));
   },
 );
 
@@ -151,7 +151,7 @@ router.get(
 
     const rows = [
       ["Rep Name","Period Start","Period End","Commission","Adjustments","Final Amount","Currency","Status","Payment Date"].join(","),
-      ...payouts.map((p) => {
+      ...payouts.filter(p => p.repId != null).map((p) => {
         const repName = (p.repId as any)?.name ?? "Unknown";
         return [
           `"${repName}"`,
