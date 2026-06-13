@@ -16,11 +16,19 @@ export class SalesforceClient {
     password?: string,
     securityToken?: string,
   ): Promise<{ accessToken: string; instanceUrl: string }> {
+    const baseUrl = instanceUrl.replace(/\/+$/, "");
     const isSandbox = instanceUrl.includes("test.salesforce.com")
       || instanceUrl.includes("salesforce-setup.com")
       || instanceUrl.includes("lightning.force.com")
       || instanceUrl.includes("sandbox");
-    const loginUrl = isSandbox ? "https://test.salesforce.com" : "https://login.salesforce.com";
+
+    // Try org domain first, then login/test.salesforce.com
+    const tokenUrls = [
+      `${baseUrl}/services/oauth2/token`,
+      ...(isSandbox
+        ? [`https://test.salesforce.com/services/oauth2/token`]
+        : [`https://login.salesforce.com/services/oauth2/token`]),
+    ];
 
     // Client Credentials flow (External Client App / M2M)
     if (!username || !password) {
@@ -29,17 +37,25 @@ export class SalesforceClient {
         client_id: clientId,
         client_secret: clientSecret,
       });
-      const res = await fetch(`${loginUrl}/services/oauth2/token`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: body.toString(),
-      });
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(`Salesforce OAuth failed: HTTP ${res.status} — ${text.slice(0, 500)}`);
+      let lastError: any;
+      for (const tokenUrl of tokenUrls) {
+        try {
+          const res = await fetch(tokenUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: body.toString(),
+          });
+          if (res.ok) {
+            const data = (await res.json()) as any;
+            return { accessToken: data.access_token, instanceUrl: data.instance_url || instanceUrl };
+          }
+          const text = await res.text().catch(() => "");
+          lastError = new Error(`Salesforce OAuth failed: HTTP ${res.status} — ${text.slice(0, 200)}`);
+        } catch (err: any) {
+          lastError = err;
+        }
       }
-      const data = (await res.json()) as any;
-      return { accessToken: data.access_token, instanceUrl: data.instance_url || instanceUrl };
+      throw lastError || new Error("Salesforce OAuth failed on all endpoints");
     }
 
     // Username-Password flow
@@ -51,17 +67,25 @@ export class SalesforceClient {
       username,
       password: pass,
     });
-
-    const res = await fetch(`${loginUrl}/services/oauth2/token`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: body.toString(),
-    });
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      throw new Error(`Salesforce OAuth failed: HTTP ${res.status} — ${text.slice(0, 500)}`);
+    let lastError: any;
+    for (const tokenUrl of tokenUrls) {
+      try {
+        const res = await fetch(tokenUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: body.toString(),
+        });
+        if (res.ok) {
+          const data = (await res.json()) as any;
+          return { accessToken: data.access_token, instanceUrl: data.instance_url || instanceUrl };
+        }
+        const text = await res.text().catch(() => "");
+        lastError = new Error(`Salesforce OAuth failed: HTTP ${res.status} — ${text.slice(0, 200)}`);
+      } catch (err: any) {
+        lastError = err;
+      }
     }
+    throw lastError || new Error("Salesforce OAuth failed on all endpoints");
 
     const data = (await res.json()) as any;
     return { accessToken: data.access_token, instanceUrl: data.instance_url || instanceUrl };
