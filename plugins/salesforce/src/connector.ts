@@ -46,7 +46,7 @@ export class SalesforceConnector extends BasePlugin {
     if (!c.instanceUrl) throw new Error("Salesforce config requires an instance URL");
 
     // If OAuth credentials provided, auto-authenticate
-    if (c.authType === "oauth" && c.clientId && c.clientSecret && c.username && c.password) {
+    if (c.authType === "oauth" && c.clientId && c.clientSecret) {
       const tokens = await SalesforceClient.authenticate(
         c.instanceUrl, c.clientId, c.clientSecret, c.username, c.password, c.securityToken,
       );
@@ -63,8 +63,8 @@ export class SalesforceConnector extends BasePlugin {
       if (!c.instanceUrl) {
         return { success: false, message: "Missing instance URL" };
       }
-      if (!c.accessToken && !(c.clientId && c.clientSecret && c.username && c.password)) {
-        return { success: false, message: "Missing access token or OAuth credentials" };
+      if (!c.accessToken && !(c.clientId && c.clientSecret)) {
+        return { success: false, message: "Missing access token or OAuth credentials (clientId + clientSecret)" };
       }
 
       const start = Date.now();

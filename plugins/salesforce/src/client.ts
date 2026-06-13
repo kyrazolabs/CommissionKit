@@ -7,18 +7,39 @@ export class SalesforceClient {
     this.instanceUrl = instanceUrl.replace(/\/+$/, "");
   }
 
-  /** OAuth 2.0 Username-Password flow — no redirect needed */
+  /** OAuth 2.0 — supports Client Credentials (M2M) and Username-Password flows */
   static async authenticate(
     instanceUrl: string,
     clientId: string,
     clientSecret: string,
-    username: string,
-    password: string,
+    username?: string,
+    password?: string,
     securityToken?: string,
   ): Promise<{ accessToken: string; instanceUrl: string }> {
-    // Token endpoint is always login.salesforce.com or test.salesforce.com
     const isSandbox = instanceUrl.includes("test.salesforce.com");
     const loginUrl = isSandbox ? "https://test.salesforce.com" : "https://login.salesforce.com";
+
+    // Client Credentials flow (External Client App / M2M) — no user/pass needed
+    if (!username || !password) {
+      const body = new URLSearchParams({
+        grant_type: "client_credentials",
+        client_id: clientId,
+        client_secret: clientSecret,
+      });
+      const res = await fetch(`${loginUrl}/services/oauth2/token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString(),
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(`Salesforce OAuth failed: HTTP ${res.status} — ${text.slice(0, 500)}`);
+      }
+      const data = (await res.json()) as any;
+      return { accessToken: data.access_token, instanceUrl: data.instance_url };
+    }
+
+    // Username-Password flow
     const pass = securityToken ? `${password}${securityToken}` : password;
     const body = new URLSearchParams({
       grant_type: "password",
