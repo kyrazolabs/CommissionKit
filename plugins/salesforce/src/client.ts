@@ -16,7 +16,9 @@ export class SalesforceClient {
     password: string,
     securityToken?: string,
   ): Promise<{ accessToken: string; instanceUrl: string }> {
-    const baseUrl = instanceUrl || "https://login.salesforce.com";
+    // Token endpoint is always login.salesforce.com or test.salesforce.com
+    const isSandbox = instanceUrl.includes("test.salesforce.com");
+    const loginUrl = isSandbox ? "https://test.salesforce.com" : "https://login.salesforce.com";
     const pass = securityToken ? `${password}${securityToken}` : password;
     const body = new URLSearchParams({
       grant_type: "password",
@@ -26,7 +28,7 @@ export class SalesforceClient {
       password: pass,
     });
 
-    const res = await fetch(`${baseUrl}/services/oauth2/token`, {
+    const res = await fetch(`${loginUrl}/services/oauth2/token`, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: body.toString(),
