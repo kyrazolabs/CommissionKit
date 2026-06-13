@@ -52,7 +52,7 @@ export function ConnectDialog({ connector, isConnected }: Props) {
       if (k === "syncClosedOnly" || k === "writeBackEnabled") continue;
       config[k] = v;
     }
-    if (!["hubspot"].includes(connector.name)) {
+    if (!["hubspot", "salesforce"].includes(connector.name)) {
       const authType = String(formValues.authType || "bearer");
       const auth: Record<string, unknown> = { type: authType };
       if (authType === "apiKey") {
