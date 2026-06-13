@@ -14,8 +14,14 @@ import type {
 import { SalesforceClient } from "./client";
 
 interface SalesforceConfig {
-  accessToken: string;
+  authType?: "token" | "oauth";
+  accessToken?: string;
   instanceUrl: string;
+  clientId?: string;
+  clientSecret?: string;
+  username?: string;
+  password?: string;
+  securityToken?: string;
   syncClosedOnly?: boolean;
 }
 
@@ -35,18 +41,30 @@ export class SalesforceConnector extends BasePlugin {
     return config as unknown as SalesforceConfig;
   }
 
-  private getClient(config: ConnectionConfig): SalesforceClient {
+  private async getClient(config: ConnectionConfig): Promise<SalesforceClient> {
     const c = this.parseConfig(config);
-    if (!c.accessToken) throw new Error("Salesforce config requires an access token");
     if (!c.instanceUrl) throw new Error("Salesforce config requires an instance URL");
+
+    // If OAuth credentials provided, auto-authenticate
+    if (c.authType === "oauth" && c.clientId && c.clientSecret && c.username && c.password) {
+      const tokens = await SalesforceClient.authenticate(
+        c.instanceUrl, c.clientId, c.clientSecret, c.username, c.password, c.securityToken,
+      );
+      return new SalesforceClient(tokens.accessToken, tokens.instanceUrl);
+    }
+
+    if (!c.accessToken) throw new Error("Salesforce config requires an access token or OAuth credentials");
     return new SalesforceClient(c.accessToken, c.instanceUrl);
   }
 
   async testConnection(config: ConnectionConfig): Promise<ConnectionTestResult> {
     try {
       const c = this.parseConfig(config);
-      if (!c.accessToken || !c.instanceUrl) {
-        return { success: false, message: "Missing access token or instance URL" };
+      if (!c.instanceUrl) {
+        return { success: false, message: "Missing instance URL" };
+      }
+      if (!c.accessToken && !(c.clientId && c.clientSecret && c.username && c.password)) {
+        return { success: false, message: "Missing access token or OAuth credentials" };
       }
 
       const start = Date.now();
@@ -155,20 +173,51 @@ export class SalesforceConnector extends BasePlugin {
   getSettingsSchema(): JsonSchema {
     return {
       type: "object",
-      required: ["accessToken", "instanceUrl"],
+      required: ["instanceUrl"],
       properties: {
-        accessToken: {
-          type: "string",
-          title: "Access Token",
-          description: "Salesforce Connected App access token or Security Token",
-          format: "password",
-          "x-sensitive": true,
-        },
         instanceUrl: {
           type: "string",
           title: "Instance URL",
-          description: "e.g. https://yourinstance.my.salesforce.com",
+          description: "e.g. https://yourinstance.my.salesforce.com or https://login.salesforce.com",
           format: "uri",
+        },
+        accessToken: {
+          type: "string",
+          title: "Access Token (direct)",
+          description: "Salesforce Session ID or access token from Connected App",
+          format: "password",
+          "x-sensitive": true,
+        },
+        clientId: {
+          type: "string",
+          title: "Client ID (OAuth2)",
+          description: "Consumer Key from your Connected App",
+        },
+        clientSecret: {
+          type: "string",
+          title: "Client Secret (OAuth2)",
+          description: "Consumer Secret from your Connected App",
+          format: "password",
+          "x-sensitive": true,
+        },
+        username: {
+          type: "string",
+          title: "Username (OAuth2)",
+          description: "Salesforce user email",
+        },
+        password: {
+          type: "string",
+          title: "Password (OAuth2)",
+          description: "Salesforce user password",
+          format: "password",
+          "x-sensitive": true,
+        },
+        securityToken: {
+          type: "string",
+          title: "Security Token (OAuth2, optional)",
+          description: "Password + token concatenated for login",
+          format: "password",
+          "x-sensitive": true,
         },
         syncClosedOnly: {
           type: "boolean",

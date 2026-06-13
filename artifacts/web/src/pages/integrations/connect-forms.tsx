@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Props {
   values: Record<string, string | boolean>;
@@ -99,10 +100,45 @@ export function SalesforceConnectForm({ values, onChange }: Props) {
         <Input placeholder="https://yourinstance.my.salesforce.com"
           value={String(values.instanceUrl || "")} onChange={(e) => onChange({ ...values, instanceUrl: e.target.value })} className="h-9 text-sm" />
       </Field>
-      <Field label="Access Token">
-        <Input type="password" placeholder="Connected App or Security Token"
-          value={String(values.accessToken || "")} onChange={(e) => onChange({ ...values, accessToken: e.target.value })} className="h-9 text-sm" />
+      <Field label="Authentication Mode">
+        <Select value={String(values.authType || "oauth")} onValueChange={(v) => onChange({ ...values, authType: v })}>
+          <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="oauth">OAuth 2.0 (Client ID + Password)</SelectItem>
+            <SelectItem value="token">Access Token (direct)</SelectItem>
+          </SelectContent>
+        </Select>
       </Field>
+      {String(values.authType || "oauth") === "oauth" && (
+        <>
+          <Field label="Client ID (Consumer Key)">
+            <Input placeholder="Connected App Consumer Key"
+              value={String(values.clientId || "")} onChange={(e) => onChange({ ...values, clientId: e.target.value })} className="h-9 text-sm" />
+          </Field>
+          <Field label="Client Secret (Consumer Secret)">
+            <Input type="password" placeholder="Connected App Consumer Secret"
+              value={String(values.clientSecret || "")} onChange={(e) => onChange({ ...values, clientSecret: e.target.value })} className="h-9 text-sm" />
+          </Field>
+          <Field label="Username">
+            <Input placeholder="user@company.com"
+              value={String(values.username || "")} onChange={(e) => onChange({ ...values, username: e.target.value })} className="h-9 text-sm" />
+          </Field>
+          <Field label="Password">
+            <Input type="password" placeholder="Salesforce password"
+              value={String(values.password || "")} onChange={(e) => onChange({ ...values, password: e.target.value })} className="h-9 text-sm" />
+          </Field>
+          <Field label="Security Token (optional)">
+            <Input type="password" placeholder="Password + Security Token concatenated"
+              value={String(values.securityToken || "")} onChange={(e) => onChange({ ...values, securityToken: e.target.value })} className="h-9 text-sm" />
+          </Field>
+        </>
+      )}
+      {String(values.authType || "oauth") === "token" && (
+        <Field label="Access Token">
+          <Input type="password" placeholder="Session ID or access token"
+            value={String(values.accessToken || "")} onChange={(e) => onChange({ ...values, accessToken: e.target.value })} className="h-9 text-sm" />
+        </Field>
+      )}
     </>
   );
 }
@@ -110,5 +146,3 @@ export function SalesforceConnectForm({ values, onChange }: Props) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <div className="space-y-1.5"><Label className="text-xs">{label}</Label>{children}</div>;
 }
-
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
