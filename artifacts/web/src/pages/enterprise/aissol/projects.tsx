@@ -22,6 +22,7 @@ import { Link, useLocation } from "wouter";
 import { format } from "date-fns";
 import { Plus, Search, Trash2, UploadCloud, FileDown, FolderKanban, Loader2, Download } from "lucide-react";
 import { CurrencyCombobox } from "@/components/currency-combobox";
+import { RepCombobox } from "@/components/rep-combobox";
 import { HelpTooltip } from "@/components/help-tooltip";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
@@ -208,16 +209,12 @@ export function AissolProjectsPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="proj-rep">Sales Rep</Label>
-                <Select value={form.repId} onValueChange={(v) => setForm(p => ({ ...p, repId: v }))} required>
-                  <SelectTrigger id="proj-rep"><SelectValue placeholder={t("enterprise.projects.selectRep")} /></SelectTrigger>
-                  <SelectContent>
-                    {!Array.isArray(reps) || reps.length === 0 ? (
-                      <div className="p-2 text-sm text-muted-foreground text-center">No reps yet — create one in Reps first.</div>
-                    ) : (
-                      reps?.map((r: any) => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)
-                    )}
-                  </SelectContent>
-                </Select>
+                <RepCombobox
+                  reps={Array.isArray(reps) ? reps.map((r: any) => ({ id: String(r.id), name: r.name })) : []}
+                  value={form.repId}
+                  onChange={(v) => setForm(p => ({ ...p, repId: v }))}
+                  placeholder={t("enterprise.projects.selectRep")}
+                />
               </div>
               <div className="space-y-2"><Label htmlFor="proj-value">Total Value</Label><NumberInput id="proj-value" value={form.totalValue} onChange={(e) => setForm(p => ({ ...p, totalValue: e.target.value }))} required /></div>
               <div className="space-y-2"><Label htmlFor="proj-cost">Total Cost</Label><NumberInput id="proj-cost" value={form.totalCost} onChange={(e) => setForm(p => ({ ...p, totalCost: e.target.value }))} required /></div>
@@ -240,15 +237,13 @@ export function AissolProjectsPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             <div className="w-40">
-              <Select value={filterRep} onValueChange={setFilterRep}>
-                <SelectTrigger><SelectValue placeholder={t("enterprise.projects.allReps")} /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Reps</SelectItem>
-                  {!Array.isArray(reps) || reps.length === 0 ? (
-                    <div className="p-2 text-sm text-muted-foreground text-center">No reps yet — create one in Reps first.</div>
-                  ) : Array.isArray(reps) && reps.map((rep: any) => <SelectItem key={rep.id} value={String(rep.id)}>{rep.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <RepCombobox
+                reps={Array.isArray(reps) ? reps.map((r: any) => ({ id: String(r.id), name: r.name })) : []}
+                value={filterRep}
+                onChange={setFilterRep}
+                includeAll
+                allLabel={t("enterprise.projects.allReps")}
+              />
             </div>
             <div className="w-40">
               <Select value={filterPeriod} onValueChange={setFilterPeriod}>
@@ -469,12 +464,12 @@ function ImportProjectsDialog({ workspaceId, period, defaultCurrency, reps, onIm
                       <TableRow key={row.id} className={!row.repId ? "bg-red-50/30 dark:bg-red-900/10" : ""}>
                         <TableCell><Input value={row.name} onChange={(e) => updateRow(row.id, 'name', e.target.value)} className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent" /></TableCell>
                         <TableCell>
-                          <Select value={row.repId} onValueChange={(v) => updateRow(row.id, 'repId', v)}>
-                            <SelectTrigger className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent"><SelectValue placeholder="Select rep" /></SelectTrigger>
-                            <SelectContent>{!Array.isArray(reps) || reps.length === 0 ? (
-                              <div className="p-2 text-sm text-muted-foreground text-center">No reps yet — create one in Reps first.</div>
-                            ) : Array.isArray(reps) && reps.map((r: any) => <SelectItem key={r.id} value={String(r.id)}>{r.name}</SelectItem>)}</SelectContent>
-                          </Select>
+                          <RepCombobox
+                            reps={Array.isArray(reps) ? reps.map((r: any) => ({ id: String(r.id), name: r.name })) : []}
+                            value={row.repId}
+                            onChange={(v) => updateRow(row.id, 'repId', v)}
+                            className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent shadow-none"
+                          />
                           {!row.repId && <p className="text-[10px] text-destructive mt-0.5 ml-2">Unknown: {row.repName}</p>}
                         </TableCell>
                         <TableCell><NumberInput value={row.totalValue} onChange={(e) => updateRow(row.id, 'totalValue', e.target.value)} className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent" /></TableCell>
