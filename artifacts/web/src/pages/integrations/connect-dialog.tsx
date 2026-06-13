@@ -47,7 +47,10 @@ export function ConnectDialog({ connector, isConnected }: Props) {
 
   const buildConfig = (): Record<string, unknown> => {
     const config: Record<string, unknown> = { entities: {} };
-    for (const [k, v] of Object.entries(formValues)) {
+    const vals = { ...formValues };
+    // Ensure authType defaults for connectors that need it
+    if (connector.name === "salesforce" && !vals.authType) vals.authType = "oauth";
+    for (const [k, v] of Object.entries(vals)) {
       if (k.startsWith("auth") && !k.startsWith("authType") && k !== "authType") continue;
       if (k === "syncClosedOnly" || k === "writeBackEnabled") continue;
       config[k] = v;
