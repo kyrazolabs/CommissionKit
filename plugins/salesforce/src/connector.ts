@@ -137,8 +137,8 @@ export class SalesforceConnector extends BasePlugin {
       const records = await client.query(soql);
 
       return records
-        .filter((r) => r.OwnerId)
-        .map((r) => {
+        .filter((r: any) => r.OwnerId)
+        .map((r: any) => {
           const stage = savedMapping?.[r.StageName] || normalizeStage(r.StageName);
 
           return {
