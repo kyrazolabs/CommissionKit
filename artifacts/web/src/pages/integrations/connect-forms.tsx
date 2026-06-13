@@ -104,8 +104,8 @@ export function SalesforceConnectForm({ values, onChange }: Props) {
         <Select value={String(values.authType || "oauth")} onValueChange={(v) => onChange({ ...values, authType: v })}>
           <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="oauth">OAuth 2.0 (Client ID + Password)</SelectItem>
-            <SelectItem value="token">Access Token (direct)</SelectItem>
+            <SelectItem value="oauth">OAuth 2.0 (Client ID + Secret)</SelectItem>
+            <SelectItem value="token">Session ID / Access Token</SelectItem>
           </SelectContent>
         </Select>
       </Field>

@@ -36,6 +36,7 @@ export class SalesforceClient {
         grant_type: "client_credentials",
         client_id: clientId,
         client_secret: clientSecret,
+        format: "json",
       });
       let lastError: any;
       for (const tokenUrl of tokenUrls) {
