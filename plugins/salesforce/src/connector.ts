@@ -68,7 +68,7 @@ export class SalesforceConnector extends BasePlugin {
       }
 
       const start = Date.now();
-      const client = this.getClient(config);
+      const client = await this.getClient(config);
       const users = await client.query("SELECT Id, Name FROM User WHERE IsActive = true LIMIT 1");
       const latency = Date.now() - start;
 
@@ -91,7 +91,7 @@ export class SalesforceConnector extends BasePlugin {
     config: ConnectionConfig,
     _options?: FetchOptions,
   ): Promise<NormalizedRep[]> {
-    const client = this.getClient(config);
+    const client = await this.getClient(config);
 
     try {
       const users = await client.query(
@@ -116,7 +116,7 @@ export class SalesforceConnector extends BasePlugin {
     options?: FetchOptions,
   ): Promise<NormalizedDeal[]> {
     const c = this.parseConfig(config);
-    const client = this.getClient(config);
+    const client = await this.getClient(config);
     const savedMapping = (config as any)._metadata?.stageMapping as Record<string, string> | undefined;
 
     try {
