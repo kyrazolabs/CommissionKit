@@ -16,7 +16,9 @@ export class SalesforceClient {
     password?: string,
     securityToken?: string,
   ): Promise<{ accessToken: string; instanceUrl: string }> {
-    const isSandbox = instanceUrl.includes("test.salesforce.com");
+    const isSandbox = instanceUrl.includes("test.salesforce.com")
+      || instanceUrl.includes("salesforce-setup.com")
+      || instanceUrl.includes("sandbox");
     const loginUrl = isSandbox ? "https://test.salesforce.com" : "https://login.salesforce.com";
 
     // Client Credentials flow (External Client App / M2M) — no user/pass needed
