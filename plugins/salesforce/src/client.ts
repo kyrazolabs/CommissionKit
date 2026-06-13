@@ -16,16 +16,20 @@ export class SalesforceClient {
     password?: string,
     securityToken?: string,
   ): Promise<{ accessToken: string; instanceUrl: string }> {
-    const baseUrl = instanceUrl.replace(/\/+$/, "");
+    const isSandbox = instanceUrl.includes("test.salesforce.com")
+      || instanceUrl.includes("salesforce-setup.com")
+      || instanceUrl.includes("lightning.force.com")
+      || instanceUrl.includes("sandbox");
+    const loginUrl = isSandbox ? "https://test.salesforce.com" : "https://login.salesforce.com";
 
-    // Client Credentials flow (External Client App / M2M) — authenticate at org domain
+    // Client Credentials flow (External Client App / M2M)
     if (!username || !password) {
       const body = new URLSearchParams({
         grant_type: "client_credentials",
         client_id: clientId,
         client_secret: clientSecret,
       });
-      const res = await fetch(`${baseUrl}/services/oauth2/token`, {
+      const res = await fetch(`${loginUrl}/services/oauth2/token`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: body.toString(),
@@ -35,14 +39,10 @@ export class SalesforceClient {
         throw new Error(`Salesforce OAuth failed: HTTP ${res.status} — ${text.slice(0, 500)}`);
       }
       const data = (await res.json()) as any;
-      return { accessToken: data.access_token, instanceUrl: data.instance_url };
+      return { accessToken: data.access_token, instanceUrl: data.instance_url || instanceUrl };
     }
 
-    // Username-Password flow — uses login/test.salesforce.com
-    const isSandbox = instanceUrl.includes("test.salesforce.com")
-      || instanceUrl.includes("salesforce-setup.com")
-      || instanceUrl.includes("sandbox");
-    const loginUrl = isSandbox ? "https://test.salesforce.com" : "https://login.salesforce.com";
+    // Username-Password flow
     const pass = securityToken ? `${password}${securityToken}` : password;
     const body = new URLSearchParams({
       grant_type: "password",
@@ -64,7 +64,7 @@ export class SalesforceClient {
     }
 
     const data = (await res.json()) as any;
-    return { accessToken: data.access_token, instanceUrl: data.instance_url };
+    return { accessToken: data.access_token, instanceUrl: data.instance_url || instanceUrl };
   }
 
   /** Execute a SOQL query with automatic cursor pagination */
