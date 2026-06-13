@@ -86,9 +86,6 @@ export class SalesforceClient {
       }
     }
     throw lastError || new Error("Salesforce OAuth failed on all endpoints");
-
-    const data = (await res.json()) as any;
-    return { accessToken: data.access_token, instanceUrl: data.instance_url || instanceUrl };
   }
 
   /** Execute a SOQL query with automatic cursor pagination */
