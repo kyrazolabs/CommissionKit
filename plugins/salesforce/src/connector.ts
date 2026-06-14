@@ -43,17 +43,19 @@ export class SalesforceConnector extends BasePlugin {
 
   private async getClient(config: ConnectionConfig): Promise<SalesforceClient> {
     const c = this.parseConfig(config);
-    if (!c.instanceUrl) throw new Error("Salesforce config requires an instance URL");
 
     // If OAuth credentials provided, auto-authenticate
     if (c.authType === "oauth" && c.clientId && c.clientSecret) {
       const tokens = await SalesforceClient.authenticate(
-        c.instanceUrl, c.clientId, c.clientSecret, c.username, c.password, c.securityToken,
+        c.instanceUrl || "https://login.salesforce.com",
+        c.clientId, c.clientSecret, c.username, c.password, c.securityToken,
       );
-      return new SalesforceClient(tokens.accessToken, tokens.instanceUrl);
+      // Use the instance URL from the OAuth response, fall back to config
+      return new SalesforceClient(tokens.accessToken, tokens.instanceUrl || c.instanceUrl || "");
     }
 
-    if (!c.accessToken) throw new Error("Salesforce config requires an access token or OAuth credentials");
+    if (!c.instanceUrl) throw new Error("Salesforce config requires an instance URL");
+    if (!c.accessToken) throw new Error("Salesforce config requires an access token");
     return new SalesforceClient(c.accessToken, c.instanceUrl);
   }
 
