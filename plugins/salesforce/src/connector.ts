@@ -123,7 +123,7 @@ export class SalesforceConnector extends BasePlugin {
 
     try {
       const soqlParts = [
-        "SELECT Id, Name, Amount, CloseDate, StageName, OwnerId, Description",
+        "SELECT Id, Name, Amount, CloseDate, StageName, OwnerId, CurrencyIsoCode, Description",
         "FROM Opportunity",
       ];
 
@@ -153,7 +153,7 @@ export class SalesforceConnector extends BasePlugin {
           amount,
           closeDate: r.CloseDate ? new Date(r.CloseDate) : new Date(),
           stage,
-          currency: ("USD").toUpperCase(),
+          currency: (r.CurrencyIsoCode || "USD").toUpperCase(),
           paymentStatus: (stage === "closed_won" ? paymentDefault : "unpaid") as PaymentStatus,
           notes: r.Description || undefined,
           metadata: {
