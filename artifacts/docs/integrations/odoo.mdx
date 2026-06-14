@@ -13,13 +13,13 @@ Connect your Odoo instance to CommissionKit. The connector works with Odoo Commu
 Odoo Sales app                CommissionKit
 ──────────────                ───────────────
 
-Quotation created              (not synced)
-       │
-       ▼
-Quotation confirmed      →     Deal created (state = closed_won)
-       │
-       ▼
-Invoice created + paid   →     Payment status updates to "paid"
+Quotation created        →    Deal created (stage = pending)
+        │
+        ▼
+Quotation confirmed      →    Deal updates (stage = closed_won)
+        │
+        ▼
+Invoice created + paid   →    Payment status updates to "paid"
 ```
 
 **CRM app path** (opportunity → quotation → order):
@@ -29,19 +29,22 @@ Odoo CRM app                  CommissionKit
 ─────────────                 ───────────────
 
 Lead / Opportunity             (not synced)
-       │
-       ▼
+        │
+        ▼
 Opportunity marked "Won"
-       │
-       ▼
+        │
+        ▼
 Quotation created
-from the opportunity     →     Deal created (state = closed_won)
-       │
-       ▼
+from the opportunity     →     Deal created (stage = pending)
+        │
+        ▼
+Quotation confirmed      →     Deal updates (stage = closed_won)
+        │
+        ▼
 Invoice created + paid   →     Payment status updates to "paid"
 ```
 
-In both paths, the final record CommissionKit reads is **`sale.order`** — the confirmed sales order. Opportunities alone are not enough; a quotation must be created from the opportunity first.
+In both paths, the final record CommissionKit reads is **`sale.order`**. All states (`draft`, `sent`, `sale`, `done`, `cancel`) are synced by default.
 
 ## CRM: opportunity pipeline
 
@@ -53,27 +56,6 @@ To get a won opportunity into CommissionKit:
 2. Click **New Quotation** to create a sale order from the opportunity
 3. Confirm the quotation so its state becomes **Sale Order** or **Done**
 4. Run a manual **Sync Deals** in CommissionKit to pull it in
-
-## Payment status
-
-CommissionKit determines payment status by querying the **actual invoice payment states**, not the `sale.order.invoice_status` field.
-
-**How it works**:
-
-1. Fetches `sale.order` records with their linked `invoice_ids`
-2. Queries each invoice's `payment_state` from `account.move`
-3. Aggregates per deal:
-
-| Invoice payment states | Resulting CKit status |
-|---|---|
-| All invoices `paid` or `in_payment` | **paid** |
-| Some paid, some unpaid | **partial** |
-| No invoices attached | **unpaid** |
-| Any invoice `reversed` or `cancel` | **on_hold** |
-
-<Note>
-`sale.order.invoice_status` is NOT used. That field only tracks whether invoices have been **created**, not whether they have been **paid**.
-</Note>
 
 ## Stage mapping
 
@@ -87,7 +69,34 @@ Raw Odoo sale order states map to CommissionKit's canonical stages:
 | `done` | `closed_won` |
 | `cancel` | `closed_lost` |
 
-By default, only `closed_won` deals (`sale` and `done`) are synced.
+All states are synced by default. Use the **⋮** menu → **Stage Filter** to select which states to import.
+
+## Payment status (invoice-based)
+
+CommissionKit determines payment status from **actual invoice payment states**, not `sale.order.invoice_status`.
+
+| Invoice payment states | Resulting CKit status |
+|---|---|
+| All invoices `paid` or `in_payment` | **paid** |
+| Some paid, some unpaid | **partial** |
+| No invoices attached | **unpaid** |
+| Any invoice `reversed` or `cancel` | **on_hold** |
+
+For closed-won deals with no invoices yet, the status comes from **⋮** → **Payment Defaults** (defaults to `paid`).
+
+<Note>
+`sale.order.invoice_status` is NOT used. That field only tracks whether invoices have been **created**, not whether they have been **paid**.
+</Note>
+
+## Connector features
+
+| Option | What it does |
+|---|---|
+| **Sync Reps / Sync Deals** | Manual sync triggers |
+| **Auto Sync** | Schedules automatic syncs |
+| **Stage Filter** | Select which Odoo states to import |
+| **Payment Defaults** | Default payment status for won deals without invoices |
+| **Disconnect** | Remove the connection |
 
 ## Prerequisites
 
