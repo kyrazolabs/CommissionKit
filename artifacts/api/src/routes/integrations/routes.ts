@@ -658,7 +658,6 @@ router.get(
         return;
       }
 
-      const { SalesforceClient } = await import("@workspace/plugins-salesforce");
       const client = new SalesforceClient(accessToken, instanceUrl);
       const records = await client.query("SELECT MasterLabel, IsWon, IsClosed FROM OpportunityStage WHERE IsActive = true");
 
