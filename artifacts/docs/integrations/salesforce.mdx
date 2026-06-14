@@ -27,42 +27,56 @@ Salesforce doesn't track payments directly. CommissionKit assigns `paymentStatus
 
 ## Authentication
 
-CommissionKit uses token-based auth — a single access token from your Salesforce Connected App or Security Token.
+CommissionKit supports two authentication methods for Salesforce.
 
-### Getting an Access Token
+### Method 1: External Client App (recommended)
 
-**From a Connected App (recommended):**
+External Client Apps support the Client Credentials OAuth flow — no username or password needed. Just Client ID + Client Secret.
+
 1. In Salesforce Setup, go to **Apps > App Manager**
-2. Click **New Connected App**
+2. Click **New Connected App** → select **External Client App**
 3. Fill in:
-   - **Connected App Name**: CommissionKit
-   - **API Name**: CommissionKit
+   - **External Client App Name**: CommissionKit
    - **Contact Email**: your email
-4. Check **Enable OAuth Settings**
-   - Callback URL: `https://login.salesforce.com/services/oauth2/success`
-   - Add OAuth scopes: `Access and manage your data (api)`
-5. Save → click **Manage** → **Edit Policies**
-   - Set **IP Relaxation** to "Relax IP restrictions"
-   - Set **Permitted Users** to "Admin approved users are pre-authorized"
-6. Under **Profiles** or **Permission Sets**, add yourself
-7. Go back to App Manager → find your app → click **View** next to Consumer Key
-8. Click **Manage Consumer Details** → copy the Consumer Key and Consumer Secret
-9. Use them with the Username-Password OAuth flow to get a token, or use Salesforce CLI:
-   ```
-   sfdx auth:web:login --instanceurl https://login.salesforce.com
-   ```
+4. Under **Scopes**, add:
+   - `Manage user data via APIs (api)` — click the arrow to move it to Selected Scopes
+5. Click **Save**
+6. After saving, click on your new app name in App Manager
+7. Find the **OAuth Policies** section → **OAuth Flows and External Client App Enhancements**
+8. Check **Enable Client Credentials Flow**
+9. In the **Run As** field that appears, enter your admin username (e.g. `mhmd_vxhv@kyrazo.com`)
+10. Click **Save**
+11. Go back to the app → click **Manage Consumer Details** → copy the **Consumer Key** and **Consumer Secret**
+12. In CommissionKit, go to **Integrations** → select **Salesforce CRM**
+13. Choose **OAuth 2.0** mode, enter:
+    - **Instance URL**: `https://yourdomain.my.salesforce.com` (NOT `salesforce-setup.com` or `lightning.force.com`)
+    - **Client ID**: your Consumer Key
+    - **Client Secret**: your Consumer Secret
+    - Leave Username, Password, Security Token empty
+14. Click **Connect**
 
-**From a Security Token (simpler for testing):**
-1. In Salesforce, go to **Settings** → **My Personal Information** → **Reset My Security Token**
-2. Check your email for the security token
-3. Your access token = password + security token (concatenated)
+<Note>
+Your Instance URL is your Salesforce **My Domain** — find it under Setup → My Domain. It looks like `https://yourname.my.salesforce.com`. Do NOT use `salesforce-setup.com` or `lightning.force.com` — those are UI-only domains.
+</Note>
+
+### Method 2: Session ID / Access Token
+
+Use a direct session ID from your Salesforce login session.
+
+1. Login to Salesforce
+2. Open **Developer Console** (gear icon → Developer Console)
+3. Press Ctrl+Shift+I → Console tab, type and run: `UserInfo.getSessionId()`
+4. Copy the returned session ID
+5. In CommissionKit, select **Session ID / Access Token** mode
+6. Enter your **Instance URL** and paste the **Session ID**
+7. Click **Connect**
 
 ### Connecting to CommissionKit
 
 1. In CommissionKit, go to **Integrations** → select **Salesforce CRM**
 2. Enter:
-   - **Instance URL** — `https://yourinstance.my.salesforce.com`
-   - **Access Token** — from your Connected App or Security Token
+   - **Instance URL** — your My Domain, e.g. `https://yourname.my.salesforce.com`
+   - Credentials based on your chosen auth method above
 3. Click **Connect** — initial sync begins immediately
 
 ## Stage behavior
@@ -109,11 +123,19 @@ Salesforce stages are auto-discovered via the OpportunityStage metadata object:
 
 ## Troubleshooting
 
+### "request not supported on this domain"
+
+You're using the wrong Instance URL. Use your Salesforce **My Domain** URL (e.g. `https://yourname.my.salesforce.com`), NOT `salesforce-setup.com` or `lightning.force.com`.
+
+### "no client credentials user enabled"
+
+Your External Client App needs a **Run As** user. Go to the app → **OAuth Policies** → **OAuth Flows and External Client App Enhancements** → check **Enable Client Credentials Flow** → enter your admin username in the **Run As** field → Save.
+
 ### "Connection test fails"
 
-- **Instance URL**: make sure it includes `https://` and your instance subdomain (e.g., `https://na123.my.salesforce.com`)
-- **Access Token**: for Security Tokens, it's `password + token` concatenated with no space
-- **API access**: ensure your user profile has API Enabled (Setup → Users → Profile → Administrative Permissions)
+- **Instance URL**: make sure you're using `https://yourname.my.salesforce.com`, not `salesforce-setup.com`
+- **External Client App**: Client ID and Client Secret are the Consumer Key and Consumer Secret from Manage Consumer Details
+- **API access**: ensure the Run As user has API access (Setup → Users → Profile → Administrative Permissions → API Enabled)
 
 ### "0 reps found"
 
