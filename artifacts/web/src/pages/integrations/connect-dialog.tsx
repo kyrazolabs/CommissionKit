@@ -84,11 +84,21 @@ export function ConnectDialog({ connector, isConnected }: Props) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => {
+    <Dialog open={open} onOpenChange={async (o) => {
       setOpen(o);
       if (o) {
         setFormValues({});
         setTestResult(null);
+        // Pre-populate with existing config if already connected
+        if (isConnected) {
+          try {
+            const data = await apiFetch(`/api/integrations/${activeWorkspace?.id}/config`);
+            const cfg = data?.config || data || {};
+            setFormValues(Object.fromEntries(
+              Object.entries(cfg as Record<string, unknown>).map(([k, v]) => [k, typeof v === 'boolean' || typeof v === 'string' ? v : String(v)])
+            ));
+          } catch { /* ignore */ }
+        }
       }
     }}>
       <DialogTrigger asChild>
