@@ -23,7 +23,7 @@ Opportunity marked Closed Won  →    Payment status = "paid"
 Opportunity in other stages    →    Payment status = "unpaid"
 ```
 
-Salesforce doesn't track payments directly. CommissionKit assigns `paymentStatus: "paid"` to closed-won opportunities and `"unpaid"` to deals in other stages.
+Salesforce doesn't track payments directly. CommissionKit assigns a default payment status to closed-won opportunities. You can customize this from the **⋮** menu → **Payment Defaults**.
 
 ## Authentication
 
@@ -120,6 +120,19 @@ Salesforce stages are auto-discovered via the OpportunityStage metadata object:
 | Hourly | Recommended for active pipelines |
 | Daily | For stable pipelines |
 | Manual only | No automatic sync |
+
+## Payment status
+
+CRMs don't track payments, so CommissionKit assigns a default status to closed-won opportunities on import. You can change it from the **⋮** menu → **Payment Defaults**:
+
+| Setting | Result |
+|---|---|
+| **Paid** (default) | Closed-won deals import as `paid` |
+| **Unpaid** | Closed-won deals import as `unpaid` — use for manual tracking |
+| **Partial** | Closed-won deals import as `partial` |
+| **On Hold** | Closed-won deals import as `on_hold` |
+
+Deals in non-closed-won stages always import as `unpaid` regardless of this setting.
 
 ## Troubleshooting
 
