@@ -113,6 +113,8 @@ export class OdooConnector extends BasePlugin {
     const closedWonStages = c.closedWonStages || ["sale", "done"];
     const syncClosedOnly = c.syncClosedOnly === true;
     const stageFilter = (config as any)._metadata?.stageFilter as string[] | undefined;
+    const paymentDefault = ((config as any)._metadata?.defaultPaymentStatus as string) || "paid";
+    const stageMapping = (config as any)._metadata?.stageMapping as Record<string, string> | undefined;
 
     const domain: any[] = [];
     if (syncClosedOnly) {
@@ -184,8 +186,8 @@ export class OdooConnector extends BasePlugin {
         }
       }
 
-      // Normalize Odoo state to CKit stage
-      const stage = normalizeStage(r.state);
+      // Normalize Odoo state to CKit stage (use saved mapping if available)
+      const stage = normalizeStage(r.state, stageMapping);
 
       return {
         externalId: String(r.id),
