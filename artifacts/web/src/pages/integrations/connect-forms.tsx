@@ -100,18 +100,7 @@ export function SalesforceConnectForm({ values, onChange }: Props) {
         <Input placeholder="https://yourinstance.my.salesforce.com"
           value={String(values.instanceUrl || "")} onChange={(e) => onChange({ ...values, instanceUrl: e.target.value })} className="h-9 text-sm" />
       </Field>
-      <Field label="Authentication Mode">
-        <Select value={String(values.authType || "oauth")} onValueChange={(v) => onChange({ ...values, authType: v })}>
-          <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="oauth">OAuth 2.0 (Client ID + Secret)</SelectItem>
-            <SelectItem value="token">Session ID / Access Token</SelectItem>
-          </SelectContent>
-        </Select>
-      </Field>
-      {String(values.authType || "oauth") === "oauth" && (
-        <>
-          <Field label="Client ID (Consumer Key)">
+      <Field label="Client ID (Consumer Key)">
             <Input placeholder="Connected App Consumer Key"
               value={String(values.clientId || "")} onChange={(e) => onChange({ ...values, clientId: e.target.value })} className="h-9 text-sm" />
           </Field>
@@ -132,17 +121,9 @@ export function SalesforceConnectForm({ values, onChange }: Props) {
               value={String(values.securityToken || "")} onChange={(e) => onChange({ ...values, securityToken: e.target.value })} className="h-9 text-sm" />
           </Field>
           <p className="text-[11px] text-muted-foreground">For External Client Apps: Client ID + Secret only. For Connected Apps: add Username + Password + Security Token.</p>
-        </>
-      )}
-      {String(values.authType || "oauth") === "token" && (
-        <Field label="Access Token">
-          <Input type="password" placeholder="Session ID or access token"
-            value={String(values.accessToken || "")} onChange={(e) => onChange({ ...values, accessToken: e.target.value })} className="h-9 text-sm" />
-        </Field>
-      )}
-    </>
-  );
-}
+      </>
+    );
+  }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <div className="space-y-1.5"><Label className="text-xs">{label}</Label>{children}</div>;

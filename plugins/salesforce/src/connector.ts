@@ -54,9 +54,7 @@ export class SalesforceConnector extends BasePlugin {
       return new SalesforceClient(tokens.accessToken, tokens.instanceUrl || c.instanceUrl || "");
     }
 
-    if (!c.instanceUrl) throw new Error("Salesforce config requires an instance URL");
-    if (!c.accessToken) throw new Error("Salesforce config requires an access token");
-    return new SalesforceClient(c.accessToken, c.instanceUrl);
+    throw new Error("Salesforce config requires OAuth credentials (clientId + clientSecret)");
   }
 
   async testConnection(config: ConnectionConfig): Promise<ConnectionTestResult> {
@@ -65,8 +63,8 @@ export class SalesforceConnector extends BasePlugin {
       if (!c.instanceUrl) {
         return { success: false, message: "Missing instance URL" };
       }
-      if (!c.accessToken && !(c.clientId && c.clientSecret)) {
-        return { success: false, message: "Missing access token or OAuth credentials (clientId + clientSecret)" };
+      if (!(c.clientId && c.clientSecret)) {
+        return { success: false, message: "Missing OAuth credentials (Client ID + Client Secret)" };
       }
 
       const start = Date.now();
