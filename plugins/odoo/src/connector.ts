@@ -111,7 +111,7 @@ export class OdooConnector extends BasePlugin {
     await client.authenticate(c.username, c.apiKey);
 
     const closedWonStages = c.closedWonStages || ["sale", "done"];
-    const syncClosedOnly = c.syncClosedOnly !== false;
+    const syncClosedOnly = c.syncClosedOnly === true;
     const stageFilter = (config as any)._metadata?.stageFilter as string[] | undefined;
 
     const domain: any[] = [];
