@@ -622,6 +622,30 @@ router.get(
   },
 );
 
+// ─── Connector settings (metadata) ───────────────────────────────────
+
+router.patch(
+  "/:workspaceId/connector/settings",
+  ...requirePermission("workspace", "edit"),
+  async (req: AuthenticatedRequest, res) => {
+    const workspaceId = req.workspaceId!;
+    const { defaultPaymentStatus } = req.body;
+
+    const validStatuses = ["paid", "unpaid", "partial", "on_hold"];
+    if (defaultPaymentStatus && !validStatuses.includes(defaultPaymentStatus)) {
+      res.status(400).json({ error: `Invalid payment status. Must be one of: ${validStatuses.join(", ")}` });
+      return;
+    }
+
+    const update: any = {};
+    if (defaultPaymentStatus) update["metadata.defaultPaymentStatus"] = defaultPaymentStatus;
+
+    await IntegrationConnection.findOneAndUpdate({ workspaceId }, { $set: update });
+
+    res.json({ success: true, defaultPaymentStatus: defaultPaymentStatus || "paid" });
+  },
+);
+
 // ─── Salesforce stage mapping ──────────────────────────────────────
 
 router.get(

@@ -106,6 +106,7 @@ export class HubSpotConnector extends BasePlugin {
       // Use saved stage mapping from metadata, or auto-discover, or fall back to all
       let closedWonStageIds = c.closedWonStageIds;
       const savedMapping = (config as any)._metadata?.stageMapping as Record<string, string> | undefined;
+      const paymentDefault = ((config as any)._metadata?.defaultPaymentStatus as string) || "paid";
 
       if (savedMapping) {
         closedWonStageIds = Object.keys(savedMapping);
@@ -147,7 +148,7 @@ export class HubSpotConnector extends BasePlugin {
           closeDate: p.closedate ? new Date(p.closedate) : new Date(),
           stage,
           currency: (p.deal_currency_code || "USD").toUpperCase(),
-          paymentStatus: stage === "closed_won" ? "paid" as PaymentStatus : "unpaid" as PaymentStatus,
+          paymentStatus: (stage === "closed_won" ? paymentDefault : "unpaid") as PaymentStatus,
           notes: p.description || undefined,
           metadata: {
             hubspotDealId: d.id,

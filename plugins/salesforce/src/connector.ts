@@ -120,6 +120,7 @@ export class SalesforceConnector extends BasePlugin {
     const c = this.parseConfig(config);
     const client = await this.getClient(config);
     const savedMapping = (config as any)._metadata?.stageMapping as Record<string, string> | undefined;
+    const paymentDefault = ((config as any)._metadata?.defaultPaymentStatus as string) || "paid";
 
     try {
       const soqlParts = [
@@ -151,7 +152,7 @@ export class SalesforceConnector extends BasePlugin {
             closeDate: r.CloseDate ? new Date(r.CloseDate) : new Date(),
             stage,
             currency: ("USD").toUpperCase(),
-            paymentStatus: stage === "closed_won" ? "paid" as PaymentStatus : "unpaid" as PaymentStatus,
+            paymentStatus: (stage === "closed_won" ? paymentDefault : "unpaid") as PaymentStatus,
             notes: r.Description || undefined,
             metadata: {
               salesforceOppId: r.Id,
