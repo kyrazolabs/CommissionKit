@@ -128,7 +128,7 @@ export class SalesforceConnector extends BasePlugin {
         "FROM Opportunity",
       ];
 
-      if (c.syncClosedOnly !== false) {
+      if (c.syncClosedOnly === true) {
         soqlParts.push("WHERE IsWon = true");
       }
       if (options?.modifiedAfter) {
@@ -225,8 +225,8 @@ export class SalesforceConnector extends BasePlugin {
         syncClosedOnly: {
           type: "boolean",
           title: "Sync only closed-won deals",
-          description: "Only import opportunities marked as Closed Won",
-          default: true,
+          description: "Only import opportunities marked as Closed Won. Disable to sync all deals.",
+          default: false,
         },
       },
     };
