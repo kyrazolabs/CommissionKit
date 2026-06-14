@@ -16,6 +16,7 @@ import { ConnectedCard } from "./connected-card";
 import { MappingDialog } from "./mapping-dialog";
 import { StageMappingDialog } from "./stage-mapping-dialog";
 import { PaymentDefaultsDialog } from "./payment-defaults-dialog";
+import { StageFilterDialog } from "./stage-filter-dialog";
 import type { Connector, ConnectionStatus } from "./types";
 
 export function IntegrationsPage() {
@@ -32,6 +33,8 @@ export function IntegrationsPage() {
   const [stageMappingConnector, setStageMappingConnector] = useState<string>("");
   const [stageMappingOpen, setStageMappingOpen] = useState(false);
   const [paymentDefaultsOpen, setPaymentDefaultsOpen] = useState(false);
+  const [stageFilterOpen, setStageFilterOpen] = useState(false);
+  const [stageFilterConnector, setStageFilterConnector] = useState("");
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [visibleCards, setVisibleCards] = useState(1);
   const [slidePx, setSlidePx] = useState(0);
@@ -122,6 +125,7 @@ export function IntegrationsPage() {
           onOpenMappingEditor={openMappingEditor}
           onOpenStageMapping={() => { setStageMappingConnector(status.connectorName!); setStageMappingOpen(true); }}
           onOpenPaymentDefaults={() => setPaymentDefaultsOpen(true)}
+          onOpenStageFilter={(name) => { setStageFilterConnector(name); setStageFilterOpen(true); }}
         />
       )}
 
@@ -185,6 +189,7 @@ export function IntegrationsPage() {
       <MappingDialog open={mappingOpen} onOpenChange={setMappingOpen} json={mappingJson} onJsonChange={setMappingJson} error={mappingError} onErrorChange={setMappingError} />
       <StageMappingDialog open={stageMappingOpen} onOpenChange={setStageMappingOpen} connectorName={stageMappingConnector} />
       <PaymentDefaultsDialog open={paymentDefaultsOpen} onOpenChange={setPaymentDefaultsOpen} />
+      <StageFilterDialog open={stageFilterOpen} onOpenChange={setStageFilterOpen} connectorName={stageFilterConnector} />
     </div>
   );
 }

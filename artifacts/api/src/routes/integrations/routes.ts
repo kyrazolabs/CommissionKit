@@ -629,7 +629,7 @@ router.patch(
   ...requirePermission("workspace", "edit"),
   async (req: AuthenticatedRequest, res) => {
     const workspaceId = req.workspaceId!;
-    const { defaultPaymentStatus } = req.body;
+    const { defaultPaymentStatus, stageFilter } = req.body;
 
     const validStatuses = ["paid", "unpaid", "partial", "on_hold"];
     if (defaultPaymentStatus && !validStatuses.includes(defaultPaymentStatus)) {
@@ -639,10 +639,11 @@ router.patch(
 
     const update: any = {};
     if (defaultPaymentStatus) update["metadata.defaultPaymentStatus"] = defaultPaymentStatus;
+    if (stageFilter) update["metadata.stageFilter"] = stageFilter;
 
     await IntegrationConnection.findOneAndUpdate({ workspaceId }, { $set: update });
 
-    res.json({ success: true, defaultPaymentStatus: defaultPaymentStatus || "paid" });
+    res.json({ success: true, defaultPaymentStatus, stageFilter });
   },
 );
 

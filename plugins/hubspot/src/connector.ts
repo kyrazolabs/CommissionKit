@@ -107,6 +107,7 @@ export class HubSpotConnector extends BasePlugin {
       let closedWonStageIds = c.closedWonStageIds;
       const savedMapping = (config as any)._metadata?.stageMapping as Record<string, string> | undefined;
       const paymentDefault = ((config as any)._metadata?.defaultPaymentStatus as string) || "paid";
+      const syncStageFilter = (config as any)._metadata?.stageFilter as string[] | undefined;
 
       if (savedMapping) {
         closedWonStageIds = Object.keys(savedMapping);
@@ -157,7 +158,8 @@ export class HubSpotConnector extends BasePlugin {
             hubspotLastModified: p.hs_lastmodifieddate,
           },
         };
-      });
+      })
+      .filter((d: any) => !syncStageFilter || syncStageFilter.length === 0 || syncStageFilter.includes(d.metadata.hubspotStage));
     } catch {
       return [];
     }

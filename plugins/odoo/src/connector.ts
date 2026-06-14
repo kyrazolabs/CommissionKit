@@ -112,6 +112,7 @@ export class OdooConnector extends BasePlugin {
 
     const closedWonStages = c.closedWonStages || ["sale", "done"];
     const syncClosedOnly = c.syncClosedOnly !== false;
+    const stageFilter = (config as any)._metadata?.stageFilter as string[] | undefined;
 
     const domain: any[] = [];
     if (syncClosedOnly) {
@@ -198,7 +199,7 @@ export class OdooConnector extends BasePlugin {
         notes: r.note || undefined,
         metadata: { odooOrderId: r.id, odooRawState: r.state },
       };
-    });
+    }).filter((d: any) => !stageFilter || stageFilter.length === 0 || stageFilter.includes(d.metadata.odooRawState));
   }
 
 

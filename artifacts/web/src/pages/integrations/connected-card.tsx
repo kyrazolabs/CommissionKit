@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { CheckCircle2, AlertTriangle, RefreshCw, Trash2, Ellipsis, LoaderCircle, FileCode, GitBranch, CreditCard } from "lucide-react";
+import { CheckCircle2, AlertTriangle, RefreshCw, Trash2, Ellipsis, LoaderCircle, FileCode, GitBranch, CreditCard, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useWorkspace } from "@/hooks/use-workspace";
@@ -22,9 +22,10 @@ interface Props {
   onOpenMappingEditor: () => void;
   onOpenStageMapping: () => void;
   onOpenPaymentDefaults: () => void;
+  onOpenStageFilter: (connectorName: string) => void;
 }
 
-export function ConnectedCard({ status, onOpenMappingEditor, onOpenStageMapping, onOpenPaymentDefaults }: Props) {
+export function ConnectedCard({ status, onOpenMappingEditor, onOpenStageMapping, onOpenPaymentDefaults, onOpenStageFilter }: Props) {
   const { t } = useTranslation();
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
@@ -95,6 +96,10 @@ export function ConnectedCard({ status, onOpenMappingEditor, onOpenStageMapping,
                   </SelectContent>
                 </Select>
               </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => onOpenStageFilter(status.connectorName!)} className="flex items-center gap-2">
+                <Filter className="size-3.5" />Stage Filter
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               {status.connectorName === "custom" && (
                 <>

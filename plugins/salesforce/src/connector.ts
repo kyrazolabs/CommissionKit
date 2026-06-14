@@ -121,6 +121,7 @@ export class SalesforceConnector extends BasePlugin {
     const client = await this.getClient(config);
     const savedMapping = (config as any)._metadata?.stageMapping as Record<string, string> | undefined;
     const paymentDefault = ((config as any)._metadata?.defaultPaymentStatus as string) || "paid";
+    const stageFilter = (config as any)._metadata?.stageFilter as string[] | undefined;
 
     try {
       const soqlParts = [
@@ -142,24 +143,26 @@ export class SalesforceConnector extends BasePlugin {
       return records
         .filter((r: any) => r.OwnerId)
         .map((r: any) => {
-          const stage = savedMapping?.[r.StageName] || normalizeStage(r.StageName);
+        const amount = r.Amount || 0;
+        const stage = savedMapping?.[r.StageName] || normalizeStage(r.StageName);
 
-          return {
-            externalId: r.Id,
-            repExternalId: r.OwnerId || "",
-            name: r.Name || "Untitled Opportunity",
-            amount: r.Amount || 0,
-            closeDate: r.CloseDate ? new Date(r.CloseDate) : new Date(),
-            stage,
-            currency: ("USD").toUpperCase(),
-            paymentStatus: (stage === "closed_won" ? paymentDefault : "unpaid") as PaymentStatus,
-            notes: r.Description || undefined,
-            metadata: {
-              salesforceOppId: r.Id,
-              salesforceStage: r.StageName,
-            },
-          };
-        });
+        return {
+          externalId: r.Id,
+          repExternalId: r.OwnerId || "",
+          name: r.Name || "Untitled Opportunity",
+          amount,
+          closeDate: r.CloseDate ? new Date(r.CloseDate) : new Date(),
+          stage,
+          currency: ("USD").toUpperCase(),
+          paymentStatus: (stage === "closed_won" ? paymentDefault : "unpaid") as PaymentStatus,
+          notes: r.Description || undefined,
+          metadata: {
+            salesforceOppId: r.Id,
+            salesforceStage: r.StageName,
+          },
+        };
+      })
+      .filter((d: any) => !stageFilter || stageFilter.length === 0 || stageFilter.includes(d.metadata.salesforceStage));
     } catch {
       return [];
     }
