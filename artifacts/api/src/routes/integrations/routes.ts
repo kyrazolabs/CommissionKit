@@ -651,7 +651,7 @@ router.get(
           config.username as string, config.password as string, config.securityToken as string,
         );
         accessToken = tokens.accessToken;
-        instanceUrl = tokens.instanceUrl || config.instanceUrl || "";
+        instanceUrl = tokens.instanceUrl || (config.instanceUrl as string) || "";
       }
 
       if (!accessToken || !instanceUrl) {
