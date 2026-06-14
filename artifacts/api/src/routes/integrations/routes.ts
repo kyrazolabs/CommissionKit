@@ -641,10 +641,11 @@ router.get(
       let accessToken = config.accessToken as string;
       let instanceUrl = config.instanceUrl as string;
 
+      const { SalesforceClient: SFClient } = await import("@workspace/plugins-salesforce");
+
       // OAuth: auto-authenticate if needed
       if (!accessToken && config.clientId && config.clientSecret) {
-        const { SalesforceClient } = await import("@workspace/plugins-salesforce");
-        const tokens = await SalesforceClient.authenticate(
+        const tokens = await SFClient.authenticate(
           config.instanceUrl || "https://login.salesforce.com",
           config.clientId as string, config.clientSecret as string,
           config.username as string, config.password as string, config.securityToken as string,
@@ -658,7 +659,7 @@ router.get(
         return;
       }
 
-      const client = new SalesforceClient(accessToken, instanceUrl);
+      const client = new SFClient(accessToken, instanceUrl);
       const records = await client.query("SELECT MasterLabel, IsWon, IsClosed FROM OpportunityStage WHERE IsActive = true");
 
       const stages = records.map((s: any) => ({
