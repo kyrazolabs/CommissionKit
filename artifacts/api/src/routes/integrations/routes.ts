@@ -254,7 +254,7 @@ router.get(
     }
 
     const decrypted = decryptConfig(conn.config as any);
-    res.json({ config: stripSensitiveFields(decrypted ?? {}) });
+    res.json({ config: stripSensitiveFields(decrypted ?? {}), metadata: conn.metadata || {} });
   },
 );
 
