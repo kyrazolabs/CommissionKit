@@ -97,7 +97,7 @@ export class SalesforceConnector extends BasePlugin {
 
     try {
       const users = await client.query(
-        "SELECT Id, Name, Email, UserRole.Name FROM User WHERE IsActive = true",
+        "SELECT Id, Name, Email, UserRole.Name FROM User WHERE IsActive = true AND UserType = 'Standard'",
       );
 
       return users.map((u) => ({
