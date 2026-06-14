@@ -127,12 +127,14 @@ export class SalesforceConnector extends BasePlugin {
         "FROM Opportunity",
       ];
 
+      let hasWhere = false;
       if (c.syncClosedOnly === true) {
         soqlParts.push("WHERE IsWon = true");
+        hasWhere = true;
       }
       if (options?.modifiedAfter) {
         const date = options.modifiedAfter.toISOString().split("T")[0];
-        soqlParts.push(c.syncClosedOnly !== false ? `AND LastModifiedDate >= ${date}` : `WHERE LastModifiedDate >= ${date}`);
+        soqlParts.push(hasWhere ? `AND LastModifiedDate >= ${date}` : `WHERE LastModifiedDate >= ${date}`);
       }
 
       const soql = soqlParts.join(" ");
