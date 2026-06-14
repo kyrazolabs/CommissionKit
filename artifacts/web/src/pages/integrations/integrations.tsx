@@ -50,6 +50,8 @@ export function IntegrationsPage() {
     queryKey: ["integrations", "status", activeWorkspace?.id],
     queryFn: () => apiFetch(`/api/integrations/${activeWorkspace?.id}/status`),
     enabled: !!activeWorkspace?.id,
+    refetchInterval: 10_000,
+    refetchOnWindowFocus: true,
   });
 
   const openMappingEditor = async () => {
