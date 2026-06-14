@@ -15,6 +15,8 @@ import { ConnectorCard } from "./connector-card";
 import { ConnectedCard } from "./connected-card";
 import { MappingDialog } from "./mapping-dialog";
 import { StageMappingDialog } from "./stage-mapping-dialog";
+import { PaymentDefaultsDialog } from "./payment-defaults-dialog";
+import { StageFilterDialog } from "./stage-filter-dialog";
 import type { Connector, ConnectionStatus } from "./types";
 
 export function IntegrationsPage() {
@@ -28,7 +30,11 @@ export function IntegrationsPage() {
   const [mappingOpen, setMappingOpen] = useState(false);
   const [mappingJson, setMappingJson] = useState("");
   const [mappingError, setMappingError] = useState<string | null>(null);
+  const [stageMappingConnector, setStageMappingConnector] = useState<string>("");
   const [stageMappingOpen, setStageMappingOpen] = useState(false);
+  const [paymentDefaultsOpen, setPaymentDefaultsOpen] = useState(false);
+  const [stageFilterOpen, setStageFilterOpen] = useState(false);
+  const [stageFilterConnector, setStageFilterConnector] = useState("");
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [visibleCards, setVisibleCards] = useState(1);
   const [slidePx, setSlidePx] = useState(0);
@@ -44,6 +50,8 @@ export function IntegrationsPage() {
     queryKey: ["integrations", "status", activeWorkspace?.id],
     queryFn: () => apiFetch(`/api/integrations/${activeWorkspace?.id}/status`),
     enabled: !!activeWorkspace?.id,
+    refetchInterval: 10_000,
+    refetchOnWindowFocus: true,
   });
 
   const openMappingEditor = async () => {
@@ -117,7 +125,9 @@ export function IntegrationsPage() {
         <ConnectedCard
           status={status}
           onOpenMappingEditor={openMappingEditor}
-          onOpenStageMapping={() => setStageMappingOpen(true)}
+          onOpenStageMapping={() => { setStageMappingConnector(status.connectorName!); setStageMappingOpen(true); }}
+          onOpenPaymentDefaults={() => setPaymentDefaultsOpen(true)}
+          onOpenStageFilter={(name) => { setStageFilterConnector(name); setStageFilterOpen(true); }}
         />
       )}
 
@@ -179,7 +189,9 @@ export function IntegrationsPage() {
       </div>
 
       <MappingDialog open={mappingOpen} onOpenChange={setMappingOpen} json={mappingJson} onJsonChange={setMappingJson} error={mappingError} onErrorChange={setMappingError} />
-      <StageMappingDialog open={stageMappingOpen} onOpenChange={setStageMappingOpen} />
+      <StageMappingDialog open={stageMappingOpen} onOpenChange={setStageMappingOpen} connectorName={stageMappingConnector} />
+      <PaymentDefaultsDialog open={paymentDefaultsOpen} onOpenChange={setPaymentDefaultsOpen} />
+      <StageFilterDialog open={stageFilterOpen} onOpenChange={setStageFilterOpen} connectorName={stageFilterConnector} />
     </div>
   );
 }

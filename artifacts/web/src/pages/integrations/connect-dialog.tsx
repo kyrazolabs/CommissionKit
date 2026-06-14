@@ -8,7 +8,7 @@ import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { ConnectorImage } from "./icons";
-import { OdooConnectForm, HubspotConnectForm, CustomConnectForm } from "./connect-forms";
+import { OdooConnectForm, HubspotConnectForm, CustomConnectForm, SalesforceConnectForm } from "./connect-forms";
 import type { Connector } from "./types";
 
 interface Props {
@@ -47,12 +47,15 @@ export function ConnectDialog({ connector, isConnected }: Props) {
 
   const buildConfig = (): Record<string, unknown> => {
     const config: Record<string, unknown> = { entities: {} };
-    for (const [k, v] of Object.entries(formValues)) {
+    const vals = { ...formValues };
+    // Ensure authType defaults for connectors that need it
+    if (connector.name === "salesforce" && !vals.authType) vals.authType = "oauth";
+    for (const [k, v] of Object.entries(vals)) {
       if (k.startsWith("auth") && !k.startsWith("authType") && k !== "authType") continue;
       if (k === "syncClosedOnly" || k === "writeBackEnabled") continue;
       config[k] = v;
     }
-    if (!["hubspot"].includes(connector.name)) {
+    if (!["hubspot", "salesforce"].includes(connector.name)) {
       const authType = String(formValues.authType || "bearer");
       const auth: Record<string, unknown> = { type: authType };
       if (authType === "apiKey") {
@@ -81,11 +84,21 @@ export function ConnectDialog({ connector, isConnected }: Props) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => {
+    <Dialog open={open} onOpenChange={async (o) => {
       setOpen(o);
       if (o) {
         setFormValues({});
         setTestResult(null);
+        // Pre-populate with existing config if already connected
+        if (isConnected) {
+          try {
+            const data = await apiFetch(`/api/integrations/${activeWorkspace?.id}/config`);
+            const cfg = data?.config || data || {};
+            setFormValues(Object.fromEntries(
+              Object.entries(cfg as Record<string, unknown>).map(([k, v]) => [k, typeof v === 'boolean' || typeof v === 'string' ? v : String(v)])
+            ));
+          } catch { /* ignore */ }
+        }
       }
     }}>
       <DialogTrigger asChild>
@@ -109,6 +122,7 @@ export function ConnectDialog({ connector, isConnected }: Props) {
           {connector.name === "odoo" && <OdooConnectForm values={formValues} onChange={setFormValues} />}
           {connector.name === "custom" && <CustomConnectForm values={formValues} onChange={setFormValues} />}
           {connector.name === "hubspot" && <HubspotConnectForm values={formValues} onChange={setFormValues} />}
+          {connector.name === "salesforce" && <SalesforceConnectForm values={formValues} onChange={setFormValues} />}
 
           {testResult && (
             <div className={cn("rounded-lg p-3 text-sm flex items-center gap-2",

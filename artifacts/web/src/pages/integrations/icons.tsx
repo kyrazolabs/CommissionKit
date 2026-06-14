@@ -8,6 +8,7 @@ export const CONNECTOR_ICONS: Record<string, any> = {
 export const ICON_SRC: Record<string, string> = {
   odoo: "/plugins/odoo.webp",
   hubspot: "/plugins/hubspot.webp",
+  salesforce: "/plugins/salesforce.webp",
 };
 
 export function ConnectorImage({ name, className }: { name: string; className?: string }) {

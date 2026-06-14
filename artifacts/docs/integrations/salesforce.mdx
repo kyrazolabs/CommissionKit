@@ -1,0 +1,152 @@
+---
+title: "Salesforce CRM"
+description: "Connect CommissionKit to Salesforce Sales Cloud to sync users as reps and opportunities for commission calculation"
+---
+
+Connect your Salesforce Sales Cloud to CommissionKit. The connector syncs **users as sales reps** and **opportunities as deals** automatically.
+
+## How data flows
+
+```
+Salesforce                         CommissionKit
+──────────                         ──────────────
+
+Accounts / Contacts                 (not synced)
+
+Opportunity created            →    Deal created (stage mapped from Salesforce stage)
+        │
+        ▼
+Stage changes                  →    Stage updates on next sync
+        │
+        ▼
+Opportunity marked Closed Won  →    Payment status = "paid"
+Opportunity in other stages    →    Payment status = "unpaid"
+```
+
+Salesforce doesn't track payments directly. CommissionKit assigns a default payment status to closed-won opportunities. You can customize this from the **⋮** menu → **Payment Defaults**.
+
+## Authentication
+
+CommissionKit uses OAuth 2.0 via External Client App. Just Client ID + Client Secret.
+
+### External Client App Setup
+
+1. In Salesforce Setup, go to **Apps > App Manager**
+2. Click **New Connected App** → select **External Client App**
+3. Fill in:
+   - **External Client App Name**: CommissionKit
+   - **Contact Email**: your email
+4. Under **Scopes**, add:
+   - `Manage user data via APIs (api)` — click the arrow to move it to Selected Scopes
+5. Click **Save**
+6. After saving, click on your new app name in App Manager
+7. Find the **OAuth Policies** section → **OAuth Flows and External Client App Enhancements**
+8. Check **Enable Client Credentials Flow**
+9. In the **Run As** field that appears, enter your admin username (e.g. `mhmd_vxhv@kyrazo.com`)
+10. Click **Save**
+11. Go back to the app → click **Manage Consumer Details** → copy the **Consumer Key** and **Consumer Secret**
+12. In CommissionKit, go to **Integrations** → select **Salesforce CRM**
+13. Enter:
+    - **Instance URL**: `https://yourdomain.my.salesforce.com` (NOT `salesforce-setup.com` or `lightning.force.com`)
+    - **Client ID**: your Consumer Key
+    - **Client Secret**: your Consumer Secret
+14. Click **Connect**
+
+<Note>
+Your Instance URL is your Salesforce **My Domain** — find it under Setup → My Domain. It looks like `https://yourname.my.salesforce.com`. Do NOT use `salesforce-setup.com` or `lightning.force.com` — those are UI-only domains.
+</Note>
+
+## Stage behavior
+
+Salesforce stages are auto-discovered via the OpportunityStage metadata object:
+
+| Salesforce stage | CKit stage |
+|---|---|
+| Any stage with `IsWon = true` | `closed_won` |
+| Any stage with `IsClosed = true` (not won) | `closed_lost` |
+| All other active stages | `pending` |
+
+**Which opportunities get synced**: by default, all opportunities are synced regardless of stage. Use the **⋮** menu → **Stage Filter** to select specific stages to import. Use **Stage Mapping** to customize how Salesforce stages map to CKit stages.
+
+## Required scopes
+
+| Scope | Why |
+|---|---|
+| API access (`api`) | Read User, Opportunity, and OpportunityStage objects |
+| `Id`, `Name`, `Email` on User | Map to reps |
+| `Id`, `Name`, `Amount`, `CloseDate`, `StageName`, `OwnerId`, `CurrencyIsoCode` on Opportunity | Map to deals |
+
+## What syncs
+
+| Entity | Salesforce source | CKit equivalent |
+|---|---|---|
+| **Reps** | `SELECT FROM User WHERE IsActive = true AND UserType = 'Standard'` | Rep (name, email, role from UserRole) |
+| **Deals** | `SELECT FROM Opportunity` (all stages by default) | Deal (amount, close date, stage, currency) |
+
+## Prerequisites
+
+- Salesforce Sales Cloud (Professional, Enterprise, or Unlimited edition)
+- API access enabled (included in Enterprise and above; available as add-on for Professional)
+- A Connected App with API scope, or a Security Token
+
+## Connector features
+
+The **⋮** dropdown on the connected card provides:
+
+| Option | What it does |
+|---|---|
+| **Sync Reps / Sync Deals** | Manual sync triggers |
+| **Auto Sync** | Schedules automatic syncs |
+| **Stage Filter** | Select which Salesforce stages to import |
+| **Stage Mapping** | Map Salesforce stages → CKit stages |
+| **Payment Defaults** | Set default payment status for closed-won deals |
+| **Disconnect** | Remove the connection |
+
+## Sync schedule
+
+| Option | Interval |
+|---|---|
+| Every 10 min | Real-time sync |
+| Hourly | Recommended for active pipelines |
+| Daily | For stable pipelines |
+| Manual only | No automatic sync |
+
+## Payment status
+
+CRMs don't track payments, so CommissionKit assigns a default status to closed-won opportunities on import. You can change it from the **⋮** menu → **Payment Defaults**:
+
+| Setting | Result |
+|---|---|
+| **Paid** (default) | Closed-won deals import as `paid` |
+| **Unpaid** | Closed-won deals import as `unpaid` — use for manual tracking |
+| **Partial** | Closed-won deals import as `partial` |
+| **On Hold** | Closed-won deals import as `on_hold` |
+
+Deals in non-closed-won stages always import as `unpaid` regardless of this setting.
+
+## Troubleshooting
+
+### "request not supported on this domain"
+
+You're using the wrong Instance URL. Use your Salesforce **My Domain** URL (e.g. `https://yourname.my.salesforce.com`), NOT `salesforce-setup.com` or `lightning.force.com`.
+
+### "no client credentials user enabled"
+
+Your External Client App needs a **Run As** user. Go to the app → **OAuth Policies** → **OAuth Flows and External Client App Enhancements** → check **Enable Client Credentials Flow** → enter your admin username in the **Run As** field → Save.
+
+### "Connection test fails"
+
+- **Instance URL**: make sure you're using `https://yourname.my.salesforce.com`, not `salesforce-setup.com`
+- **External Client App**: Client ID and Client Secret are the Consumer Key and Consumer Secret from Manage Consumer Details
+- **API access**: ensure the Run As user has API access (Setup → Users → Profile → Administrative Permissions → API Enabled)
+
+### "0 reps found"
+
+- Check that users have `IsActive = true` in Salesforce
+- The authenticating user must have read access to the User object
+
+### "0 deals found"
+
+- Make sure opportunities are marked as Closed Won (`IsWon = true`)
+- Opportunities without an Owner are skipped — assign an owner in Salesforce
+- Sync **Reps first**, then Deals

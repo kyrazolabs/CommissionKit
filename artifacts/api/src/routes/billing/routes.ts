@@ -1,6 +1,6 @@
 import { Router } from "express";
 import Stripe from "stripe";
-import mongoose, { Types } from "mongoose";
+import { Types } from "mongoose";
 import {
   WorkspaceSubscription,
   Workspace,
@@ -13,6 +13,8 @@ import {
 } from "../../middleware/auth";
 import { logger } from "../../lib/logger";
 import { getLatestRates } from "../../lib/exchange";
+import { findUserById } from "../../lib/auth";
+import { webhookRateLimit } from "../../middleware/rate-limiter";
 
 const router = Router();
 
@@ -329,13 +331,8 @@ router.post(
     let ownerName = "";
     if (ws?.ownerId) {
       try {
-        const db = mongoose.connection.db;
-        if (db) {
-          const owner = await db
-            .collection("user")
-            .findOne({ _id: ws.ownerId as any }, { projection: { name: 1 } });
-          if (owner) ownerName = (owner as any).name ?? "";
-        }
+        const owner = await findUserById(ws.ownerId);
+        if (owner) ownerName = owner.name ?? "";
       } catch {
         // non-critical — metadata enrichment best-effort
       }
@@ -613,7 +610,7 @@ router.post(
  * Stripe webhook endpoint — processes subscription lifecycle events.
  * Body must be raw (Buffer) — configured in app.ts.
  */
-router.post("/webhook", async (req, res): Promise<void> => {
+router.post("/webhook", webhookRateLimit, async (req, res): Promise<void> => {
   const sig = req.headers["stripe-signature"] as string;
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 

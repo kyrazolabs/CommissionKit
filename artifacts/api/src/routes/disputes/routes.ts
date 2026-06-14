@@ -26,8 +26,8 @@ async function getPlan(workspaceId: string): Promise<PlanName> {
 function formatDispute(dispute: any) {
   return {
     id: dispute._id.toString(),
-    payoutId: (dispute.payoutId?._id ?? dispute.payoutId).toString(),
-    repId: (dispute.repId?._id ?? dispute.repId).toString(),
+    payoutId: dispute.payoutId ? (dispute.payoutId._id ?? dispute.payoutId).toString() : null,
+    repId: dispute.repId ? (dispute.repId._id ?? dispute.repId).toString() : null,
     repName: dispute.repId?.name ?? "Unknown",
     reason: dispute.reason,
     status: dispute.status,
@@ -151,7 +151,7 @@ router.get("/", ...requirePermission("disputes", "read"), async (req: Authentica
   if (req.query.status) query.status = req.query.status;
 
   const disputes = await Dispute.find(query).populate("repId").populate("payoutId").sort({ createdAt: -1 });
-  res.json(disputes.map(formatDispute));
+  res.json(disputes.filter((d) => d.repId != null).map(formatDispute));
 });
 
 // ─── PATCH /:id — admin updates dispute ──────────────────────────────────────

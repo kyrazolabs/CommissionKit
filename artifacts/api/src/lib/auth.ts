@@ -30,8 +30,10 @@ if (!db) {
 const APP_URL = process.env.APP_URL || "http://localhost:3000";
 const AUTH_URL = process.env.BETTER_AUTH_URL || APP_URL;
 
+const authAdapter = mongodbAdapter(db);
+
 export const auth = betterAuth({
-  database: mongodbAdapter(db),
+  database: authAdapter,
   baseURL: AUTH_URL,
   trustedOrigins: [APP_URL],
 
@@ -209,3 +211,15 @@ export const auth = betterAuth({
     }
   },
 });
+
+export async function findUserById(userId: string): Promise<{ id: string; name?: string; email: string } | null> {
+  try {
+    const user = await (authAdapter as any).findOne?.({
+      model: "user",
+      where: [{ field: "id", value: userId }],
+    });
+    return user ?? null;
+  } catch {
+    return null;
+  }
+}

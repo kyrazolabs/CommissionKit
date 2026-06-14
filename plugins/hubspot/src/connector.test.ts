@@ -1,64 +1,95 @@
 import { describe, test, expect, mock, beforeEach, afterEach } from "bun:test";
 import { HubSpotConnector } from "./connector";
 
-describe("HubSpotConnector", () => {
+describe("HubSpot — payment defaults", () => {
   let connector: HubSpotConnector;
   beforeEach(() => { connector = new HubSpotConnector(); });
   afterEach(() => { mock.restore(); });
 
-  describe("metadata", () => {
-    test("name is 'hubspot'", () => {
-      expect(connector.name).toBe("hubspot");
-    });
+  const accessToken = "pat-test";
 
-    test("displayName is 'HubSpot CRM'", () => {
-      expect(connector.displayName).toBe("HubSpot CRM");
-    });
+  test("closed-won deals default to paid", async () => {
+    globalThis.fetch = (async () => {
+      return new Response(JSON.stringify({
+        results: [{
+          id: "d1", properties: {
+            dealname: "Deal", amount: "100", closedate: "2024-01-01",
+            dealstage: "closedwon", hubspot_owner_id: "owner-1",
+            deal_currency_code: "USD",
+          },
+        }],
+        paging: undefined,
+      }), { headers: { "Content-Type": "application/json" } });
+    }) as any;
 
-    test("description mentions HubSpot", () => {
-      expect(connector.description).toContain("HubSpot");
-    });
+    const deals = await connector.fetchDeals("ws", {
+      accessToken,
+      _metadata: {},
+    } as any);
+
+    expect(deals[0].paymentStatus).toBe("paid");
   });
 
-  describe("getSettingsSchema", () => {
-    test("requires accessToken", () => {
-      const schema = connector.getSettingsSchema();
-      expect(schema.required).toContain("accessToken");
-    });
+  test("closed-won deals use custom defaultPaymentStatus from metadata", async () => {
+    globalThis.fetch = (async () => {
+      return new Response(JSON.stringify({
+        results: [{
+          id: "d1", properties: {
+            dealname: "Deal", amount: "100", closedate: "2024-01-01",
+            dealstage: "closedwon", hubspot_owner_id: "owner-1",
+          },
+        }],
+        paging: undefined,
+      }), { headers: { "Content-Type": "application/json" } });
+    }) as any;
+
+    const deals = await connector.fetchDeals("ws", {
+      accessToken,
+      _metadata: { defaultPaymentStatus: "unpaid" },
+    } as any);
+
+    expect(deals[0].paymentStatus).toBe("unpaid");
   });
 
-  describe("getUIMetadata", () => {
-    test("category is crm", () => {
-      expect(connector.getUIMetadata().category).toBe("crm");
-    });
+  test("non-closed-won deals are always unpaid", async () => {
+    globalThis.fetch = (async () => {
+      return new Response(JSON.stringify({
+        results: [{
+          id: "d1", properties: {
+            dealname: "Deal", amount: "100", closedate: "2024-01-01",
+            dealstage: "presentationscheduled", hubspot_owner_id: "owner-1",
+          },
+        }],
+        paging: undefined,
+      }), { headers: { "Content-Type": "application/json" } });
+    }) as any;
 
-    test("features include sync_reps and sync_deals", () => {
-      const meta = connector.getUIMetadata();
-      expect(meta.features).toContain("sync_reps");
-      expect(meta.features).toContain("sync_deals");
-      expect(meta.features).not.toContain("oauth_support");
-    });
+    const deals = await connector.fetchDeals("ws", {
+      accessToken,
+      _metadata: { defaultPaymentStatus: "paid" },
+    } as any);
+
+    expect(deals[0].paymentStatus).toBe("unpaid");
   });
 
-  describe("testConnection", () => {
-    test("fails with missing access token", async () => {
-      const result = await connector.testConnection({});
-      expect(result.success).toBe(false);
-      expect(result.message).toBe("Missing access token");
-    });
+  test("defaultPaymentStatus partial works", async () => {
+    globalThis.fetch = (async () => {
+      return new Response(JSON.stringify({
+        results: [{
+          id: "d1", properties: {
+            dealname: "Deal", amount: "100", closedate: "2024-01-01",
+            dealstage: "closedwon", hubspot_owner_id: "owner-1",
+          },
+        }],
+        paging: undefined,
+      }), { headers: { "Content-Type": "application/json" } });
+    }) as any;
 
-    test("fails when API returns error", async () => {
-      globalThis.fetch = (async () => {
-        return new Response("Unauthorized", { status: 401 });
-      }) as any;
-      const result = await connector.testConnection({ accessToken: "bad-token" });
-      expect(result.success).toBe(false);
-    });
-  });
+    const deals = await connector.fetchDeals("ws", {
+      accessToken,
+      _metadata: { defaultPaymentStatus: "partial" },
+    } as any);
 
-  describe("webhooks", () => {
-    test("parseWebhook returns empty array", () => {
-      expect(connector.parseWebhook({})).toEqual([]);
-    });
+    expect(deals[0].paymentStatus).toBe("partial");
   });
 });

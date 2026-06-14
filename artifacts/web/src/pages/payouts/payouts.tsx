@@ -39,6 +39,7 @@ import { cn } from "@/lib/utils";
 import { apiFetch } from "@/lib/api";
 import { usePageMeta } from "@/hooks/use-page-meta";
 import { useSyncStore } from "@/hooks/use-sync-store";
+import { RepCombobox } from "@/components/rep-combobox";
 
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
@@ -328,14 +329,12 @@ function CreatePayoutModal({ workspaceId, open, setOpen }: { workspaceId: string
       <form onSubmit={handleSubmit} className="space-y-4 py-2">
         <div className="grid gap-2">
           <Label>Sales Rep</Label>
-          <Select value={repId} onValueChange={setRepId} required>
-            <SelectTrigger><SelectValue placeholder={t("payouts.selectRep")}/></SelectTrigger>
-            <SelectContent>
-              {Array.isArray(reps) && reps.map((r: any) => (
-                <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <RepCombobox
+            reps={Array.isArray(reps) ? reps.map((r: any) => ({ id: String(r.id), name: r.name })) : []}
+            value={repId}
+            onChange={setRepId}
+            placeholder={t("payouts.selectRep")}
+          />
         </div>
         <div className="grid gap-2">
           <Label>Payout Period</Label>

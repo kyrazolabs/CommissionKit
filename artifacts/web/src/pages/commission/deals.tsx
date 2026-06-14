@@ -35,6 +35,7 @@ import Papa from "papaparse";
 import { useRole } from "@/hooks/use-role";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { CurrencyCombobox } from "@/components/currency-combobox";
+import { RepCombobox } from "@/components/rep-combobox";
 import { MarkdownEditor } from "@/components/markdown-editor";
 import { useBillingStatus } from "@/hooks/use-billing-status";
 import { Download } from "lucide-react";
@@ -127,17 +128,13 @@ export function DealsPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             <div className="w-40">
-              <Select value={repId} onValueChange={setRepId}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t("deals.allReps")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Reps</SelectItem>
-                  {Array.isArray(reps) && reps.map(rep => (
-                    <SelectItem key={rep.id} value={rep.id.toString()}>{rep.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <RepCombobox
+                reps={Array.isArray(reps) ? reps.map((r: any) => ({ id: String(r.id), name: r.name })) : []}
+                value={repId}
+                onChange={setRepId}
+                includeAll
+                allLabel={t("deals.allReps")}
+              />
             </div>
             <div className="w-40">
               <Select value={paymentStatus} onValueChange={setPaymentStatus}>
@@ -431,22 +428,12 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
             <>
           <div className="space-y-2">
             <Label htmlFor="edit-repId">Sales Rep</Label>
-            <Select 
+            <RepCombobox
               key={`rep-select-${formData.repId}-${reps?.length || 0}`}
-              value={formData.repId} 
-              onValueChange={(val) => setFormData(prev => ({ ...prev, repId: val }))}
-            >
-              <SelectTrigger><SelectValue placeholder={t("common.selectRep")} /></SelectTrigger>
-              <SelectContent>
-                {!Array.isArray(reps) || reps.length === 0 ? (
-                  <div className="p-2 text-sm text-muted-foreground text-center">No reps yet — create one in Reps first.</div>
-                ) : (
-                  Array.isArray(reps) && reps.map((rep: any) => (
-                    <SelectItem key={rep.id || rep._id} value={(rep.id || rep._id).toString()}>{rep.name}</SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+              reps={Array.isArray(reps) ? reps.map((r: any) => ({ id: String(r.id || r._id), name: r.name })) : []}
+              value={formData.repId}
+              onChange={(val) => setFormData(prev => ({ ...prev, repId: val }))}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="edit-name">Deal Name</Label>
@@ -834,20 +821,12 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
                     {parsedData.map((row) => (
                       <TableRow key={row.id} className={!row.repId ? "bg-red-50/30 dark:bg-red-900/10" : ""}>
                         <TableCell>
-                          <Select value={row.repId} onValueChange={(val) => updateRow(row.id, 'repId', val)}>
-                            <SelectTrigger className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent">
-                              <SelectValue placeholder={t("deals.selectRep")} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {!Array.isArray(reps) || reps.length === 0 ? (
-                                <div className="p-2 text-sm text-muted-foreground text-center">No reps yet — create one in Reps first.</div>
-                              ) : (
-                                Array.isArray(reps) && reps.map(rep => (
-                                  <SelectItem key={rep.id} value={rep.id.toString()}>{rep.name}</SelectItem>
-                                ))
-                              )}
-                            </SelectContent>
-                          </Select>
+                          <RepCombobox
+                            reps={Array.isArray(reps) ? reps.map((r: any) => ({ id: String(r.id), name: r.name })) : []}
+                            value={row.repId}
+                            onChange={(val) => updateRow(row.id, 'repId', val)}
+                            className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent shadow-none"
+                          />
                           {!row.repId && <p className="text-[10px] text-destructive mt-0.5 ml-2">Unknown email: {row.repEmail}</p>}
                         </TableCell>
                         <TableCell>
@@ -1051,18 +1030,11 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="repId">Sales Rep</Label>
-            <Select value={formData.repId} onValueChange={(val) => setFormData(prev => ({ ...prev, repId: val }))}>
-              <SelectTrigger><SelectValue placeholder="Select a representative" /></SelectTrigger>
-              <SelectContent>
-                {!Array.isArray(reps) || reps.length === 0 ? (
-                  <div className="p-2 text-sm text-muted-foreground text-center">No reps yet — create one in Reps first.</div>
-                ) : (
-                  Array.isArray(reps) && reps.map(rep => (
-                    <SelectItem key={rep.id} value={rep.id.toString()}>{rep.name}</SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+            <RepCombobox
+              reps={Array.isArray(reps) ? reps.map((r: any) => ({ id: String(r.id), name: r.name })) : []}
+              value={formData.repId}
+              onChange={(val) => setFormData(prev => ({ ...prev, repId: val }))}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="name">Deal Name</Label>

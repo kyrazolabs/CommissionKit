@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Props {
   values: Record<string, string | boolean>;
@@ -92,8 +93,38 @@ export function CustomConnectForm({ values, onChange }: Props) {
   );
 }
 
+export function SalesforceConnectForm({ values, onChange }: Props) {
+  return (
+    <>
+      <Field label="Instance URL">
+        <Input placeholder="https://yourinstance.my.salesforce.com"
+          value={String(values.instanceUrl || "")} onChange={(e) => onChange({ ...values, instanceUrl: e.target.value })} className="h-9 text-sm" />
+      </Field>
+      <Field label="Client ID (Consumer Key)">
+            <Input placeholder="Connected App Consumer Key"
+              value={String(values.clientId || "")} onChange={(e) => onChange({ ...values, clientId: e.target.value })} className="h-9 text-sm" />
+          </Field>
+          <Field label="Client Secret (Consumer Secret)">
+            <Input type="password" placeholder="Connected App Consumer Secret"
+              value={String(values.clientSecret || "")} onChange={(e) => onChange({ ...values, clientSecret: e.target.value })} className="h-9 text-sm" />
+          </Field>
+          <Field label="Username (optional)">
+            <Input placeholder="user@company.com"
+              value={String(values.username || "")} onChange={(e) => onChange({ ...values, username: e.target.value })} className="h-9 text-sm" />
+          </Field>
+          <Field label="Password (optional)">
+            <Input type="password" placeholder="Required for username-password flow"
+              value={String(values.password || "")} onChange={(e) => onChange({ ...values, password: e.target.value })} className="h-9 text-sm" />
+          </Field>
+          <Field label="Security Token (optional)">
+            <Input type="password" placeholder="Password + Security Token concatenated"
+              value={String(values.securityToken || "")} onChange={(e) => onChange({ ...values, securityToken: e.target.value })} className="h-9 text-sm" />
+          </Field>
+          <p className="text-[11px] text-muted-foreground">For External Client Apps: Client ID + Secret only. For Connected Apps: add Username + Password + Security Token.</p>
+      </>
+    );
+  }
+
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <div className="space-y-1.5"><Label className="text-xs">{label}</Label>{children}</div>;
 }
-
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
