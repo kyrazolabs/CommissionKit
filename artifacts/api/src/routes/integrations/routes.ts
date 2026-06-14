@@ -637,7 +637,7 @@ router.get(
         return;
       }
 
-      const config = decryptConfig(conn.config as any) || {};
+      const config = (decryptConfig(conn.config as any) || {}) as Record<string, any>;
       let accessToken = config.accessToken as string;
       let instanceUrl = config.instanceUrl as string;
 
