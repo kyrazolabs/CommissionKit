@@ -33,8 +33,13 @@ export function StageFilterDialog({ open, onOpenChange, connectorName }: Props) 
         // Load existing filter
         apiFetch(`/api/integrations/${activeWorkspace?.id}/config`)
           .then((cfg) => {
-            const filter = (cfg as any)?.metadata?.stageFilter || [];
-            setSelected(filter.length > 0 ? filter : (data.stages || []).map((s: StageOption) => s.id));
+            const filter = (cfg as any)?.metadata?.stageFilter;
+            // null/undefined = all selected (first time), empty array = nothing selected, array = selected
+            if (Array.isArray(filter)) {
+              setSelected(filter);
+            } else {
+              setSelected((data.stages || []).map((s: StageOption) => s.id));
+            }
           })
           .catch(() => setSelected((data.stages || []).map((s: StageOption) => s.id)));
       })
