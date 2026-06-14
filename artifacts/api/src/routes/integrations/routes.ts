@@ -178,6 +178,7 @@ router.post(
           connectorName,
           status: "connected",
           config: encryptedConfig,
+          metadata: {},
           webhookSecret,
           syncSchedule: syncSchedule || { reps: "hourly", deals: "hourly" },
           writeBackEnabled: writeBackEnabled ?? false,
