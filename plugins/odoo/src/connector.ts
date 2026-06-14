@@ -114,7 +114,6 @@ export class OdooConnector extends BasePlugin {
     const syncClosedOnly = c.syncClosedOnly === true;
     const stageFilter = (config as any)._metadata?.stageFilter as string[] | undefined;
     const paymentDefault = ((config as any)._metadata?.defaultPaymentStatus as string) || "paid";
-    const stageMapping = (config as any)._metadata?.stageMapping as Record<string, string> | undefined;
 
     const domain: any[] = [];
     if (syncClosedOnly) {
@@ -167,7 +166,8 @@ export class OdooConnector extends BasePlugin {
     }
 
     return records.map((r: any) => {
-      // Derive payment status from linked invoices, not invoice_status
+      const stage = normalizeStage(r.state);
+      // Derive payment status from actual invoices
       let paymentStatus: import("@workspace/plugins-core").PaymentStatus = "unpaid";
       if (r.invoice_ids && Array.isArray(r.invoice_ids) && r.invoice_ids.length > 0) {
         const states = r.invoice_ids
@@ -184,10 +184,10 @@ export class OdooConnector extends BasePlugin {
         } else if (!nonePaid) {
           paymentStatus = "partial";
         }
+      } else if (stage === "closed_won") {
+        // No invoices yet but deal is closed-won — use default
+        paymentStatus = paymentDefault as import("@workspace/plugins-core").PaymentStatus;
       }
-
-      // Normalize Odoo state to CKit stage (use saved mapping if available)
-      const stage = normalizeStage(r.state, stageMapping);
 
       return {
         externalId: String(r.id),
