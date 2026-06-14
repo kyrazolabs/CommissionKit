@@ -647,6 +647,19 @@ router.patch(
   },
 );
 
+// ─── Odoo stage list (for stage filter dialog) ──────────────────────
+
+const ODOO_STATES = ["draft", "sent", "sale", "done", "cancel"];
+
+router.get(
+  "/:workspaceId/odoo/stages",
+  ...requirePermission("workspace", "edit"),
+  async (req: AuthenticatedRequest, res) => {
+    const stages = ODOO_STATES.map((state) => ({ id: state, label: state, pipeline: "Odoo" }));
+    res.json({ stages, mapping: {} });
+  },
+);
+
 // ─── Salesforce stage mapping ──────────────────────────────────────
 
 router.get(
