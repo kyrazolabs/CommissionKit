@@ -27,11 +27,9 @@ Salesforce doesn't track payments directly. CommissionKit assigns a default paym
 
 ## Authentication
 
-CommissionKit supports two authentication methods for Salesforce.
+CommissionKit uses OAuth 2.0 via External Client App. Just Client ID + Client Secret.
 
-### Method 1: External Client App (recommended)
-
-External Client Apps support the Client Credentials OAuth flow — no username or password needed. Just Client ID + Client Secret.
+### External Client App Setup
 
 1. In Salesforce Setup, go to **Apps > App Manager**
 2. Click **New Connected App** → select **External Client App**
@@ -48,36 +46,15 @@ External Client Apps support the Client Credentials OAuth flow — no username o
 10. Click **Save**
 11. Go back to the app → click **Manage Consumer Details** → copy the **Consumer Key** and **Consumer Secret**
 12. In CommissionKit, go to **Integrations** → select **Salesforce CRM**
-13. Choose **OAuth 2.0** mode, enter:
+13. Enter:
     - **Instance URL**: `https://yourdomain.my.salesforce.com` (NOT `salesforce-setup.com` or `lightning.force.com`)
     - **Client ID**: your Consumer Key
     - **Client Secret**: your Consumer Secret
-    - Leave Username, Password, Security Token empty
 14. Click **Connect**
 
 <Note>
 Your Instance URL is your Salesforce **My Domain** — find it under Setup → My Domain. It looks like `https://yourname.my.salesforce.com`. Do NOT use `salesforce-setup.com` or `lightning.force.com` — those are UI-only domains.
 </Note>
-
-### Method 2: Session ID / Access Token
-
-Use a direct session ID from your Salesforce login session.
-
-1. Login to Salesforce
-2. Open **Developer Console** (gear icon → Developer Console)
-3. Press Ctrl+Shift+I → Console tab, type and run: `UserInfo.getSessionId()`
-4. Copy the returned session ID
-5. In CommissionKit, select **Session ID / Access Token** mode
-6. Enter your **Instance URL** and paste the **Session ID**
-7. Click **Connect**
-
-### Connecting to CommissionKit
-
-1. In CommissionKit, go to **Integrations** → select **Salesforce CRM**
-2. Enter:
-   - **Instance URL** — your My Domain, e.g. `https://yourname.my.salesforce.com`
-   - Credentials based on your chosen auth method above
-3. Click **Connect** — initial sync begins immediately
 
 ## Stage behavior
 
@@ -89,7 +66,7 @@ Salesforce stages are auto-discovered via the OpportunityStage metadata object:
 | Any stage with `IsClosed = true` (not won) | `closed_lost` |
 | All other active stages | `pending` |
 
-**Which opportunities get synced**: by default (`syncClosedOnly: true`), only opportunities marked as Closed Won are synced. Custom stages can be mapped via the **Stage Mapping** dialog on the integrations page.
+**Which opportunities get synced**: by default, all opportunities are synced regardless of stage. Use the **⋮** menu → **Stage Filter** to select specific stages to import. Use **Stage Mapping** to customize how Salesforce stages map to CKit stages.
 
 ## Required scopes
 
@@ -103,14 +80,27 @@ Salesforce stages are auto-discovered via the OpportunityStage metadata object:
 
 | Entity | Salesforce source | CKit equivalent |
 |---|---|---|
-| **Reps** | `SELECT FROM User WHERE IsActive = true` | Rep (name, email, role from UserRole) |
-| **Deals** | `SELECT FROM Opportunity WHERE IsWon = true` | Deal (amount, close date, stage, currency) |
+| **Reps** | `SELECT FROM User WHERE IsActive = true AND UserType = 'Standard'` | Rep (name, email, role from UserRole) |
+| **Deals** | `SELECT FROM Opportunity` (all stages by default) | Deal (amount, close date, stage, currency) |
 
 ## Prerequisites
 
 - Salesforce Sales Cloud (Professional, Enterprise, or Unlimited edition)
 - API access enabled (included in Enterprise and above; available as add-on for Professional)
 - A Connected App with API scope, or a Security Token
+
+## Connector features
+
+The **⋮** dropdown on the connected card provides:
+
+| Option | What it does |
+|---|---|
+| **Sync Reps / Sync Deals** | Manual sync triggers |
+| **Auto Sync** | Schedules automatic syncs |
+| **Stage Filter** | Select which Salesforce stages to import |
+| **Stage Mapping** | Map Salesforce stages → CKit stages |
+| **Payment Defaults** | Set default payment status for closed-won deals |
+| **Disconnect** | Remove the connection |
 
 ## Sync schedule
 
