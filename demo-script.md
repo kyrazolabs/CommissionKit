@@ -221,3 +221,145 @@
 - [ ] CommissionKit logo watermark — bottom right, 40% opacity
 - [ ] End card: **commissionk.it** + "Start Free Trial — No Credit Card"
 - [ ] Export: 1920x1080, MP4, H.264
+
+---
+
+## SCREENSHOTS — ProductHunt & G2 Checklist
+
+### Format Requirements
+
+| Platform | Resolution | Format | Max Files | Dimensions |
+|---|---|---|---|---|
+| ProductHunt | 1270x760 (min) | PNG or JPG | ~8 gallery images | 16:9 preferred |
+| G2 | 1280x720 (min) | JPG or PNG | 5+ | 16:9 preferred |
+
+**All screenshots:** 1920x1080 captured at 110% browser zoom, dark mode. Crop to 16:9 if needed.
+No cursor in frame. No browser chrome (use devtools toggle or browser screenshot tool).
+
+---
+
+### 1. Dashboard — Hero Image ★
+
+**Use for:** ProductHunt primary thumbnail + G2 first image
+
+**URL:** `/dash`  
+**What to capture:** Full page view. All four stat cards visible (Total Commissions, Pipeline Revenue, Deals Closed, Active Reps) with real numbers. Top Earners table showing 3+ reps. Recent Runs card visible.  
+**Data needed:** At least $30k Total Commissions, 3+ active reps, 2+ completed runs.  
+**Composition:** Wide shot, centered. Stat cards should fill upper third.
+
+---
+
+### 2. Commission Plans — Plan Builder
+
+**Use for:** ProductHunt gallery, G2 features section
+
+**URL:** `/dash/plans`  
+**What to capture:** Grid view with 2-3 plan cards visible. One flat rate, one tiered if possible. Each card showing plan name, type badge (Flat Rate / Tiered Rates / Base + Accelerator), and rate.  
+**Alt shot:** The Create Plan dialog open, filled with sample data, showing Plan Type dropdown and Commission Rate (%) field.  
+**Composition:** Plans grid fills frame. If using dialog overlay, dim the background.
+
+---
+
+### 3. Deals Table — Real-Time Tracking
+
+**Use for:** ProductHunt gallery, G2 features section
+
+**URL:** `/dash/deals`  
+**What to capture:** Full deals table with 5-8 rows. Columns visible: Deal Name, Rep, Amount (teal), Close Date, Stage badges (CLOSED WON/CLOSED LOST/PENDING), Payment badges (PAID/PARTIAL/UNPAID), Actions.  
+**Data needed:** Mix of deal stages and payment statuses to show color variety.  
+**Composition:** Table centered. Filter row visible at top (search + filters).
+
+---
+
+### 4. Commission Runs — Calculation Results
+
+**Use for:** ProductHunt gallery
+
+**URL:** `/dash/runs`  
+**What to capture:** Runs table showing 3-4 completed runs. Focus on the Total Commission column (teal bold numbers). At least one run with "Completed" green badge.  
+**Alt shot:** Run Detail page (`/dash/runs/:id`) showing Audit Trail table with Rep, Deal, Deal Amount, Rate Applied, Commission columns.  
+**Composition:** Runs table centered. Run IDs and Total Commission column drawn into focus.
+
+---
+
+### 5. Payout Tracker — Approval Workflow
+
+**Use for:** G2 features section, ProductHunt gallery
+
+**URL:** `/dash/payouts`  
+**What to capture:** Payout Tracker page with summary cards visible (Total Pending, Total Approved, Paid This Month, Open Disputes). Table below showing mixed status badges: amber Pending, blue Approved, green Paid.  
+**Data needed:** 5+ payouts across multiple statuses to demonstrate the full workflow.  
+**Composition:** Summary cards at top, table fills lower two-thirds. Badge colors should pop.
+
+---
+
+### 6. Rep Portal — Sales Rep View
+
+**Use for:** ProductHunt gallery (buyer empathy shot)
+
+**URL:** `/dash/reps/:id`  
+**What to capture:** Rep Portal for Liam Foster. Three summary cards top (Estimated Commission in teal card, Total Revenue Closed, Deals Won). Earnings History bar chart below. Payout History section visible at bottom.  
+**Composition:** Full page scroll capture if possible, or crop to top cards + chart. The Estimated Commission teal card should be visually dominant.
+
+---
+
+### 7. Reports — Analytics Dashboard
+
+**Use for:** G2 features section (enterprise buyers care about analytics)
+
+**URL:** `/dash/reports`  
+**What to capture:** Reports page with charts rendered. At least one area/bar chart and one pie/donut chart visible. Date range picker visible top-right.  
+**Data needed:** Enough data to render meaningful charts (6+ months of deal history).  
+**Composition:** Charts fill the frame. Teal color palette consistent across all charts.
+
+---
+
+### 8. Sidebar + Full App Layout (Context Shot)
+
+**Use for:** ProductHunt gallery (shows navigation and scope)
+
+**URL:** `/dash`  
+**What to capture:** Full browser window at 1920x1080 with sidebar collapsed OR expanded showing all nav groups — Main (Dashboard, Reports, Reps, Plans), Operations (Deals, Runs, Payouts, Disputes), Account (Team, Billing, Integrations, Settings). Dashboard visible in main content area.  
+**Composition:** Sidebar left, content right. This establishes trust by showing the full app surface area.
+
+---
+
+### Screenshot Priority Order
+
+| Priority | Screenshot | Platforms |
+|---|---|---|
+| ★ Critical | 1. Dashboard Hero | PH primary + G2 |
+| ★ Critical | 2. Plans Builder | PH gallery + G2 |
+| ★ Critical | 3. Deals Table | PH gallery + G2 |
+| High | 4. Commission Runs | PH gallery |
+| High | 5. Payout Tracker | G2 + PH gallery |
+| Medium | 6. Rep Portal | PH gallery |
+| Medium | 7. Reports | G2 |
+| Low | 8. Full App Layout | PH gallery |
+
+---
+
+### Capture Technique
+
+```bash
+# Option A — Browser DevTools screenshot (no chrome)
+# Open DevTools → Run command → "Capture full size screenshot"
+# This captures the viewport only, no browser UI.
+
+# Option B — Firefox screenshot (built-in)
+# Right-click page → "Take Screenshot" → "Save full page" or "Save visible"
+
+# Option C — Screen Studio / CleanShot X (macOS)
+# Crop out browser chrome after capture.
+```
+
+### Post-Processing
+
+- [ ] Crop all images to exactly 16:9 (1920x1080 or 1280x720)
+- [ ] No cursor visible in any screenshot
+- [ ] No personal email addresses or real names visible
+- [ ] Blur or use fake email domains (example.com)
+- [ ] Consistent dark mode across all screenshots
+- [ ] Add subtle drop shadow to give depth (2-4px blur, 10% opacity)
+- [ ] Add CommissionKit logo to bottom-right corner of first 3 images (40% opacity, 120px wide)
+- [ ] Save as PNG for ProductHunt, JPG (90% quality) for G2
