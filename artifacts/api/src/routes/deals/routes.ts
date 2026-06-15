@@ -22,7 +22,7 @@ const router = Router();
 function formatDeal(deal: any, repName: string) {
   return {
     id: deal._id,
-    repId: (deal.repId?._id ?? deal.repId).toString(),
+    repId: deal.repId ? (deal.repId._id ?? deal.repId).toString() : null,
     repName,
     name: deal.name,
     amount: deal.amount,
@@ -56,12 +56,14 @@ router.get(
       .sort({ createdAt: -1 });
 
     res.json(
-      deals.map((d) =>
-        formatDeal(
-          d,
-          d.repId ? ((d.repId as any).name ?? "Unknown") : "Unknown",
+      deals
+        .filter((d) => d.repId != null)
+        .map((d) =>
+          formatDeal(
+            d,
+            (d.repId as any).name ?? "Unknown",
+          ),
         ),
-      ),
     );
   },
 );

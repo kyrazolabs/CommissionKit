@@ -1,6 +1,9 @@
 import { Settings, User, Database, ShieldCheck, Check } from "lucide-react";
 import { useInView, fadeIn } from "./hooks";
-import { LazyVideo } from "@/components/lazy-video";
+import { InteractiveCommissionRuns } from "./InteractiveCommissionRuns";
+import { InteractiveRepPortal } from "./InteractiveRepPortal";
+import { InteractiveDealManagement } from "./InteractiveDealManagement";
+import { InteractivePayouts } from "./InteractivePayouts";
 
 export function FeatureDeepDives() {
   const { ref, inView } = useInView();
@@ -11,7 +14,7 @@ export function FeatureDeepDives() {
       {/* Feature 1: Automated Runs */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
         <div className="order-2 lg:order-1" style={fadeIn(inView, 100)}>
-          <LazyVideo src="/videos/commission-runs-zoom.webm" />
+          <InteractiveCommissionRuns />
         </div>
         <div className="order-1 lg:order-2 space-y-6" style={fadeIn(inView, 0)}>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/60 backdrop-blur-sm border border-border/60 text-xs font-medium text-muted-foreground">
@@ -62,14 +65,14 @@ export function FeatureDeepDives() {
           </ul>
         </div>
         <div style={fadeIn(inView, 300)}>
-          <LazyVideo src="/videos/rep-portal-zoom.webm" />
+          <InteractiveRepPortal />
         </div>
       </div>
 
       {/* Feature 3: Deal Import */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
         <div className="order-2 lg:order-1" style={fadeIn(inView, 500)}>
-          <LazyVideo src="/videos/deals-zoom.webm" />
+          <InteractiveDealManagement />
         </div>
         <div className="order-1 lg:order-2 space-y-6" style={fadeIn(inView, 400)}>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/60 backdrop-blur-sm border border-border/60 text-xs font-medium text-muted-foreground">
@@ -121,7 +124,7 @@ export function FeatureDeepDives() {
         </div>
 
         <div style={fadeIn(inView, 700)}>
-          <LazyVideo src="/videos/payouts-disputes-zoom.webm" />
+          <InteractivePayouts />
         </div>
       </div>
     </section>

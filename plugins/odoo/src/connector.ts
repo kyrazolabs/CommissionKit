@@ -111,7 +111,9 @@ export class OdooConnector extends BasePlugin {
     await client.authenticate(c.username, c.apiKey);
 
     const closedWonStages = c.closedWonStages || ["sale", "done"];
-    const syncClosedOnly = c.syncClosedOnly !== false;
+    const syncClosedOnly = c.syncClosedOnly === true;
+    const stageFilter = (config as any)._metadata?.stageFilter as string[] | undefined;
+    const paymentDefault = ((config as any)._metadata?.defaultPaymentStatus as string) || "paid";
 
     const domain: any[] = [];
     if (syncClosedOnly) {
@@ -164,7 +166,8 @@ export class OdooConnector extends BasePlugin {
     }
 
     return records.map((r: any) => {
-      // Derive payment status from linked invoices, not invoice_status
+      const stage = normalizeStage(r.state);
+      // Derive payment status from actual invoices
       let paymentStatus: import("@workspace/plugins-core").PaymentStatus = "unpaid";
       if (r.invoice_ids && Array.isArray(r.invoice_ids) && r.invoice_ids.length > 0) {
         const states = r.invoice_ids
@@ -181,10 +184,10 @@ export class OdooConnector extends BasePlugin {
         } else if (!nonePaid) {
           paymentStatus = "partial";
         }
+      } else if (stage === "closed_won") {
+        // No invoices yet but deal is closed-won — use default
+        paymentStatus = paymentDefault as import("@workspace/plugins-core").PaymentStatus;
       }
-
-      // Normalize Odoo state to CKit stage
-      const stage = normalizeStage(r.state);
 
       return {
         externalId: String(r.id),
@@ -198,7 +201,7 @@ export class OdooConnector extends BasePlugin {
         notes: r.note || undefined,
         metadata: { odooOrderId: r.id, odooRawState: r.state },
       };
-    });
+    }).filter((d: any) => !stageFilter || stageFilter.length === 0 || stageFilter.includes(d.metadata.odooRawState));
   }
 
 

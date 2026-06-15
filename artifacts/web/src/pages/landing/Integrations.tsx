@@ -11,6 +11,7 @@ export function Integrations() {
         <div className="order-2 lg:order-1" style={fadeIn(inView, 100)}>
           <div className="rounded-xl border border-border/60 bg-card/30 p-6 space-y-4">
             <ConnectorRow img="/plugins/odoo.webp" name="Odoo ERP" desc="Sync repos and deals automatically" />
+            <ConnectorRow name="Salesforce CRM" desc="Sync users and opportunities via OAuth" src="/plugins/salesforce.webp" />
             <ConnectorRow name="HubSpot CRM" desc="Sync owners and deals via token" src="/plugins/hubspot.webp" />
             <ConnectorRow name="Custom REST API" desc="Connect any ERP or CRM — no code needed" icon />
           </div>
@@ -28,7 +29,7 @@ export function Integrations() {
           </p>
           <ul className="space-y-4 pt-4">
             {[
-              "Native Odoo connector — sync reps and deals in one click.",
+              "Native connectors for Odoo, Salesforce, and HubSpot — sync reps and deals in one click.",
               "Custom REST API connector — connect any ERP or CRM with configurable field mapping, authentication, and pagination.",
               "Automatic sync scheduling — keep data fresh with hourly, daily, or real-time polling.",
             ].map(item => (

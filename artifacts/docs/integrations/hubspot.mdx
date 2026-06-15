@@ -23,7 +23,7 @@ Deal marked closed-won     →    Payment status = "paid"
 Deal in other stages       →    Payment status = "unpaid"
 ```
 
-HubSpot is a CRM, not an ERP — it doesn't track payments. CommissionKit assigns `paymentStatus: "paid"` to closed-won deals and `"unpaid"` to deals in other stages. You can override this with manual payment tracking in CommissionKit.
+HubSpot is a CRM, not an ERP — it doesn't track payments. CommissionKit assigns a default payment status to closed-won deals. You can customize this from the **⋮** menu → **Payment Defaults**.
 
 ## Stage behavior
 
@@ -100,6 +100,19 @@ After connecting, choose a sync interval from the **⋮** menu:
 | Hourly | Recommended for active pipelines |
 | Daily | For stable pipelines |
 | Manual only | No automatic sync |
+
+## Payment status
+
+CRMs don't track payments, so CommissionKit assigns a default status to closed-won deals on import. You can change it from the **⋮** menu → **Payment Defaults**:
+
+| Setting | Result |
+|---|---|
+| **Paid** (default) | Closed-won deals import as `paid` |
+| **Unpaid** | Closed-won deals import as `unpaid` — use for manual tracking |
+| **Partial** | Closed-won deals import as `partial` |
+| **On Hold** | Closed-won deals import as `on_hold` |
+
+Deals in non-closed-won stages always import as `unpaid` regardless of this setting.
 
 ## Troubleshooting
 

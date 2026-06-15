@@ -11,6 +11,8 @@ import {
   type AuthenticatedRequest,
 } from "../../middleware/auth";
 import { logger } from "../../lib/logger";
+import { encryptConfig, decryptConfig, stripSensitiveFields } from "../../lib/crypto";
+import { webhookRateLimit } from "../../middleware/rate-limiter";
 
 const router: IRouter = Router();
 
@@ -160,6 +162,9 @@ router.post(
       // Init plugin
       await plugin.init(workspaceId, config);
 
+      // Encrypt sensitive config before persistence
+      const encryptedConfig = encryptConfig(config);
+
       // Upsert connection record
       const webhookSecret = Array.from(
         { length: 32 },
@@ -172,7 +177,8 @@ router.post(
           workspaceId,
           connectorName,
           status: "connected",
-          config,
+          config: encryptedConfig,
+          metadata: {},
           webhookSecret,
           syncSchedule: syncSchedule || { reps: "hourly", deals: "hourly" },
           writeBackEnabled: writeBackEnabled ?? false,
@@ -248,7 +254,8 @@ router.get(
       return;
     }
 
-    res.json({ config: conn.config });
+    const decrypted = decryptConfig(conn.config as any);
+    res.json({ config: stripSensitiveFields(decrypted ?? {}), metadata: conn.metadata || {} });
   },
 );
 
@@ -267,7 +274,11 @@ router.patch(
       return;
     }
 
-    if (config) conn.config = config;
+    if (config) {
+      const existing = decryptConfig(conn.config as any) ?? {};
+      const merged = { ...existing, ...config };
+      conn.config = encryptConfig(merged) as any;
+    }
     if (syncSchedule) conn.syncSchedule = syncSchedule;
     if (writeBackEnabled !== undefined) conn.writeBackEnabled = writeBackEnabled;
 
@@ -276,7 +287,9 @@ router.patch(
     // Re-init plugin with new config
     const plugin = pluginRegistry.get(conn.connectorName);
     if (plugin && config) {
-      await plugin.init(workspaceId, config);
+      const existing = decryptConfig(conn.config as any) ?? {};
+      const merged = { ...existing, ...(typeof config === "object" ? config : {}) };
+      await plugin.init(workspaceId, merged);
     }
 
     // Update repeatable jobs if schedule changed
@@ -481,8 +494,9 @@ router.get(
 
 router.post(
   "/webhooks/:connectorName",
+  webhookRateLimit,
   async (req, res): Promise<void> => {
-    const { connectorName } = req.params;
+    const connectorName = String(req.params.connectorName);
 
     const plugin = pluginRegistry.get(connectorName);
     if (!plugin) {
@@ -573,10 +587,10 @@ router.get(
         return;
       }
 
-      const config = conn.config as any;
-      const clientId = config?.clientId;
-      const clientSecret = config?.clientSecret;
-      const redirectUri = config?.redirectUri || `${req.protocol}://${req.get("host")}/api/integrations/hubspot/callback`;
+      const config = decryptConfig(conn.config as any);
+      const clientId = config?.clientId as string | undefined;
+      const clientSecret = config?.clientSecret as string | undefined;
+      const redirectUri = (config?.redirectUri as string) || `${req.protocol}://${req.get("host")}/api/integrations/hubspot/callback`;
 
       if (!clientId || !clientSecret) {
         res.status(400).send("HubSpot OAuth credentials not configured. Set clientId and clientSecret first.");
@@ -586,14 +600,15 @@ router.get(
       const { HubSpotClient } = await import("@workspace/plugins-hubspot");
       const tokens = await HubSpotClient.exchangeCode(clientId, clientSecret, redirectUri, code);
 
+      const decrypted = decryptConfig(conn.config as any) ?? {};
+      const updatedConfig = { ...decrypted, accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
+      const encrypted = encryptConfig(updatedConfig);
+
       await IntegrationConnection.findOneAndUpdate(
         { workspaceId, connectorName: "hubspot" },
         {
           status: "connected",
-          $set: {
-            "config.accessToken": tokens.accessToken,
-            "config.refreshToken": tokens.refreshToken,
-          },
+          config: encrypted,
         },
       );
 
@@ -605,6 +620,120 @@ router.get(
     } catch (err: any) {
       res.status(500).send(`OAuth failed: ${err.message}`);
     }
+  },
+);
+
+// ─── Connector settings (metadata) ───────────────────────────────────
+
+router.patch(
+  "/:workspaceId/connector/settings",
+  ...requirePermission("workspace", "edit"),
+  async (req: AuthenticatedRequest, res) => {
+    const workspaceId = req.workspaceId!;
+    const { defaultPaymentStatus, stageFilter } = req.body;
+
+    const validStatuses = ["paid", "unpaid", "partial", "on_hold"];
+    if (defaultPaymentStatus && !validStatuses.includes(defaultPaymentStatus)) {
+      res.status(400).json({ error: `Invalid payment status. Must be one of: ${validStatuses.join(", ")}` });
+      return;
+    }
+
+    const update: any = {};
+    if (defaultPaymentStatus) update["metadata.defaultPaymentStatus"] = defaultPaymentStatus;
+    if (stageFilter) update["metadata.stageFilter"] = stageFilter;
+
+    await IntegrationConnection.findOneAndUpdate({ workspaceId }, { $set: update });
+
+    res.json({ success: true, defaultPaymentStatus, stageFilter });
+  },
+);
+
+// ─── Odoo stage list (for stage filter dialog) ──────────────────────
+
+const ODOO_STATES = ["draft", "sent", "sale", "done", "cancel"];
+
+router.get(
+  "/:workspaceId/odoo/stages",
+  ...requirePermission("workspace", "edit"),
+  async (req: AuthenticatedRequest, res) => {
+    const stages = ODOO_STATES.map((state) => ({ id: state, label: state, pipeline: "Odoo" }));
+    res.json({ stages, mapping: {} });
+  },
+);
+
+// ─── Salesforce stage mapping ──────────────────────────────────────
+
+router.get(
+  "/:workspaceId/salesforce/stages",
+  ...requirePermission("workspace", "edit"),
+  async (req: AuthenticatedRequest, res) => {
+    const workspaceId = req.workspaceId!;
+
+    try {
+      const conn = await IntegrationConnection.findOne({ workspaceId, connectorName: "salesforce" });
+      if (!conn) {
+        res.status(404).json({ error: "Salesforce not connected" });
+        return;
+      }
+
+      const config = (decryptConfig(conn.config as any) || {}) as Record<string, any>;
+      let accessToken = config.accessToken as string;
+      let instanceUrl = config.instanceUrl as string;
+
+      const { SalesforceClient: SFClient } = await import("@workspace/plugins-salesforce");
+
+      // OAuth: auto-authenticate if needed
+      if (!accessToken && config.clientId && config.clientSecret) {
+        const tokens = await SFClient.authenticate(
+          config.instanceUrl || "https://login.salesforce.com",
+          config.clientId as string, config.clientSecret as string,
+          config.username as string, config.password as string, config.securityToken as string,
+        );
+        accessToken = tokens.accessToken;
+        instanceUrl = tokens.instanceUrl || (config.instanceUrl as string) || "";
+      }
+
+      if (!accessToken || !instanceUrl) {
+        res.status(400).json({ error: "Salesforce access token or instance URL not configured" });
+        return;
+      }
+
+      const client = new SFClient(accessToken, instanceUrl);
+      const records = await client.query("SELECT MasterLabel, IsWon, IsClosed FROM OpportunityStage WHERE IsActive = true");
+
+      const stages = records.map((s: any) => ({
+        id: s.MasterLabel,
+        label: s.MasterLabel,
+        pipeline: s.IsWon === true ? "Won" : s.IsClosed === true ? "Lost" : "Open",
+      }));
+
+      const savedMapping = (conn.metadata as any)?.stageMapping || {};
+      res.json({ stages, mapping: savedMapping });
+    } catch (err: any) {
+      logger.error({ err, workspaceId }, "[Salesforce] Failed to fetch opportunity stages");
+      res.status(500).json({ error: err.message || "Failed to fetch stages" });
+    }
+  },
+);
+
+router.patch(
+  "/:workspaceId/salesforce/stages",
+  ...requirePermission("workspace", "edit"),
+  async (req: AuthenticatedRequest, res) => {
+    const workspaceId = req.workspaceId!;
+    const { mapping } = req.body;
+
+    if (!mapping || typeof mapping !== "object") {
+      res.status(400).json({ error: "mapping object required" });
+      return;
+    }
+
+    await IntegrationConnection.findOneAndUpdate(
+      { workspaceId, connectorName: "salesforce" },
+      { $set: { "metadata.stageMapping": mapping } },
+    );
+
+    res.json({ success: true, mapping });
   },
 );
 
@@ -623,14 +752,14 @@ router.get(
         return;
       }
 
-      const config = conn.config as any;
+      const config = decryptConfig(conn.config as any);
       if (!config?.accessToken) {
         res.status(400).json({ error: "HubSpot access token not configured" });
         return;
       }
 
       const { HubSpotClient } = await import("@workspace/plugins-hubspot");
-      const client = new HubSpotClient(config.accessToken);
+      const client = new HubSpotClient(config.accessToken as string);
       const pipelines = await client.getPipelines();
 
       const stages: Array<{ id: string; label: string; pipeline: string }> = [];

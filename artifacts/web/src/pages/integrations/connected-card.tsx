@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { CheckCircle2, AlertTriangle, RefreshCw, Trash2, Ellipsis, LoaderCircle, FileCode, GitBranch } from "lucide-react";
+import { CheckCircle2, AlertTriangle, RefreshCw, Trash2, Ellipsis, LoaderCircle, FileCode, GitBranch, CreditCard, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useWorkspace } from "@/hooks/use-workspace";
@@ -21,9 +21,11 @@ interface Props {
   status: ConnectionStatus;
   onOpenMappingEditor: () => void;
   onOpenStageMapping: () => void;
+  onOpenPaymentDefaults: () => void;
+  onOpenStageFilter: (connectorName: string) => void;
 }
 
-export function ConnectedCard({ status, onOpenMappingEditor, onOpenStageMapping }: Props) {
+export function ConnectedCard({ status, onOpenMappingEditor, onOpenStageMapping, onOpenPaymentDefaults, onOpenStageFilter }: Props) {
   const { t } = useTranslation();
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
@@ -95,15 +97,24 @@ export function ConnectedCard({ status, onOpenMappingEditor, onOpenStageMapping 
                 </Select>
               </div>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => onOpenStageFilter(status.connectorName!)} className="flex items-center gap-2">
+                <Filter className="size-3.5" />Stage Filter
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               {status.connectorName === "custom" && (
                 <>
                   <DropdownMenuItem onClick={onOpenMappingEditor} className="flex items-center gap-2"><FileCode className="size-3.5" />{t("integrations.editMapping")}</DropdownMenuItem>
                   <DropdownMenuSeparator />
                 </>
               )}
-              {status.connectorName === "hubspot" && (
+              {(status.connectorName === "hubspot" || status.connectorName === "salesforce") && (
                 <>
-                  <DropdownMenuItem onClick={onOpenStageMapping} className="flex items-center gap-2"><GitBranch className="size-3.5" />{t("integrations.stageMapping")}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={onOpenStageMapping} className="flex items-center gap-2">
+                    <GitBranch className="size-3.5" />Stage Mapping
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={onOpenPaymentDefaults} className="flex items-center gap-2">
+                    <CreditCard className="size-3.5" />Payment Defaults
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                 </>
               )}
