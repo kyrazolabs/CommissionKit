@@ -150,6 +150,7 @@ CommissionKit plugs directly into the tools you already use — no manual data e
 **Native Connectors:**
 
 - **Odoo ERP** — Syncs sales reps (`res.users`) and confirmed sales orders (`sale.order`). Maps Odoo states to CKit stages, resolves payment status from actual invoice data (not just invoice status), and supports all major currencies. Works with Odoo 15+ Community and Enterprise.
+- **Salesforce CRM** — Syncs users as reps and opportunities as deals. OAuth 2.0 Client Credentials flow via External Client App. Auto-discovers pipeline stages, supports custom stage mapping and stage filtering. All opportunity stages synced by default.
 - **HubSpot CRM** — Syncs owners as reps and deals by pipeline stage. Auto-discovers your pipeline stages and fetches payment-relevant metadata. Works with Service Keys or Legacy App tokens.
 - **Custom REST API** — Connect any ERP or CRM that exposes a REST API. Configure authentication (Bearer, API Key, Basic Auth), field mappings via JSONPath, pagination (offset, cursor, page), and stage/payment status mappings — all through a JSON config. Supports `$div` compute fields for fractional amounts (e.g., micros → dollars).
 
