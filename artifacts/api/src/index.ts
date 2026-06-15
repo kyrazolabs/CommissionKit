@@ -1,3 +1,4 @@
+import "./lib/promiseall-shim";
 import "dotenv/config";
 
 import "./instrument";
