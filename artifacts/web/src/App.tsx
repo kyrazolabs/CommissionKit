@@ -259,6 +259,7 @@ function ProtectedRouter() {
   const { session, loading: authLoading } = useAuth();
   const { activeWorkspace, loading: wsLoading } = useWorkspace();
   const [location, setLocation] = useLocation();
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
 
   useEffect(() => {
     if (!authLoading && session) {
@@ -267,6 +268,11 @@ function ProtectedRouter() {
       }
     }
   }, [session, authLoading, location, setLocation]);
+
+  // Show full-screen loader only on first load, not on background refetches
+  useEffect(() => {
+    if (!authLoading && !wsLoading) setInitialLoadDone(true);
+  }, [authLoading, wsLoading]);
 
   // Render public pages immediately (no auth-wait flash that would replace pre-rendered HTML)
   if (!session) {
@@ -277,7 +283,7 @@ function ProtectedRouter() {
     return <AuthPage initialMode="login" />;
   }
 
-  if (authLoading || wsLoading) return <AppLoader />;
+  if (authLoading || (wsLoading && !initialLoadDone)) return <AppLoader />;
   if (!activeWorkspace) return <CreateWorkspaceScreen />;
   if (location === "/login" || location === "/register") return <AppLoader />;
 
