@@ -407,3 +407,11 @@ Primary category (exact match):
 | Incentive Compensation Management | `/categories/incentive-compensation-management` | Covers tiered plans, accelerators, multi-currency |
 
 **G2 recommended starting point:** List under **Sales Compensation Software** as primary. After first few reviews, add Sales Performance Management and Sales Analytics as secondary categories.
+
+---
+
+### G2 Target Market Description
+
+```
+CommissionKit is built for B2B companies with commission-based sales teams — from startups with 5 reps to mid-market orgs with up to 100. Primary users are sales operations managers, finance leads, and founders who need to replace spreadsheet-based commission tracking with automated calculations, payout workflows, and rep-facing portals. Works across any industry with variable compensation: SaaS, professional services, real estate, insurance, and financial services.
+```
