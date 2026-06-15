@@ -371,3 +371,39 @@ No cursor in frame. No browser chrome (use devtools toggle or browser screenshot
 - [ ] Add subtle drop shadow to give depth (2-4px blur, 10% opacity)
 - [ ] Add CommissionKit logo to bottom-right corner of first 3 images (40% opacity, 120px wide)
 - [ ] Save as PNG for ProductHunt, JPG (90% quality) for G2
+
+---
+
+## PLATFORM CATEGORIES
+
+### ProductHunt
+
+Select up to 3 categories during submission:
+
+| Priority | Category | Why |
+|---|---|---|
+| **Primary** | **Marketing & Sales** | Covers sales operations, commission management, and rep tracking. Most discovery happens here. |
+| Secondary | Finance | Covers payout tracking, financial calculations, audit trails. Broadens reach to finance buyers. |
+| Tertiary | Productivity | Covers workflow automation, one-click runs, team efficiency. Captures operations buyers. |
+
+**Topics/tags to add:** Sales enablement, Payroll, SaaS
+
+---
+
+### G2
+
+Primary category (exact match):
+
+| Priority | Category | G2 Path |
+|---|---|---|
+| **Primary** | **Sales Compensation Software** | `/categories/sales-compensation` |
+
+**Secondary categories (can list in multiple):**
+
+| Category | G2 Path | Why |
+|---|---|---|
+| Sales Performance Management | `/categories/sales-performance-management` | Covers plan management, rep performance, runs |
+| Sales Analytics | `/categories/sales-analytics` | Covers reports, dashboards, earnings charts |
+| Incentive Compensation Management | `/categories/incentive-compensation-management` | Covers tiered plans, accelerators, multi-currency |
+
+**G2 recommended starting point:** List under **Sales Compensation Software** as primary. After first few reviews, add Sales Performance Management and Sales Analytics as secondary categories.
