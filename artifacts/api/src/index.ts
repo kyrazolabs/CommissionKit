@@ -1,9 +1,5 @@
+import "./lib/promiseall-shim";
 import "dotenv/config";
-
-// Workaround: Bun build strips __promiseAll helper, re-add for production
-if (typeof (globalThis as any).__promiseAll === "undefined") {
-  (globalThis as any).__promiseAll = (promises: Promise<any>[]) => Promise.all(promises);
-}
 
 import "./instrument";
 import app from "./app";
