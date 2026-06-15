@@ -245,7 +245,8 @@ No cursor in frame. No browser chrome (use devtools toggle or browser screenshot
 **URL:** `/dash`  
 **What to capture:** Full page view. All four stat cards visible (Total Commissions, Pipeline Revenue, Deals Closed, Active Reps) with real numbers. Top Earners table showing 3+ reps. Recent Runs card visible.  
 **Data needed:** At least $30k Total Commissions, 3+ active reps, 2+ completed runs.  
-**Composition:** Wide shot, centered. Stat cards should fill upper third.
+**Composition:** Wide shot, centered. Stat cards should fill upper third.  
+**Caption:** *Live commission dashboard — total payouts, pipeline revenue, and top earners.*
 
 ---
 
@@ -256,7 +257,8 @@ No cursor in frame. No browser chrome (use devtools toggle or browser screenshot
 **URL:** `/dash/plans`  
 **What to capture:** Grid view with 2-3 plan cards visible. One flat rate, one tiered if possible. Each card showing plan name, type badge (Flat Rate / Tiered Rates / Base + Accelerator), and rate.  
 **Alt shot:** The Create Plan dialog open, filled with sample data, showing Plan Type dropdown and Commission Rate (%) field.  
-**Composition:** Plans grid fills frame. If using dialog overlay, dim the background.
+**Composition:** Plans grid fills frame. If using dialog overlay, dim the background.  
+**Caption:** *Flat rate, tiered, or accelerator — any commission structure in minutes.*
 
 ---
 
@@ -267,7 +269,8 @@ No cursor in frame. No browser chrome (use devtools toggle or browser screenshot
 **URL:** `/dash/deals`  
 **What to capture:** Full deals table with 5-8 rows. Columns visible: Deal Name, Rep, Amount (teal), Close Date, Stage badges (CLOSED WON/CLOSED LOST/PENDING), Payment badges (PAID/PARTIAL/UNPAID), Actions.  
 **Data needed:** Mix of deal stages and payment statuses to show color variety.  
-**Composition:** Table centered. Filter row visible at top (search + filters).
+**Composition:** Table centered. Filter row visible at top (search + filters).  
+**Caption:** *Real-time deal tracking — auto-calculated commissions and payment statuses.*
 
 ---
 
@@ -278,7 +281,8 @@ No cursor in frame. No browser chrome (use devtools toggle or browser screenshot
 **URL:** `/dash/runs`  
 **What to capture:** Runs table showing 3-4 completed runs. Focus on the Total Commission column (teal bold numbers). At least one run with "Completed" green badge.  
 **Alt shot:** Run Detail page (`/dash/runs/:id`) showing Audit Trail table with Rep, Deal, Deal Amount, Rate Applied, Commission columns.  
-**Composition:** Runs table centered. Run IDs and Total Commission column drawn into focus.
+**Composition:** Runs table centered. Run IDs and Total Commission column drawn into focus.  
+**Caption:** *One click runs commissions for every rep, every deal, every plan — in seconds.*
 
 ---
 
@@ -289,7 +293,8 @@ No cursor in frame. No browser chrome (use devtools toggle or browser screenshot
 **URL:** `/dash/payouts`  
 **What to capture:** Payout Tracker page with summary cards visible (Total Pending, Total Approved, Paid This Month, Open Disputes). Table below showing mixed status badges: amber Pending, blue Approved, green Paid.  
 **Data needed:** 5+ payouts across multiple statuses to demonstrate the full workflow.  
-**Composition:** Summary cards at top, table fills lower two-thirds. Badge colors should pop.
+**Composition:** Summary cards at top, table fills lower two-thirds. Badge colors should pop.  
+**Caption:** *Pending, approved, paid — complete payout lifecycle with full audit trail.*
 
 ---
 
@@ -299,7 +304,8 @@ No cursor in frame. No browser chrome (use devtools toggle or browser screenshot
 
 **URL:** `/dash/reps/:id`  
 **What to capture:** Rep Portal for Liam Foster. Three summary cards top (Estimated Commission in teal card, Total Revenue Closed, Deals Won). Earnings History bar chart below. Payout History section visible at bottom.  
-**Composition:** Full page scroll capture if possible, or crop to top cards + chart. The Estimated Commission teal card should be visually dominant.
+**Composition:** Full page scroll capture if possible, or crop to top cards + chart. The Estimated Commission teal card should be visually dominant.  
+**Caption:** *Personal rep portal — earnings, deals, and payout history in one view.*
 
 ---
 
@@ -310,7 +316,8 @@ No cursor in frame. No browser chrome (use devtools toggle or browser screenshot
 **URL:** `/dash/reports`  
 **What to capture:** Reports page with charts rendered. At least one area/bar chart and one pie/donut chart visible. Date range picker visible top-right.  
 **Data needed:** Enough data to render meaningful charts (6+ months of deal history).  
-**Composition:** Charts fill the frame. Teal color palette consistent across all charts.
+**Composition:** Charts fill the frame. Teal color palette consistent across all charts.  
+**Caption:** *Commission analytics with earnings trends, rep performance, and deal breakdowns.*
 
 ---
 
@@ -320,7 +327,8 @@ No cursor in frame. No browser chrome (use devtools toggle or browser screenshot
 
 **URL:** `/dash`  
 **What to capture:** Full browser window at 1920x1080 with sidebar collapsed OR expanded showing all nav groups — Main (Dashboard, Reports, Reps, Plans), Operations (Deals, Runs, Payouts, Disputes), Account (Team, Billing, Integrations, Settings). Dashboard visible in main content area.  
-**Composition:** Sidebar left, content right. This establishes trust by showing the full app surface area.
+**Composition:** Sidebar left, content right. This establishes trust by showing the full app surface area.  
+**Caption:** *Full platform — plans, deals, runs, payouts, and rep portal in one workspace.*
 
 ---
 
