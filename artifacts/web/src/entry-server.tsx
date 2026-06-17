@@ -74,6 +74,7 @@ export function render(url?: string) {
 
   const html = ReactDOMServer.renderToString(element);
   const meta = routeMeta[path] ?? routeMeta["/"];
+  console.log(`[SSR] render(${path}) → canonical: ${meta.canonical}`);
 
   return { html, meta };
 }
