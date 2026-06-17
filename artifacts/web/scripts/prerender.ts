@@ -6,7 +6,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function injectMeta(
   template: string,
-  meta: { title: string; description: string; robots?: string },
+  meta: { title: string; description: string; robots?: string; canonical: string },
 ) {
   const robots = meta.robots ?? "index, follow";
 
@@ -38,6 +38,10 @@ function injectMeta(
     .replace(
       /<meta name="twitter:description"[^>]*\/?>/,
       `<meta name="twitter:description" content="${meta.description}" />`,
+    )
+    .replace(
+      /<link rel="canonical"[^>]*\/?>/,
+      `<link rel="canonical" href="${meta.canonical}" />`,
     );
 }
 
