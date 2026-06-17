@@ -102,7 +102,7 @@ async function run() {
     fs.mkdirSync(outputDir, { recursive: true });
     fs.writeFileSync(outputPath, output, "utf-8");
     console.log(`[Prerender] Pre-rendered ${route} → ${outputPath}`);
-    console.log(`[Prerender]   title: ${meta.title}, robots: ${meta.robots}`);
+    console.log(`[Prerender]   title: ${meta.title}, canonical: ${meta.canonical}, robots: ${meta.robots}`);
   }
 
   console.log("[Prerender] Prerender complete.");
