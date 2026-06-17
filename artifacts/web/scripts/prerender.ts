@@ -40,12 +40,16 @@ function injectMeta(
       `<meta name="twitter:description" content="${meta.description}" />`,
     )
     .replace(
-      /<link rel="canonical"[^>]*\/?>/,
-      `<!-- Prerender: verified static HTML served for this route -->\n    <link rel="canonical" href="${meta.canonical}" />`,
+      /<link rel="canonical"[^>]*>/,
+      `<!-- Prerender: verified static HTML served for this route -->\n    <link rel="canonical" href="${meta.canonical}">`,
     )
     .replace(
-      /<link rel="alternate" hreflang="([^"]+)" href="[^"]*" \/>/g,
-      `<link rel="alternate" hreflang="$1" href="${meta.canonical}" />`,
+      /<link rel="alternate" hreflang="([^"]+)" href="[^"]*" ?\/?>/g,
+      `<link rel="alternate" hreflang="$1" href="${meta.canonical}">`,
+    )
+    .replace(
+      /<meta property="og:url"[^>]*\/?>/,
+      `<meta property="og:url" content="${meta.canonical}">`,
     );
 }
 
