@@ -321,7 +321,7 @@ function ProtectedRouter() {
  */
 function CanonicalTag() {
   const [location] = useLocation();
-  const canonicalPath = location === "/home" ? "/" : location;
+  const canonicalPath = (location === "/home" ? "/" : location).replace(/\/$/, "");
   return (
     <Helmet>
       <link rel="canonical" href={`https://commissionk.it${canonicalPath}`} />
