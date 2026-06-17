@@ -41,7 +41,11 @@ function injectMeta(
     )
     .replace(
       /<link rel="canonical"[^>]*\/?>/,
-      `<link rel="canonical" href="${meta.canonical}" />`,
+      `<!-- Prerender: verified static HTML served for this route -->\n    <link rel="canonical" href="${meta.canonical}" />`,
+    )
+    .replace(
+      /<link rel="alternate" hreflang="([^"]+)" href="[^"]*" \/>/g,
+      `<link rel="alternate" hreflang="$1" href="${meta.canonical}" />`,
     );
 }
 
