@@ -271,15 +271,6 @@
   }
 }
 
-button, .btn-effect {
-  transition-duration: 150ms !important;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
-  
-  &:active {
-      transform: translateY(1px) scale(0.99);
-  }
-}
-
 /* ─── TIPTAP PLACEHOLDER ─────────────────────────────────────────────────── */
 .ProseMirror p.is-editor-empty:first-child::before {
   color: hsl(var(--muted-foreground));
