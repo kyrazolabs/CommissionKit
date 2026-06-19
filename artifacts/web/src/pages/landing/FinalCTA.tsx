@@ -1,5 +1,6 @@
 import { useInView, fadeIn } from "./hooks";
 import { Button } from "@/components/ui/button";
+import { Analytics } from "@/lib/analytics";
 
 export function FinalCTA() {
   const { ref, inView } = useInView(0.15);
@@ -17,10 +18,10 @@ export function FinalCTA() {
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button asChild className="font-bold shadow-lg" size={'md'}>
-            <a href="/register">Get Start Now</a>
+            <a href="/register" onClick={() => Analytics.landingCTAClick("final_cta_start")}>Get Start Now</a>
           </Button>
           <Button variant="outline" asChild className="font-bold bg-background/60 backdrop-blur-sm shadow-sm" size={'md'}>
-            <a href="mailto:sales@commissionk.it">Contact Sales</a>
+            <a href="mailto:sales@commissionk.it" onClick={() => Analytics.landingCTAClick("final_cta_sales")}>Contact Sales</a>
           </Button>
         </div>
       </div>

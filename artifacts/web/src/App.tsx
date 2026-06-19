@@ -56,12 +56,14 @@ import { SecurityPage } from "@/pages/legal/security";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { WorkspaceProvider, useWorkspace } from "@/hooks/use-workspace";
+import { usePageTrack } from "@/hooks/use-page-track";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CurrencyCombobox } from "@/components/currency-combobox";
+import { Analytics } from "@/lib/analytics";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -109,14 +111,18 @@ function CreateWorkspaceScreen() {
   const [error, setError] = useState("");
   const [creating, setCreating] = useState(false);
 
+  useEffect(() => { Analytics.workspaceCreateView(); }, []);
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
     setCreating(true);
     setError("");
     try {
-      await createWorkspace(name.trim(), currency);
+      const ws = await createWorkspace(name.trim(), currency);
+      Analytics.workspaceCreated(ws.commissionEngine);
     } catch {
+      Analytics.workspaceCreateFailed();
       setError(t("createWorkspace.failedToCreate"));
       setCreating(false);
     }
@@ -329,6 +335,11 @@ function CanonicalTag() {
   );
 }
 
+function PageTracker() {
+  usePageTrack();
+  return null;
+}
+
 function App() {
   return (
     <ThemeProvider>
@@ -336,6 +347,7 @@ function App() {
         <TooltipProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
             <CanonicalTag />
+            <PageTracker />
             {/* Public routes : no auth required directly here */}
             <Switch>
               <Route path="/portal/:accessCode" component={() => {

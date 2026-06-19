@@ -110,6 +110,21 @@ export function Hero({ containerRef }: { containerRef: React.RefObject<HTMLDivEl
               <a href="#features">Explore Features</a>
             </Button>
           </div>
+
+          <div style={fadeIn(inView, 400)} className="mt-8 flex justify-center">
+            <a
+              href="https://www.producthunt.com/products/commissionkit?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-commissionkit"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                alt="CommissionKit - Your reps close deals. We handles the rest. | Product Hunt"
+                width="250"
+                height="54"
+                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1172787&amp;theme=dark&amp;t=1781562800265"
+              />
+            </a>
+          </div>
         </div>
 
         {/* Dashboard Mockup Container with 3D Effect & Pulse Border */}
