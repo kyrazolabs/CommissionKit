@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { apiFetch } from "@/lib/api";
+import { Analytics } from "@/lib/analytics";
 
 const ICON_MAP: Record<string, any> = {
   LayoutDashboard, Users, FileText, Briefcase, PlayCircle,
@@ -187,6 +188,11 @@ export function Sidebar() {
     ? user.email.slice(0, 2).toUpperCase()
     : "??";
 
+  const handleSignOut = () => {
+    Analytics.authSignOut();
+    signOut();
+  };
+
   const replaceMap = new Map(engineNavItems.map(item => [item.replaces, item]));
 
   const navGroups = [
@@ -248,11 +254,12 @@ export function Sidebar() {
                     key={item.name}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-2.5 rounded-[10px] px-2.5 py-[7px] text-[13.5px] transition-colors",
+                      "flex items-center gap-2.5 rounded-[10px] px-2.5 py-[7px] text-[13.5px] transition-colors btn-effect",
                       isActive
                         ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold border border-sidebar-primary/20"
                         : "text-sidebar-foreground font-normal border border-transparent hover:bg-muted hover:text-foreground"
                     )}
+                    onClick={() => Analytics.navClick(group.label, item.href, item.name)}
                   >
                     {IconComponent && (
                       <IconComponent
@@ -321,7 +328,7 @@ export function Sidebar() {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
-                onClick={signOut}
+                onClick={handleSignOut}
                 className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer flex items-center gap-2.5 rounded-lg py-2"
               >
                 <LogOut className="size-[15px] opacity-70" />

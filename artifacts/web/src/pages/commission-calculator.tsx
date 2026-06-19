@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useIsMobile } from "@/pages/landing/hooks";
 import { Check, Calculator, ArrowRight, Percent, DollarSign, TrendingUp, BarChart3, Users, Shield, Trash2 } from "lucide-react";
+import { Analytics } from "@/lib/analytics";
 
 type PlanType = "flat" | "tiered" | "accelerator";
 
@@ -156,6 +157,8 @@ export function CommissionCalculator() {
     e.preventDefault();
     const amount = parseFloat(dealAmount);
     if (isNaN(amount) || amount <= 0) return;
+
+    Analytics.calculatorUsed();
 
     setResult(calculateCommission(
       amount,

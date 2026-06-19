@@ -6,6 +6,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { useIsMutating } from "@tanstack/react-query";
 import { useSyncStore } from "@/hooks/use-sync-store";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Analytics } from "@/lib/analytics";
 
 function SyncIndicator() {
   const isMutating = useIsMutating();
@@ -49,6 +50,12 @@ export function Header() {
   const { theme, toggle } = useTheme();
   const { user } = useAuth();
 
+  const handleThemeToggle = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    Analytics.themeToggled(next);
+    toggle();
+  };
+
   const initials = user?.email
     ? user.email.slice(0, 2).toUpperCase()
     : "??";
@@ -87,7 +94,7 @@ export function Header() {
 
         {/* Theme toggle */}
         <button
-          onClick={toggle}
+          onClick={handleThemeToggle}
           className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           title={theme === "dark" ? "Light mode" : "Dark mode"}
         >

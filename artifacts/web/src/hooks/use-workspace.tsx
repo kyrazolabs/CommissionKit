@@ -10,6 +10,7 @@ import {
 
 import { setWorkspaceId } from "@workspace/api-client-react";
 import { useAuth } from "./use-auth";
+import { Analytics } from "@/lib/analytics";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 
 export interface Workspace {
@@ -176,6 +177,7 @@ export function WorkspaceProvider({
     (ws: Workspace) => {
       localStorage.setItem(STORAGE_KEY, ws.id);
       setWorkspaceId(ws.id);
+      Analytics.workspaceSwitched(ws.commissionEngine);
       window.location.assign("/dash");
     },
     []
