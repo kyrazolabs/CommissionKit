@@ -24,6 +24,7 @@ import { useBillingStatus, type SubscriptionStatus } from "@/hooks/use-billing-s
 import { useRole } from "@/hooks/use-role";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePageMeta } from "@/hooks/use-page-meta";
+import { Analytics } from "@/lib/analytics";
 
 
 const EXTRA_REP_UNIT_MONTHLY_USD = 8;
@@ -320,6 +321,8 @@ export function BillingPage() {
   const { sub, limits, planBaseLimits, refetch } = useBillingStatus();
   const { hasPermission, isLoading: roleLoading } = useRole();
 
+  useEffect(() => { Analytics.billingView(); }, []);
+
   const [showLocalCurrency, setShowLocalCurrency] = useState(false);
   const [rates, setRates] = useState<Record<string, number>>({});
   const workspaceCurrency = activeWorkspace?.currency || "USD";
@@ -434,13 +437,17 @@ export function BillingPage() {
   const handleCheckout = async (priceId: string, plan: string, mode: string, extraQty: number) => {
     if (!activeWorkspace?.id) return;
     setLoadingPlan(plan);
+    const yearly = payYearly;
+    Analytics.billingCheckoutStarted(plan, yearly, extraQty);
     try {
       const { url } = await apiFetch(`/api/billing/checkout`, {
         method: "POST",
         body: JSON.stringify({ priceId, mode, extraReps: extraQty }),
       });
+      Analytics.billingCheckoutRedirected(plan);
       window.location.href = url;
     } catch (err: any) {
+      Analytics.billingCheckoutError(plan, err.message);
       toast({ title: t("billing.checkoutError"), description: err.message, variant: "destructive" });
       setLoadingPlan(null);
     }
@@ -456,6 +463,8 @@ export function BillingPage() {
         body: JSON.stringify({ quantity: qty }),
       });
 
+      Analytics.billingExtraRepsSaved(qty);
+
       toast({ title: t("billing.updated"), description: t("billing.updatedDescription", { count: qty }) });
       await refetch();
     } catch (err: any) {
@@ -468,6 +477,7 @@ export function BillingPage() {
   const handlePortal = async () => {
     if (!activeWorkspace?.id) return;
     setPortalLoading(true);
+    Analytics.billingPortalOpened();
     try {
       const { url } = await apiFetch(`/api/billing/portal`, {
         method: "POST",
@@ -482,6 +492,7 @@ export function BillingPage() {
 
   const handlePayYearlyChange = (checked: boolean) => {
     setPayYearly(checked);
+    Analytics.billingYearlyToggled(checked);
   };
 
 
@@ -680,7 +691,10 @@ export function BillingPage() {
             <Switch
               id="currency-toggle"
               checked={showLocalCurrency}
-              onCheckedChange={setShowLocalCurrency}
+              onCheckedChange={(v) => {
+                setShowLocalCurrency(v);
+                Analytics.billingCurrencyToggled(workspaceCurrency);
+              }}
             />
           </div>
         )}
@@ -711,6 +725,7 @@ export function BillingPage() {
                 if (alreadySubscribed) return;
                 if (isCurrent) return;
                 setSelectedPlanId(plan.id);
+                Analytics.billingPlanSelected(plan.id, payYearly);
               }}
             >
               {plan.badge && (

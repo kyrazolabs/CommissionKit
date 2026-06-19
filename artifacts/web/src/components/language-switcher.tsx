@@ -9,9 +9,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Languages } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Analytics } from "@/lib/analytics";
 
 export function LanguageSwitcher() {
   const { i18n } = useTranslation();
+
+  const handleChangeLang = (code: string) => {
+    i18n.changeLanguage(code);
+    Analytics.languageChanged(code);
+  };
 
   return (
     <DropdownMenu>
@@ -27,7 +33,7 @@ export function LanguageSwitcher() {
         {SUPPORTED_LANGS.map((lang) => (
           <DropdownMenuItem
             key={lang.code}
-            onClick={() => i18n.changeLanguage(lang.code)}
+            onClick={() => handleChangeLang(lang.code)}
             className={cn(
               "flex items-center justify-between",
               i18n.language === lang.code && "font-semibold text-primary",

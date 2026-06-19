@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Analytics } from "@/lib/analytics";
 
 const PLANS = [
   {
@@ -184,6 +185,7 @@ export function Pricing() {
                   size="lg"
                   variant={plan.highlighted ? "default" : "outline"}
                   className={`w-full font-bold ${plan.highlighted ? 'shadow-sm' : ''}`}
+                  onClick={() => Analytics.landingPricingCTAClick(plan.id)}
                 >
                   {plan.id === "pro" ? "Contact Sales" : plan.highlighted ? "Start Free Trial" : "Get Started"}
                 </Button>
@@ -210,7 +212,7 @@ export function Pricing() {
               </ul>
             </div>
             <Button size="md" className="font-bold shadow-sm shrink-0" asChild>
-              <a href="mailto:sales@commissionk.it">Contact Sales</a>
+              <a href="mailto:sales@commissionk.it" onClick={() => Analytics.landingPricingCTAClick("business")}>Contact Sales</a>
             </Button>
           </div>
         </div>

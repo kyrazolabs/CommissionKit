@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Analytics } from "@/lib/analytics";
 
 export function Navbar({ containerRef }: { containerRef?: React.RefObject<HTMLDivElement | null> }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -42,10 +43,10 @@ export function Navbar({ containerRef }: { containerRef?: React.RefObject<HTMLDi
 
           <div className="hidden md:flex items-center gap-2">
             <Button variant="ghost" className="font-bold text-primary hover:text-primary/80 hover:bg-primary/5" size="sm" asChild>
-              <a href="/login">Log In</a>
+              <a href="/login" onClick={() => Analytics.landingCTAClick("navbar_login")}>Log In</a>
             </Button>
             <Button className="font-bold shadow-sm" size="sm" asChild>
-              <a href="/register">Start Now</a>
+              <a href="/register" onClick={() => Analytics.landingCTAClick("navbar_start")}>Start Now</a>
             </Button>
           </div>
 
@@ -75,10 +76,10 @@ export function Navbar({ containerRef }: { containerRef?: React.RefObject<HTMLDi
 
         <div className="mt-8 flex flex-col gap-3">
           <Button variant="outline" size="lg" asChild className="w-full justify-center">
-            <a href="/login">Log In</a>
+            <a href="/login" onClick={() => Analytics.landingCTAClick("navbar_mobile_login")}>Log In</a>
           </Button>
           <Button size="lg" asChild className="w-full justify-center">
-            <a href="/register">Start Now</a>
+            <a href="/register" onClick={() => Analytics.landingCTAClick("navbar_mobile_start")}>Start Now</a>
           </Button>
         </div>
       </div>

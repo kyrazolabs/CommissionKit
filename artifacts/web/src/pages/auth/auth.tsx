@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { Analytics } from "@/lib/analytics";
 
 // Import decorative SVGs from public/decorative as raw strings
 import leftCurves from "@/decorative/left-curves.svg?raw";
@@ -38,6 +39,25 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
   const [resendLoading, setResendLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const { toast } = useToast();
+  const modeInitialized = useRef(false);
+
+  useEffect(() => {
+    if (!modeInitialized.current) {
+      modeInitialized.current = true;
+      return;
+    }
+    const prevMode = document.body.getAttribute("data-auth-prev-mode");
+    if (prevMode && prevMode !== mode) {
+      Analytics.authModeSwitch(prevMode, mode);
+    }
+    document.body.setAttribute("data-auth-prev-mode", mode);
+  }, [mode]);
+
+  useEffect(() => {
+    if (initialMode === "login") Analytics.authLoginView();
+    else if (initialMode === "signup") Analytics.authSignupView();
+    else if (initialMode === "forgot") Analytics.authForgotView();
+  }, []);
 
   // Count down the resend cooldown every second
   useEffect(() => {
@@ -51,6 +71,7 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
 
   const handleResendVerification = async () => {
     if (resendCooldown > 0 || resendLoading || !email) return;
+    Analytics.authResendVerification();
     setResendLoading(true);
     try {
       const { error } = await authClient.sendVerificationEmail({
@@ -80,14 +101,17 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
 
     try {
       if (mode === "login") {
+        Analytics.authLoginAttempt("email");
         const { error } = await authClient.signIn.email({
           email,
           password,
           callbackURL: redirect,
         });
         if (error) throw error;
+        Analytics.authLoginSuccess("email");
         window.location.href = redirect;
       } else if (mode === "signup") {
+        Analytics.authSignupAttempt();
         const { error } = await authClient.signUp.email({
           email,
           password,
@@ -95,12 +119,14 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
           callbackURL: redirect,
         });
         if (error) throw error;
+        Analytics.authSignupSuccess();
         toast({
           title: t("auth.verificationEmailSent"),
           description: t("auth.verificationEmailSentDescription"),
         });
         setVerificationSent(true);
       } else if (mode === "forgot") {
+        Analytics.authForgotRequest();
         const { error } = await authClient.requestPasswordReset({
           email,
           redirectTo: window.location.origin + "/reset-password",
@@ -115,6 +141,10 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
     } catch (err: any) {
       console.error("Auth error:", err);
       const isUnverified = err.code === "EMAIL_NOT_VERIFIED";
+
+      if (mode === "login") {
+        Analytics.authLoginFailed("email", isUnverified ? "email_not_verified" : (err.message ?? "unknown"));
+      }
 
       if (isUnverified) {
         setVerificationSent(true);
@@ -147,12 +177,14 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
   };
 
   const handleGoogleSignIn = async () => {
+    Analytics.authLoginAttempt("google");
     try {
       await authClient.signIn.social({
         provider: "google",
         callbackURL: redirect || "/",
       });
     } catch (err: any) {
+      Analytics.authLoginFailed("google", err.message ?? "unknown");
       toast({
         title: t("auth.googleSignInFailed"),
         description: err.message || "An unexpected error occurred.",

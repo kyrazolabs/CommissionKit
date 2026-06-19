@@ -15,6 +15,7 @@ import { useIsMobile } from "./hooks";
 import { Button } from "@/components/ui/button";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
+import { Analytics } from "@/lib/analytics";
 
 export function LandingPage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -32,6 +33,7 @@ export function LandingPage() {
   const maxWidth = useTransform(scrollY, [0, 800], ["2560px", isMobile ? "100%" : "1400px"]);
 
   useEffect(() => {
+    Analytics.landingView();
     document.documentElement.style.scrollBehavior = "smooth";
     return () => { document.documentElement.style.scrollBehavior = "smooth"; };
   }, []);
