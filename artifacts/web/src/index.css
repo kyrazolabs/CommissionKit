@@ -355,3 +355,12 @@
     transition-timing-function: ease-out;
   }
 }
+
+
+.no-click,
+.no-click:hover,
+.no-click:active {
+  transform: none !important;
+  transition-duration: none !important;
+  transition-timing-function: none !important;
+}

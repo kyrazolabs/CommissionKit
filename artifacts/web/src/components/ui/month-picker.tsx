@@ -70,7 +70,7 @@ export function MonthPicker({
           <Button
             variant="ghost"
             size="icon"
-            className="size-7 no-click"
+            className="size-7"
             onClick={(e) => {
               e.preventDefault()
               handlePrevYear()
@@ -84,7 +84,7 @@ export function MonthPicker({
           <Button
             variant="ghost"
             size="icon"
-            className="size-7 no-click"
+            className="size-7"
             onClick={(e) => {
               e.preventDefault()
               handleNextYear()
@@ -101,7 +101,7 @@ export function MonthPicker({
                 key={month}
                 variant={isSelected ? "default" : "ghost"}
                 className={cn(
-                  "h-6 w-full text-sm font-normal no-click",
+                  "h-6 w-full text-sm font-normal",
                   isSelected && "bg-primary text-primary-foreground hover:bg-primary/90"
                 )}
                 onClick={(e) => {
