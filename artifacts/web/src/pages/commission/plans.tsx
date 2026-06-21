@@ -255,7 +255,7 @@ function PlanCard({ plan, sub, currency }: { plan: any, sub: any, currency: stri
             </Button>
           ) : <div />}
           {hasPermission("plans", "delete") && (
-            <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => setIsDeleteOpen(true)}>
+            <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10 hover:text-destructive aspect-square p-1" onClick={() => setIsDeleteOpen(true)}>
               <Trash className="size-4" />
             </Button>
           )}

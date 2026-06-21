@@ -56,7 +56,7 @@ export function MonthPicker({
         <Button
           variant={"outline"}
           className={cn(
-            "w-full justify-start text-left font-normal h-9 rounded-md border border-input bg-transparent px-3 py-1 shadow-sm hover:bg-transparent",
+            "w-full justify-start text-left font-normal h-9 rounded-md border border-input bg-transparent px-3 py-1 shadow-sm hover:bg-transparent no-click",
             !value && "text-muted-foreground",
             className
           )}
@@ -70,7 +70,7 @@ export function MonthPicker({
           <Button
             variant="ghost"
             size="icon"
-            className="size-7"
+            className="size-7 no-click"
             onClick={(e) => {
               e.preventDefault()
               handlePrevYear()
@@ -84,7 +84,7 @@ export function MonthPicker({
           <Button
             variant="ghost"
             size="icon"
-            className="size-7"
+            className="size-7 no-click"
             onClick={(e) => {
               e.preventDefault()
               handleNextYear()
@@ -101,7 +101,7 @@ export function MonthPicker({
                 key={month}
                 variant={isSelected ? "default" : "ghost"}
                 className={cn(
-                  "h-6 w-full text-sm font-normal",
+                  "h-6 w-full text-sm font-normal no-click",
                   isSelected && "bg-primary text-primary-foreground hover:bg-primary/90"
                 )}
                 onClick={(e) => {

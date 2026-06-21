@@ -88,9 +88,9 @@ function Layout({ children }: { children: React.ReactNode }) {
               <main className="mx-auto p-8 lg:px-10 max-w-6xl min-h-full">
                 <motion.div
                   key={location}
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  transition={{ duration: 0.20, ease: [0.34, 1.56, 0.64, 1], }}
                 >
                   {children}
                 </motion.div>
