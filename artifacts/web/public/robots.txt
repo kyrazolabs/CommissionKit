@@ -1,7 +1,46 @@
-# https://www.robotstxt.org/robotstxt.html
+# ═══════════════════════════════════════════════════════════════
+# robots.txt — CommissionKit
+# https://commissionk.it
+# ═══════════════════════════════════════════════════════════════
+
+# As a condition of accessing this website, you agree to abide by the following
+# content signals:
+
+# (a)  If a Content-Signal = yes, you may collect content for the corresponding
+#      use.
+# (b)  If a Content-Signal = no, you may not collect content for the
+#      corresponding use.
+# (c)  If the website operator does not include a Content-Signal for a
+#      corresponding use, the website operator neither grants nor restricts
+#      permission via Content-Signal with respect to the corresponding use.
+
+# The content signals and their meanings are:
+
+# search:   building a search index and providing search results (e.g., returning
+#           hyperlinks and short excerpts from your website's contents). Search does not
+#           include providing AI-generated search summaries.
+# ai-input: inputting content into one or more AI models (e.g., retrieval
+#           augmented generation, grounding, or other real-time taking of content for
+#           generative AI search answers).
+# ai-train: training or fine-tuning AI models.
+
+# ANY RESTRICTIONS EXPRESSED VIA CONTENT SIGNALS ARE EXPRESS RESERVATIONS OF
+# RIGHTS UNDER ARTICLE 4 OF THE EUROPEAN UNION DIRECTIVE 2019/790 ON COPYRIGHT
+# AND RELATED RIGHTS IN THE DIGITAL SINGLE MARKET.
+
+# ── Content-Signal Policy ─────────────────────────────────────
+# We allow search indexing and real-time AI grounding (GEO),
+# but expressly reserve rights against AI model training.
 User-agent: *
+Content-Signal: search=yes,ai-input=yes,ai-train=no
 Allow: /
 Allow: /home
+Allow: /solutions
+Allow: /features
+Allow: /pricing
+Allow: /commission-calculator
+Allow: /blog/
+Allow: /blog
 Allow: /login
 Allow: /register
 Allow: /forgot-password
@@ -10,11 +49,211 @@ Allow: /email-verified
 Allow: /privacy
 Allow: /terms
 Allow: /security
+Allow: /contact
+Allow: /about
+Allow: /careers
+Allow: /changelog
+Allow: /help
+Allow: /docs
+Allow: /docs/
+Allow: /developers
+Allow: /accept-invite
+Allow: /brand/
+Allow: /imgs/
+Allow: /plugins/
 
-# Disallow API and authenticated routes
+# Disallow authenticated/app paths — no crawler should index app internals
 Disallow: /api/
 Disallow: /dash/
 Disallow: /dash
 Disallow: /portal/
+Disallow: /app/
+Disallow: /_/
 
 Sitemap: https://commissionk.it/sitemap.xml
+
+# ═══════════════════════════════════════════════════════════════
+# AI Crawler Directives — GEO (Generative Engine Optimization)
+# ═══════════════════════════════════════════════════════════════
+#
+# Strategy: Allow AI crawlers to access public content for search
+# and grounding/retrieval (GEO), but Content-Signal above reserves
+# rights against model training. Crawl-delay values are relaxed
+# for AI bots to avoid server load while maintaining discoverability.
+#
+# Structured content inventory for AI agents: https://commissionk.it/llms.txt
+# ═══════════════════════════════════════════════════════════════
+
+# ── OpenAI ────────────────────────────────────────────────────
+User-agent: GPTBot
+User-agent: ChatGPT-User
+User-agent: OAI-SearchBot
+Content-Signal: search=yes,ai-input=yes,ai-train=no
+Allow: /
+Allow: /blog/
+Allow: /docs/
+Allow: /developers
+Disallow: /api/
+Disallow: /dash/
+Disallow: /dash
+Disallow: /portal/
+Disallow: /app/
+Crawl-delay: 5
+
+# ── Anthropic ─────────────────────────────────────────────────
+User-agent: ClaudeBot
+User-agent: anthropic-ai
+Content-Signal: search=yes,ai-input=yes,ai-train=no
+Allow: /
+Allow: /blog/
+Allow: /docs/
+Allow: /developers
+Disallow: /api/
+Disallow: /dash/
+Disallow: /dash
+Disallow: /portal/
+Disallow: /app/
+Crawl-delay: 5
+
+# ── Perplexity ────────────────────────────────────────────────
+User-agent: PerplexityBot
+Content-Signal: search=yes,ai-input=yes,ai-train=no
+Allow: /
+Allow: /blog/
+Allow: /docs/
+Allow: /developers
+Disallow: /api/
+Disallow: /dash/
+Disallow: /dash
+Disallow: /portal/
+Disallow: /app/
+Crawl-delay: 5
+
+# ── Google Extended (Bard / Gemini / AI Overviews) ────────────
+User-agent: Google-Extended
+Content-Signal: search=yes,ai-input=yes,ai-train=no
+Allow: /
+Allow: /blog/
+Allow: /docs/
+Allow: /developers
+Disallow: /api/
+Disallow: /dash/
+Disallow: /dash
+Disallow: /portal/
+Disallow: /app/
+Crawl-delay: 2
+
+# ── Google Search (standard SEO) ──────────────────────────────
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /dash/
+Disallow: /dash
+Disallow: /portal/
+Disallow: /app/
+Crawl-delay: 1
+
+# ── Bing / Microsoft Copilot ──────────────────────────────────
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+Disallow: /dash/
+Disallow: /dash
+Disallow: /portal/
+Disallow: /app/
+Crawl-delay: 1
+
+# ── Common Crawl (training-data backbone for many LLMs) ────
+User-agent: CCBot
+Content-Signal: search=yes,ai-input=no,ai-train=no
+Disallow: /api/
+Disallow: /dash/
+Disallow: /dash
+Disallow: /portal/
+Disallow: /app/
+Allow: /
+Allow: /blog/
+Allow: /docs/
+Allow: /developers
+Crawl-delay: 10
+
+# ── Apple Intelligence ────────────────────────────────────────
+User-agent: Applebot-Extended
+Content-Signal: search=yes,ai-input=yes,ai-train=no
+Allow: /
+Disallow: /api/
+Disallow: /dash/
+Disallow: /dash
+Disallow: /portal/
+Disallow: /app/
+Crawl-delay: 5
+
+# ── Amazon (Alexa / product search) ───────────────────────────
+User-agent: Amazonbot
+Content-Signal: search=yes,ai-input=no,ai-train=no
+Disallow: /api/
+Disallow: /dash/
+Disallow: /dash
+Disallow: /portal/
+Disallow: /app/
+Allow: /
+Disallow: /blog/
+Disallow: /docs/
+Disallow: /developers
+Crawl-delay: 10
+
+# ── ByteDance (TikTok / Douyin / Doubao) ──────────────────────
+User-agent: Bytespider
+Content-Signal: search=yes,ai-input=no,ai-train=no
+Disallow: /
+
+# ── Cohere ────────────────────────────────────────────────────
+User-agent: cohere-ai
+Content-Signal: search=yes,ai-input=yes,ai-train=no
+Allow: /
+Allow: /blog/
+Allow: /docs/
+Allow: /developers
+Disallow: /api/
+Disallow: /dash/
+Disallow: /dash
+Disallow: /portal/
+Disallow: /app/
+Crawl-delay: 5
+
+# ── Meta AI (Llama) ───────────────────────────────────────────
+User-agent: FacebookBot
+User-agent: meta-externalagent
+Content-Signal: search=yes,ai-input=yes,ai-train=no
+Allow: /
+Allow: /blog/
+Allow: /docs/
+Allow: /developers
+Disallow: /api/
+Disallow: /dash/
+Disallow: /dash
+Disallow: /portal/
+Disallow: /app/
+Crawl-delay: 5
+
+# ── AI Search Engines & Aggregators ───────────────────────────
+User-agent: YouBot
+Content-Signal: search=yes,ai-input=yes,ai-train=no
+Allow: /
+Allow: /blog/
+Allow: /docs/
+Allow: /developers
+Disallow: /api/
+Disallow: /dash/
+Disallow: /dash
+Disallow: /portal/
+Disallow: /app/
+Crawl-delay: 5
+
+# ── Cloudflare (internal rendering / always-on) ───────────────
+User-agent: CloudflareBrowserRenderingCrawler
+Disallow: /
+
+# ── llms.txt — AI-friendly structured content inventory ───────
+# https://commissionk.it/llms.txt
+# https://llmstxt.org
