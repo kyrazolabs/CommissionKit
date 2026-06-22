@@ -13,7 +13,8 @@
 - [Home](https://commissionk.it/): Landing page with product overview, features, and pricing.
 - [Commission Calculator](https://commissionk.it/commission-calculator): Interactive tool to estimate commission splits for flat, tiered, and accelerator plans.
 
-## Legal & Trust
+## Company
+- [Contact](https://commissionk.it/contact): Get in touch for sales, support, or general inquiries.
 - [Privacy Policy](https://commissionk.it/privacy): Data handling, GDPR compliance, and user rights.
 - [Terms of Service](https://commissionk.it/terms): Usage terms and conditions.
 - [Security](https://commissionk.it/security): Security practices, encryption, and compliance posture.
@@ -30,11 +31,11 @@
 - [Forgot Password](https://commissionk.it/forgot-password): Password recovery flow.
 - [Reset Password](https://commissionk.it/reset-password): Set a new password after recovery.
 
-## Developer Resources
-- [API Documentation](https://commissionk.it/docs): REST API reference and integration guides.
-- [Developers](https://commissionk.it/developers): SDKs, webhooks, and platform overview.
+## Documentation
+- [Documentation](https://docs.commissionk.it): Product guides, setup instructions, and reference material.
 
 ## AI Agent Directives
-- This site uses `robots.txt` to manage AI crawler access. All public marketing pages and documentation are open to AI crawlers (GPTBot, Claude-Web, PerplexityBot, Google-Extended, CCBot, etc.).
+- This site uses `robots.txt` to manage AI crawler access. All public marketing pages are open to AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, CCBot, etc.).
 - Authenticated dashboard routes (`/dash/*`) and API endpoints (`/api/*`) are disallowed for all crawlers.
 - Structured product data is available via JSON-LD on the home page (`SoftwareApplication` schema).
+- Product documentation is hosted at `https://docs.commissionk.it`.

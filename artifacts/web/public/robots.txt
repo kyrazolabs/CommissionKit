@@ -54,9 +54,6 @@ Allow: /about
 Allow: /careers
 Allow: /changelog
 Allow: /help
-Allow: /docs
-Allow: /docs/
-Allow: /developers
 Allow: /accept-invite
 Allow: /brand/
 Allow: /imgs/
@@ -91,8 +88,7 @@ User-agent: OAI-SearchBot
 Content-Signal: search=yes,ai-input=yes,ai-train=no
 Allow: /
 Allow: /blog/
-Allow: /docs/
-Allow: /developers
+
 Disallow: /api/
 Disallow: /dash/
 Disallow: /dash
@@ -106,8 +102,7 @@ User-agent: anthropic-ai
 Content-Signal: search=yes,ai-input=yes,ai-train=no
 Allow: /
 Allow: /blog/
-Allow: /docs/
-Allow: /developers
+
 Disallow: /api/
 Disallow: /dash/
 Disallow: /dash
@@ -120,8 +115,7 @@ User-agent: PerplexityBot
 Content-Signal: search=yes,ai-input=yes,ai-train=no
 Allow: /
 Allow: /blog/
-Allow: /docs/
-Allow: /developers
+
 Disallow: /api/
 Disallow: /dash/
 Disallow: /dash
@@ -134,8 +128,7 @@ User-agent: Google-Extended
 Content-Signal: search=yes,ai-input=yes,ai-train=no
 Allow: /
 Allow: /blog/
-Allow: /docs/
-Allow: /developers
+
 Disallow: /api/
 Disallow: /dash/
 Disallow: /dash
@@ -173,8 +166,7 @@ Disallow: /portal/
 Disallow: /app/
 Allow: /
 Allow: /blog/
-Allow: /docs/
-Allow: /developers
+
 Crawl-delay: 10
 
 # ── Apple Intelligence ────────────────────────────────────────
@@ -198,8 +190,6 @@ Disallow: /portal/
 Disallow: /app/
 Allow: /
 Disallow: /blog/
-Disallow: /docs/
-Disallow: /developers
 Crawl-delay: 10
 
 # ── ByteDance (TikTok / Douyin / Doubao) ──────────────────────
@@ -212,8 +202,7 @@ User-agent: cohere-ai
 Content-Signal: search=yes,ai-input=yes,ai-train=no
 Allow: /
 Allow: /blog/
-Allow: /docs/
-Allow: /developers
+
 Disallow: /api/
 Disallow: /dash/
 Disallow: /dash
@@ -227,8 +216,7 @@ User-agent: meta-externalagent
 Content-Signal: search=yes,ai-input=yes,ai-train=no
 Allow: /
 Allow: /blog/
-Allow: /docs/
-Allow: /developers
+
 Disallow: /api/
 Disallow: /dash/
 Disallow: /dash
@@ -241,8 +229,7 @@ User-agent: YouBot
 Content-Signal: search=yes,ai-input=yes,ai-train=no
 Allow: /
 Allow: /blog/
-Allow: /docs/
-Allow: /developers
+
 Disallow: /api/
 Disallow: /dash/
 Disallow: /dash

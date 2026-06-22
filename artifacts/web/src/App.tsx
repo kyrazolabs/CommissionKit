@@ -52,6 +52,7 @@ import { CommissionCalculator } from "@/pages/commission-calculator";
 import { PrivacyPage } from "@/pages/legal/privacy";
 import { TermsPage } from "@/pages/legal/terms";
 import { SecurityPage } from "@/pages/legal/security";
+import { ContactPage } from "@/pages/contact";
 
 import { ThemeProvider } from "@/hooks/use-theme";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -369,6 +370,7 @@ function App() {
               <Route path="/privacy" component={PrivacyPage} />
               <Route path="/terms" component={TermsPage} />
               <Route path="/security" component={SecurityPage} />
+              <Route path="/contact" component={ContactPage} />
               <Route path="/forgot-password" component={() => (
                 <AuthProvider>
                   <AuthPage initialMode="forgot" />
