@@ -4,6 +4,7 @@ import { CommissionCalculator } from "./pages/commission-calculator";
 import { PrivacyPage } from "./pages/legal/privacy";
 import { TermsPage } from "./pages/legal/terms";
 import { SecurityPage } from "./pages/legal/security";
+import { ContactPage } from "./pages/contact";
 
 interface PageMeta {
   title: string;
@@ -54,6 +55,12 @@ const routeMeta: Record<string, PageMeta> = {
     robots: "index, follow",
     canonical: `${BASE_URL}/security`,
   },
+  "/contact": {
+    title: "Contact — CommissionKit",
+    description: "Get in touch with the CommissionKit team for sales, support, or general inquiries.",
+    robots: "index, follow",
+    canonical: `${BASE_URL}/contact`,
+  },
 };
 
 export function render(url?: string) {
@@ -68,6 +75,8 @@ export function render(url?: string) {
     element = <TermsPage />;
   } else if (path === "/security") {
     element = <SecurityPage />;
+  } else if (path === "/contact") {
+    element = <ContactPage />;
   } else {
     element = <LandingPage />;
   }

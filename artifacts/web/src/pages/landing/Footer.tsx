@@ -1,4 +1,5 @@
 import { motion, useTransform, MotionValue } from "framer-motion";
+import { Twitter, Linkedin } from "lucide-react";
 import { useIsMobile } from "./hooks";
 
 interface FooterProps {
@@ -31,7 +32,13 @@ export function Footer({ scrollY }: FooterProps) {
             <a href="/privacy" className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors">Privacy</a>
             <a href="/terms" className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors">Terms</a>
             <a href="/security" className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors">Security</a>
-            <a href="mailto:sales@commissionk.it" className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors">Contact</a>
+            <a href="/contact" className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors">Contact</a>
+            <a href="https://x.com/commissionkit" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors" aria-label="X (Twitter)">
+              <Twitter className="size-3.5" />
+            </a>
+            <a href="https://www.linkedin.com/company/commisionkit" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors" aria-label="LinkedIn">
+              <Linkedin className="size-3.5" />
+            </a>
           </nav>
 
           <p className="md:hidden text-[10px] text-muted-foreground/70 font-medium tracking-wide">

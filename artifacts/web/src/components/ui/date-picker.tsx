@@ -32,7 +32,7 @@ export function DatePicker({
         <Button
           variant={"outline"}
           className={cn(
-            "w-full justify-start text-left font-normal h-9 rounded-md border border-input bg-transparent px-3 py-1 shadow-sm hover:bg-transparent",
+            "w-full justify-start text-left font-normal h-9 rounded-md border border-input bg-transparent px-3 py-1 shadow-sm hover:bg-transparent no-click",
             !date && "text-muted-foreground",
             className
           )}
@@ -78,7 +78,7 @@ export function DateRangePicker({
           id="date"
           variant={"outline"}
           className={cn(
-            "w-full justify-start text-left font-normal",
+            "w-full justify-start text-left font-normal no-click",
             !from && "text-muted-foreground",
             className
           )}

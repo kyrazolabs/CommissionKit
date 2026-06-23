@@ -72,7 +72,7 @@ function WorkspaceSwitcher() {
         }
       }}>
         <PopoverTrigger asChild>
-          <button className="w-full flex items-center gap-2 p-2 rounded-[10px] hover:bg-muted text-left transition-colors group outline-none">
+          <button className="w-full flex items-center gap-2 p-2 rounded-[10px] hover:bg-muted text-left transition-colors group outline-none click">
             <div className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground text-[11px] font-semibold shrink-0">
               {initial}
             </div>
@@ -254,9 +254,9 @@ export function Sidebar() {
                     key={item.name}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-2.5 rounded-[10px] px-2.5 py-[7px] text-[13.5px] transition-colors btn-effect",
+                      "flex items-center gap-2.5 rounded-[10px] px-2.5 py-[7px] text-sm transition-colors click",
                       isActive
-                        ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold border border-sidebar-primary/20"
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold border border-transparent"
                         : "text-sidebar-foreground font-normal border border-transparent hover:bg-muted hover:text-foreground"
                     )}
                     onClick={() => Analytics.navClick(group.label, item.href, item.name)}
@@ -285,7 +285,7 @@ export function Sidebar() {
         {user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="w-full flex items-center gap-2 p-2 rounded-[10px] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-left transition-colors outline-none group">
+              <button className="w-full flex items-center gap-2 p-2 rounded-md hover:bg-sidebar-accent text-left transition-colors outline-none group">
                 <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-semibold overflow-hidden">
                   {user.image ? (
                     <img src={user.image} alt="Avatar" className="w-full h-full object-cover" />
