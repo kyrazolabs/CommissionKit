@@ -7,6 +7,7 @@ import { SecurityPage } from "./pages/legal/security";
 import { ContactPage } from "./pages/contact";
 import { FeaturesPage } from "./pages/features";
 import { SolutionsPage } from "./pages/solutions";
+import { PricingPage } from "./pages/pricing";
 
 interface PageMeta {
   title: string;
@@ -75,6 +76,12 @@ const routeMeta: Record<string, PageMeta> = {
     robots: "index, follow",
     canonical: `${BASE_URL}/solutions`,
   },
+  "/pricing": {
+    title: "Pricing — CommissionKit",
+    description: "Simple, predictable pricing for commission management. Plans start at $19.99/month. 14-day free trial, no credit card required.",
+    robots: "index, follow",
+    canonical: `${BASE_URL}/pricing`,
+  },
 };
 
 export function render(url?: string) {
@@ -95,6 +102,8 @@ export function render(url?: string) {
     element = <FeaturesPage />;
   } else if (path === "/solutions") {
     element = <SolutionsPage />;
+  } else if (path === "/pricing") {
+    element = <PricingPage />;
   } else {
     element = <LandingPage />;
   }
