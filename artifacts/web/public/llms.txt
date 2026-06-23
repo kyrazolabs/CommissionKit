@@ -11,6 +11,9 @@
 
 ## Product Pages
 - [Home](https://commissionk.it/): Landing page with product overview, features, and pricing.
+- [Features](https://commissionk.it/features): Full platform capabilities — commission engine, rep management, deal management, payouts, and platform features.
+- [Pricing](https://commissionk.it/pricing): Plan comparison with monthly/yearly billing. Starter, Growth, Professional, and Business tiers.
+- [Solutions](https://commissionk.it/solutions): Use cases by team type — finance, sales ops, startups, enterprises, and agencies.
 - [Commission Calculator](https://commissionk.it/commission-calculator): Interactive tool to estimate commission splits for flat, tiered, and accelerator plans.
 
 ## Company

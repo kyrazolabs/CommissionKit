@@ -79,7 +79,7 @@ async function run() {
   const { render } = await import(serverEntryPath);
 
   // 4. Pre-render indexable routes — always base off the ORIGINAL in-memory template
-  const routes = ["/", "/home", "/commission-calculator", "/privacy", "/terms", "/security"];
+  const routes = ["/", "/home", "/features", "/solutions", "/pricing", "/commission-calculator", "/contact", "/privacy", "/terms", "/security"];
 
   for (const route of routes) {
     const { html, meta } = render(route);
