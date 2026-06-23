@@ -52,6 +52,10 @@ import { CommissionCalculator } from "@/pages/commission-calculator";
 import { PrivacyPage } from "@/pages/legal/privacy";
 import { TermsPage } from "@/pages/legal/terms";
 import { SecurityPage } from "@/pages/legal/security";
+import { ContactPage } from "@/pages/contact";
+import { FeaturesPage } from "@/pages/features";
+import { SolutionsPage } from "@/pages/solutions";
+import { PricingPage } from "@/pages/pricing";
 
 import { ThemeProvider } from "@/hooks/use-theme";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -88,9 +92,9 @@ function Layout({ children }: { children: React.ReactNode }) {
               <main className="mx-auto p-8 lg:px-10 max-w-6xl min-h-full">
                 <motion.div
                   key={location}
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  transition={{ duration: 0.20, ease: [0.34, 1.56, 0.64, 1], }}
                 >
                   {children}
                 </motion.div>
@@ -369,6 +373,10 @@ function App() {
               <Route path="/privacy" component={PrivacyPage} />
               <Route path="/terms" component={TermsPage} />
               <Route path="/security" component={SecurityPage} />
+              <Route path="/contact" component={ContactPage} />
+              <Route path="/features" component={FeaturesPage} />
+              <Route path="/solutions" component={SolutionsPage} />
+              <Route path="/pricing" component={PricingPage} />
               <Route path="/forgot-password" component={() => (
                 <AuthProvider>
                   <AuthPage initialMode="forgot" />
