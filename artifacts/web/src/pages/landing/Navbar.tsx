@@ -33,8 +33,8 @@ export function Navbar({ containerRef }: { containerRef?: React.RefObject<HTMLDi
             </a>
 
             <nav className="hidden md:flex gap-6 items-center">
-              <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Features</a>
-              <a href="#solutions" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Solutions</a>
+              <a href="/features" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Features</a>
+              <a href="/solutions" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Solutions</a>
               <a href="#pricing" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Pricing</a>
               <a href="/commission-calculator" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Calculator</a>
               <a href="https://docs.commissionk.it" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Documentations</a>
