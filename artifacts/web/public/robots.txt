@@ -38,7 +38,7 @@ Allow: /home
 Allow: /solutions
 Allow: /features
 Allow: /pricing
-Allow: /commission-calculator
+Allow: /calculator
 Allow: /blog/
 Allow: /blog
 Allow: /login

@@ -34,11 +34,17 @@ const routeMeta: Record<string, PageMeta> = {
     robots: "index, follow",
     canonical: `${BASE_URL}/`,
   },
+  "/calculator": {
+    title: "Commission Calculator — CommissionKit",
+    description: "Calculate sales commissions instantly. Try flat, tiered, and accelerator commission structures for free. No login required.",
+    robots: "index, follow",
+    canonical: `${BASE_URL}/calculator`,
+  },
   "/commission-calculator": {
     title: "Commission Calculator — CommissionKit",
     description: "Calculate sales commissions instantly. Try flat, tiered, and accelerator commission structures for free. No login required.",
     robots: "index, follow",
-    canonical: `${BASE_URL}/commission-calculator`,
+    canonical: `${BASE_URL}/calculator`,
   },
   "/privacy": {
     title: "Privacy Policy — CommissionKit",
@@ -88,7 +94,7 @@ export function render(url?: string) {
   const path = url ?? "/";
 
   let element: React.ReactElement;
-  if (path.startsWith("/commission-calculator")) {
+  if (path === "/calculator" || path.startsWith("/commission-calculator")) {
     element = <CommissionCalculator />;
   } else if (path === "/privacy") {
     element = <PrivacyPage />;
