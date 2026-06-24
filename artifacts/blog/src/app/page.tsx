@@ -69,9 +69,7 @@ export default async function BlogIndex({
           <Tag className="size-3.5 text-primary" />
           Insights
         </div>
-        <h1 className="text-4xl font-bold text-foreground mb-4 tracking-tight">
-          CommissionKit Blog
-        </h1>
+        <h1 className="text-4xl font-bold text-foreground mb-4 tracking-tight">Blog</h1>
         <p className="text-lg text-muted-foreground max-w-2xl">
           Expert insights on sales commission management, plan design, rep motivation, and revenue operations.
         </p>

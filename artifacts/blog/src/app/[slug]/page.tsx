@@ -24,7 +24,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates: { canonical: `https://commissionk.it/blog/${post.slug}` },
     openGraph: {
       type: "article",
-      title: post.title,
+      siteName: "CommissionKit",
+      title: `${post.title} — Blog`,
       description: post.description || "",
       url: `https://commissionk.it/blog/${post.slug}`,
       publishedTime: post.date,
@@ -32,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: post.title,
+      title: `${post.title} — Blog`,
       description: post.description || "",
       images: ogImage ? [ogImage] : undefined,
     },

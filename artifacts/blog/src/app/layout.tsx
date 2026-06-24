@@ -6,22 +6,26 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "CommissionKit Blog — Sales Commission Insights",
-    template: "%s — CommissionKit Blog",
+    default: "Blog",
+    template: "%s — Blog",
   },
   description:
-    "Expert insights on sales commission management, plan design, rep motivation, and revenue operations. Articles on flat-rate, tiered, and accelerator commission structures.",
+    "Expert insights on sales commission management, plan design, rep motivation, and revenue operations.",
   metadataBase: new URL("https://commissionk.it"),
   alternates: {
     canonical: "/blog",
     types: { "application/rss+xml": [{ url: "/blog/rss.xml", title: "CommissionKit Blog" }] },
   },
+  icons: {
+    icon: "https://commissionk.it/brand/favicon.svg",
+    apple: "https://commissionk.it/brand/logo-mark.svg",
+  },
   openGraph: {
     type: "website",
-    siteName: "CommissionKit Blog",
+    siteName: "CommissionKit",
     locale: "en",
     url: "https://commissionk.it/blog",
-    title: "CommissionKit Blog — Sales Commission Insights",
+    title: "Blog — CommissionKit",
     description:
       "Expert insights on sales commission management, plan design, rep motivation, and revenue operations.",
     images: [
@@ -30,7 +34,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "CommissionKit Blog — Sales Commission Insights",
+    title: "Blog — CommissionKit",
     description:
       "Expert insights on sales commission management, plan design, rep motivation, and revenue operations.",
     images: ["https://commissionk.it/brand/og-image.png"],
@@ -39,7 +43,7 @@ export const metadata: Metadata = {
   other: {
     "llms:full": "https://commissionk.it/blog/llms.txt",
     "llms:description":
-      "CommissionKit Blog — expert articles on sales commission management, plan design, rep motivation, and revenue operations. Open to AI crawlers for search and grounding.",
+      "CommissionKit blog — articles on sales commission management, plan design, and revenue operations.",
   },
 };
 
