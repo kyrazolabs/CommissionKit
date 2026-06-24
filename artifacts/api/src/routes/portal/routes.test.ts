@@ -30,6 +30,15 @@ mock.module("@workspace/queue", () => ({
   logsFlushQueue: { add: () => Promise.resolve() },
   PRIORITY_QUEUE_MAP: { high: { add: () => Promise.resolve() }, medium: { add: () => Promise.resolve() }, low: { add: () => Promise.resolve() } },
 }));
+mock.module("../../lib/auth", () => ({
+  auth: {
+    handler: (req: any, res: any, next: any) => next(),
+    api: { getSession: mock(() => Promise.resolve(null)) },
+  },
+  findUserById: mock(() => Promise.resolve(null)),
+}));
+
+
 
 mock.module("../../lib/bull-board", () => ({
   secureBullBoard: (req: any, res: any, next: any) => next(),
