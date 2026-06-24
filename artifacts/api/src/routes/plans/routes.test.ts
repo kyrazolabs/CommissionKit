@@ -52,6 +52,22 @@ mock.module("../../lib/rbac", () => ({
   getUsersWithPermission: mock(() => Promise.resolve([])),
 }));
 
+mock.module("../../lib/auth", () => {
+  // Mock auth to prevent betterAuth init failure in CI
+  const authMock = {
+    handler: (req: any, res: any, next: any) => next(),
+    api: { getSession: mock(() => Promise.resolve(null)) },
+  };
+  return { auth: authMock, findUserById: mock(() => Promise.resolve(null)) };
+}; const _authInit = ({
+  auth: {
+    api: {
+      getSession: mock(() => Promise.resolve(null)),
+    },
+  },
+  findUserById: mock(() => Promise.resolve(null)),
+}));
+
 let app: any;
 let Plan: any;
 let PlanTier: any;
