@@ -1,7 +1,7 @@
 import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose from "mongoose";
 
-let mongoServer: MongoMemoryServer | null = null;
+let mongoServer: MongoMemoryServer | null = (globalThis as any).__MONGO_SERVER__ || null;
 let initPromise: Promise<MongoMemoryServer> | null = null;
 let refCount = 0;
 
@@ -40,11 +40,12 @@ export async function teardownTestDB(): Promise<void> {
   if (refCount > 0) return;
 
   await mongoose.disconnect();
-  if (mongoServer) {
+  // Don't stop the preload-created server — process exit handles cleanup
+  if (mongoServer && !(globalThis as any).__MONGO_SERVER__) {
     await mongoServer.stop();
     mongoServer = null;
-    initPromise = null;
   }
+  initPromise = null;
 }
 
 export async function clearCollections(): Promise<void> {

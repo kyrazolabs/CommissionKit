@@ -8,7 +8,7 @@
     "build": "bun build ./src/index.ts --outdir ./dist --target bun --sourcemap=external && sentry-cli sourcemaps inject ./dist && (sentry-cli sourcemaps upload --org kyrazo --project ckserver ./dist || echo 'Sentry sourcemap upload skipped (auth token not found)')",
     "start": "NODE_ENV=production bun ./dist/index.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "bun test"
+    "test": "bun test --preload ./test/preload-db.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1048.0",
