@@ -33,7 +33,7 @@ COPY artifacts/blog/public artifacts/blog/public/
 COPY artifacts/blog/articles artifacts/blog/articles/
 
 # Install dependencies and build
-RUN bun install --frozen-lockfile
+RUN bun install
 WORKDIR /app/artifacts/blog
 RUN bun run build
 
