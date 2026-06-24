@@ -71,6 +71,37 @@ services:
       - coolify.service.subType=application
       - coolify.service.subName=web
 
+  blog:
+    build:
+      context: .
+      dockerfile: Dockerfile.blog
+    container_name: blog
+    expose:
+      - "3000"
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000/blog"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - commissionkit-network
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0
+      - coolify.serviceId=1
+      - coolify.type=service
+      - coolify.name=blog
+      - coolify.resourceName=blog
+      - coolify.projectName=the-forge
+      - coolify.serviceName=blog
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - coolify.service.subId=3
+      - coolify.service.subType=application
+      - coolify.service.subName=blog
+
 networks:
   commissionkit-network:
     name: commissionkit-network

@@ -1,4 +1,4 @@
-import { describe, test, expect, mock, beforeEach } from "bun:test";
+import { describe, test, expect, mock, beforeEach, afterEach } from "bun:test";
 import { render, waitFor, cleanup, act } from "@testing-library/react";
 import React from "react";
 
@@ -54,7 +54,13 @@ describe("useWorkspace context", () => {
 
   test("returns default context (no session)", async () => {
     const { useWorkspace } = await import("@/hooks/use-workspace");
-    expect(useWorkspace()).toEqual({
+    let captured: any = null;
+    function TestComp() {
+      captured = useWorkspace();
+      return null;
+    }
+    render(React.createElement(TestComp));
+    expect(captured).toEqual({
       workspaces: [],
       activeWorkspace: null,
       loading: true,

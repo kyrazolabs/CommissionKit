@@ -1,0 +1,37 @@
+# CommissionKit Blog — robots.txt
+# https://commissionk.it/blog
+# 
+# AI crawler directives mirror the main site policy:
+# - search=yes: search engines may index
+# - ai-input=yes: AI agents may use content for grounding/retrieval
+# - ai-train=no: AI model training expressly reserved (EU Directive 2019/790)
+
+User-agent: *
+Content-Signal: search=yes,ai-input=yes,ai-train=no
+Allow: /blog/
+Disallow: /blog/_next/
+Disallow: /blog/api/
+
+# AI Crawlers — per-bot GEO policies
+User-agent: GPTBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: PerplexityBot
+User-agent: Google-Extended
+User-agent: meta-externalagent
+User-agent: cohere-ai
+Content-Signal: search=yes,ai-input=yes,ai-train=no
+Allow: /blog/
+Disallow: /blog/_next/
+Disallow: /blog/api/
+Crawl-delay: 5
+
+# Traditional search crawlers
+User-agent: Googlebot
+User-agent: Bingbot
+Allow: /blog/
+Disallow: /blog/_next/
+Disallow: /blog/api/
+Crawl-delay: 1
+
+Sitemap: https://commissionk.it/blog/sitemap.xml

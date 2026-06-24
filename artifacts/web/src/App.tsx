@@ -369,6 +369,7 @@ function App() {
                   <PublicOrRedirectLanding />
                 </AuthProvider>
               )} />
+              <Route path="/calculator" component={CommissionCalculator} />
               <Route path="/commission-calculator" component={CommissionCalculator} />
               <Route path="/privacy" component={PrivacyPage} />
               <Route path="/terms" component={TermsPage} />

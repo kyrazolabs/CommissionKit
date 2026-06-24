@@ -9,7 +9,7 @@ const urls = [
   { loc: "https://commissionk.it/features", changefreq: "monthly", priority: "0.9" },
   { loc: "https://commissionk.it/solutions", changefreq: "monthly", priority: "0.8" },
   { loc: "https://commissionk.it/pricing", changefreq: "weekly", priority: "0.9" },
-  { loc: "https://commissionk.it/commission-calculator", changefreq: "monthly", priority: "0.9" },
+  { loc: "https://commissionk.it/calculator", changefreq: "monthly", priority: "0.9" },
   { loc: "https://commissionk.it/contact", changefreq: "monthly", priority: "0.7" },
   { loc: "https://commissionk.it/privacy", changefreq: "monthly", priority: "0.5" },
   { loc: "https://commissionk.it/terms", changefreq: "monthly", priority: "0.5" },

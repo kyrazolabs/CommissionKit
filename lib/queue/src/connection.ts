@@ -32,6 +32,14 @@ export function getRedisClient(): Redis {
   const url = process.env.REDIS_URL;
   if (!url) throw new Error("REDIS_URL environment variable is required");
 
+  // Use in-memory mock Redis for tests — no real Redis needed
+  if (url.startsWith("redis-mock://")) {
+    const RedisMock = require("ioredis-mock");
+    _client = new RedisMock() as Redis;
+    console.info("[Queue:Redis] Using mock (in-memory)");
+    return _client;
+  }
+
   // Default to true in production ONLY if REDIS_TLS is not explicitly set to "false"
   const useTls = process.env.REDIS_TLS === "false" 
     ? false 
