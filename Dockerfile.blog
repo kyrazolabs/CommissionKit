@@ -3,12 +3,26 @@ FROM oven/bun:1.3.13-alpine AS builder
 
 WORKDIR /app
 
-# Copy workspace config
+# Copy dependency files first to cache the bun install layer
 COPY package.json bun.lock ./
 COPY tsconfig.base.json ./
+COPY scripts/package.json ./scripts/
+COPY artifacts/api/package.json ./artifacts/api/
+COPY artifacts/web/package.json ./artifacts/web/
+COPY artifacts/blog/package.json ./artifacts/blog/
+COPY lib/db/package.json ./lib/db/
+COPY lib/queue/package.json ./lib/queue/
+COPY lib/email-templates/package.json ./lib/email-templates/
+COPY lib/api-zod/package.json ./lib/api-zod/
+COPY lib/api-client-react/package.json ./lib/api-client-react/
+COPY lib/api-spec/package.json ./lib/api-spec/
+COPY plugins/core/package.json ./plugins/core/
+COPY plugins/custom/package.json ./plugins/custom/
+COPY plugins/odoo/package.json ./plugins/odoo/
+COPY plugins/hubspot/package.json ./plugins/hubspot/
+COPY plugins/salesforce/package.json ./plugins/salesforce/
 
-# Copy blog workspace
-COPY artifacts/blog/package.json artifacts/blog/
+# Copy blog workspace configs
 COPY artifacts/blog/tsconfig.json artifacts/blog/
 COPY artifacts/blog/next.config.ts artifacts/blog/
 COPY artifacts/blog/postcss.config.mjs artifacts/blog/
