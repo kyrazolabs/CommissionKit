@@ -30,6 +30,15 @@ mock.module("@workspace/queue", () => ({
   logsFlushQueue: { add: () => Promise.resolve() },
   PRIORITY_QUEUE_MAP: { high: { add: () => Promise.resolve() }, medium: { add: () => Promise.resolve() }, low: { add: () => Promise.resolve() } },
 }));
+mock.module("../../lib/auth", () => ({
+  auth: {
+    handler: (req: any, res: any, next: any) => next(),
+    api: { getSession: mock(() => Promise.resolve(null)) },
+  },
+  findUserById: mock(() => Promise.resolve(null)),
+}));
+
+
 
 mock.module("../../lib/bull-board", () => ({
   secureBullBoard: (req: any, res: any, next: any) => next(),
@@ -51,22 +60,6 @@ mock.module("../../lib/rbac", () => ({
   invalidateUserPermissions: mock(() => Promise.resolve()),
   invalidateWorkspaceRoles: mock(() => Promise.resolve()),
   getUsersWithPermission: mock(() => Promise.resolve([])),
-}));
-
-mock.module("../../lib/auth", () => {
-  // Mock auth to prevent betterAuth init failure in CI
-  const authMock = {
-    handler: (req: any, res: any, next: any) => next(),
-    api: { getSession: mock(() => Promise.resolve(null)) },
-  };
-  return { auth: authMock, findUserById: mock(() => Promise.resolve(null)) };
-}; const _authInit = ({
-  auth: {
-    api: {
-      getSession: mock(() => Promise.resolve(null)),
-    },
-  },
-  findUserById: mock(() => Promise.resolve(null)),
 }));
 
 mock.module("../../lib/notify", () => ({
