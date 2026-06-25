@@ -43,7 +43,7 @@ export async function GET(
 
   const buffer = fs.readFileSync(cover.filePath);
 
-  return new Response(buffer, {
+  return new NextResponse(buffer, {
     headers: {
       "Content-Type": MIME_MAP[cover.ext] || "image/png",
       "Cache-Control": "public, max-age=31536000, immutable",
