@@ -121,15 +121,11 @@ export function Dashboard() {
                   <tr key={rep.repId} className="border-t border-muted/60 hover:bg-muted/30 transition-colors">
                     <td className="p-4">
                       <div className="flex items-center gap-2.5">
-                        <div
-                          className="flex size-7 shrink-0 items-center justify-center rounded-full text-[10.5px] font-semibold"
-                          style={{
-                            background: i === 0 ? "hsl(var(--primary))" : "hsl(var(--muted))",
-                            color: i === 0 ? "#fff" : "hsl(var(--muted-foreground))",
-                          }}
-                        >
-                          {rep.repName.split(" ").map((n: string) => n[0]).join("")}
-                        </div>
+                        <img
+                          src={`https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(rep.repName)}&size=64&radius=50`}
+                          alt={rep.repName}
+                          className={i === 0 ? "size-7 shrink-0 rounded-full ring-2 ring-primary/30" : "size-7 shrink-0 rounded-full"}
+                        />
                         <div>
                           <Link
                             href={`/dash/reps/${rep.repId}`}

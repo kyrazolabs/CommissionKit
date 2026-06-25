@@ -164,9 +164,11 @@ export function RepsPage() {
                   <TableRow key={rep.id}>
                     <TableCell>
                       <div className="flex items-center gap-2.5">
-                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary text-primary text-[11px] font-semibold">
-                          {rep.name.split(" ").map((n: string) => n[0]).join("")}
-                        </div>
+                        <img
+                          src={`https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(rep.name)}&size=64&radius=50`}
+                          alt={rep.name}
+                          className="size-8 shrink-0 rounded-full"
+                        />
                         <div>
                           <p className="font-medium text-sm">{rep.name}</p>
                           <p className="text-xs text-muted-foreground">{rep.email}</p>
