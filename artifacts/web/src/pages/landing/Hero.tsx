@@ -7,12 +7,17 @@ export function Hero() {
 
   return (
     <section className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden" id="hero">
-      {/* Decorative accent image */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none z-0">
+      {/* Decorative accent images */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] pointer-events-none z-0 flex items-center justify-center gap-0">
         <img
           src="/decorative/style.webp"
           alt=""
-          className="w-full h-full object-contain opacity-[0.12] dark:opacity-[0.06]"
+          className="w-1/2 h-full object-contain opacity-[0.12] dark:opacity-[0.06] rotate-90"
+        />
+        <img
+          src="/decorative/style.webp"
+          alt=""
+          className="w-1/2 h-full object-contain opacity-[0.12] dark:opacity-[0.06]"
         />
       </div>
 
