@@ -72,7 +72,7 @@ function WorkspaceSwitcher() {
       }}>
         <PopoverTrigger asChild>
           <button className="w-full flex items-center gap-2 p-2 rounded-[10px] hover:bg-muted text-left transition-colors group outline-none click">
-            <WorkspaceAvatar name={activeWorkspace.name} size={24} className="size-6 shrink-0 rounded-md" />
+            <WorkspaceAvatar name={activeWorkspace.name} size={28} className="size-7 shrink-0 rounded-md" />
             <div className="flex-1 min-w-0">
               <p className="text-[13px] font-semibold text-foreground truncate leading-none">{activeWorkspace.name}</p>
               <div className="flex items-center gap-1 mt-0.5">
