@@ -1,14 +1,6 @@
 {
   "name": "workspace",
   "version": "0.0.0",
-  "license": "MIT",
-  "scripts": {
-    "build": "bun run typecheck && bun run --workspaces --if-present build",
-    "test": "bun test --preload ./test/dom-setup.ts",
-    "typecheck:libs": "tsc --build",
-    "typecheck": "bun run typecheck:libs && bun run --workspaces --if-present --filter \"./artifacts/**\" --filter \"./scripts\" typecheck"
-  },
-  "private": true,
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -22,41 +14,7 @@
     "supertest": "^7.2.2",
     "typescript": "~5.9.2"
   },
-  "workspaces": {
-    "packages": [
-      "artifacts/*",
-      "lib/*",
-      "lib/integrations/*",
-      "plugins/*",
-      "scripts"
-    ],
-    "catalog": {
-      "@replit/vite-plugin-cartographer": "^0.5.1",
-      "@replit/vite-plugin-dev-banner": "^0.1.1",
-      "@replit/vite-plugin-runtime-error-modal": "^0.0.6",
-      "@tailwindcss/vite": "^4.1.14",
-      "@tanstack/react-query": "^5.90.21",
-      "@types/node": "^25.3.3",
-      "@types/react": "^19.2.0",
-      "@types/react-dom": "^19.2.0",
-      "@vitejs/plugin-react": "^5.0.4",
-      "class-variance-authority": "^0.7.1",
-      "clsx": "^2.1.1",
-      "drizzle-orm": "^0.45.2",
-      "framer-motion": "^12.23.24",
-      "lucide-react": "^0.545.0",
-      "react": "19.1.0",
-      "react-dom": "19.1.0",
-      "tailwind-merge": "^3.3.1",
-      "tailwindcss": "^4.1.14",
-      "tsx": "^4.21.0",
-      "vite": "^7.3.2",
-      "wouter": "^3.3.5",
-      "zod": "^4.4.3",
-      "mongoose": "8.12.1",
-      "mongodb": "^6.13.0"
-    }
-  },
+  "license": "MIT",
   "overrides": {
     "esbuild>@esbuild/darwin-arm64": "-",
     "esbuild>@esbuild/darwin-x64": "-",
@@ -142,5 +100,47 @@
     "mongodb": "6.13.0",
     "bson": "6.10.1",
     "mongoose": "8.12.1"
+  },
+  "private": true,
+  "scripts": {
+    "build": "bun run typecheck && bun run --workspaces --if-present build",
+    "test": "bun test --preload ./test/dom-setup.ts",
+    "typecheck:libs": "tsc --build",
+    "typecheck": "bun run typecheck:libs && bun run --workspaces --if-present --filter \"./artifacts/**\" --filter \"./scripts\" typecheck"
+  },
+  "workspaces": {
+    "packages": [
+      "artifacts/*",
+      "lib/*",
+      "lib/integrations/*",
+      "plugins/*",
+      "scripts"
+    ],
+    "catalog": {
+      "@replit/vite-plugin-cartographer": "^0.5.1",
+      "@replit/vite-plugin-dev-banner": "^0.1.1",
+      "@replit/vite-plugin-runtime-error-modal": "^0.0.6",
+      "@tailwindcss/vite": "^4.1.14",
+      "@tanstack/react-query": "^5.90.21",
+      "@types/node": "^25.3.3",
+      "@types/react": "^19.2.0",
+      "@types/react-dom": "^19.2.0",
+      "@vitejs/plugin-react": "^5.0.4",
+      "class-variance-authority": "^0.7.1",
+      "clsx": "^2.1.1",
+      "drizzle-orm": "^0.45.2",
+      "framer-motion": "^12.23.24",
+      "lucide-react": "^0.545.0",
+      "react": "19.1.0",
+      "react-dom": "19.1.0",
+      "tailwind-merge": "^3.3.1",
+      "tailwindcss": "^4.1.14",
+      "tsx": "^4.21.0",
+      "vite": "^7.3.2",
+      "wouter": "^3.3.5",
+      "zod": "^4.4.3",
+      "mongoose": "8.12.1",
+      "mongodb": "^6.13.0"
+    }
   }
 }
