@@ -7,6 +7,7 @@ const withMDX = createMDX({
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  assetPrefix: "/blog",
   pageExtensions: ["ts", "tsx", "md", "mdx"],
   transpilePackages: [],
   images: {
