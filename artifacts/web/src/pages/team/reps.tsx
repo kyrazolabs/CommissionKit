@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { RepAvatar } from "@/components/rep-avatar";
 import { HelpTooltip } from "@/components/help-tooltip";
 import { Plus, Search, MoreHorizontal, Edit, Trash, ChevronRight, Users, Mail } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -164,11 +165,7 @@ export function RepsPage() {
                   <TableRow key={rep.id}>
                     <TableCell>
                       <div className="flex items-center gap-2.5">
-                        <img
-                          src={`https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(rep.name)}&size=64&radius=50`}
-                          alt={rep.name}
-                          className="size-8 shrink-0 rounded-full"
-                        />
+                        <RepAvatar name={rep.name} size={32} className="size-8 shrink-0 rounded-full" />
                         <div>
                           <p className="font-medium text-sm">{rep.name}</p>
                           <p className="text-xs text-muted-foreground">{rep.email}</p>

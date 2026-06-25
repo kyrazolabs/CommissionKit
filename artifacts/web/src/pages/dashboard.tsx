@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { HelpTooltip } from "@/components/help-tooltip";
+import { RepAvatar } from "@/components/rep-avatar";
 import { RunCalculationDialog } from "@/components/run-calculation-dialog";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useTranslation } from "react-i18next";
@@ -121,11 +122,7 @@ export function Dashboard() {
                   <tr key={rep.repId} className="border-t border-muted/60 hover:bg-muted/30 transition-colors">
                     <td className="p-4">
                       <div className="flex items-center gap-2.5">
-                        <img
-                          src={`https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(rep.repName)}&size=64&radius=50`}
-                          alt={rep.repName}
-                          className={i === 0 ? "size-7 shrink-0 rounded-full ring-2 ring-primary/30" : "size-7 shrink-0 rounded-full"}
-                        />
+                        <RepAvatar name={rep.repName} size={28} className={i === 0 ? "size-7 shrink-0 rounded-full ring-2 ring-primary/30" : "size-7 shrink-0 rounded-full"} />
                         <div>
                           <Link
                             href={`/dash/reps/${rep.repId}`}

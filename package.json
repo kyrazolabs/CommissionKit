@@ -142,5 +142,9 @@
     "mongodb": "6.13.0",
     "bson": "6.10.1",
     "mongoose": "8.12.1"
+  },
+  "dependencies": {
+    "@dicebear/collection": "^9.4.2",
+    "@dicebear/core": "^10.3.0"
   }
 }
