@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { HelpTooltip } from "@/components/help-tooltip";
 import { Plus, Search, MoreHorizontal, Edit, Trash, ChevronRight, Users, Mail } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
@@ -137,9 +138,24 @@ export function RepsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Commission Plan</TableHead>
-                  <TableHead>Joined</TableHead>
+                  <TableHead>
+                    <div className="flex items-center gap-1.5">
+                      Role
+                      <HelpTooltip content="The rep's permission level within this workspace." />
+                    </div>
+                  </TableHead>
+                  <TableHead>
+                    <div className="flex items-center gap-1.5">
+                      Commission Plan
+                      <HelpTooltip content="The commission plan assigned to this rep. Determines how their deals are calculated." />
+                    </div>
+                  </TableHead>
+                  <TableHead>
+                    <div className="flex items-center gap-1.5">
+                      Joined
+                      <HelpTooltip content="When this rep was added to the workspace." />
+                    </div>
+                  </TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
