@@ -79,7 +79,7 @@ export function FeatureDeepDives() {
             <Database className="size-4 text-primary" />
             Data Management
           </div>
-          <h2 className="text-3xl font-bold text-foreground tracking-tight">Enterprise Deal Management</h2>
+          <h2 className="text-3xl font-bold text-foreground tracking-tight">Team Deal Management</h2>
           <p className="text-base text-muted-foreground">
             A centralized hub for tracking and assignments. Ingest data seamlessly with our robust import tools, supporting complex datasets and multiple formats to get your data ready for processing fast.
           </p>

@@ -13,12 +13,12 @@ export function FinalCTA() {
         </h2>
 
         <p className="text-lg text-muted-foreground mb-10 leading-relaxed">
-          Join enterprise finance teams who have eliminated commission errors and reclaimed their end-of-month sanity.
+          Join finance teams who have replaced 8-day commission cycles with 4-hour automated runs — and never looked back.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button asChild className="font-bold shadow-lg" size={'md'}>
-            <a href="/register" onClick={() => Analytics.landingCTAClick("final_cta_start")}>Get Start Now</a>
+            <a href="/register" onClick={() => Analytics.landingCTAClick("final_cta_start")}>Start Free Trial</a>
           </Button>
           <Button variant="outline" asChild className="font-bold bg-background/60 backdrop-blur-sm shadow-sm" size={'md'}>
             <a href="mailto:sales@commissionk.it" onClick={() => Analytics.landingCTAClick("final_cta_sales")}>Contact Sales</a>

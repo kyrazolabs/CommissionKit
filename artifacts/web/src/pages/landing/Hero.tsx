@@ -91,39 +91,34 @@ export function Hero({ containerRef }: { containerRef: React.RefObject<HTMLDivEl
             style={fadeIn(inView, 100)}
             className="text-4xl md:text-5xl lg:text-[64px] font-bold tracking-tight text-foreground mb-6 leading-[1.1] mt-8"
           >
-            Your reps close deals. <br />
-            <span className="text-primary">CKit handles the rest.</span>
+            From 8 days to 4 hours. <br />
+            <span className="text-primary">Commission runs that don't destroy your month-end.</span>
           </h1>
 
           <p
             style={fadeIn(inView, 200)}
             className="text-lg md:text-xl text-muted-foreground mb-10 leading-relaxed max-w-2xl mx-auto"
           >
-            Automate commissions, track payouts, and give every rep real-time visibility into their earnings — so your team stops disputing and starts performing.
+            Stop tracking commissions in spreadsheets. One-click runs, real-time rep portals, and zero disputes — so your team stops questioning the numbers and starts trusting them.
           </p>
 
           <div style={fadeIn(inView, 300)} className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button asChild className="w-full sm:w-auto font-bold shadow-md rounded-lg px-8" size={'md'}>
-              <a href="/register">Get Started</a>
+              <a href="/register">Start Free Trial</a>
             </Button>
             <Button variant="outline" asChild className="w-full sm:w-auto font-bold bg-background/50 backdrop-blur-sm rounded-lg px-8" size={'md'}>
               <a href="#features">Explore Features</a>
             </Button>
           </div>
 
+          <p style={fadeIn(inView, 350)} className="mt-4 text-sm text-muted-foreground/70">
+            No credit card required · 14-day free trial
+          </p>
+
           <div style={fadeIn(inView, 400)} className="mt-8 flex justify-center">
-            <a
-              href="https://www.producthunt.com/products/commissionkit?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-commissionkit"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <img
-                alt="CommissionKit - Your reps close deals. We handles the rest. | Product Hunt"
-                width="250"
-                height="54"
-                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1172787&amp;theme=dark&amp;t=1781562800265"
-              />
-            </a>
+            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-xl bg-white/60 backdrop-blur-sm border border-border/60 text-xs font-medium text-muted-foreground">
+              Join teams replacing 8-day spreadsheet commission cycles with 4-hour automated runs
+            </div>
           </div>
         </div>
 
