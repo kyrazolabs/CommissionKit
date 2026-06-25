@@ -1,8 +1,7 @@
 import { useMemo } from "react";
-import { Avatar } from "@dicebear/core";
-import { notionists } from "@dicebear/collection";
 
-const avatarStyle = notionists;
+const STYLE = "notionists";
+const COLORS = "f0fdfa,f0f9ff,fefce8,fdf2f8,f0fdf4";
 
 interface RepAvatarProps {
   name: string;
@@ -11,19 +10,19 @@ interface RepAvatarProps {
 }
 
 export function RepAvatar({ name, size = 64, className }: RepAvatarProps) {
-  const svg = useMemo(() => {
-    const avatar = new Avatar(avatarStyle, {
+  const src = useMemo(() => {
+    const params = new URLSearchParams({
       seed: name,
-      size,
-      radius: 50,
-      backgroundColor: ["f0fdfa", "f0f9ff", "fefce8", "fdf2f8", "f0fdf4"],
+      size: String(size),
+      radius: "50",
+      backgroundColor: COLORS,
     });
-    return avatar.toDataUri();
+    return `https://api.dicebear.com/9.x/${STYLE}/svg?${params}`;
   }, [name, size]);
 
   return (
     <img
-      src={svg}
+      src={src}
       alt={name}
       width={size}
       height={size}
