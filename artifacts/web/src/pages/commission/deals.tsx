@@ -29,7 +29,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import Papa from "papaparse";
@@ -254,17 +254,14 @@ export function DealsPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             {hasPermission("deals", "edit") && deal.paymentStatus !== "paid" && (
-                              <DropdownMenuItem asChild>
-                                <UpdateDealDialog deal={deal} queryParams={queryParams} reps={reps} workspaceCurrency={currency} />
-                              </DropdownMenuItem>
+                              <UpdateDealDialog deal={deal} queryParams={queryParams} reps={reps} workspaceCurrency={currency} />
                             )}
                             {hasPermission("deals", "delete") && (
                               <>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem asChild className="text-destructive">
-                                  <DealDeleteAction deal={deal} queryParams={queryParams} currency={currency} />
-                                </DropdownMenuItem>
+                                <DealDeleteAction deal={deal} queryParams={queryParams} currency={currency} />
                               </>
                             )}
                           </DropdownMenuContent>
@@ -391,19 +388,11 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
 
   if (!isEditable) return null;
 
-  return (<>
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="sm"
-          className="w-full justify-start text-muted-foreground hover:text-primary font-normal"
-          disabled={!isEditable}
-        >
-          <Pencil className="size-4" />
-          Edit
-        </Button>
-      </DialogTrigger>
+   return (<>
+     <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setOpen(true); }}>
+       <Pencil className="mr-2 size-4" />Edit
+     </DropdownMenuItem>
+     <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[550px]">
           <DialogHeader>
             <DialogTitle>{isPaymentOnly ? t("deals.updatePaymentStatus") : "Edit Deal"}</DialogTitle>
@@ -592,14 +581,11 @@ function DealDeleteAction({ deal, queryParams, currency }: { deal: any, queryPar
     setOpen(false);
   };
 
-  return (
+  return (<>
+    <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setOpen(true); }} className="text-destructive">
+      <Trash className="mr-2 size-4" />Delete
+    </DropdownMenuItem>
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground hover:text-destructive font-normal">
-          <Trash className="size-4" />
-          Delete
-        </Button>
-      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Delete Deal</DialogTitle>
@@ -615,7 +601,7 @@ function DealDeleteAction({ deal, queryParams, currency }: { deal: any, queryPar
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  </>);
 }
 
 function ImportDealsDialog({ period, workspaceCurrency }: { period: string, workspaceCurrency: string }) {
