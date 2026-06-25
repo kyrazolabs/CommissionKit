@@ -77,7 +77,7 @@ export default async function BlogIndex({
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {posts.map((post) => (
-          <Link key={post.slug} href={`/${post.slug}`} className="group">
+          <Link key={post.slug} href={`/blog/${post.slug}`} className="group">
             <Card className="h-full overflow-hidden border-border hover:border-primary/20 transition-colors bg-card">
               {(post.image || post.coverImage) && (
                 <div className="aspect-video w-full overflow-hidden bg-muted">
@@ -122,7 +122,7 @@ export default async function BlogIndex({
         <div className="flex items-center justify-center gap-4 mt-16">
           {currentPage > 1 && (
             <Button variant="outline" size="sm" asChild>
-              <Link href={`/?page=${currentPage - 1}`}>
+              <Link href={`/blog?page=${currentPage - 1}`}>
                 <ChevronLeft className="size-4 mr-1" />
                 Previous
               </Link>
@@ -133,7 +133,7 @@ export default async function BlogIndex({
           </span>
           {currentPage < totalPages && (
             <Button variant="outline" size="sm" asChild>
-              <Link href={`/?page=${currentPage + 1}`}>
+              <Link href={`/blog?page=${currentPage + 1}`}>
                 Next
                 <ChevronRight className="size-4 ml-1" />
               </Link>
