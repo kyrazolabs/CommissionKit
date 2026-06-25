@@ -255,12 +255,16 @@ export function DealsPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             {hasPermission("deals", "edit") && deal.paymentStatus !== "paid" && (
-                              <UpdateDealDialog deal={deal} queryParams={queryParams} reps={reps} workspaceCurrency={currency} />
+                              <DropdownMenuItem asChild>
+                                <UpdateDealDialog deal={deal} queryParams={queryParams} reps={reps} workspaceCurrency={currency} />
+                              </DropdownMenuItem>
                             )}
                             {hasPermission("deals", "delete") && (
                               <>
                                 <DropdownMenuSeparator />
-                                <DealDeleteAction deal={deal} queryParams={queryParams} currency={currency} />
+                                <DropdownMenuItem asChild className="text-destructive">
+                                  <DealDeleteAction deal={deal} queryParams={queryParams} currency={currency} />
+                                </DropdownMenuItem>
                               </>
                             )}
                           </DropdownMenuContent>
@@ -392,13 +396,12 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
       <DialogTrigger asChild>
         <Button 
           variant="ghost" 
-          size="icon" 
-          className="size-8 text-muted-foreground hover:text-primary"
+          size="sm"
+          className="w-full justify-start text-muted-foreground hover:text-primary font-normal"
           disabled={!isEditable}
-          title={t("deals.editDealTitle")}
         >
-          <Pencil />
-          
+          <Pencil className="size-4" />
+          Edit
         </Button>
       </DialogTrigger>
         <DialogContent className="sm:max-w-[550px]">
@@ -592,8 +595,9 @@ function DealDeleteAction({ deal, queryParams, currency }: { deal: any, queryPar
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-destructive">
+        <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground hover:text-destructive font-normal">
           <Trash className="size-4" />
+          Delete
         </Button>
       </DialogTrigger>
       <DialogContent>
