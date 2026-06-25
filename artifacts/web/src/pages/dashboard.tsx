@@ -150,11 +150,11 @@ export function Dashboard() {
                         {(rep as any).planName || t("dashboard.none")}
                       </span>
                     </td>
-                    <td className="p-4 text-[13px] font-medium text-foreground">{rep.totalDeals}</td>
-                    <td className="p-4 text-[13px] font-medium text-foreground">
+                    <td className="p-4 text-[13px] font-medium text-foreground text-right tabular-nums">{rep.totalDeals}</td>
+                    <td className="p-4 text-[13px] font-medium text-foreground text-right tabular-nums">
                       {formatCurrency(rep.totalRevenue, currency)}
                     </td>
-                    <td className="p-4 text-[13.5px] font-semibold text-primary">
+                    <td className="p-4 text-[13.5px] font-semibold text-primary text-right tabular-nums">
                       {formatCurrency(rep.totalCommission, currency)}
                     </td>
                   </tr>

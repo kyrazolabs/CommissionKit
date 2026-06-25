@@ -520,7 +520,7 @@ export function ReportsPage() {
                             </td>
                             <td className="px-[22px] py-3.5 text-[13px] font-semibold text-foreground">{deal.name}</td>
                             <td className="px-[22px] py-3.5 text-[13px] text-muted-foreground">{deal.repName}</td>
-                            <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground">{formatCurrency(deal.amount, currency)}</td>
+                            <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground text-right tabular-nums">{formatCurrency(deal.amount, currency)}</td>
                             <td className="px-[22px] py-3.5 text-[13px] text-muted-foreground">{format(new Date(deal.closeDate), "MMM d, yyyy")}</td>
                           </tr>
                         ))}
@@ -560,11 +560,11 @@ export function ReportsPage() {
                             {i === 0 && <Medal className="size-4 text-amber-500 print-hide" />}
                             {rep.name}
                           </td>
-                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground">{formatNumber(rep.dealsWon)}</td>
-                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground">{rep.winRate.toFixed(1)}%</td>
-                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground">{formatCurrency(rep.revenue, currency)}</td>
-                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground">{formatCurrency(rep.commission, currency)}</td>
-                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-muted-foreground">{effRate.toFixed(1)}%</td>
+                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground text-right tabular-nums">{formatNumber(rep.dealsWon)}</td>
+                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground text-right tabular-nums">{rep.winRate.toFixed(1)}%</td>
+                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground text-right tabular-nums">{formatCurrency(rep.revenue, currency)}</td>
+                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground text-right tabular-nums">{formatCurrency(rep.commission, currency)}</td>
+                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-muted-foreground text-right tabular-nums">{effRate.toFixed(1)}%</td>
                         </tr>
                       );
                     })}

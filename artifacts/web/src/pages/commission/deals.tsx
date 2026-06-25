@@ -21,7 +21,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DatePicker, DateRangePicker } from "@/components/ui/date-picker";
 import { parseISO } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Trash, UploadCloud, FileDown, Briefcase, Loader2, ChevronDown, ChevronRight, Pencil } from "lucide-react";
+import { Search, Trash, UploadCloud, FileDown, Briefcase, Loader2, ChevronDown, ChevronRight, Pencil, MoreHorizontal } from "lucide-react";
 import { HelpTooltip } from "@/components/help-tooltip";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/format";
@@ -29,6 +29,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import Papa from "papaparse";
@@ -188,7 +189,7 @@ export function DealsPage() {
                     </div>
                   </TableHead>
                   <TableHead>Rep</TableHead>
-                  <TableHead>Amount</TableHead>
+                  <TableHead className="text-right tabular-nums">Amount</TableHead>
                   <TableHead>Close Date</TableHead>
                   <TableHead>Stage</TableHead>
                   <TableHead>Payment</TableHead>
@@ -217,7 +218,7 @@ export function DealsPage() {
                         </button>
                       </TableCell>
                       <TableCell>{deal.repName}</TableCell>
-                      <TableCell className="font-medium text-primary">
+                      <TableCell className="font-medium text-primary text-right tabular-nums">
                         {formatCurrency(deal.amount, deal.currency || currency)}
                       </TableCell>
                       <TableCell>{format(new Date(deal.closeDate), "MMM d, yyyy")}</TableCell>
@@ -246,14 +247,24 @@ export function DealsPage() {
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          {hasPermission("deals", "edit") && deal.paymentStatus !== "paid" && (
-                            <UpdateDealDialog deal={deal} queryParams={queryParams} reps={reps} workspaceCurrency={currency} />
-                          )}
-                          {hasPermission("deals", "delete") && (
-                            <DealDeleteAction deal={deal} queryParams={queryParams} currency={currency} />
-                          )}
-                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="size-8">
+                              <MoreHorizontal className="size-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {hasPermission("deals", "edit") && deal.paymentStatus !== "paid" && (
+                              <UpdateDealDialog deal={deal} queryParams={queryParams} reps={reps} workspaceCurrency={currency} />
+                            )}
+                            {hasPermission("deals", "delete") && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DealDeleteAction deal={deal} queryParams={queryParams} currency={currency} />
+                              </>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>,
                   ];
