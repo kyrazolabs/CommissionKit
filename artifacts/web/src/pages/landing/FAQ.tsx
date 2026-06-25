@@ -37,16 +37,16 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="border-b border-slate-200 last:border-0">
+    <div className="border-b border-border/60 last:border-0">
       <button
         onClick={() => setOpen(!open)}
         className="w-full text-left py-6 flex items-center justify-between gap-4 focus:outline-none"
       >
-        <span className="text-[16px] font-semibold text-slate-900 leading-snug">
+        <span className="text-base font-semibold text-foreground leading-snug">
           {q}
         </span>
         <ChevronDown
-          className={`size-5 text-slate-400 shrink-0 transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"
+          className={`size-5 text-muted-foreground shrink-0 transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"
             }`}
         />
       </button>
@@ -54,7 +54,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
         className="overflow-hidden transition-all duration-300 ease-in-out"
         style={{ maxHeight: open ? 300 : 0, opacity: open ? 1 : 0 }}
       >
-        <p className="text-[15px] text-slate-600 leading-relaxed pb-6">
+        <p className="text-sm text-muted-foreground leading-relaxed pb-6">
           {a}
         </p>
       </div>
@@ -66,27 +66,27 @@ export function FAQ() {
   const { ref, inView } = useInView();
 
   return (
-    <section className="bg-white py-28 px-6 border-b border-slate-200" id="faq">
+    <section className="bg-background py-24 px-6 border-b border-border/60" id="faq">
       <div ref={ref} className="max-w-[760px] mx-auto" style={fadeIn(inView)}>
         <div className="text-center mb-16">
-          <p className="text-[11px] font-bold tracking-widest uppercase text-teal-600 mb-4">
+          <p className="text-[11px] font-bold tracking-widest uppercase text-primary mb-4">
             FAQ
           </p>
-          <h2 className="text-3xl sm:text-4xl lg:text-[40px] font-bold leading-tight text-slate-900 tracking-tight">
+          <h2 className="text-3xl sm:text-4xl lg:text-[40px] font-bold leading-tight text-foreground tracking-tight font-display">
             Questions we get asked a lot
           </h2>
         </div>
 
-        <div className="border-y border-slate-200">
+        <div className="border-y border-border/60 rounded-xl bg-card/40 px-6">
           {FAQS.map((faq) => (
             <FAQItem key={faq.q} q={faq.q} a={faq.a} />
           ))}
         </div>
 
         <div className="text-center mt-12">
-          <p className="text-[15px] text-slate-600 font-medium">
+          <p className="text-sm text-muted-foreground font-medium">
             Still have questions?{" "}
-            <a href="mailto:hello@commissionk.it" className="text-teal-600 hover:text-teal-700 underline underline-offset-4">
+            <a href="mailto:hello@commissionk.it" className="text-primary hover:text-primary/80 underline underline-offset-4">
               We're here to help.
             </a>
           </p>
