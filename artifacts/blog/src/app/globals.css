@@ -41,7 +41,6 @@
   --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
 
   --font-sans: var(--app-font-sans);
-  --app-font-display: 'League Spartan', 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: var(--app-font-mono);
   --font-display: var(--app-font-display);
 
