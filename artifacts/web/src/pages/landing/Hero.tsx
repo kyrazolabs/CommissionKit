@@ -25,7 +25,7 @@ export function Hero() {
 
         <h1
           style={fadeIn(inView, 200)}
-          className="text-5xl md:text-7xl lg:text-[80px] font-bold tracking-[-0.03em] text-foreground leading-[0.95] font-display"
+          className="text-6xl md:text-8xl lg:text-[96px] font-bold tracking-[-0.04em] text-foreground leading-[0.9] font-display"
         >
           Stop calculating commissions in spreadsheets.
         </h1>
