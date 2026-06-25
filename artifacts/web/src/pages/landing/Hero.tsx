@@ -18,7 +18,7 @@ export function Hero() {
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background/60 to-background" />
       </div>
 
-      <div ref={inViewRef} className="max-w-4xl mx-auto text-center relative z-10 py-32">
+      <div ref={inViewRef} className="max-w-5xl mx-auto text-center relative z-10 py-32">
         <div style={fadeIn(inView, 100)} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/60 backdrop-blur-sm border border-border/60 text-xs font-medium text-primary mb-8">
           From spreadsheet hell to 4‑hour commission runs
         </div>
@@ -32,7 +32,7 @@ export function Hero() {
 
         <p
           style={fadeIn(inView, 300)}
-          className="text-lg md:text-xl text-muted-foreground mt-8 mb-12 leading-relaxed max-w-xl mx-auto"
+          className="text-lg md:text-xl text-muted-foreground mt-8 mb-12 leading-relaxed max-w-2xl mx-auto"
         >
           One click. Every rep. Every deal. Commission runs that used to take 8 days now take 4 hours.
         </p>
