@@ -122,7 +122,7 @@ export default async function BlogPost({ params }: Props) {
 
       {(post.image || post.coverImage) && (
         <img
-          src={`${post.image || post.coverImage}${post.image ? '' : '?w=1200'}`}
+          src={post.image || post.coverImage}
           alt={post.title}
           className="w-full rounded-xl mb-10 object-cover max-h-[500px]"
         />

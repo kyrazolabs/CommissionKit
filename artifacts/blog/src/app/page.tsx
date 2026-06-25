@@ -82,7 +82,7 @@ export default async function BlogIndex({
               {(post.image || post.coverImage) && (
                 <div className="aspect-video w-full overflow-hidden bg-muted">
                   <img
-                    src={`${post.image || post.coverImage}${post.image ? '' : '?w=600'}`}
+                    src={post.image || post.coverImage}
                     alt={post.title}
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
