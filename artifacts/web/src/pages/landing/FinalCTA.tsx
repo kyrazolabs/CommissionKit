@@ -8,7 +8,7 @@ export function FinalCTA() {
   return (
     <section className="py-24 px-6 md:px-12 text-center relative overflow-hidden bg-background">
       <div ref={ref} className="max-w-2xl mx-auto relative z-10" style={fadeIn(inView)}>
-        <h2 className="text-4xl md:text-[40px] font-bold text-foreground mb-6 tracking-tight leading-tight">
+        <h2 className="text-4xl md:text-[40px] font-bold text-foreground mb-6 tracking-tight leading-tight font-display">
           Ready to scale with confidence?
         </h2>
 

@@ -89,7 +89,7 @@ export function Hero({ containerRef }: { containerRef: React.RefObject<HTMLDivEl
         <div className="max-w-3xl mx-auto mb-12">
           <h1
             style={fadeIn(inView, 100)}
-            className="text-4xl md:text-5xl lg:text-[64px] font-bold tracking-tight text-foreground mb-6 leading-[1.1] mt-8"
+            className="text-4xl md:text-5xl lg:text-[64px] font-bold tracking-tight text-foreground mb-6 leading-[1.1] mt-8 font-display"
           >
             From 8 days to 4 hours. <br />
             <span className="text-primary">Commission runs that don't destroy your month-end.</span>
