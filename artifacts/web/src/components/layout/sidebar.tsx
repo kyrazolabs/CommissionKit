@@ -14,6 +14,7 @@ import { useRole } from "@/hooks/use-role";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { WorkspaceAvatar } from "@/components/workspace-avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,8 +61,6 @@ function WorkspaceSwitcher() {
 
   if (!activeWorkspace) return null;
 
-  const initial = activeWorkspace.name.slice(0, 1).toUpperCase();
-
   return (
     <div className="px-3 pt-3 pb-2">
       <Popover open={open} onOpenChange={(isOpen) => {
@@ -73,9 +72,7 @@ function WorkspaceSwitcher() {
       }}>
         <PopoverTrigger asChild>
           <button className="w-full flex items-center gap-2 p-2 rounded-[10px] hover:bg-muted text-left transition-colors group outline-none click">
-            <div className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground text-[11px] font-semibold shrink-0">
-              {initial}
-            </div>
+            <WorkspaceAvatar name={activeWorkspace.name} size={28} className="size-7 shrink-0 rounded-md" />
             <div className="flex-1 min-w-0">
               <p className="text-[13px] font-semibold text-foreground truncate leading-none">{activeWorkspace.name}</p>
               <div className="flex items-center gap-1 mt-0.5">
@@ -110,9 +107,7 @@ function WorkspaceSwitcher() {
                         onClick={() => { setActiveWorkspace(ws); setOpen(false); }}
                         className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-muted text-left transition-colors"
                       >
-                        <div className="flex size-5 items-center justify-center rounded bg-primary/10 text-primary text-[10px] font-semibold shrink-0">
-                          {ws.name.slice(0, 1).toUpperCase()}
-                        </div>
+                        <WorkspaceAvatar name={ws.name} size={20} className="size-5 shrink-0 rounded" />
                         <span className="flex-1 text-[13px] text-foreground truncate">{ws.name}</span>
                         {activeWorkspace.id === ws.id && (
                           <Check className="size-3.5 text-primary shrink-0" />

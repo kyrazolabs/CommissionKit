@@ -9,7 +9,7 @@ import { format, subDays } from "date-fns";
 import { DateRange } from "react-day-picker";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend, BarChart, Bar
+  PieChart, Pie, Cell, BarChart, Bar
 } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DateRangePicker } from "@/components/ui/date-picker";
@@ -368,7 +368,6 @@ export function ReportsPage() {
                     />
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" opacity={0.5} />
                     <RechartsTooltip content={<CustomTooltip currency={currency} />} />
-                    <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
                     <Area
                       yAxisId="left"
                       type="monotone"
@@ -414,7 +413,6 @@ export function ReportsPage() {
                         <XAxis type="number" stroke="#888888" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
                         <YAxis type="category" dataKey="name" stroke="#888888" fontSize={11} tickLine={false} axisLine={false} width={100} />
                         <RechartsTooltip content={<SimpleBarTooltip currency={currency} />} />
-                        <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
                         <Bar dataKey="commission" name="Commission" fill={COLORS[0]} radius={[0, 4, 4, 0]} barSize={20} />
                         <Bar dataKey="revenue" name="Revenue" fill={COLORS[1]} radius={[0, 4, 4, 0]} barSize={20} />
                       </BarChart>
@@ -440,7 +438,6 @@ export function ReportsPage() {
                         <XAxis dataKey="label" stroke="#888888" fontSize={10} tickLine={false} axisLine={false} />
                         <YAxis yAxisId="left" stroke="#888888" fontSize={11} tickLine={false} axisLine={false} />
                         <RechartsTooltip content={<CountTooltip />} />
-                        <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
                         <Bar yAxisId="left" dataKey="count" name="Deals" fill={COLORS[2]} radius={[4, 4, 0, 0]} barSize={36} />
                       </BarChart>
                     </ResponsiveContainer>
@@ -479,7 +476,6 @@ export function ReportsPage() {
                           formatter={(value: number, name: string) => [value, name]}
                           contentStyle={{ borderRadius: '12px', border: '1px solid var(--border)', fontSize: '13px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
                         />
-                        <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
@@ -520,7 +516,7 @@ export function ReportsPage() {
                             </td>
                             <td className="px-[22px] py-3.5 text-[13px] font-semibold text-foreground">{deal.name}</td>
                             <td className="px-[22px] py-3.5 text-[13px] text-muted-foreground">{deal.repName}</td>
-                            <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground">{formatCurrency(deal.amount, currency)}</td>
+                            <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground text-right tabular-nums">{formatCurrency(deal.amount, currency)}</td>
                             <td className="px-[22px] py-3.5 text-[13px] text-muted-foreground">{format(new Date(deal.closeDate), "MMM d, yyyy")}</td>
                           </tr>
                         ))}
@@ -560,11 +556,11 @@ export function ReportsPage() {
                             {i === 0 && <Medal className="size-4 text-amber-500 print-hide" />}
                             {rep.name}
                           </td>
-                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground">{formatNumber(rep.dealsWon)}</td>
-                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground">{rep.winRate.toFixed(1)}%</td>
-                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground">{formatCurrency(rep.revenue, currency)}</td>
-                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground">{formatCurrency(rep.commission, currency)}</td>
-                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-muted-foreground">{effRate.toFixed(1)}%</td>
+                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground text-right tabular-nums">{formatNumber(rep.dealsWon)}</td>
+                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground text-right tabular-nums">{rep.winRate.toFixed(1)}%</td>
+                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground text-right tabular-nums">{formatCurrency(rep.revenue, currency)}</td>
+                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-foreground text-right tabular-nums">{formatCurrency(rep.commission, currency)}</td>
+                          <td className="px-[22px] py-3.5 text-[13px] font-medium text-muted-foreground text-right tabular-nums">{effRate.toFixed(1)}%</td>
                         </tr>
                       );
                     })}
