@@ -7,25 +7,21 @@ export function Hero() {
 
   return (
     <section className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden" id="hero">
-      {/* Background image */}
-      <div className="absolute inset-0 z-0">
-        <img
-          src="/decorative/style.webp"
-          alt=""
-          className="w-full h-full object-cover opacity-[0.07] dark:opacity-[0.04]"
-          fetchPriority="high"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/60 to-background" />
-      </div>
-
       <div ref={inViewRef} className="max-w-5xl mx-auto text-center relative z-10 py-32">
         <div style={fadeIn(inView, 100)} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/60 backdrop-blur-sm border border-border/60 text-xs font-medium text-primary mb-8">
-          8 days → 4 hours
+          8 days &rarr; 4 hours
         </div>
 
         <h1
-          style={fadeIn(inView, 200)}
-          className="text-6xl md:text-8xl lg:text-[96px] font-bold tracking-[-0.04em] text-foreground leading-[0.9] font-display"
+          style={{
+            ...fadeIn(inView, 200),
+            backgroundImage: "url('/decorative/style.webp')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+          className="text-6xl md:text-8xl lg:text-[96px] font-bold tracking-[-0.04em] leading-[0.9] font-display"
         >
           Run commissions in minutes. Not days.
         </h1>
@@ -50,7 +46,7 @@ export function Hero() {
         </div>
 
         <p style={fadeIn(inView, 500)} className="mt-6 text-sm text-muted-foreground/60">
-          No credit card required · 14-day free trial · Set up in under 10 minutes
+          No credit card required &middot; 14-day free trial &middot; Set up in under 10 minutes
         </p>
 
         <div style={fadeIn(inView, 600)} className="mt-12 flex justify-center">
