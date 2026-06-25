@@ -47,7 +47,7 @@ export function LandingPage() {
           style={{ borderRadius, borderWidth, maxWidth }}
           className="w-full mx-auto h-full bg-background overflow-y-auto overflow-x-hidden border-card-border relative [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         >
-          <Hero containerRef={containerRef} />
+          <Hero />
           <SocialProof />
           <ValueProps />
           <FeatureDeepDives />
