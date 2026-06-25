@@ -7,7 +7,6 @@ const withMDX = createMDX({
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  basePath: "/blog",
   pageExtensions: ["ts", "tsx", "md", "mdx"],
   transpilePackages: [],
   images: {
@@ -18,7 +17,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/blog/:path*",
+        source: "/:path*",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "DENY" },
