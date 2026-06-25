@@ -7,21 +7,23 @@ export function Hero() {
 
   return (
     <section className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden" id="hero">
+      {/* Decorative accent image */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none z-0">
+        <img
+          src="/decorative/style.webp"
+          alt=""
+          className="w-full h-full object-contain opacity-[0.12] dark:opacity-[0.06]"
+        />
+      </div>
+
       <div ref={inViewRef} className="max-w-5xl mx-auto text-center relative z-10 py-32">
         <div style={fadeIn(inView, 100)} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/60 backdrop-blur-sm border border-border/60 text-xs font-medium text-primary mb-8">
           8 days &rarr; 4 hours
         </div>
 
         <h1
-          style={{
-            ...fadeIn(inView, 200),
-            backgroundImage: "url('/decorative/style.webp')",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-          className="text-6xl md:text-8xl lg:text-[96px] font-bold tracking-[-0.04em] leading-[0.9] font-display"
+          style={fadeIn(inView, 200)}
+          className="text-6xl md:text-8xl lg:text-[96px] font-bold tracking-[-0.04em] text-foreground leading-[0.9] font-display"
         >
           Run commissions in minutes. Not days.
         </h1>
