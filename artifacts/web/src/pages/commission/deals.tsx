@@ -582,7 +582,7 @@ function DealDeleteAction({ deal, queryParams, currency }: { deal: any, queryPar
   };
 
   return (<>
-    <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setOpen(true); }} className="text-destructive">
+    <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setOpen(true); }} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
       <Trash className="mr-2 size-4" />Delete
     </DropdownMenuItem>
     <Dialog open={open} onOpenChange={setOpen}>
