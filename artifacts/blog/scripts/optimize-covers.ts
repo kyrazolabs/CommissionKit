@@ -10,7 +10,7 @@ const COVER_NAMES = ["cover.png", "cover.jpg", "cover.jpeg"];
 
 async function optimize() {
   if (!existsSync(ARTICLES_DIR)) {
-    console.log("[optimize-covers] No articles directory, skipping");
+    console.warn("[optimize-covers] No articles directory found — skipping");
     return;
   }
 
@@ -65,4 +65,7 @@ async function optimize() {
   }
 }
 
-optimize();
+optimize().catch((err) => {
+  console.error("[optimize-covers] Fatal error:", err);
+  process.exit(1);
+});
