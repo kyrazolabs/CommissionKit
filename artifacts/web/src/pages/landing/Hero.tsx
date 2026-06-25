@@ -20,14 +20,14 @@ export function Hero() {
 
       <div ref={inViewRef} className="max-w-5xl mx-auto text-center relative z-10 py-32">
         <div style={fadeIn(inView, 100)} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/60 backdrop-blur-sm border border-border/60 text-xs font-medium text-primary mb-8">
-          From spreadsheet hell to 4‑hour commission runs
+          8 days → 4 hours
         </div>
 
         <h1
           style={fadeIn(inView, 200)}
           className="text-6xl md:text-8xl lg:text-[96px] font-bold tracking-[-0.04em] text-foreground leading-[0.9] font-display"
         >
-          Stop calculating commissions in spreadsheets.
+          Run commissions in minutes. Not days.
         </h1>
 
         <p
