@@ -89,7 +89,7 @@ export default async function BlogPost({ params }: Props) {
       <article className="max-w-3xl mx-auto">
       <div className="mb-8">
         <Button variant="ghost" size="sm" asChild className="mb-6 -ml-3 text-muted-foreground">
-          <Link href="/">
+          <Link href="/blog">
             <ArrowLeft className="size-4 mr-1" />
             Back to Blog
           </Link>
@@ -135,7 +135,7 @@ export default async function BlogPost({ params }: Props) {
       <div className="mt-16 pt-8 border-t border-border">
         <div className="flex items-center justify-between">
           <Button variant="outline" size="sm" asChild>
-            <Link href="/">
+            <Link href="/blog">
               <ArrowLeft className="size-4 mr-1" />
               Back to Blog
             </Link>
