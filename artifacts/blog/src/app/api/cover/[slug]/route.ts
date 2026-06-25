@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const ARTICLES_DIR = path.join(process.cwd(), "articles");
-const COVER_NAMES = ["cover.png", "cover.jpg", "cover.jpeg", "cover.webp"];
+const COVER_NAMES = ["cover.webp", "cover.png", "cover.jpg", "cover.jpeg"];
 
 function findCover(slug: string): { filePath: string; ext: string } | null {
   if (!fs.existsSync(ARTICLES_DIR)) return null;
