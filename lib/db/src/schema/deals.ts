@@ -8,9 +8,9 @@ const DealSchema = new Schema({
   repId: { type: Schema.Types.ObjectId, ref: "Rep", required: true },
   name: { type: String, required: true },
   amount: { type: Number, required: true },
-  closeDate: { type: String, required: true },
+  closeDate: { type: String },
   period: { type: String, required: true },
-  stage: { type: String, required: true, default: "closed_won" },
+  stage: { type: String, required: true, default: "pending" },
   currency: { type: String, required: true, default: "USD" },
   paymentStatus: { type: String, enum: DealPaymentStatus, default: "unpaid" },
   notes: { type: String },
@@ -23,7 +23,10 @@ const DealSchema = new Schema({
   metadata: { type: Schema.Types.Mixed },
 }, { timestamps: { createdAt: true, updatedAt: false } });
 
-DealSchema.index({ workspaceId: 1, sourceSystem: 1, externalId: 1 }, { unique: true, sparse: true });
+DealSchema.index(
+  { workspaceId: 1, sourceSystem: 1, externalId: 1 },
+  { unique: true, partialFilterExpression: { sourceSystem: { $type: "string" }, externalId: { $type: "string" } } },
+);
 
 export const Deal = model("Deal", DealSchema);
 
@@ -57,9 +60,9 @@ export const insertDealSchema = z.object({
   repId: z.string(),
   name: z.string(),
   amount: z.number(),
-  closeDate: z.string(),
+  closeDate: z.string().optional(),
   period: z.string(),
-  stage: z.string().default("closed_won"),
+  stage: z.string().default("pending"),
   currency: z.string().default("USD"),
   paymentStatus: z.enum(["unpaid", "paid", "partial", "on_hold"]).default("unpaid"),
   notes: z.string().optional(),
