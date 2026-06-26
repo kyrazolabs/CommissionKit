@@ -93,7 +93,7 @@ router.get(
             totalPendingRevenue += convertedAmt;
           }
 
-          const pKey = getPeriodKey(deal.closeDate);
+          const pKey = getPeriodKey(deal.closeDate || "");
           if (!trendsMap.has(pKey)) {
             trendsMap.set(pKey, { period: pKey, revenue: 0, commission: 0, deals: 0 });
           }
@@ -101,7 +101,7 @@ router.get(
           m.revenue += convertedAmt;
           m.deals++;
 
-          if (deal.createdAt) {
+          if (deal.createdAt && deal.closeDate) {
             const createdDate = new Date(deal.createdAt);
             const closeDate = new Date(deal.closeDate);
             const diffDays = Math.round((closeDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -115,7 +115,7 @@ router.get(
             name: deal.name,
             repName: repMap.get(deal.repId?.toString() || "") || "Unknown",
             amount: convertedAmt,
-            closeDate: deal.closeDate
+            closeDate: deal.closeDate || ""
           });
         } else if (stage !== "closed_lost") {
           totalPendingRevenue += convertedAmt;
@@ -185,7 +185,7 @@ router.get(
 
         const deal = deals.find(d => d._id.toString() === dealIdStr);
         if (deal) {
-          const pKey = getPeriodKey(deal.closeDate);
+          const pKey = getPeriodKey(deal.closeDate || "");
           if (!trendsMap.has(pKey)) {
             trendsMap.set(pKey, { period: pKey, revenue: 0, commission: 0, deals: 0 });
           }

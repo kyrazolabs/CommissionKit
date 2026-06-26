@@ -30,7 +30,9 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [mode, setMode] = useState<"login" | "signup" | "forgot">(initialMode);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(
+    () => new URLSearchParams(window.location.search).get("email") ?? ""
+  );
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);

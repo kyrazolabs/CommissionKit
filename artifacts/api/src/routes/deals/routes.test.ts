@@ -26,7 +26,12 @@ mock.module("@workspace/queue", () => ({
   mailLowQueue: { add: () => Promise.resolve() },
   mailSendQueue: { add: () => Promise.resolve() },
   commissionCalcQueue: { add: () => Promise.resolve() },
+  exchangeRateQueue: { add: () => Promise.resolve() },
   logsFlushQueue: { add: () => Promise.resolve() },
+  syncRepsQueue: { add: () => Promise.resolve() },
+  syncDealsQueue: { add: () => Promise.resolve() },
+  webhookIngressQueue: { add: () => Promise.resolve() },
+  syncEgressQueue: { add: () => Promise.resolve() },
   PRIORITY_QUEUE_MAP: { high: { add: () => Promise.resolve() }, medium: { add: () => Promise.resolve() }, low: { add: () => Promise.resolve() } },
 }));
 mock.module("../../lib/auth", () => ({
@@ -213,6 +218,27 @@ describe("POST /api/deals", () => {
 
     expect(res.status).toBe(400);
   });
+
+  test("creates a pending deal without a close date", async () => {
+    const res = await request(app)
+      .post("/api/deals")
+      .set(authHeader())
+      .send({ ...validDeal(), stage: "pending", closeDate: undefined });
+
+    expect(res.status).toBe(201);
+    expect(res.body.stage).toBe("pending");
+    expect(res.body.closeDate).toBe("");
+  });
+
+  test("rejects a closed deal without a close date", async () => {
+    const res = await request(app)
+      .post("/api/deals")
+      .set(authHeader())
+      .send({ ...validDeal(), stage: "closed_won", closeDate: "" });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain("Close date is required");
+  });
 });
 
 describe("POST /api/deals/import", () => {
@@ -250,6 +276,39 @@ describe("POST /api/deals/import", () => {
     expect(res.body.imported).toBe(1);
     expect(res.body.skipped).toBe(1);
     expect(res.body.errors.length).toBe(1);
+  });
+
+  test("imports pending deals without a close date", async () => {
+    const res = await request(app)
+      .post("/api/deals/import")
+      .set(authHeader())
+      .send({
+        period: "2024-03",
+        deals: [
+          { repId: testRepId.toString(), name: "Pending A", amount: 1000, closeDate: "", period: "2024-03", stage: "pending", currency: "USD" },
+        ],
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.imported).toBe(1);
+    expect(res.body.skipped).toBe(0);
+  });
+
+  test("skips closed deals without a close date during import", async () => {
+    const res = await request(app)
+      .post("/api/deals/import")
+      .set(authHeader())
+      .send({
+        period: "2024-03",
+        deals: [
+          { repId: testRepId.toString(), name: "Closed No Date", amount: 1000, closeDate: "", period: "2024-03", stage: "closed_won", currency: "USD" },
+        ],
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.imported).toBe(0);
+    expect(res.body.skipped).toBe(1);
+    expect(res.body.errors[0]).toContain("Close date is required");
   });
 });
 
@@ -309,5 +368,17 @@ describe("PUT /api/deals/:id", () => {
       .send({ repId: testRepId.toString(), name: "Ghost", amount: 5000, closeDate: "2024-03-01", period: "2024-03", stage: "closed_won", currency: "USD" });
 
     expect(res.status).toBe(404);
+  });
+
+  test("rejects updating to a closed stage without a close date", async () => {
+    const deal = await Deal.create({ workspaceId, repId: testRepId, name: "Pending Deal", amount: 5000, closeDate: "", period: "2024-03", stage: "pending" });
+
+    const res = await request(app)
+      .put(`/api/deals/${deal._id}`)
+      .set(authHeader())
+      .send({ repId: testRepId.toString(), name: "Pending Deal", amount: 5000, closeDate: "", period: "2024-03", stage: "closed_won", currency: "USD" });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain("Close date is required");
   });
 });

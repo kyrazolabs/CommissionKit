@@ -84,15 +84,6 @@ export interface CreatePlanBody {
   tiers?: CreatePlanTier[];
 }
 
-export type DealStage = typeof DealStage[keyof typeof DealStage];
-
-
-export const DealStage = {
-  closed_won: 'closed_won',
-  closed_lost: 'closed_lost',
-  pending: 'pending',
-} as const;
-
 export type DealPaymentStatus = typeof DealPaymentStatus[keyof typeof DealPaymentStatus];
 
 
@@ -101,6 +92,15 @@ export const DealPaymentStatus = {
   paid: 'paid',
   partial: 'partial',
   on_hold: 'on_hold',
+} as const;
+
+export type DealStage = typeof DealStage[keyof typeof DealStage];
+
+
+export const DealStage = {
+  closed_won: 'closed_won',
+  closed_lost: 'closed_lost',
+  pending: 'pending',
 } as const;
 
 export interface Deal {
@@ -113,8 +113,8 @@ export interface Deal {
   /** YYYY-MM */
   period: string;
   stage: DealStage;
-  paymentStatus: DealPaymentStatus;
   currency: string;
+  paymentStatus: DealPaymentStatus;
   notes: string | null;
   createdAt: string;
 }
@@ -132,11 +132,11 @@ export interface CreateDealBody {
   repId: string;
   name: string;
   amount: number;
-  closeDate: string;
+  closeDate?: string;
   period: string;
   stage: CreateDealBodyStage;
-  paymentStatus: DealPaymentStatus;
   currency: string;
+  paymentStatus?: DealPaymentStatus;
   notes?: string | null;
 }
 
@@ -153,11 +153,11 @@ export interface UpdateDealBody {
   repId: string;
   name: string;
   amount: number;
-  closeDate: string;
+  closeDate?: string;
   period: string;
   stage: UpdateDealBodyStage;
-  paymentStatus?: DealPaymentStatus;
   currency: string;
+  paymentStatus?: DealPaymentStatus;
   notes?: string | null;
 }
 
@@ -352,7 +352,7 @@ export interface ReportData {
   dealValueDistribution?: ReportDataDealValueDistributionItem[];
   paymentStatusBreakdown?: ReportDataPaymentStatusBreakdownItem[];
   monthlyTrends: ReportDataMonthlyTrendsItem[];
-  monthlyGrowth?: ReportDataMonthlyGrowth;
+  monthlyGrowth: ReportDataMonthlyGrowth;
   topPerformers: ReportDataTopPerformersItem[];
   repCommissionBreakdown?: ReportDataRepCommissionBreakdownItem[];
   topDeals?: ReportDataTopDealsItem[];

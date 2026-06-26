@@ -16,7 +16,10 @@ const RepSchema = new Schema({
   metadata: { type: Schema.Types.Mixed },
 }, { timestamps: { createdAt: true, updatedAt: false } });
 
-RepSchema.index({ workspaceId: 1, sourceSystem: 1, externalId: 1 }, { unique: true, sparse: true });
+RepSchema.index(
+  { workspaceId: 1, sourceSystem: 1, externalId: 1 },
+  { unique: true, partialFilterExpression: { sourceSystem: { $type: "string" }, externalId: { $type: "string" } } },
+);
 
 export const Rep = model("Rep", RepSchema);
 

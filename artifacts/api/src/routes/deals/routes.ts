@@ -26,7 +26,7 @@ function formatDeal(deal: any, repName: string) {
     repName,
     name: deal.name,
     amount: deal.amount,
-    closeDate: deal.closeDate,
+    closeDate: deal.closeDate ?? "",
     period: deal.period,
     stage: deal.stage,
     paymentStatus: deal.paymentStatus ?? "unpaid",
@@ -36,6 +36,14 @@ function formatDeal(deal: any, repName: string) {
     clawbackAmount: (deal as any).clawbackAmount ?? 0,
     createdAt: deal.createdAt.toISOString(),
   };
+}
+
+function validateCloseDateForStage(stage: string, closeDate?: string) {
+  const closedStages = ["closed_won", "closed_lost"];
+  if (closedStages.includes(stage) && (!closeDate || closeDate.trim() === "")) {
+    return "Close date is required when stage is Closed Won or Closed Lost.";
+  }
+  return null;
 }
 
 router.get(
@@ -74,6 +82,11 @@ router.post(
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
     const body = CreateDealBody.parse(req.body);
+    const closeDateError = validateCloseDateForStage(body.stage, body.closeDate);
+    if (closeDateError) {
+      res.status(400).json({ error: closeDateError });
+      return;
+    }
     const deal = await Deal.create({
       workspaceId: new Types.ObjectId(workspaceId),
       repId: new Types.ObjectId(body.repId),
@@ -104,6 +117,12 @@ router.post(
 
     for (const d of body.deals) {
       try {
+        const closeDateError = validateCloseDateForStage(d.stage, d.closeDate);
+        if (closeDateError) {
+          errors.push(`Deal "${d.name}": ${closeDateError}`);
+          skipped++;
+          continue;
+        }
         const rep = await Rep.findOne({
           _id: d.repId,
           workspaceId: new Types.ObjectId(workspaceId),
@@ -159,6 +178,12 @@ router.put(
     const workspaceId = req.workspaceId!;
     const { id } = req.params;
     const body = UpdateDealBody.parse(req.body);
+
+    const closeDateError = validateCloseDateForStage(body.stage, body.closeDate);
+    if (closeDateError) {
+      res.status(400).json({ error: closeDateError });
+      return;
+    }
 
     // Fetch the old deal to detect stage changes (clawback detection)
     const oldDeal = await Deal.findById(id);

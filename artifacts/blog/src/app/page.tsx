@@ -23,7 +23,7 @@ export default async function BlogIndex({
   if (!allPosts.length) {
     return (
       <div className="text-center py-20">
-        <h1 className="text-4xl font-bold text-foreground mb-4 tracking-tight">Blog</h1>
+        <h1 className="text-4xl font-bold text-foreground mb-4 tracking-tight font-display">Blog</h1>
         <p className="text-muted-foreground mb-8">No articles yet. Create your first post in <code className="bg-muted px-1.5 py-0.5 rounded text-sm">articles/YYYY-MM-DD/slug/index.mdx</code>.</p>
         <Button asChild variant="outline">
           <a href="https://commissionk.it">Back to CommissionKit</a>
@@ -69,7 +69,7 @@ export default async function BlogIndex({
           <Tag className="size-3.5 text-primary" />
           Insights
         </div>
-        <h1 className="text-4xl font-bold text-foreground mb-4 tracking-tight">Blog</h1>
+        <h1 className="text-4xl font-bold text-foreground mb-4 tracking-tight font-display">Blog</h1>
         <p className="text-lg text-muted-foreground max-w-2xl">
           Expert insights on sales commission management, plan design, rep motivation, and revenue operations.
         </p>

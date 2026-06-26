@@ -13,9 +13,15 @@ describe("insertDealSchema", () => {
 
   test("accepts valid input with defaults", () => {
     const result = insertDealSchema.parse(validDeal);
-    expect(result.stage).toBe("closed_won");
+    expect(result.stage).toBe("pending");
     expect(result.currency).toBe("USD");
     expect(result.paymentStatus).toBe("unpaid");
+  });
+
+  test("accepts a deal without a close date", () => {
+    const { closeDate, ...rest } = validDeal;
+    const result = insertDealSchema.parse(rest);
+    expect(result.closeDate).toBeUndefined();
   });
 
   test("accepts all optional fields", () => {

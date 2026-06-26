@@ -1,154 +1,131 @@
-import { useScroll, useTransform, motion } from "framer-motion";
-import { useInView, fadeIn } from "./hooks";
+import { useState } from "react";
+import { useInView } from "./hooks";
 import { Button } from "@/components/ui/button";
-import { useRef } from "react";
+import { ArrowRight, Star, ShieldCheck, Mail } from "lucide-react";
+import { Analytics } from "@/lib/analytics";
+import { AnimatedWords, AnimatedBlock } from "./AnimatedText";
 
-function DashboardMockup() {
-  return (
-    <div className="w-full bg-sidebar rounded-xl overflow-hidden flex flex-col pointer-events-none select-none">
-      {/* Image Content */}
-      <div className="w-full aspect-video bg-sidebar relative">
-        <img 
-          src="/imgs/demo.jpg" 
-          alt="Platform Demo" 
-          className="w-full h-full object-cover"
-          fetchPriority="high"
-        />
-      </div>
-    </div>
-  );
-}
+const TRUST_METRICS = [
+  { value: "8 days", label: "→ 4 hours", sub: "per cycle" },
+  { value: "99%", label: "fewer disputes", sub: "vs. sheets" },
+  { value: "<30 min", label: "to go live", sub: "no consultants" },
+];
 
-const LineSVG = ({ className }: { className?: string }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width="353" 
-    height="374" 
-    viewBox="0 0 353 374" 
-    fill="none" 
-    className={`absolute xl:block hidden [&_stop]:[stop-color:hsl(var(--border))] pointer-events-none ${className}`}
-  >
-    <path 
-      d="M352.667 3C352.667 1.52722 351.473 0.333313 350 0.333313C348.527 0.333313 347.333 1.52722 347.333 3C347.333 4.47275 348.527 5.66666 350 5.66666C351.473 5.66666 352.667 4.47275 352.667 3ZM-164.353 372.646C-164.549 372.841 -164.549 373.158 -164.354 373.353C-164.159 373.549 -163.842 373.549 -163.647 373.354L-164.353 372.646ZM199.473 10.018L199.119 9.66418L199.473 10.018ZM350 2.5H216.432V3.5H350V2.5ZM199.119 9.66418L-164.353 372.646L-163.647 373.354L199.826 10.3718L199.119 9.66418ZM216.432 2.5C209.94 2.5 203.713 5.07669 199.119 9.66418L199.826 10.3718C204.232 5.97153 210.205 3.5 216.432 3.5V2.5Z" 
-      fill="url(#paint0_linear)"
-    />
-    <defs>
-      <linearGradient id="paint0_linear" x1="-164" y1="188" x2="350" y2="188" gradientUnits="userSpaceOnUse">
-        <stop stopOpacity="0" />
-        <stop offset="0.095" />
-      </linearGradient>
-    </defs>
-  </svg>
-);
-
-function AnimatedBorder({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="relative group">
-      {/* Pulse Rings */}
-      <div className="absolute inset-0 rounded-3xl border border-primary/20 animate-pulse-border opacity-0 pointer-events-none" style={{ animationDelay: "0s" }} />
-      <div className="absolute inset-0 rounded-3xl border border-primary/20 animate-pulse-border opacity-0 pointer-events-none" style={{ animationDelay: "0.4s" }} />
-      <div className="absolute inset-0 rounded-3xl border border-primary/20 animate-pulse-border opacity-0 pointer-events-none" style={{ animationDelay: "0.8s" }} />
-      <div className="absolute inset-0 rounded-3xl border border-primary/20 animate-pulse-border opacity-0 pointer-events-none" style={{ animationDelay: "1.2s" }} />
-      
-      {/* Content */}
-      <div className="relative z-10">
-        {children}
-      </div>
-    </div>
-  );
-}
-
-export function Hero({ containerRef }: { containerRef: React.RefObject<HTMLDivElement | null> }) {
+export function Hero() {
   const { ref: inViewRef, inView } = useInView();
-  const mockupRef = useRef<HTMLDivElement>(null);
+  const [email, setEmail] = useState("");
 
-  const { scrollYProgress } = useScroll({
-    container: containerRef,
-    target: mockupRef,
-    offset: ["start end", "end start"]
-  });
-
-  const rotateX = useTransform(scrollYProgress, [0, 0.5], [20, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.5], [0.8, 1]);
-  const translateZ = useTransform(scrollYProgress, [0, 0.5], [-100, 0]);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    Analytics.landingCTAClick("hero_start");
+    const params = new URLSearchParams();
+    if (email.trim()) params.set("email", email.trim());
+    window.location.href = `/register${params.toString() ? `?${params}` : ""}`;
+  };
 
   return (
-    <section className="pt-32 pb-48 px-6 relative overflow-hidden" id="hero">
-      {/* Lines Background Effect */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <LineSVG className="top-16 -left-36 2xl:left-0 md:w-[36vw]" />
-        <LineSVG className="top-16 -right-36 2xl:right-0 md:w-[36vw] scale-x-[-1]" />
-        <LineSVG className="-top-14 -left-20 2xl:left-0 md:w-[44vw] scale-y-[-1]" />
-        <LineSVG className="-top-14 -right-20 2xl:right-0 md:w-[44vw] scale-x-[-1] scale-y-[-1]" />
-        <LineSVG className="top-[410px] -left-36 2xl:left-0 md:w-[48vw] scale-y-[0.5]" />
-        <LineSVG className="top-[410px] -right-36 2xl:right-0 md:w-[48vw] scale-y-[0.5] scale-x-[-1]" />
-      </div>
+    <section className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden" id="hero">
+      {/* Ambient gradient glow */}
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[460px] pointer-events-none z-0"
+        style={{
+          background:
+            "radial-gradient(ellipse at center, hsl(var(--primary) / 0.16), transparent 62%)",
+        }}
+      />
+      {/* Subtle curves */}
+      <img
+        src="/decorative/left-curves.svg"
+        alt=""
+        aria-hidden
+        className="absolute left-0 top-1/2 -translate-y-1/2 w-[30%] max-w-[360px] opacity-[0.10] dark:opacity-[0.06] pointer-events-none z-0"
+      />
+      <img
+        src="/decorative/right-curves.svg"
+        alt=""
+        aria-hidden
+        className="absolute right-0 top-1/2 -translate-y-1/2 w-[30%] max-w-[360px] opacity-[0.10] dark:opacity-[0.06] pointer-events-none z-0 -scale-x-100"
+      />
 
-      <div ref={inViewRef} className="max-w-[1440px] mx-auto text-center relative z-10">
-        
-        <div className="max-w-3xl mx-auto mb-12">
-          <h1
-            style={fadeIn(inView, 100)}
-            className="text-4xl md:text-5xl lg:text-[64px] font-bold tracking-tight text-foreground mb-6 leading-[1.1] mt-8"
-          >
-            Your reps close deals. <br />
-            <span className="text-primary">CKit handles the rest.</span>
-          </h1>
+      <div ref={inViewRef} className="max-w-4xl mx-auto text-center relative z-10 py-20">
+        {/* Rating + trust pill */}
+        <AnimatedBlock inView={inView} delay={0} className="inline-flex">
+          <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white/60 dark:bg-white/5 backdrop-blur-sm border border-border/60 text-xs font-medium text-foreground mb-6">
+            <div className="flex">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <Star key={i} className="size-3 fill-primary text-primary" />
+              ))}
+            </div>
+            <span className="text-muted-foreground">Loved by finance & RevOps teams</span>
+            <span className="h-3 w-px bg-border" />
+            <span className="text-primary font-semibold">14-day free trial</span>
+          </div>
+        </AnimatedBlock>
 
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-[-0.07em] text-foreground leading-[0.95] font-display">
+          <AnimatedWords text="Run commissions in minutes." inView={inView} delay={0.15} />
+          <br />
+          <AnimatedWords text="Not days." className="text-primary" inView={inView} delay={0.75} />
+        </h1>
+
+        <AnimatedBlock inView={inView} delay={1.1} y={20}>
           <p
-            style={fadeIn(inView, 200)}
-            className="text-lg md:text-xl text-muted-foreground mb-10 leading-relaxed max-w-2xl mx-auto"
+            className="text-base md:text-lg text-muted-foreground mt-6 mb-8 leading-relaxed max-w-xl mx-auto"
           >
-            Automate commissions, track payouts, and give every rep real-time visibility into their earnings — so your team stops disputing and starts performing.
+            One click processes every rep, every deal, every plan. The commission runs
+            that used to swallow 8 days now finish in 4 hours — flawlessly, every time.
           </p>
+        </AnimatedBlock>
 
-          <div style={fadeIn(inView, 300)} className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button asChild className="w-full sm:w-auto font-bold shadow-md rounded-lg px-8" size={'md'}>
-              <a href="/register">Get Started</a>
-            </Button>
-            <Button variant="outline" asChild className="w-full sm:w-auto font-bold bg-background/50 backdrop-blur-sm rounded-lg px-8" size={'md'}>
-              <a href="#features">Explore Features</a>
-            </Button>
-          </div>
-
-          <div style={fadeIn(inView, 400)} className="mt-8 flex justify-center">
-            <a
-              href="https://www.producthunt.com/products/commissionkit?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-commissionkit"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <img
-                alt="CommissionKit - Your reps close deals. We handles the rest. | Product Hunt"
-                width="250"
-                height="54"
-                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1172787&amp;theme=dark&amp;t=1781562800265"
-              />
-            </a>
-          </div>
-        </div>
-
-        {/* Dashboard Mockup Container with 3D Effect & Pulse Border */}
-        <div 
-          ref={mockupRef}
-          className="perspective-1000 mt-16 max-w-5xl mx-auto"
-        >
-          <motion.div 
-            style={{ 
-              rotateX, 
-              scale,
-              translateZ,
-              transformStyle: "preserve-3d"
-            }}
-            className="relative"
+        {/* Email capture form */}
+        <AnimatedBlock inView={inView} delay={1.3} y={20}>
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col sm:flex-row gap-3 justify-center items-center max-w-md mx-auto"
           >
-            <AnimatedBorder>
-              <div className="relative rounded-2xl shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] bg-sidebar border border-border/50 overflow-hidden">
-                <DashboardMockup />
-              </div>
-            </AnimatedBorder>
-          </motion.div>
-        </div>
+          <div className="focus relative w-full sm:flex-1">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none z-10" />
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your work email"
+              className="w-full h-10 pl-10 pr-3 rounded-lg bg-white/70 dark:bg-white/5 backdrop-blur-sm border border-border/60 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+              aria-label="Email address"
+            />
+          </div>
+          <Button type="submit" size="md" className="w-full h-9 sm:w-auto font-bold shadow-lg shrink-0 group">
+              Start Free Trial
+              <ArrowRight className="ml-1.5 transition-transform group-hover:translate-x-0.5" />
+            </Button>
+          </form>
+        </AnimatedBlock>
 
+        <AnimatedBlock inView={inView} delay={1.5} y={12}>
+          <p className="mt-5 text-xs text-muted-foreground/70 flex items-center justify-center gap-3 flex-wrap">
+            <span className="inline-flex items-center gap-1.5"><ShieldCheck className="size-3.5 text-primary" /> No credit card required</span>
+            <span className="hidden sm:inline text-border">·</span>
+            <span>Set up in under 10 minutes</span>
+            <span className="hidden sm:inline text-border">·</span>
+            <span>Cancel anytime</span>
+          </p>
+        </AnimatedBlock>
+
+        {/* Trust metrics bar */}
+        <AnimatedBlock inView={inView} delay={1.7} y={20} className="mt-12 grid grid-cols-3 gap-3 max-w-lg mx-auto">
+          {TRUST_METRICS.map((m) => (
+            <div
+              key={m.label}
+              className="rounded-lg bg-white/50 dark:bg-white/5 backdrop-blur-sm border border-border/60 px-3 py-3.5 text-center"
+            >
+              <div className="text-xl md:text-2xl font-bold text-foreground tracking-tight font-display tabular-nums">
+                {m.value}
+              </div>
+              <div className="text-[11px] font-semibold text-primary mt-0.5">{m.label}</div>
+              <div className="text-[10px] text-muted-foreground mt-0.5">{m.sub}</div>
+            </div>
+          ))}
+        </AnimatedBlock>
       </div>
     </section>
   );

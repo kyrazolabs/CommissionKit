@@ -1,3 +1,7 @@
+    DealPaymentStatus:
+      type: string
+      enum: [unpaid, paid, partial, on_hold]
+
     Deal:
       type: object
       properties:
@@ -21,12 +25,14 @@
           enum: [closed_won, closed_lost, pending]
         currency:
           type: string
+        paymentStatus:
+          $ref: "#/components/schemas/DealPaymentStatus"
         notes:
           type: string
           nullable: true
         createdAt:
           type: string
-      required: [id, repId, repName, name, amount, closeDate, period, stage, currency, notes, createdAt]
+      required: [id, repId, repName, name, amount, closeDate, period, stage, currency, paymentStatus, notes, createdAt]
 
     CreateDealBody:
       type: object
@@ -46,10 +52,13 @@
           enum: [closed_won, closed_lost, pending]
         currency:
           type: string
+        paymentStatus:
+          $ref: "#/components/schemas/DealPaymentStatus"
+          default: unpaid
         notes:
           type: string
           nullable: true
-      required: [repId, name, amount, closeDate, period, stage, currency]
+      required: [repId, name, amount, period, stage, currency]
 
     ImportDealsBody:
       type: object
