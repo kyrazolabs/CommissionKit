@@ -25,6 +25,41 @@ bun run build
 bun run typecheck
 ```
 
+## Dev Nginx Reverse Proxy
+
+The repo includes `dev.nginx.conf` — an nginx config for remote development. It exposes all dev servers through a single port (80) so you can access them from any device over the internet.
+
+| Path | Proxied to | Service |
+|------|-----------|---------|
+| `/` | `127.0.0.1:3000` | Web (Vite) + HMR WebSocket |
+| `/api/*` | `127.0.0.1:8088` | API (Express) |
+| `/blog/*` | `127.0.0.1:3001` | Blog (Next.js, /blog prefix stripped) |
+| `/admin/queues` | `127.0.0.1:3030` | BullMQ Board |
+
+The blog dev server uses port **3001** (not 3000) to avoid collision with the web Vite server.
+
+### Setup (one-time)
+
+```bash
+sudo cp dev.nginx.conf /etc/nginx/sites-available/ckdev
+sudo ln -sf /etc/nginx/sites-available/ckdev /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+> If you want a dedicated dev subdomain (e.g. `ckdev.commissionk.it`), add a DNS A record pointing to the server IP and update `server_name` in the config.
+
+### Usage
+
+```bash
+# Start all dev servers (in separate terminals or via a process runner)
+bun run --filter @workspace/api dev
+bun run --filter @workspace/web dev
+bun run --filter @workspace/blog dev
+bun run --filter @workspace/bullmq dev
+```
+
+Then access from any device at `http://<server-ip>`.
+
 ### Testing
 
 ```bash

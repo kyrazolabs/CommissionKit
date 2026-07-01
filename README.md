@@ -91,6 +91,37 @@ bun run --filter @workspace/web dev
 ```
 *   This starts the React frontend server on port `3000`.
 
+#### Start Blog (Next.js)
+```bash
+bun run --filter @workspace/blog dev
+```
+*   Blog dev server runs on port `3001` to avoid collision with web.
+
+#### Start BullMQ Board
+```bash
+bun run --filter @workspace/bullmq dev
+```
+*   Queue monitoring dashboard on port `3030`.
+
+#### Remote Development via Nginx Proxy
+
+If developing on a remote server, use the included `dev.nginx.conf` to expose all dev servers through a single port (80):
+
+```bash
+# One-time setup
+sudo cp dev.nginx.conf /etc/nginx/sites-available/ckdev
+sudo ln -sf /etc/nginx/sites-available/ckdev /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+
+# Start all services
+bun run --filter @workspace/api dev &
+bun run --filter @workspace/web dev &
+bun run --filter @workspace/blog dev &
+bun run --filter @workspace/bullmq dev &
+```
+
+Then access from any device at `http://<server-ip>`.
+
 ---
 
 ## 📈 Multi-Tier Subscription & Trial Model
