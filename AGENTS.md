@@ -1,5 +1,56 @@
 # AGENTS.md
 
+<!-- BEGIN:context-order -->
+
+## Read Before Anything Else
+
+Read in this exact order before any implementation:
+
+1. `context/project-overview.md`
+2. `context/architecture.md`
+3. `context/ui-tokens.md`
+4. `context/ui-rules.md`
+5. `context/ui-registry.md`
+6. `context/code-standards.md`
+7. `context/library-docs.md`
+8. `context/build-plan.md`
+9. `context/progress-tracker.md`
+
+<!-- END:context-order -->
+
+<!-- BEGIN:immutable-rules -->
+
+## Rules That Never Change
+
+- **Bun only.** No npm, yarn, or pnpm commands. `bun run --filter` for workspace scripts.
+- **Never hardcoded hex values.** Use CSS variables (`bg-primary`, `text-muted-foreground`, `border-card-border`). No raw Tailwind color classes like `text-gray-500`.
+- **No React Router.** Router is Wouter. Do not import `react-router-dom` or use `<BrowserRouter>`.
+- **Mongoose, not raw MongoDB.** All DB access goes through Mongoose models from `@workspace/db`.
+- **No `console.log` in production code.** Use Pino logger (`src/lib/logger`) on the API, no logging in web components.
+- **Test everything that matters.** Run `bun test` before marking work complete. Mock all external services (Stripe, SMTP, S3, Redis).
+- **Update `context/progress-tracker.md`** after completing any feature or significant change.
+- **Before adding a library**, read `context/library-docs.md` for project-specific rules, then check if a skill covers it in `.opencode/skills/`.
+- **If the same problem persists after one corrective prompt** — stop immediately and run `/recover`.
+
+<!-- END:immutable-rules -->
+
+<!-- BEGIN:available-skills -->
+
+## Available Skills
+
+- `/architect` — before any complex feature. Think before building.
+- `/imprint` — after any new UI component. Capture visual patterns to `context/ui-registry.md`.
+- `/review` — after building a feature or before demo. Three-layer review: plan, system, production.
+- `/recover` — when something breaks after one failed correction. Diagnose first, then fix, reset, or rethink.
+- `/remember save` — when a feature spans multiple sessions.
+- `/remember restore` — when returning after a multi-session feature.
+
+## Business OS Skills (in `os/skills/`)
+
+Skills for sales, marketing, and operations workflows live in `os/skills/`. Load them when working on non-engineering tasks.
+
+<!-- END:available-skills -->
+
 ## Monorepo structure
 
 - **Bun** is the only package manager and runtime. Use `bun` for everything.
@@ -359,5 +410,5 @@ test("rep portal email contains rep name and portal link", () => {
 
 - `.agents/` contains design philosophy, and platform overview.
 - `docs/` has enterprise engine architecture docs.
-- `crm/` has sales playbook and CRM platform docs.
+- `os/` has the business operating system: sales playbook, CRM agent workflows, SOPs, GTM, and dashboard.
 - No GitHub Actions CI is configured.
