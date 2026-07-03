@@ -46,6 +46,7 @@ This tracker captures the current state of the codebase as of the latest explora
 | Roles routes | ✅ Done | Custom role CRUD. |
 | Integrations routes | ✅ Done | Connector config and sync triggers. |
 | Enterprise routes | ✅ Done | AISSOL projects, invoices, matrix conditionally mounted. |
+| Apply route | ✅ Done | Public POST `/api/apply` with Zod validation, `applyRateLimit` (5 req/hour), env-driven notification emails, BCC field added to `MailJobSchema` and `sendMail()`. |
 | Standard calc engine | ✅ Done | Flat / tiered / accelerator + FX snapshots. |
 | AISSOL calc engine | ✅ Done | Slab + GM matrix engine. |
 | Engine registry | ✅ Done | Bootstrap at startup. |
@@ -79,6 +80,8 @@ This tracker captures the current state of the codebase as of the latest explora
 | Portal pages | ✅ Done | Standard + AISSOL rep portals. |
 | Landing page | ✅ Done | Full marketing sections. |
 | Marketing pages | ✅ Done | Pricing, features, solutions, contact, legal. |
+| Careers page | ✅ Done | Public `/careers` listing with company values + open positions. |
+| Careers job page | ✅ Done | Public `/careers/:slug` with job details + application form. |
 | i18n | ✅ Done | react-i18next setup. |
 | Notification bell | ✅ Done | Real-time in-app notifications. |
 | Sync indicator | ✅ Done | Mutation + error indicator in header. |
@@ -118,6 +121,7 @@ This tracker captures the current state of the codebase as of the latest explora
 | Engine tests | ✅ Done | `standard.engine.test.ts`, `aissol.engine.test.ts`. |
 | Web hook tests | ✅ Done | `use-auth.test.tsx`, `use-workspace.test.tsx`. |
 | Web component tests | 🔄 Partial | `button.test.tsx` exists; more components can be added. |
+| Apply route test | ✅ Done | Tests validation and email enqueue mock. |
 
 ## 7. Documentation
 
@@ -155,3 +159,4 @@ The following are potential areas for improvement or further verification:
 - Added notifications, payouts, disputes, and rep portal.
 - Added i18n, landing page, and marketing pages.
 - Added SSR prerender for SEO.
+- Added public application page (`/apply`) with email notification to Abdullah + BCC sales.

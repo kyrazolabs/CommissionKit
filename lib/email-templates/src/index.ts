@@ -30,3 +30,6 @@ export type { VerificationCodeTemplateProps } from "./verification-code.js";
 
 export { emailVerificationTemplate } from "./email-verification.js";
 export type { EmailVerificationTemplateProps } from "./email-verification.js";
+
+export { applicationTemplate } from "./application.js";
+export type { ApplicationTemplateProps } from "./application.js";

@@ -154,5 +154,5 @@ Outputs:
 |------|---------|
 | `/root/.hermes/scripts/ck-blog-insert.py` | Insert new blog article to Supabase |
 | `/root/.hermes/scripts/ck-content-review.py` | Weekly performance review |
-| `/root/kyrazo-os/content-system/content-briefs/` | Active content briefs |
-| `/root/kyrazo-os/content-system/keyword-tracker.csv` | Keyword rankings over time |
+| `./content-briefs/` | Active content briefs |
+| `./keyword-tracker.csv` | Keyword rankings over time |

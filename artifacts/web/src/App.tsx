@@ -56,6 +56,8 @@ import { ContactPage } from "@/pages/contact";
 import { FeaturesPage } from "@/pages/features";
 import { SolutionsPage } from "@/pages/solutions";
 import { PricingPage } from "@/pages/pricing";
+import { CareersPage } from "@/pages/careers";
+import { CareersJobPage } from "@/pages/careers-job";
 
 import { ThemeProvider } from "@/hooks/use-theme";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -378,6 +380,8 @@ function App() {
               <Route path="/features" component={FeaturesPage} />
               <Route path="/solutions" component={SolutionsPage} />
               <Route path="/pricing" component={PricingPage} />
+              <Route path="/careers/:slug" component={CareersJobPage} />
+              <Route path="/careers" component={CareersPage} />
               <Route path="/forgot-password" component={() => (
                 <AuthProvider>
                   <AuthPage initialMode="forgot" />

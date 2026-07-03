@@ -1,0 +1,73 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "autoupdate": false,
+  "instructions": [
+    "AGENTS.md",
+    "context/project-overview.md",
+    "context/architecture.md",
+    "context/ui-tokens.md",
+    "context/ui-rules.md",
+    "context/ui-registry.md",
+    "context/code-standards.md",
+    "context/library-docs.md",
+    "context/build-plan.md",
+    "context/progress-tracker.md",
+    "os/README.md",
+    "os/AGENTS.md"
+  ],
+  "skills": {
+    "paths": [".opencode/skills"]
+  },
+  "mcp": {
+    "eraser": {
+      "type": "remote",
+      "url": "https://app.eraser.io/api/mcp",
+      "enabled": true
+    },
+    "twenty": {
+      "type": "remote",
+      "url": "https://crm.commissionk.it/mcp"
+    },
+    "mintlify-docs": {
+      "type": "remote",
+      "url": "https://mintlify.com/docs/mcp",
+      "enabled": true
+    },
+    "mintlify": {
+      "type": "remote",
+      "url": "https://mcp.mintlify.com",
+      "enabled": true,
+      "oauth": {
+        "clientId": "YOUR_MINTLIFY_CLIENT_ID",
+        "clientSecret": "{env:MINTLIFY_CLIENT_SECRET}"
+      }
+    },
+    "better-auth": {
+      "type": "remote",
+      "url": "https://mcp.better-auth.com/mcp"
+    },
+    "coolify": {
+      "type": "local",
+      "command": ["bunx", "-y", "@masonator/coolify-mcp"],
+      "environment": {
+        "COOLIFY_BASE_URL": "https://labs.kyrazo.com",
+        "COOLIFY_ACCESS_TOKEN": "{env:COOLIFY_ACCESS_TOKEN}"
+      }
+    },
+    "jean": {
+      "command": [
+        "jean",
+        "--jean-mcp-stdio"
+      ],
+      "enabled": true,
+      "environment": {
+        "JEAN_MCP_DEPTH": "0",
+        "JEAN_MCP_MODE": "prod",
+        "JEAN_MCP_SESSION": "manual-prod",
+        "JEAN_MCP_SOCKET": "/home/nxion/.local/share/com.jean.desktop/jean-mcp.sock",
+        "JEAN_MCP_TOKEN": "{env:JEAN_MCP_TOKEN}"
+      },
+      "type": "local"
+    }
+  }
+}

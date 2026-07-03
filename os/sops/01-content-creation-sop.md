@@ -18,7 +18,7 @@ Applies to: blog articles, X posts, LinkedIn posts, Reddit posts, newsletters, c
 2. Check competitive content scan for gaps
 3. Check customer support tickets for recurring questions
 4. Select 2 blog topics for the week
-5. Fill out Content Brief (see `/root/kyrazo-os/content-system/blog-seo-pipeline.md`)
+5. Fill out Content Brief (see `../content-system/blog-seo-pipeline.md`)
 
 ### Step 2: First Draft
 1. Write in first person only ("I built", "we shipped")

@@ -59,6 +59,9 @@ Thumbs.db
 .env.production
 cspell.json
 
+# opencode config — local env var placeholders, do not commit local overrides
+opencode.jsonc
+
 # Electrobun build output
 build/
 *.asar
