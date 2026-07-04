@@ -165,3 +165,10 @@ Cards and stat cards typically use `rounded-xl` (14px). Buttons use `rounded-md`
 ```
 
 Global scrollbar uses `scrollbar-width: thin` and `scrollbar-color: hsl(var(--primary) / 0.8) transparent`.
+
+---
+## Where to Go Next
+
+- Back to entry point: `AGENTS.md`
+- Next in technical series: `context/ui-rules.md`
+- Related business context: `os/03-product/product-system.md`

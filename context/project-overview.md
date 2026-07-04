@@ -10,18 +10,40 @@ CommissionKit is a premium B2B SaaS platform for sales commission management. It
 
 ## Core Modules
 
-| Module | What it does |
-|--------|--------------|
-| **Commission Engine** | Calculates commissions using flat, tiered, accelerator, or custom enterprise engines. |
-| **Deals** | Tracks deals by stage, amount, rep, close date, currency, and payment status. |
-| **Plans** | Defines commission plans with tiers, clawback windows, and accelerator thresholds. |
-| **Runs** | Async commission run processing with audit trail and per-deal calculation notes. |
-| **Payouts** | Manages payout lifecycle: pending → approved → paid, with adjustments and CSV export. |
-| **Disputes** | Reps can flag discrepancies; admins review, comment, and resolve. |
-| **Rep Portal** | JWT-based personal dashboard for reps to view earnings, deals, and submit disputes. |
-| **Integrations** | Native connectors for Odoo, Salesforce, HubSpot, and custom REST APIs. |
-| **Billing** | Stripe-powered subscriptions, trials, checkout, and webhook handling. |
-| **Reports** | Executive summary, trends, top performers, deal distribution, and rep drill-down. |
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#F0FDFA', 'primaryTextColor': '#111827', 'primaryBorderColor': '#0D9488', 'lineColor': '#0D9488', 'secondaryColor': '#F3F4F6', 'tertiaryColor': '#FFFFFF' }}}%%
+flowchart LR
+    subgraph Input
+        DEALS[Deals]
+        PLANS[Plans]
+    end
+
+    subgraph Process
+        ENGINE[Commission Engine]
+        RUNS[Runs]
+    end
+
+    subgraph Output
+        PORTAL[Rep Portal]
+        PAYOUTS[Payouts]
+        REPORTS[Reports]
+    end
+
+    DEALS --> ENGINE
+    PLANS --> ENGINE
+    ENGINE --> RUNS
+    RUNS --> PAYOUTS
+    RUNS --> PORTAL
+    PAYOUTS --> REPORTS
+    DEALS --> REPORTS
+
+    INTEGRATIONS[Integrations] --> DEALS
+    BILLING[Billing] --> PLANS
+    DISPUTES[Disputes] --> PAYOUTS
+
+    style ENGINE fill:#F0FDFA,stroke:#0D9488,stroke-width:2px
+    style DISPUTES fill:#FEF3C7,stroke:#D97706,stroke-width:2px
+```
 
 ## Subscription Tiers
 
@@ -61,3 +83,10 @@ CommissionKit is a premium B2B SaaS platform for sales commission management. It
 - Stripe (payments)
 - SMTP provider (emails)
 - S3-compatible storage (log uploads)
+
+---
+## Where to Go Next
+
+- Back to entry point: `AGENTS.md`
+- Next in technical series: `context/architecture.md`
+- Related business context: `os/03-product/product-system.md`

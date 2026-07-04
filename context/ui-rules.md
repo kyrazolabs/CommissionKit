@@ -139,3 +139,10 @@ These rules govern how the frontend is built and maintained. All components and 
 - Use `cn()` from `@/lib/utils` for conditional classes.
 - Prefer functional components and hooks.
 - Keep components focused; extract repeated UI into reusable components.
+
+---
+## Where to Go Next
+
+- Back to entry point: `AGENTS.md`
+- Next in technical series: `context/ui-registry.md`
+- Related business context: `os/03-product/product-system.md`

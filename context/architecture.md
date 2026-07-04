@@ -4,30 +4,44 @@ CommissionKit is a Bun-based monorepo using Bun Workspaces. Applications live in
 
 ## Workspace Layout
 
-```
-CommissionKit/
-├── artifacts/
-│   ├── api/              # Express 5 backend + workers
-│   ├── web/              # React 19 + Vite SPA
-│   ├── blog/             # Next.js marketing blog
-│   └── bullmq/           # BullMQ Board admin UI
-├── lib/
-│   ├── db/               # Mongoose schemas + connection + limits
-│   ├── queue/            # BullMQ queues, workers, mailer, exchange-rate sync
-│   ├── api-spec/         # OpenAPI spec + Orval codegen config
-│   ├── api-zod/          # Shared Zod validators (generated)
-│   ├── api-client-react/ # Auto-generated React Query hooks (generated)
-│   └── email-templates/  # Transactional email HTML templates
-├── plugins/
-│   ├── core/             # Plugin base types, registry, transforms
-│   ├── custom/           # Generic REST API connector
-│   ├── odoo/             # Odoo ERP connector
-│   ├── hubspot/          # HubSpot CRM connector
-│   └── salesforce/       # Salesforce CRM connector
-├── scripts/              # Repository automation scripts
-├── test/                 # Shared DOM setup for web tests
-├── docker-compose.yml    # Coolify deployment (api + web + blog)
-└── dev.nginx.conf        # Local reverse-proxy config
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#F0FDFA', 'primaryTextColor': '#111827', 'primaryBorderColor': '#0D9488', 'lineColor': '#0D9488', 'secondaryColor': '#F3F4F6', 'tertiaryColor': '#FFFFFF' }}}%%
+graph TB
+    subgraph "Applications (artifacts/)"
+        API["api<br/>Express 5 + Workers"]
+        WEB["web<br/>React 19 + Vite"]
+        BLOG["blog<br/>Next.js"]
+        BULL[" bullmq<br/>Queue Board"]
+    end
+
+    subgraph "Shared Libraries (lib/)"
+        DB["@workspace/db<br/>Mongoose + Schemas"]
+        QUEUE["@workspace/queue<br/>BullMQ + Mailer"]
+        SPEC["@workspace/api-spec<br/>OpenAPI + Orval"]
+        ZOD["@workspace/api-zod<br/>Zod Validators"]
+        CLIENT["@workspace/api-client-react<br/>React Query Hooks"]
+        EMAIL["@workspace/email-templates<br/>HTML Templates"]
+    end
+
+    subgraph "Integration Plugins (plugins/)"
+        CORE["@workspace/plugins-core"]
+        ODOO["@workspace/plugins-odoo"]
+        HUB["@workspace/plugins-hubspot"]
+        SF["@workspace/plugins-salesforce"]
+        CUSTOM["@workspace/plugins-custom"]
+    end
+
+    API --> DB
+    API --> QUEUE
+    API --> ZOD
+    WEB --> CLIENT
+    WEB --> ZOD
+    QUEUE --> EMAIL
+    CORE --> ODOO
+    CORE --> HUB
+    CORE --> SF
+    CORE --> CUSTOM
+    API --> CORE
 ```
 
 ## Runtime & Build
@@ -63,29 +77,50 @@ bun test                                     # All tests
 - **Logging**: Pino + pino-http
 - **Monitoring**: Sentry
 
-### Boot Sequence (`src/index.ts`)
+### Boot Sequence
 
-1. Load env / instrument Sentry.
-2. Connect to MongoDB (`@workspace/db`).
-3. Register commission engines (`bootstrapEngines`).
-4. Register integration plugins and rehydrate active connections.
-5. Import workers (`calc-worker`, `sync-reps-worker`, `sync-deals-worker`, `webhook-ingress-worker`, `logs-worker`, plus `@workspace/queue/worker`).
-6. Restore scheduled sync jobs for connected integrations.
-7. Start HTTP server on `PORT`.
-8. Schedule exchange-rate sync and logs flush.
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#F0FDFA', 'primaryTextColor': '#111827', 'primaryBorderColor': '#0D9488', 'lineColor': '#0D9488', 'secondaryColor': '#F3F4F6', 'tertiaryColor': '#FFFFFF' }}}%%
+sequenceDiagram
+    participant Index as src/index.ts
+    participant Sentry as Sentry
+    participant DB as MongoDB
+    participant Engines as Engine Registry
+    participant Plugins as Plugin Registry
+    participant Workers as BullMQ Workers
+    participant Server as HTTP Server
 
-### Request Pipeline (`src/app.ts`)
+    Index->>Sentry: Instrument
+    Index->>DB: connectDB()
+    Index->>Engines: bootstrapEngines()
+    Index->>Plugins: register + rehydrate
+    Index->>Workers: import all workers
+    Index->>Plugins: restore scheduled syncs
+    Index->>Server: listen(PORT)
+    Index->>Workers: schedule exchange-rate + logs
+```
 
-1. `pinoHttp` request logging.
-2. CORS with credentials.
-3. Default rate limiter.
-4. Bull Board at `/api/admin/queues`.
-5. Raw body parser for Stripe webhook.
-6. Better Auth handler at `/api/auth/*`.
-7. JSON / URL-encoded body parsers.
-8. API router at `/api`.
-9. Sentry error handler.
-10. Global error handler (Zod validation → 400, otherwise 500).
+### Request Pipeline
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#F0FDFA', 'primaryTextColor': '#111827', 'primaryBorderColor': '#0D9488', 'lineColor': '#0D9488', 'secondaryColor': '#F3F4F6', 'tertiaryColor': '#FFFFFF' }}}%%
+flowchart LR
+    REQ[Incoming Request] --> PINO[pinoHttp Logger]
+    PINO --> CORS[CORS + Credentials]
+    CORS --> RATE[Rate Limiter]
+    RATE --> BULL["Bull Board<br/>/api/admin/queues"]
+    BULL --> RAW["Raw Body Parser<br/>Stripe Webhook"]
+    RAW --> AUTH["Better Auth<br/>/api/auth/*"]
+    AUTH --> JSON[JSON / URL-encoded Parser]
+    JSON --> API["API Router<br/>/api"]
+    API --> SENTRY[Sentry Error Handler]
+    SENTRY --> GLOBAL[Global Error Handler]
+    GLOBAL --> RES[Response]
+
+    style AUTH fill:#F0FDFA,stroke:#0D9488,stroke-width:2px
+    style API fill:#F0FDFA,stroke:#0D9488,stroke-width:2px
+    style GLOBAL fill:#FEE2E2,stroke:#EF4444,stroke-width:2px
+```
 
 ### Route Modules (`src/routes/`)
 
@@ -244,15 +279,23 @@ Plugins are registered at API boot and support scheduled sync, webhook ingress, 
 
 ## Data Flow
 
-1. Admin creates workspace → chooses currency and engine.
-2. Reps and plans are created (or synced from ERP/CRM).
-3. Deals are imported via CSV/XLSX, UI, or connector sync.
-4. Admin creates a commission run for a period.
-5. `calc-worker` dispatches to the workspace's engine.
-6. Engine writes per-deal results to `CommissionResult`.
-7. Admin reviews results, approves payouts.
-8. Payouts move through lifecycle; reps can dispute.
-9. Emails and notifications are sent via priority queues.
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#F0FDFA', 'primaryTextColor': '#111827', 'primaryBorderColor': '#0D9488', 'lineColor': '#0D9488', 'secondaryColor': '#F3F4F6', 'tertiaryColor': '#FFFFFF' }}}%%
+flowchart TD
+    A["Admin creates workspace<br/>chooses currency + engine"] --> B["Reps & Plans created<br/>or synced from ERP/CRM"]
+    B --> C["Deals imported<br/>CSV / UI / Connector sync"]
+    C --> D["Admin creates commission run<br/>for a period"]
+    D --> E["calc-worker dispatches<br/>to workspace engine"]
+    E --> F["Engine writes per-deal<br/>results to CommissionResult"]
+    F --> G["Admin reviews results<br/>approves payouts"]
+    G --> H["Payouts move through lifecycle<br/>pending → approved → paid"]
+    H --> I["Reps can dispute<br/>via portal"]
+    I --> J["Emails & notifications<br/>sent via priority queues"]
+
+    style A fill:#F0FDFA,stroke:#0D9488,stroke-width:2px
+    style G fill:#F0FDFA,stroke:#0D9488,stroke-width:2px
+    style J fill:#FEF3C7,stroke:#D97706,stroke-width:2px
+```
 
 ## Deployment
 
@@ -260,4 +303,11 @@ Plugins are registered at API boot and support scheduled sync, webhook ingress, 
 - API Dockerfile: `oven/bun:1.3.13-alpine` single-stage.
 - Web Dockerfile: Bun build + Nginx Alpine with prerendered SEO pages.
 - Database stack: `infra/database.docker-compose.yml` (Mongo 7.0 + Redis 7).
-- Nginx reverse proxy: `dev.nginx.conf` for local/remote dev on port 80.
+- Nginx reverse proxy: `dev.nginx.conf` for local/remote dev on port 443 (HTTPS).
+
+---
+## Where to Go Next
+
+- Back to entry point: `AGENTS.md`
+- Next in technical series: `context/ui-tokens.md`
+- Related business context: `os/03-product/engineering/engineering-system.md`

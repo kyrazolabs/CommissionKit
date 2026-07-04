@@ -1,26 +1,227 @@
-# AGENTS.md
+# AGENTS.md — CommissionKit Master Document
+
+**Start here. This file tells you what to read next based on what you're doing.**
+
+---
+
+## Navigation Map
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#F0FDFA', 'primaryTextColor': '#111827', 'primaryBorderColor': '#0D9488', 'lineColor': '#0D9488', 'secondaryColor': '#F3F4F6', 'tertiaryColor': '#FFFFFF' }}}%%
+graph TD
+    AGENTS["AGENTS.md<br/>You are here"] --> TECH[Technical Work]
+    AGENTS --> BIZ[Business Work]
+    AGENTS --> AGENTS_CONFIG[Agent Configuration]
+    AGENTS --> STATUS[Progress & Status]
+
+    TECH --> C1[context/project-overview.md]
+    TECH --> C2[context/architecture.md]
+    TECH --> C3[context/ui-tokens.md]
+    TECH --> C4[context/ui-rules.md]
+    TECH --> C5[context/ui-registry.md]
+    TECH --> C6[context/code-standards.md]
+    TECH --> C7[context/library-docs.md]
+    TECH --> C8[context/build-plan.md]
+    TECH --> C9[context/progress-tracker.md]
+
+    BIZ --> O1[os/00-company/]
+    BIZ --> O2[os/01-strategy/]
+    BIZ --> O3[os/02-revenue/]
+    BIZ --> O4[os/03-product/]
+    BIZ --> O5[os/04-operations/]
+    BIZ --> O6[os/05-people/]
+    BIZ --> O7[os/06-customer/]
+    BIZ --> O8[os/07-tools/]
+    BIZ --> O9[os/08-governance/]
+
+    AGENTS_CONFIG --> CONFIG["/root/.config/opencode/opencode.jsonc"]
+    STATUS --> PT["context/progress-tracker.md"]
+```
+
+---
+
+## Task-Based Reading Order
+
+### If you're building code or fixing bugs:
+1. Read this file (AGENTS.md) — the rules below
+2. `context/project-overview.md` — what the product does
+3. `context/architecture.md` — how it's structured
+4. `context/code-standards.md` — how to write code
+5. `context/ui-rules.md` + `context/ui-tokens.md` — design rules
+6. `context/library-docs.md` — libraries we use
+7. Do the work → run `bun test` → update `context/progress-tracker.md`
+
+### If you're writing content or doing sales:
+1. Read this file (AGENTS.md) — know the product
+2. `os/00-company/identity/company-identity.md` — who we are
+3. `os/02-revenue/sales/sales-system.md` — how we sell
+4. `os/02-revenue/marketing/marketing-system.md` — how we market
+5. Do the work → update `os/STATUS.md`
+
+### If you're planning a feature:
+1. Read this file (AGENTS.md)
+2. `context/project-overview.md` + `context/architecture.md`
+3. `os/03-product/product-system.md` — product process
+4. Load `/architect` skill → produce plan
+5. `os/01-strategy/planning/okrs.md` — align with goals
+
+### If you're deploying or handling infrastructure:
+1. Read this file (AGENTS.md)
+2. `context/build-plan.md` — build steps
+3. `os/03-product/engineering/engineering-system.md` — infra details
+4. `os/07-tools/tools-system.md` — tools and automation
+5. Load `/deploy-verify` skill → follow checklist
+
+---
+
+## Quick Links
+
+| What you need | Where it is |
+|---------------|-------------|
+| **Product overview** | `context/project-overview.md` |
+| **System architecture** | `context/architecture.md` |
+| **Design tokens** | `context/ui-tokens.md` |
+| **UI rules** | `context/ui-rules.md` |
+| **Component registry** | `context/ui-registry.md` |
+| **Code standards** | `context/code-standards.md` |
+| **Library docs** | `context/library-docs.md` |
+| **Build & deploy** | `context/build-plan.md` |
+| **Progress tracker** | `context/progress-tracker.md` |
+| **Company identity** | `os/00-company/identity/company-identity.md` |
+| **Team structure** | `os/00-company/identity/team-structure.md` |
+| **Goals & OKRs** | `os/01-strategy/planning/okrs.md` |
+| **Revenue strategy** | `os/02-revenue/revenue-strategy.md` |
+| **Sales system** | `os/02-revenue/sales/sales-system.md` |
+| **Marketing system** | `os/02-revenue/marketing/marketing-system.md` |
+| **Engineering system** | `os/03-product/engineering/engineering-system.md` |
+| **Product system** | `os/03-product/product-system.md` |
+| **Operations** | `os/04-operations/operations-system.md` |
+| **People & culture** | `os/05-people/people-system.md` |
+| **Customer success** | `os/06-customer/customer-system.md` |
+| **Tools & automation** | `os/07-tools/tools-system.md` |
+| **Governance** | `os/08-governance/governance-system.md` |
+| **OS status** | `os/STATUS.md` |
+| **Agent models** | `os/agents/MODEL-ASSIGNMENTS.md` |
+| **How to use agents** | `os/agents/OPENCODE-GUIDE.md` |
+
+---
 
 <!-- BEGIN:context-order -->
 
-## Read Before Anything Else
+## Technical Context — Read Before Coding
 
 Read in this exact order before any implementation:
 
-1. `context/project-overview.md`
-2. `context/architecture.md`
-3. `context/ui-tokens.md`
-4. `context/ui-rules.md`
-5. `context/ui-registry.md`
-6. `context/code-standards.md`
-7. `context/library-docs.md`
-8. `context/build-plan.md`
-9. `context/progress-tracker.md`
+1. `context/project-overview.md` — What CommissionKit is, who it serves, core modules
+2. `context/architecture.md` — Monorepo structure, backend/frontend architecture, data flow
+3. `context/ui-tokens.md` — CSS variables, colors, typography, spacing tokens
+4. `context/ui-rules.md` — Component rules, accessibility, responsive design
+5. `context/ui-registry.md` — Available UI components and primitives
+6. `context/code-standards.md` — TypeScript conventions, import rules, testing standards
+7. `context/library-docs.md` — Shared libraries (@workspace/db, @workspace/queue, etc.)
+8. `context/build-plan.md` — How to set up, develop, test, and deploy
+9. `context/progress-tracker.md` — What's done, what's in progress, what's planned
 
 <!-- END:context-order -->
 
+<!-- BEGIN:business-os -->
+
+## Business Operating System — Read Before Business Tasks
+
+The `os/` folder is the company operating system. Read the relevant department before doing business work:
+
+- **Company foundation** → `os/00-company/` — Identity, team structure
+- **Strategy** → `os/01-strategy/` — OKRs, planning
+- **Revenue** → `os/02-revenue/` — Sales and marketing playbooks
+- **Product** → `os/03-product/` — Engineering and product development
+- **Operations** → `os/04-operations/` — Legal, finance, admin
+- **People** → `os/05-people/` — Culture, hiring, onboarding
+- **Customer** → `os/06-customer/` — Support and success
+- **Tools** → `os/07-tools/` — Automation, scripts, integrations
+- **Governance** → `os/08-governance/` — Security, compliance, risk
+
+See `os/README.md` for the full OS overview and `os/STATUS.md` for current completion status.
+
+<!-- END:business-os -->
+
+<!-- BEGIN:agent-config -->
+
+## AI Agent Configuration
+
+Agents are defined in `/root/.config/opencode/opencode.jsonc`. Use `@agent-name` in chat to invoke them.
+
+**Available agents:**
+- `@nexus` — Chief of Staff (default). Routes tasks, coordinates teams.
+- `@scout` — Lead Generation. Research, company profiling.
+- `@clutch` — Sales Closer. Outreach, demos, closing.
+- `@bridge` — Partnerships. Integration partners, co-marketing.
+- `@ink` — Content Director. Blog posts, SEO, lead magnets.
+- `@signal` — Social Manager. X, LinkedIn, Reddit engagement.
+- `@lens` — Growth Analyst. Metrics, dashboards, reports.
+- `@forge` — Tech Lead. Code review, architecture, deploy.
+- `@pixel` — Frontend Engineer. React components, UI.
+- `@vault` — DevOps. Infrastructure, security, monitoring.
+- `@compass` — Product Manager. Roadmap, prioritization.
+- `@pulse` — User Research. Surveys, interviews, analytics.
+- `@craft` — UX Designer. Wireframes, flows, design system.
+- `@plan` — Feature Planner. Complex feature planning (/architect).
+- `@review` — Code Reviewer. Post-build verification (/review).
+
+**Model assignments** → `os/agents/MODEL-ASSIGNMENTS.md`
+**Usage guide** → `os/agents/OPENCODE-GUIDE.md`
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#F0FDFA', 'primaryTextColor': '#111827', 'primaryBorderColor': '#0D9488', 'lineColor': '#0D9488', 'secondaryColor': '#F3F4F6', 'tertiaryColor': '#FFFFFF' }}}%%
+graph LR
+    subgraph Command
+        NEXUS["@nexus"]
+    end
+
+    subgraph GTM
+        SCOUT["@scout"]
+        CLUTCH["@clutch"]
+        BRIDGE["@bridge"]
+    end
+
+    subgraph Marketing
+        INK["@ink"]
+        SIGNAL["@signal"]
+        LENS["@lens"]
+    end
+
+    subgraph Development
+        FORGE["@forge"]
+        PIXEL["@pixel"]
+        VAULT["@vault"]
+    end
+
+    subgraph Product
+        COMPASS["@compass"]
+        PULSE["@pulse"]
+        CRAFT["@craft"]
+    end
+
+    NEXUS --> SCOUT
+    NEXUS --> CLUTCH
+    NEXUS --> BRIDGE
+    NEXUS --> INK
+    NEXUS --> SIGNAL
+    NEXUS --> LENS
+    NEXUS --> FORGE
+    NEXUS --> PIXEL
+    NEXUS --> VAULT
+    NEXUS --> COMPASS
+    NEXUS --> PULSE
+    NEXUS --> CRAFT
+```
+
+<!-- END:agent-config -->
+
 <!-- BEGIN:immutable-rules -->
 
-## Rules That Never Change
+## Immutable Rules
+
+These never change. Violate them and the PR gets rejected.
 
 - **Bun only.** No npm, yarn, or pnpm commands. `bun run --filter` for workspace scripts.
 - **Never hardcoded hex values.** Use CSS variables (`bg-primary`, `text-muted-foreground`, `border-card-border`). No raw Tailwind color classes like `text-gray-500`.
@@ -29,6 +230,7 @@ Read in this exact order before any implementation:
 - **No `console.log` in production code.** Use Pino logger (`src/lib/logger`) on the API, no logging in web components.
 - **Test everything that matters.** Run `bun test` before marking work complete. Mock all external services (Stripe, SMTP, S3, Redis).
 - **Update `context/progress-tracker.md`** after completing any feature or significant change.
+- **Update `os/STATUS.md`** after completing any business process or significant OS change.
 - **Before adding a library**, read `context/library-docs.md` for project-specific rules, then check if a skill covers it in `.opencode/skills/`.
 - **If the same problem persists after one corrective prompt** — stop immediately and run `/recover`.
 
@@ -38,6 +240,7 @@ Read in this exact order before any implementation:
 
 ## Available Skills
 
+### Technical Skills (`.opencode/skills/`)
 - `/architect` — before any complex feature. Think before building.
 - `/imprint` — after any new UI component. Capture visual patterns to `context/ui-registry.md`.
 - `/review` — after building a feature or before demo. Three-layer review: plan, system, production.
@@ -45,9 +248,14 @@ Read in this exact order before any implementation:
 - `/remember save` — when a feature spans multiple sessions.
 - `/remember restore` — when returning after a multi-session feature.
 
-## Business OS Skills (in `os/skills/`)
-
-Skills for sales, marketing, and operations workflows live in `os/skills/`. Load them when working on non-engineering tasks.
+### Business Skills (`os/skills/`)
+- `/research` — systematic web research with source verification
+- `/content-seo` — SEO-optimized content creation
+- `/sales-outreach` — outreach methodology and objection handling
+- `/social-engage` — social media engagement rules
+- `/data-report` — structured analytics and reporting
+- `/deploy-verify` — safe deployment checklists
+- `/design-ux` — UX design workflow and accessibility
 
 <!-- END:available-skills -->
 
@@ -56,6 +264,8 @@ Skills for sales, marketing, and operations workflows live in `os/skills/`. Load
 - **Bun** is the only package manager and runtime. Use `bun` for everything.
 - Workspace naming: `@workspace/api`, `@workspace/web`, `@workspace/db`, etc.
 - Applications live in `artifacts/`, shared libraries in `lib/`, scripts in `scripts/`.
+- Business operating system lives in `os/`.
+- Technical context lives in `context/`.
 
 ## Dev commands
 
@@ -78,7 +288,7 @@ bun run typecheck
 
 ## Dev Nginx Reverse Proxy
 
-The repo includes `dev.nginx.conf` — an nginx config for remote development. It exposes all dev servers through a single port (80) so you can access them from any device over the internet.
+The repo includes `dev.nginx.conf` — an nginx config for remote development. It exposes all dev servers through a single port (443).
 
 | Path | Proxied to | Service |
 |------|-----------|---------|
@@ -86,30 +296,6 @@ The repo includes `dev.nginx.conf` — an nginx config for remote development. I
 | `/api/*` | `127.0.0.1:8088` | API (Express) |
 | `/blog/*` | `127.0.0.1:3001` | Blog (Next.js, /blog prefix stripped) |
 | `/admin/queues` | `127.0.0.1:3030` | BullMQ Board |
-
-The blog dev server uses port **3001** (not 3000) to avoid collision with the web Vite server.
-
-### Setup (one-time)
-
-```bash
-sudo cp dev.nginx.conf /etc/nginx/sites-available/ckdev
-sudo ln -sf /etc/nginx/sites-available/ckdev /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-```
-
-> If you want a dedicated dev subdomain (e.g. `ckdev.commissionk.it`), add a DNS A record pointing to the server IP and update `server_name` in the config.
-
-### Usage
-
-```bash
-# Start all dev servers (in separate terminals or via a process runner)
-bun run --filter @workspace/api dev
-bun run --filter @workspace/web dev
-bun run --filter @workspace/blog dev
-bun run --filter @workspace/bullmq dev
-```
-
-Then access from any device at `http://<server-ip>`.
 
 ### Testing
 
@@ -119,285 +305,43 @@ bun test
 
 # Run tests for a specific workspace
 bun test --filter @workspace/db
-bun test --filter @workspace/api
-bun test --filter @workspace/web
-bun test --filter @workspace/queue
 
 # Run a single test file
 bun test artifacts/api/src/routes/reps.test.ts
 
-# Run tests with watch mode (re-run on file changes)
+# Run tests with watch mode
 bun test --watch
 
-# Run tests with coverage (built into Bun)
+# Run tests with coverage
 bun test --coverage
-
-# Run tests matching a pattern
-bun test --test-name-pattern "calc-engine"
 ```
 
-## Local prerequisites
+### Local prerequisites
 
-- **MongoDB** and **Redis** must be running. Defaults: `mongodb://localhost:27017/commissionkit`, `redis://localhost:6379`.
-- Spin up both via Docker: `docker compose -f infra/database.docker-compose.yml up -d` (Mongo 7.0 + Redis 7 alpine).
+- **MongoDB** and **Redis** must be running.
+- Spin up via Docker: `docker compose -f infra/database.docker-compose.yml up -d`
 - Copy `.env.example` to `.env` in both `artifacts/api/` and `artifacts/web/`.
-
-## Environment variables
-
-- Env files are **per-application** (`artifacts/api/.env`, `artifacts/web/.env`), not at the repo root.
-- API requires: `MONGO_URL`, `REDIS_URL`, `SESSION_SECRET`, `BETTER_AUTH_SECRET`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, Stripe price IDs, SMTP credentials, S3 credentials (for log uploads).
 
 ## Architecture notes
 
 - **Backend**: Express 5 with Mongoose/MongoDB. Entry: `artifacts/api/src/index.ts`.
-- **Frontend**: React 19 + Vite 7 + Tailwind CSS 4 + shadcn/ui (Radix). Router is **Wouter** (not React Router). Data fetching uses TanStack React Query with auto-generated hooks from `@workspace/api-client-react`. Entry: `artifacts/web/src/main.tsx`.
-- **Auth**: Better Auth integrated into Express 5. MCP server available at `https://mcp.better-auth.com/mcp` (see `.agents/mcp.json`).
-- **Email queue**: 3 priority tiers (high/medium/low) → SMTP execution queue at 10/sec, concurrency 2. Powered by BullMQ + Redis. Queue prefix: `"ck"`.
-- **Database**: Mongoose (primary) + Drizzle Kit for migrations. Connection logic in `@workspace/db`.
-- **Shared validation**: Zod schemas in `@workspace/api-zod`, consumed by both API and web.
+- **Frontend**: React 19 + Vite 7 + Tailwind CSS 4 + shadcn/ui (Radix). Router is **Wouter**. Data fetching uses TanStack React Query.
+- **Auth**: Better Auth integrated into Express 5.
+- **Email queue**: BullMQ + Redis. 3 priority tiers → SMTP at 10/sec, concurrency 2.
+- **Database**: Mongoose (primary). Connection logic in `@workspace/db`.
+- **Shared validation**: Zod schemas in `@workspace/api-zod`.
 
 ## TypeScript conventions
 
-- Root `tsconfig.json` uses **project references** for `lib/db`, `lib/api-zod`, and `lib/api-client-react` (composite builds with `emitDeclarationOnly`).
+- Root `tsconfig.json` uses **project references** for `lib/db`, `lib/api-zod`, and `lib/api-client-react`.
 - Lib packages emit declarations to `dist/`; apps run `tsc --noEmit`.
-- Zeroconfig: `tsconfig.base.json` sets `moduleResolution: "bundler"`, `target: "es2022"`, `strictNullChecks: true`, `noUnusedLocals: false`.
-
-## Testing
-
-**Bun's built-in test runner** is the only test framework. No Vitest, Jest, or Mocha.
-Test files use the `.test.ts` (or `.test.tsx`) extension, placed adjacent to source files.
-Bun auto-discovers `*.test.*` files — no configuration needed beyond what's described here.
-
-### Test infrastructure
-
-- **MongoDB**: Use `mongodb-memory-server` for isolated in-memory test databases. Never use a real/shared MongoDB database. API route tests share a single MongoDB instance via the `artifacts/api/test/setup-db.ts` helper (ref-counted singleton — each `beforeAll` calls `setupTestDB()`, each `afterAll` calls `teardownTestDB()`).
-- **DOM environment**: Web tests use `happy-dom` registered via `--preload ./test/dom-setup.ts`. The root `package.json` `test` script includes this flag automatically.
-- **Redis**: Use `ioredis-mock` to simulate Redis in tests. No real Redis instance needed during test runs. The `@workspace/queue` connection module reads `REDIS_URL`, so set it to `"redis-mock://"` to trigger mock mode.
-- **Express app**: Import the Express app from `artifacts/api/src/app.ts` directly (not `index.ts` — which starts workers and schedules jobs). Use `supertest` to make HTTP assertions without binding to a real port.
-- **Better Auth**: Auth is mounted at `/api/auth/*`. Use the auth client's `auth.api` methods for user sign-up/sign-in in test setup. Call `auth.api.signUpEmail()` and `auth.api.signInEmail()` with the same headers that `supertest` would pass.
-- **BullMQ**: When `REDIS_URL` is set to the mock, BullMQ workers will use the mock Redis. Disable worker auto-start in tests (`workers` array not registered) to prevent side-effects. Test queue enqueuing/dequeuing behavior directly against the mock Redis.
-- **Stripe**: Always mock Stripe. Either stub `stripe` module methods with `mock.module` or use `nock` to intercept Stripe HTTP calls. Never call the real Stripe API in tests.
-- **SMTP**: Mock nodemailer's `createTransport`. The `@workspace/queue/mailer` module exports the transport — mock `sendMail` to resolve successfully.
-- **S3/Sentry**: Always mock. Sentry can be disabled by not importing `./instrument` and setting `SENTRY_ENABLED=false`-like conditions.
-
-### Test file conventions
-
-```
-lib/db/src/schema/reps.test.ts          # Tests Rep model + insertRepSchema Zod schema
-lib/db/src/limits.test.ts               # Tests PLAN_LIMITS and getPlanLimits()
-lib/queue/src/worker.test.ts            # Tests email queue routing + worker logic
-lib/queue/src/enqueue.test.ts           # Tests enqueueEmail, priority routing
-lib/email-templates/src/welcome.test.ts # Tests template HTML output
-artifacts/api/src/routes/reps.test.ts   # Tests GET/POST/PATCH/DELETE /api/reps
-artifacts/api/src/routes/health.test.ts # Tests GET /api/healthz
-artifacts/api/src/middleware/auth.test.ts # Tests requireAuth, requireWorkspaceMember, requirePermission
-artifacts/api/src/lib/rbac.test.ts      # Tests RBAC permission resolution and caching
-artifacts/api/src/lib/limits.test.ts    # Tests checkLimits against subscription state
-artifacts/api/src/workers/engines/standard.engine.test.ts  # Tests flat/tiered/accelerator calc
-artifacts/api/src/workers/engines/aissol.engine.test.ts    # Tests Aissol matrix calc
-artifacts/web/src/components/ui/button.test.tsx            # Tests button variants, click handlers
-artifacts/web/src/hooks/use-auth.test.tsx                  # Tests auth provider context
-artifacts/web/src/pages/dashboard.test.tsx                 # Tests dashboard page rendering
-```
-
-### Test setup helpers
-
-- **`artifacts/api/test/setup-db.ts`** — Shared MongoDB test helper (ref-counted singleton). Exports `setupTestDB()`, `teardownTestDB()`, `clearCollections()`.
-- **`test/dom-setup.ts`** — happy-dom preload for web tests (loaded via `--preload` flag).
-
-The following factory helpers are defined inline in each API route test file:
-
-- **`setupTestDB()`** — Starts `mongodb-memory-server`, connects Mongoose, returns the connection and URI. Call in `beforeAll`/`beforeEach`.
-- **`teardownTestDB()`** — Drops all collections, disconnects Mongoose, stops memory server. Call in `afterAll`/`afterEach`.
-- **`createTestWorkspace(overrides?)`** — Creates a Workspace + WorkspaceMember with owner role. Returns `{ workspace, member }`.
-- **`createTestRep(workspaceId, overrides?)`** — Creates a Rep with default test data. Returns the rep document.
-- **`createTestPlan(workspaceId, overrides?)`** — Creates a Plan with tiers.
-- **`createTestDeal(workspaceId, repId, overrides?)`** — Creates a Deal.
-- **`createTestUser(email, password)`** — Creates a Better Auth user via `auth.api` and returns session.
-- **`authenticatedRequest(app, session)`** — Returns a `supertest` agent with session cookies and `X-Workspace-ID` header preset. Signature: `request(app).get(...).set('Cookie', cookie).set('X-Workspace-ID', wsId)`.
-
-### Mocking patterns
-
-Bun's built-in mocking: use `mock.module` for module-level mocks and `mock` for function spies.
-
-```ts
-// Mock an entire module
-mock.module("@workspace/queue", () => ({
-  sendMediumPriorityEmail: mock(() => Promise.resolve()),
-  enqueueCommissionCalc: mock(() => Promise.resolve()),
-}));
-
-// Mock Stripe
-mock.module("stripe", () => {
-  const create = mock(() => Promise.resolve({ id: "sub_123", status: "active" }));
-  return {
-    default: mock(() => ({ subscriptions: { create } })),
-  };
-});
-
-// Spy on a function and restore after
-import { describe, test, expect, mock, spyOn } from "bun:test";
-const spy = spyOn(console, "error");
-expect(spy).toHaveBeenCalledTimes(0);
-spy.mockRestore();
-```
-
-### What to test (priorities)
-
-**Highest priority** — business logic with zero external dependencies:
-1. **`lib/db/src/limits.ts`** — `getPlanLimits()` returns correct limits for every plan type.
-2. **`artifacts/api/src/workers/engines/standard.engine.ts`** — Flat rate, tiered splits, accelerators, multi-currency conversion. Every formula variant must be tested with known inputs/outputs.
-3. **`artifacts/api/src/workers/engines/aissol.engine.ts`** — Matrix lookup (slabs + GM brackets), invoice commission calculations.
-4. **`artifacts/api/src/lib/rbac.ts`** — Permission resolution (owner=all, role permissions, wildcard matching, Redis caching with TTL).
-5. **`artifacts/api/src/lib/exchange.ts`** — Currency conversion math, rate fetching, edge cases (zero, negative, missing rates).
-
-**High priority** — API integration tests:
-6. **`artifacts/api/src/routes/reps.ts`** — CRUD + bulk import + portal access code generation.
-7. **`artifacts/api/src/routes/plans.ts`** — CRUD plans with tiers, validation.
-8. **`artifacts/api/src/routes/deals.ts`** — CRUD deals + bulk CSV import + export.
-9. **`artifacts/api/src/routes/runs.ts`** — Commission run creation + calculation enqueuing.
-10. **`artifacts/api/src/routes/payouts.ts`** — Payout lifecycle (pending → approved → paid).
-11. **`artifacts/api/src/routes/disputes.ts`** — Dispute creation, review, resolution.
-12. **`artifacts/api/src/routes/portal.ts`** — JWT-based rep portal auth, login, password change.
-
-**High priority** — middleware/auth:
-13. **`artifacts/api/src/middleware/auth.ts`** — `requireAuth` rejects missing/invalid sessions; `requireWorkspaceMember` rejects non-members and low-role users; `requirePermission` checks RBAC; auto-accept pending invites.
-
-**Medium priority** — queue infrastructure:
-14. **`lib/queue/src/enqueue.ts`** — Job creation with correct priority, deduplication IDs, schemas.
-15. **`lib/queue/src/mailer.ts`** — SMTP transport send, `verifySmtp` behavior.
-16. **`lib/queue/src/worker.ts`** — Email routing (high/medium/low → send queue → SMTP).
-
-**Medium priority** — web components:
-17. **`artifacts/web/src/hooks/use-auth.tsx`** — AuthProvider context values, loading state.
-18. **`artifacts/web/src/hooks/use-workspace.tsx`** — Workspace switching, localStorage persistence.
-19. **`artifacts/web/src/lib/api.ts`** — `apiFetch` adds correct headers (Auth, X-Workspace-ID), handles errors.
-20. **`artifacts/web/src/components/ui/`** — shadcn/ui variant rendering, forward refs, event handlers.
-
-**Medium priority** — email templates:
-21. **`lib/email-templates/src/*.ts`** — Each template function returns valid HTML containing expected strings (rep name, workspace name, links, etc.).
-
-**Lower priority** — direct model tests:
-22. **`lib/db/src/schema/`** — Zod insert schemas reject invalid shapes, accept valid ones. Mongoose model validation for required fields.
-23. **`lib/api-zod/src/generated/api.ts`** — Verify generated Zod schemas match known-good request/response shapes (snapshot tests).
-
-### Writing tests — patterns
-
-**Pure logic tests** (calc engine, RBAC, limits, exchange):
-```ts
-import { describe, test, expect } from "bun:test";
-
-describe("StandardEngine", () => {
-  test("flat rate: $1000 deal at 5% = $50 commission", () => {
-    // Arrange — construct input
-    // Act — call function
-    // Assert — expect exact output
-  });
-
-  test("tiered: $10,000 deal with tiers [0-5k:5%, 5k-10k:7%] = $500", () => {
-    // ...
-  });
-});
-```
-
-**API route tests** (with supertest + test DB):
-```ts
-import { describe, test, expect, beforeAll, afterAll, beforeEach } from "bun:test";
-import request from "supertest";
-import app from "../src/app";
-
-describe("GET /api/reps", () => {
-  let workspace: any;
-
-  beforeAll(async () => {
-    await setupTestDB();
-    workspace = await createTestWorkspace();
-  });
-
-  afterAll(async () => {
-    await teardownTestDB();
-  });
-
-  test("returns 401 without auth", async () => {
-    const res = await request(app).get("/api/reps");
-    expect(res.status).toBe(401);
-  });
-
-  test("returns reps list for authenticated workspace member", async () => {
-    const session = await createSession(workspace.owner);
-    const res = await authenticatedRequest(app, session)
-      .get("/api/reps")
-      .set("X-Workspace-ID", workspace._id.toString());
-    expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
-  });
-});
-```
-
-**Middleware tests** (unit-test middleware directly):
-```ts
-import { requireAuth } from "../src/middleware/auth";
-
-test("requireAuth returns 401 when no session", async () => {
-  const req = { headers: {} } as any;
-  let status = 0;
-  const res = { status: (s: number) => { status = s; return { json: () => {} }; } } as any;
-  const next = () => {};
-  await requireAuth(req, res, next);
-  expect(status).toBe(401);
-});
-```
-
-**React component tests** (with React Testing Library):
-```tsx
-import { describe, test, expect } from "bun:test";
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { Button } from "../src/components/ui/button";
-
-test("Button renders children and handles click", async () => {
-  let clicked = false;
-  render(<Button onClick={() => { clicked = true; }}>Click Me</Button>);
-  await userEvent.click(screen.getByText("Click Me"));
-  expect(clicked).toBe(true);
-});
-```
-
-**Email template tests** (pure output assertions):
-```ts
-import { describe, test, expect } from "bun:test";
-import { repPortalTemplate } from "@workspace/email-templates";
-
-test("rep portal email contains rep name and portal link", () => {
-  const html = repPortalTemplate({
-    repName: "Alice",
-    workspaceName: "Acme Corp",
-    portalUrl: "https://app.example.com/portal/abc123",
-    portalUsername: "alice123",
-    portalPassword: "temp-pass",
-  });
-  expect(html).toContain("Alice");
-  expect(html).toContain("Acme Corp");
-  expect(html).toContain("https://app.example.com/portal/abc123");
-  expect(html).toContain("alice123");
-});
-```
-
-### Test isolation rules
-
-- **Every test file** creates its own in-memory MongoDB. No shared state between test files.
-- **`beforeEach`** clears collections (or use fresh DB per test file) to prevent test order dependencies.
-- **Never import `artifacts/api/src/index.ts`** in tests — it starts servers and workers. Import `app.ts` for Express tests and import modules directly for unit tests.
-- **Never import `dotenv/config`** in test files. Set environment variables in test setup or use `process.env.* = ...` assignments before imports.
-- **Mock all external services** (Stripe, SMTP, S3, Sentry, Google OAuth). The `mock.module` calls must appear before the module is imported — use `beforeAll` with dynamic imports or top-level mocks.
-- **Clean up Redis mock** between tests to prevent job ID collisions and queue state leaks.
+- `moduleResolution`: `bundler`, `target`: `es2022`, `strictNullChecks: true`.
 
 ## Design conventions
 
 - **No emojis in UI.** Use Lucide icons exclusively (stroke width 2px, sizes 14-16px for dense UI).
-- Font: `Inter`. Financial data must use `tabular-nums` for column alignment.
+- Font: `Inter`. Financial data must use `tabular-nums`.
 - Accent color: Teal-600 (`174 72% 35%` light / `174 60% 48%` dark).
-- Radius: `10px` base, `14px` (`rounded-xl`) for cards/buttons.
 - Light + dark mode via `.dark` class on `<html>`.
 
 ## Deployment
@@ -406,9 +350,15 @@ test("rep portal email contains rep name and portal link", () => {
 - API Dockerfile uses `oven/bun:1.3.13-alpine` single-stage.
 - Web Dockerfile builds with Bun, serves via Nginx Alpine with SSR prerendered SEO pages.
 
+## Enterprise Engine Architecture
+
+For custom commission engines (e.g., AISSOL), see:
+- `docs/enterprise-engine-architecture.md` — full specification
+- `docs/enterprise/aissol.md` — AISSOL-specific documentation
+
 ## Additional context
 
-- `.agents/` contains design philosophy, and platform overview.
 - `docs/` has enterprise engine architecture docs.
-- `os/` has the business operating system: sales playbook, CRM agent workflows, SOPs, GTM, and dashboard.
+- `os/` has the business operating system: 8 departments covering company, strategy, revenue, product, operations, people, customer, and governance.
+- `context/` has technical context docs for the codebase.
 - No GitHub Actions CI is configured.

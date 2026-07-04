@@ -95,7 +95,7 @@ sudo ln -sf /etc/nginx/sites-available/ckdev /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-Access at `http://<server-ip>`.
+Access at `https://ckdev.commissionk.it` (or `https://<server-ip>`). The checked-in config uses self-signed certificate paths (`/etc/nginx/ssl/ckdev/`) for the dev preview; replace them with trusted certificates (e.g. Let's Encrypt) for trusted access.
 
 ## 5. Code Generation
 
@@ -231,3 +231,10 @@ See `docs/enterprise-engine-architecture.md` for full specification.
 - [ ] Database migrations/backward-compatible changes applied.
 - [ ] OpenAPI spec regenerated if changed.
 - [ ] Sentry sourcemaps uploaded (production build).
+
+---
+## Where to Go Next
+
+- Back to entry point: `AGENTS.md`
+- Next in technical series: `context/progress-tracker.md`
+- Related business context: `os/07-tools/tools-system.md`

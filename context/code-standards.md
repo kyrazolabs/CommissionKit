@@ -227,3 +227,10 @@ Inline per test file or shared helpers:
 - Update `AGENTS.md` when changing build/test/dev workflows.
 - Keep README focused on human contributors.
 - Use `context/` files for agent/project context summaries.
+
+---
+## Where to Go Next
+
+- Back to entry point: `AGENTS.md`
+- Next in technical series: `context/library-docs.md`
+- Related business context: `os/03-product/engineering/engineering-system.md`

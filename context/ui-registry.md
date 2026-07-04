@@ -238,3 +238,10 @@ All icons are from `lucide-react`. Common icons used:
 - `LayoutDashboard`, `PieChart`, `Users`, `FileText`, `Briefcase`, `PlayCircle`, `Wallet`, `AlertOctagon`
 - `Settings`, `CreditCard`, `Plug`, `Shield`, `Crown`, `Building2`, `FolderKanban`, `Grid3X3`
 - `Sun`, `Moon`, `LifeBuoy`, `LoaderCircle`, `Cloud`, `LogOut`, `ChevronsUpDown`, `Check`, `Plus`
+
+---
+## Where to Go Next
+
+- Back to entry point: `AGENTS.md`
+- Next in technical series: `context/code-standards.md`
+- Related business context: `os/03-product/engineering/engineering-system.md`

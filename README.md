@@ -105,7 +105,7 @@ bun run --filter @workspace/bullmq dev
 
 #### Remote Development via Nginx Proxy
 
-If developing on a remote server, use the included `dev.nginx.conf` to expose all dev servers through a single port (80):
+If developing on a remote server, use the included `dev.nginx.conf` to expose all dev servers through a single port (443) over HTTPS:
 
 ```bash
 # One-time setup
@@ -120,7 +120,9 @@ bun run --filter @workspace/blog dev &
 bun run --filter @workspace/bullmq dev &
 ```
 
-Then access from any device at `http://<server-ip>`.
+Then access from any device at `https://ckdev.commissionk.it` (or `https://<server-ip>`).
+
+> HTTPS requires a valid SSL certificate. The checked-in config uses self-signed certificate paths (`/etc/nginx/ssl/ckdev/`) for the dev preview. Replace these with trusted certificates (e.g. Let's Encrypt) before reloading nginx for trusted access.
 
 ---
 

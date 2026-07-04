@@ -386,3 +386,10 @@ Event tracking wrapper.
 - UI component docs: see `context/ui-registry.md`.
 - Design tokens: see `context/ui-tokens.md`.
 - Code standards: see `context/code-standards.md`.
+
+---
+## Where to Go Next
+
+- Back to entry point: `AGENTS.md`
+- Next in technical series: `context/build-plan.md`
+- Related business context: `os/03-product/engineering/engineering-system.md`

@@ -18,7 +18,7 @@ This tracker captures the current state of the codebase as of the latest explora
 | Monorepo setup | ✅ Done | Bun workspaces, project references, root scripts. |
 | README / AGENTS.md | ✅ Done | Comprehensive dev + test + design docs. |
 | Docker setup | ✅ Done | API, web, blog, database compose files. |
-| Nginx dev proxy | ✅ Done | `dev.nginx.conf` documented. |
+| Nginx dev proxy | ✅ Done | `dev.nginx.conf` documented; HTTPS enabled with HTTP→HTTPS redirect. |
 | Environment examples | ✅ Done | `.env.example` in api and web. |
 
 ## 2. Backend (`artifacts/api`)
@@ -107,7 +107,19 @@ This tracker captures the current state of the codebase as of the latest explora
 | `@workspace/plugins-hubspot` | ✅ Done | HubSpot connector. |
 | `@workspace/plugins-custom` | ✅ Done | Generic REST connector. |
 
-## 6. Testing
+## 6. AI Workforce (`os/agents/`)
+
+| Area | Status | Notes |
+|------|--------|-------|
+| Agent definitions | ✅ Done | 14 agents across 4 teams + Nexus leader. |
+| Skill registry | ✅ Done | 12 skills: 5 technical (.opencode/skills/) + 7 business (os/skills/). All assigned to agents. |
+| Task orchestrator | ✅ Done | Nexus routes tasks by skill match, tools, access, workload. |
+| Web access layer | ✅ Done | Quota-based browsing (20/hr/agent), full audit trail. |
+| CLI interface | ✅ Done | `agents-cli.ts` with status, org, brief, skills, nexus commands. |
+| Execution engine | ✅ Done | TypeScript engine with programmatic API. |
+| Skill comparison | ✅ Done | Agent-vs-agent task suitability scoring. |
+
+## 7. Testing
 
 | Area | Status | Notes |
 |------|--------|-------|
@@ -123,19 +135,19 @@ This tracker captures the current state of the codebase as of the latest explora
 | Web component tests | 🔄 Partial | `button.test.tsx` exists; more components can be added. |
 | Apply route test | ✅ Done | Tests validation and email enqueue mock. |
 
-## 7. Documentation
+## 8. Documentation
 
 | Area | Status | Notes |
 |------|--------|-------|
 | README.md | ✅ Done | Human-facing quick start. |
 | AGENTS.md | ✅ Done | Agent-facing conventions. |
 | Enterprise engine architecture | ✅ Done | Full spec in `docs/`. |
-| Design system | ✅ Done | `.agents/DESIGN.md`. |
-| Platform overview | ✅ Done | `.agents/PLATFORM.md`. |
-| Payout architecture research | ✅ Done | `.agents/REPORT.md`. |
+| Design system | ✅ Done | `context/ui-tokens.md` + `context/ui-rules.md`. |
+| Platform overview | ✅ Done | `context/architecture.md`. |
+| Payout architecture research | ✅ Done | `os/03-product/product-system.md`. |
 | Context docs | ✅ Done | This folder. |
 
-## 8. Known Gaps / Next Steps
+## 9. Known Gaps / Next Steps
 
 The following are potential areas for improvement or further verification:
 
@@ -150,7 +162,7 @@ The following are potential areas for improvement or further verification:
 | Performance | Audit bundle size and query cache settings. |
 | Email deliverability | Verify SPF/DKIM/DMARC for production SMTP. |
 
-## 9. Recent Changes
+## 10. Recent Changes
 
 - Added pluggable commission engine architecture.
 - Added AISSOL enterprise engine and routes.
@@ -160,3 +172,13 @@ The following are potential areas for improvement or further verification:
 - Added i18n, landing page, and marketing pages.
 - Added SSR prerender for SEO.
 - Added public application page (`/apply`) with email notification to Abdullah + BCC sales.
+- Added **AI Workforce** (`os/agents/`) — 15 named agents across 4 teams with skill verification, task orchestration, web access quotas, and CLI interface.
+- Added **OpenCode-native agent configuration** in global `opencode.jsonc` with 15 agents using optimized models.
+- Added **7 new business skills** in `os/skills/` (research, content-seo, social-engage, data-report, deploy-verify, design-ux, sales-outreach) all mapped to agents.
+- Cleaned and interconnected all markdown files: `AGENTS.md` is the single entry point for both technical (`context/`) and business (`os/`) documentation.
+
+---
+## Where to Go Next
+
+- Back to entry point: `AGENTS.md`
+- Related business context: `os/STATUS.md`
