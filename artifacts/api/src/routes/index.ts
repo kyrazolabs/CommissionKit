@@ -16,6 +16,7 @@ import disputesRouter from "./disputes/routes";
 import rolesRouter from "./roles/routes";
 import enterpriseRouter from "./enterprise";
 import integrationsRouter from "./integrations/routes";
+import applyRouter from "./apply/routes";
 
 const router: IRouter = Router();
 
@@ -36,6 +37,7 @@ router.use("/disputes", disputesRouter);
 router.use(rolesRouter);
 router.use("/enterprise", enterpriseRouter);
 router.use("/integrations", integrationsRouter);
+router.use(applyRouter);
 
 // Sentry integration test route
 router.get("/debug-sentry", (req, res) => {

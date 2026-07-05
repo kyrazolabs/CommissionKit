@@ -55,7 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <meta name="theme-color" content="#0D9488" />
         {/* Umami Analytics — privacy-first analytics */}
-        <script defer src="https://a.commissionk.it/script.js" data-website-id="75bac959-4dc2-414b-b9c7-bafaeeff3db2"></script>
+        <script defer src="https://a.commissionk.it/script.js" data-website-id="69d72e35-987d-4855-a00f-b193ade7a494"></script>
       </head>
       <body className={cn("min-h-screen bg-sidebar font-sans antialiased")}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>

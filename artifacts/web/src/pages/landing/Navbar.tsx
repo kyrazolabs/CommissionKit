@@ -36,6 +36,7 @@ export function Navbar({ containerRef }: { containerRef?: React.RefObject<HTMLDi
               <a href="/features" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Features</a>
               <a href="/solutions" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Solutions</a>
               <a href="/pricing" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Pricing</a>
+              <a href="/careers" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Careers</a>
               <a href="/blog" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Blog</a>
               <a href="/calculator" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Calculator</a>
               <a href="https://docs.commissionk.it" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Documentations</a>
@@ -71,6 +72,7 @@ export function Navbar({ containerRef }: { containerRef?: React.RefObject<HTMLDi
           <a href="/features" onClick={() => setMobileMenuOpen(false)} className="border-b border-border pb-4">Features</a>
           <a href="/solutions" onClick={() => setMobileMenuOpen(false)} className="border-b border-border pb-4">Solutions</a>
           <a href="/pricing" onClick={() => setMobileMenuOpen(false)} className="border-b border-border pb-4">Pricing</a>
+          <a href="/careers" onClick={() => setMobileMenuOpen(false)} className="border-b border-border pb-4">Careers</a>
           <a href="/blog" onClick={() => setMobileMenuOpen(false)} className="border-b border-border pb-4">Blog</a>
           <a href="/calculator" onClick={() => setMobileMenuOpen(false)} className="border-b border-border pb-4">Calculator</a>
           <a href="https://docs.commissionk.it" onClick={() => setMobileMenuOpen(false)} className="border-b border-border pb-4">Docs</a>

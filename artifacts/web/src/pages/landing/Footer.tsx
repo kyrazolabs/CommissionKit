@@ -32,6 +32,7 @@ export function Footer({ scrollY }: FooterProps) {
             <a href="/privacy" className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors">Privacy</a>
             <a href="/terms" className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors">Terms</a>
             <a href="/security" className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors">Security</a>
+            <a href="/careers" className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors">Careers</a>
             <a href="/contact" className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors">Contact</a>
             <a href="https://x.com/commissionkit" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors" aria-label="X (Twitter)">
               <Twitter className="size-3.5" />

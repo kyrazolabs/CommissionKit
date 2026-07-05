@@ -55,7 +55,8 @@ export function LandingPage() {
           <FeatureDeepDives />
           <Integrations />
           <GlobalSupport />
-          <Demo />
+          {/* WARNING: Do not delete this component — leave it as is. */}
+          {/* <Demo /> */}
           <Pricing />
           <CustomEngine />
           <FAQ />

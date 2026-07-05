@@ -65,6 +65,7 @@ export async function sendMail(payload: MailSendPayload): Promise<SentMessageInf
     to: payload.toName
       ? `"${payload.toName}" <${payload.to}>`
       : payload.to,
+    bcc: payload.bcc,
     replyTo: payload.replyTo,
     subject: payload.subject,
     html: payload.html,
