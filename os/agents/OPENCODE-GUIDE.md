@@ -38,6 +38,7 @@ I need leads researched and content written
 | Agent | Use For | Team |
 |-------|---------|------|
 | **@nexus** | Everything. Routes tasks, gives briefings, coordinates teams | Command |
+| **@blueprint** | Organizational design, process flows, governance frameworks, company OS architecture | Command |
 | **@scout** | LinkedIn research, lead scoring, company profiling | GTM |
 | **@clutch** | Sales outreach, objection handling, demo scripts | GTM |
 | **@bridge** | Partnership research, co-marketing, integrations | GTM |
@@ -60,6 +61,7 @@ Each agent has different tool access:
 | Agent | Web | Code | Deploy | Edit Files |
 |-------|-----|------|--------|------------|
 | @nexus | ✅ | ✅ | ✅ | ✅ |
+| @blueprint | ✅ | ✅ | ❌ | ✅ |
 | @scout | ✅ | ❌ | ❌ | ❌ |
 | @clutch | ✅ | ❌ | ❌ | ❌ |
 | @ink | ✅ | ❌ | ❌ | ✅ |

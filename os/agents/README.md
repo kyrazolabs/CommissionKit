@@ -4,7 +4,7 @@ The AI agent workforce is organized into 5 teams under a single command structur
 
 | Team | Folder | Agents | Purpose |
 |------|--------|--------|---------|
-| **Command** | `nexus/` | @nexus | Task routing, cross-team coordination, strategic decisions |
+| **Command** | `nexus/` | @nexus, @blueprint | Task routing, organizational design, company architecture |
 | **GTM** | `gtm/` | @scout, @clutch, @bridge | Lead generation, sales, partnerships |
 | **Marketing** | `marketing/` | @ink, @signal, @lens | Content, social media, analytics |
 | **Development** | `development/` | @forge, @pixel, @vault | Code, UI, infrastructure |

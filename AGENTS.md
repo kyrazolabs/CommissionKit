@@ -126,6 +126,7 @@ Agents are defined in `/root/.config/opencode/opencode.jsonc`. Use `@agent-name`
 
 **Available agents:**
 - `@nexus` — Chief of Staff (default). Routes tasks, coordinates teams.
+- `@blueprint` — Company Architect. Organizational design, process architecture, governance.
 - `@scout` — Lead Generation. Research, company profiling.
 - `@clutch` — Sales Closer. Outreach, demos, closing.
 - `@bridge` — Partnerships. Integration partners, co-marketing.
@@ -149,6 +150,7 @@ Agents are defined in `/root/.config/opencode/opencode.jsonc`. Use `@agent-name`
 graph LR
     subgraph Command
         NEXUS["@nexus"]
+        BLUEPRINT["@blueprint"]
     end
 
     subgraph GTM
@@ -175,6 +177,7 @@ graph LR
         CRAFT["@craft"]
     end
 
+    NEXUS --> BLUEPRINT
     NEXUS --> SCOUT
     NEXUS --> CLUTCH
     NEXUS --> BRIDGE

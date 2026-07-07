@@ -66,6 +66,7 @@ Our AI workforce is managed from `os/agents/`:
 graph LR
     subgraph Command
         NEXUS["Nexus<br/>Chief of Staff"]
+        BLUEPRINT["Blueprint<br/>Company Architect"]
     end
 
     subgraph GTM
@@ -92,6 +93,7 @@ graph LR
         CRAFT["Craft<br/>UX Design"]
     end
 
+    NEXUS --> BLUEPRINT
     NEXUS --> SCOUT
     NEXUS --> CLUTCH
     NEXUS --> BRIDGE
