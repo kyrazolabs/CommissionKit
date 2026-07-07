@@ -145,4 +145,4 @@ These rules govern how the frontend is built and maintained. All components and 
 
 - Back to entry point: `AGENTS.md`
 - Next in technical series: `context/ui-registry.md`
-- Related business context: `os/03-product/product-system.md`
+- Related business context: AFFiNE OS (`https://affine.commissionk.it`)

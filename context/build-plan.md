@@ -237,4 +237,4 @@ See `docs/enterprise-engine-architecture.md` for full specification.
 
 - Back to entry point: `AGENTS.md`
 - Next in technical series: `context/progress-tracker.md`
-- Related business context: `os/07-tools/tools-system.md`
+- Related business context: AFFiNE OS (`https://affine.commissionk.it`)

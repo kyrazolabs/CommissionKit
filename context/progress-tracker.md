@@ -144,7 +144,7 @@ This tracker captures the current state of the codebase as of the latest explora
 | Enterprise engine architecture | ✅ Done | Full spec in `docs/`. |
 | Design system | ✅ Done | `context/ui-tokens.md` + `context/ui-rules.md`. |
 | Platform overview | ✅ Done | `context/architecture.md`. |
-| Payout architecture research | ✅ Done | `os/03-product/product-system.md`. |
+| Payout architecture research | ✅ Done | AFFiNE OS — `https://affine.commissionk.it`. |
 | Context docs | ✅ Done | This folder. |
 
 ## 9. Known Gaps / Next Steps
@@ -164,6 +164,10 @@ The following are potential areas for improvement or further verification:
 
 ## 10. Recent Changes
 
+- **OS migration to AFFiNE**: All company documentation (identity, strategy, revenue, product, operations, people, customer, tools, governance) migrated from `os/` numbered folders to AFFiNE at `https://affine.commissionk.it`. Numbered folders deleted from repo.
+- **os/agents/ restructured**: Team folder structure created with nexus/gtm/marketing/development/product/ directories, each with `workflows/` and `scripts/` subdirectories. Team READMEs and workflow templates created.
+- **Documentation updated**: AGENTS.md, os/README.md, os/STATUS.md all updated to point to AFFiNE as canonical business OS source.
+- AFFiNE MCP server (v2.5.0) configured and tested — full access to workspace via 95 tools.
 - Added pluggable commission engine architecture.
 - Added AISSOL enterprise engine and routes.
 - Added integration plugins (Odoo, Salesforce, HubSpot, custom REST).

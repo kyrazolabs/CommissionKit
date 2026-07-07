@@ -392,4 +392,4 @@ Event tracking wrapper.
 
 - Back to entry point: `AGENTS.md`
 - Next in technical series: `context/build-plan.md`
-- Related business context: `os/03-product/engineering/engineering-system.md`
+- Related business context: AFFiNE OS (`https://affine.commissionk.it`)
