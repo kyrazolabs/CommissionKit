@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "affine-mcp-server-integration": {
+      "source": "aradotso/mcp-skills",
+      "sourceType": "github",
+      "skillPath": "skills/affine-mcp-server-integration/SKILL.md",
+      "computedHash": "7f79d00c61533668f2a90e9c8662ea971576f3d0e0e824fdb4474957f51d3c82"
+    }
+  }
+}
