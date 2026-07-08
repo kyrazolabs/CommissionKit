@@ -18,8 +18,21 @@ export function Hero() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     Analytics.landingCTAClick("hero_start");
+
+    // Fire-and-forget lead capture before redirect
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
+    const leadEmail = email.trim();
+    if (leadEmail) {
+      fetch(`${API_URL}/api/leads`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: leadEmail, source: "hero" }),
+        keepalive: true,
+      }).catch(() => {});
+    }
+
     const params = new URLSearchParams();
-    if (email.trim()) params.set("email", email.trim());
+    if (leadEmail) params.set("email", leadEmail);
     window.location.href = `/register${params.toString() ? `?${params}` : ""}`;
   };
 

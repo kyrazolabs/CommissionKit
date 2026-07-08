@@ -10,8 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useIsMobile } from "@/pages/landing/hooks";
-import { Check, Calculator, ArrowRight, Percent, DollarSign, TrendingUp, BarChart3, Users, Shield, Trash2 } from "lucide-react";
+import { Check, Calculator, ArrowRight, Percent, DollarSign, TrendingUp, BarChart3, Users, Shield, Trash2, Mail, LoaderCircle } from "lucide-react";
 import { Analytics } from "@/lib/analytics";
+import { cn } from "@/lib/utils";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 
 type PlanType = "flat" | "tiered" | "accelerator";
 
@@ -152,6 +155,18 @@ export function CommissionCalculator() {
   ]);
   const [result, setResult] = useState<CalcResult | null>(null);
   const [calculated, setCalculated] = useState(false);
+  const [leadCaptured, setLeadCaptured] = useState(false);
+  const [leadEmail, setLeadEmail] = useState("");
+  const [leadName, setLeadName] = useState("");
+  const [isSubmittingLead, setIsSubmittingLead] = useState(false);
+  const [leadError, setLeadError] = useState("");
+
+  // Pre-fill email from URL params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const emailParam = params.get("email");
+    if (emailParam) setLeadEmail(emailParam);
+  }, []);
 
   function handleCalculate(e: React.FormEvent) {
     e.preventDefault();
@@ -195,6 +210,30 @@ export function CommissionCalculator() {
   function handleReset() {
     setCalculated(false);
     setResult(null);
+    setLeadCaptured(false);
+  }
+
+  async function handleLeadSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLeadError("");
+    const trimmedEmail = leadEmail.trim();
+    if (!trimmedEmail) {
+      setLeadError("Please enter your email address.");
+      return;
+    }
+    setIsSubmittingLead(true);
+    try {
+      await fetch(`${API_URL}/api/leads`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trimmedEmail, name: leadName.trim() || undefined, source: "calculator" }),
+      });
+      setLeadCaptured(true);
+    } catch {
+      setLeadError("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmittingLead(false);
+    }
   }
 
   const amount = parseFloat(dealAmount) || 0;
@@ -337,6 +376,7 @@ export function CommissionCalculator() {
 
             {result && (
               <div className="mt-6 sm:mt-8 animate-in fade-in slide-in-from-top-2 duration-300 space-y-6 sm:space-y-8">
+                {/* Headline cards — always visible */}
                 <Card>
                   <CardContent className="p-5 sm:p-6 md:p-8">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6">
@@ -354,7 +394,8 @@ export function CommissionCalculator() {
                       </div>
                     </div>
 
-                    {result.breakdown.length > 0 && (
+                    {/* Breakdown + gated sections — only when lead is captured */}
+                    {leadCaptured && result.breakdown.length > 0 && (
                       <div className="border-t border-border/60 pt-5 sm:pt-6">
                         <h3 className="text-sm font-semibold text-foreground mb-3">Calculation Breakdown</h3>
                         <ul className="space-y-2">
@@ -370,88 +411,150 @@ export function CommissionCalculator() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-primary/[0.02] to-transparent">
-                  <CardContent className="p-6 sm:p-8 md:p-10 text-center">
-                    <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-2 tracking-tight">
-                      Automate This Entire Process
-                    </h2>
-                    <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto mb-6 sm:mb-8">
-                      Stop calculating commissions manually. CommissionKit automates everything — from deal tracking to payouts.
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8 text-left">
-                      <Card className="border-border/60">
-                        <CardContent className="p-3 sm:p-4">
-                          <BarChart3 className="size-5 text-primary mb-2" />
-                          <h4 className="font-semibold text-foreground text-sm">Import & Track Deals</h4>
-                          <p className="text-xs text-muted-foreground mt-1">Bulk import from CSV or XLSX.</p>
+                {/* Email gate — shown when lead not yet captured */}
+                {!leadCaptured && (
+                  <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-primary/[0.02] to-transparent">
+                    <CardContent className="p-6 sm:p-8 md:p-10 text-center">
+                      <div className="flex justify-center mb-4">
+                        <div className="flex size-12 rounded-full bg-primary/10 items-center justify-center">
+                          <Mail className="size-5 text-primary" />
+                        </div>
+                      </div>
+                      <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-2 tracking-tight">
+                        See the Full Breakdown
+                      </h2>
+                      <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto mb-6">
+                        Enter your email to unlock the complete calculation details and see how CommissionKit can automate this for you.
+                      </p>
+                      <form onSubmit={handleLeadSubmit} className="max-w-sm mx-auto space-y-3">
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                          <Input
+                            type="email"
+                            value={leadEmail}
+                            onChange={(e) => setLeadEmail(e.target.value)}
+                            placeholder="Your work email"
+                            className="pl-9"
+                            aria-label="Email address"
+                          />
+                        </div>
+                        <Input
+                          type="text"
+                          value={leadName}
+                          onChange={(e) => setLeadName(e.target.value)}
+                          placeholder="Your name (optional)"
+                          aria-label="Your name"
+                        />
+                        {leadError && (
+                          <p className="text-xs text-destructive text-left">{leadError}</p>
+                        )}
+                        <Button
+                          type="submit"
+                          className="w-full font-bold shadow-sm"
+                          disabled={isSubmittingLead}
+                        >
+                          {isSubmittingLead ? (
+                            <>
+                              <LoaderCircle className="size-4 mr-2 animate-spin" />
+                              Sending…
+                            </>
+                          ) : (
+                            "See Full Breakdown"
+                          )}
+                        </Button>
+                        <p className="text-xs text-muted-foreground">No spam, just your results.</p>
+                      </form>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Full results — shown only when lead is captured */}
+                {leadCaptured && (
+                  <>
+                    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-primary/[0.02] to-transparent">
+                      <CardContent className="p-6 sm:p-8 md:p-10 text-center">
+                        <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-2 tracking-tight">
+                          Automate This Entire Process
+                        </h2>
+                        <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto mb-6 sm:mb-8">
+                          Stop calculating commissions manually. CommissionKit automates everything — from deal tracking to payouts.
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8 text-left">
+                          <Card className="border-border/60">
+                            <CardContent className="p-3 sm:p-4">
+                              <BarChart3 className="size-5 text-primary mb-2" />
+                              <h4 className="font-semibold text-foreground text-sm">Import & Track Deals</h4>
+                              <p className="text-xs text-muted-foreground mt-1">Bulk import from CSV or XLSX.</p>
+                            </CardContent>
+                          </Card>
+                          <Card className="border-border/60">
+                            <CardContent className="p-3 sm:p-4">
+                              <TrendingUp className="size-5 text-primary mb-2" />
+                              <h4 className="font-semibold text-foreground text-sm">Auto-Calculate</h4>
+                              <p className="text-xs text-muted-foreground mt-1">Run period-based calculations in one click.</p>
+                            </CardContent>
+                          </Card>
+                          <Card className="border-border/60">
+                            <CardContent className="p-3 sm:p-4">
+                              <Users className="size-5 text-primary mb-2" />
+                              <h4 className="font-semibold text-foreground text-sm">Rep Self-Service</h4>
+                              <p className="text-xs text-muted-foreground mt-1">Give every rep a portal to view their earnings.</p>
+                            </CardContent>
+                          </Card>
+                        </div>
+                        <Button className="font-bold shadow-sm w-full sm:w-auto" asChild>
+                          <a href="/register">Start Your Free Trial</a>
+                        </Button>
+                        <p className="text-xs text-muted-foreground mt-3">No credit card required · 14-day free trial · Cancel anytime</p>
+                      </CardContent>
+                    </Card>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                      <Card>
+                        <CardContent className="p-4 sm:p-6">
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="flex size-8 sm:size-10 rounded-lg bg-red-100 dark:bg-red-900/20 items-center justify-center">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-500"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                            </div>
+                            <h3 className="font-semibold text-foreground text-sm sm:text-base">Doing It Manually</h3>
+                          </div>
+                          <ul className="space-y-2">
+                            {["Error-prone spreadsheets", "Missed deals and commissions", "Reps can't see their earnings", "Hours wasted every pay period"].map((item) => (
+                              <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground"><span className="text-red-400">✕</span> {item}</li>
+                            ))}
+                          </ul>
                         </CardContent>
                       </Card>
-                      <Card className="border-border/60">
-                        <CardContent className="p-3 sm:p-4">
-                          <TrendingUp className="size-5 text-primary mb-2" />
-                          <h4 className="font-semibold text-foreground text-sm">Auto-Calculate</h4>
-                          <p className="text-xs text-muted-foreground mt-1">Run period-based calculations in one click.</p>
-                        </CardContent>
-                      </Card>
-                      <Card className="border-border/60">
-                        <CardContent className="p-3 sm:p-4">
-                          <Users className="size-5 text-primary mb-2" />
-                          <h4 className="font-semibold text-foreground text-sm">Rep Self-Service</h4>
-                          <p className="text-xs text-muted-foreground mt-1">Give every rep a portal to view their earnings.</p>
+                      <Card className="border-primary/20 bg-gradient-to-br from-primary/[0.02] to-transparent">
+                        <CardContent className="p-4 sm:p-6">
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="flex size-8 sm:size-10 rounded-lg bg-primary/10 items-center justify-center">
+                              <Check className="size-4 sm:size-5 text-primary" />
+                            </div>
+                            <h3 className="font-semibold text-foreground text-sm sm:text-base">With CommissionKit</h3>
+                          </div>
+                          <ul className="space-y-2">
+                            {["Automated, error-free calculations", "Every deal tracked and attributed", "Real-time rep visibility via portal", "Payouts done in minutes, not days"].map((item) => (
+                              <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground"><Check className="size-4 text-primary shrink-0" /> {item}</li>
+                            ))}
+                          </ul>
                         </CardContent>
                       </Card>
                     </div>
-                    <Button className="font-bold shadow-sm w-full sm:w-auto" asChild>
-                      <a href="/register">Start Your Free Trial</a>
-                    </Button>
-                    <p className="text-xs text-muted-foreground mt-3">No credit card required · 14-day free trial · Cancel anytime</p>
-                  </CardContent>
-                </Card>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                  <Card>
-                    <CardContent className="p-4 sm:p-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="flex size-8 sm:size-10 rounded-lg bg-red-100 dark:bg-red-900/20 items-center justify-center">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-500"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                        </div>
-                        <h3 className="font-semibold text-foreground text-sm sm:text-base">Doing It Manually</h3>
-                      </div>
-                      <ul className="space-y-2">
-                        {["Error-prone spreadsheets", "Missed deals and commissions", "Reps can't see their earnings", "Hours wasted every pay period"].map((item) => (
-                          <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground"><span className="text-red-400">✕</span> {item}</li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-primary/20 bg-gradient-to-br from-primary/[0.02] to-transparent">
-                    <CardContent className="p-4 sm:p-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="flex size-8 sm:size-10 rounded-lg bg-primary/10 items-center justify-center">
-                          <Check className="size-4 sm:size-5 text-primary" />
-                        </div>
-                        <h3 className="font-semibold text-foreground text-sm sm:text-base">With CommissionKit</h3>
-                      </div>
-                      <ul className="space-y-2">
-                        {["Automated, error-free calculations", "Every deal tracked and attributed", "Real-time rep visibility via portal", "Payouts done in minutes, not days"].map((item) => (
-                          <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground"><Check className="size-4 text-primary shrink-0" /> {item}</li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <div className="text-center border-t border-border/60 pt-8 sm:pt-10">
-                  <Badge variant="secondary" className="mb-4 text-primary bg-primary/10 border-primary/20 hover:bg-primary/15">
-                    <Shield className="size-3.5 mr-1.5" />
-                    14-Day Free Trial
-                  </Badge>
-                  <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2">Ready to simplify your commission process?</h3>
-                  <p className="text-sm sm:text-base text-muted-foreground mb-6">Join teams that trust CommissionKit to manage millions in commissions.</p>
-                  <Button className="font-bold shadow-sm w-full sm:w-auto" asChild>
-                    <a href="/register">Get Started Free →</a>
-                  </Button>
-                </div>
+                    <div className="text-center border-t border-border/60 pt-8 sm:pt-10">
+                      <Badge variant="secondary" className="mb-4 text-primary bg-primary/10 border-primary/20 hover:bg-primary/15">
+                        <Shield className="size-3.5 mr-1.5" />
+                        14-Day Free Trial
+                      </Badge>
+                      <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2">Ready to simplify your commission process?</h3>
+                      <p className="text-sm sm:text-base text-muted-foreground mb-6">Join teams that trust CommissionKit to manage millions in commissions.</p>
+                      <Button className="font-bold shadow-sm w-full sm:w-auto" asChild>
+                        <a href="/register">Get Started Free</a>
+                      </Button>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </section>

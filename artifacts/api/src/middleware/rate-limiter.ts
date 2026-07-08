@@ -37,6 +37,14 @@ const applyLimiter = new RateLimiterRedis({
   blockDuration: 3600, // block for 1 hour after exceeding
 });
 
+const leadLimiter = new RateLimiterRedis({
+  storeClient: redisClient,
+  keyPrefix: "rl:lead",
+  points: 5,
+  duration: 3600, // 1 hour
+  blockDuration: 3600, // block for 1 hour after exceeding
+});
+
 function getClientIp(req: Request): string {
   const forwarded = req.headers["x-forwarded-for"];
   if (typeof forwarded === "string") return forwarded.split(",")[0].trim();
@@ -88,4 +96,8 @@ export function webhookRateLimit(req: Request, res: Response, next: NextFunction
 
 export function applyRateLimit(req: Request, res: Response, next: NextFunction): void {
   consumeRateLimit(applyLimiter, req, res, next);
+}
+
+export function leadRateLimit(req: Request, res: Response, next: NextFunction): void {
+  consumeRateLimit(leadLimiter, req, res, next);
 }

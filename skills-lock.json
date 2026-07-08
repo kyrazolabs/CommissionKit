@@ -6,6 +6,18 @@
       "sourceType": "github",
       "skillPath": "skills/affine-mcp-server-integration/SKILL.md",
       "computedHash": "7f79d00c61533668f2a90e9c8662ea971576f3d0e0e824fdb4474957f51d3c82"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "computedHash": "781bd6d3f9b19f8c9af6b53d8d0e4876d0183841b565db34ca7092ffa412d111"
+    },
+    "linkedin-marketing": {
+      "source": "sergebulaev/linkedin-skills",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "32dad2d85d584bb51882bc8215349ea79fce7c0332bd47815065e9909fc4191f"
     }
   }
 }
