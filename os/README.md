@@ -29,30 +29,44 @@ CommissionKit is a B2B SaaS platform for sales commission management.
 
 ## How This OS Works
 
-This folder contains the entire operating system of CommissionKit as a company. Every team, process, tool, and decision lives here.
+The company operating system has been migrated to **AFFiNE** for live collaborative document management. All company documents (identity, strategy, revenue, product, operations, people, customer, tools, governance) live at:
+
+> **https://affine.commissionk.it**
+
+This repo's `os/` folder retains only operational files:
+
+| What | Where | Purpose |
+|------|-------|---------|
+| Agent teams & workflows | `os/agents/` | AI workforce configuration, team structure, team-specific workflows and scripts |
+| Business skills | `os/skills/` | Skill definitions used by agents (research, content, sales, social, data, deploy, design) |
+| Status tracker | `os/STATUS.md` | Current completion status across all departments |
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#F0FDFA', 'primaryTextColor': '#111827', 'primaryBorderColor': '#0D9488', 'lineColor': '#0D9488', 'secondaryColor': '#F3F4F6', 'tertiaryColor': '#FFFFFF' }}}%%
 graph TD
-    C["00-company<br/>Identity, Values, Structure"] --> S["01-strategy<br/>Goals, OKRs, Planning"]
-    S --> R["02-revenue<br/>Sales & Marketing"]
-    R --> P["03-product<br/>Engineering & Design"]
-    P --> O["04-operations<br/>Legal, Finance, Admin"]
-    O --> PE["05-people<br/>Hiring, Onboarding, Culture"]
-    PE --> CU["06-customer<br/>Support & Success"]
-    CU --> T["07-tools<br/>Automation & Scripts"]
-    T --> G["08-governance<br/>Compliance & Security"]
+    AGENTS["os/agents/<br/>AI Workforce"] --> GTM["gtm/"]
+    AGENTS --> MKT["marketing/"]
+    AGENTS --> DEV["development/"]
+    AGENTS --> PROD["product/"]
+    AGENTS --> NEXUS["nexus/"]
+    AGENTS --> SKILLS["os/skills/<br/>Business Skills"]
+    AGENTS --> STATUS["os/STATUS.md<br/>Progress"]
+    AFFINE["AFFiNE OS<br/>affine.commissionk.it"] --> COMPANY["Company Docs"]
+    AFFINE --> STRATEGY["Strategy Docs"]
+    AFFINE --> REVENUE["Revenue Docs"]
+    AFFINE --> PRODUCT["Product Docs"]
 ```
 
 ## Agent Teams
 
-Our AI workforce maps to these folders:
+Our AI workforce is managed from `os/agents/`:
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#F0FDFA', 'primaryTextColor': '#111827', 'primaryBorderColor': '#0D9488', 'lineColor': '#0D9488', 'secondaryColor': '#F3F4F6', 'tertiaryColor': '#FFFFFF' }}}%%
 graph LR
     subgraph Command
         NEXUS["Nexus<br/>Chief of Staff"]
+        BLUEPRINT["Blueprint<br/>Company Architect"]
     end
 
     subgraph GTM
@@ -79,6 +93,7 @@ graph LR
         CRAFT["Craft<br/>UX Design"]
     end
 
+    NEXUS --> BLUEPRINT
     NEXUS --> SCOUT
     NEXUS --> CLUTCH
     NEXUS --> BRIDGE
@@ -95,11 +110,12 @@ graph LR
 
 ## Status
 
-All 8 departments have foundational content. Each folder is actively maintained and grows as processes mature. See `os/STATUS.md` for detailed completion status and next priorities.
+All 8 departments have foundational content in AFFiNE. Each department is actively maintained and grows as processes mature. See `os/STATUS.md` for detailed completion status and next priorities.
 
 ---
 ## Where to Go Next
 
 - Back to entry point: `AGENTS.md`
 - Next: `os/STATUS.md`
-- Start a department: `os/00-company/identity/company-identity.md`
+- Agent teams: `os/agents/`
+- Open AFFiNE OS: `https://affine.commissionk.it`

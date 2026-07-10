@@ -7,7 +7,8 @@ All 15 agents now have their optimized models assigned in `/root/.config/opencod
 | Agent | Role | Model | Why This Model |
 |-------|------|-------|----------------|
 | **@nexus** | Chief of Staff | **DeepSeek V4 Pro** | Best reasoning & strategic coordination |
-| **@plan** | Feature Planner | **DeepSeek V4 Pro** | Complex architecture decisions (shared with Nexus, used at different times) |
+| **@blueprint** | Company Architect | **DeepSeek V4 Pro** | Organizational design, process architecture, governance (shared with Nexus + Plan) |
+| **@plan** | Feature Planner | **DeepSeek V4 Pro** | Complex architecture decisions (shared with Nexus + Blueprint) |
 | **@forge** | Tech Lead | **Kimi K2.7 Code** | Best for code review, architecture, debugging |
 | **@review** | Code Reviewer | **Kimi K2.7 Code** | Code verification & standards checking (shared with Forge, used after build) |
 | **@scout** | Lead Researcher | **MiMo-V2.5-Pro** | Specialized for web browsing, LinkedIn research, data extraction |
@@ -24,8 +25,8 @@ All 15 agents now have their optimized models assigned in `/root/.config/opencod
 
 ## Notes
 
-- **13 models → 15 agents**: 2 models are shared logically:
-  - **DeepSeek V4 Pro** → Nexus (daily coordination) + Plan (pre-build planning) — used at different phases
+- **15 models → 16 agents**: 1 model is shared across 3 agents:
+  - **DeepSeek V4 Pro** → Nexus (daily coordination) + Blueprint (company architecture) + Plan (pre-build planning) — used at different phases
   - **Kimi K2.7 Code** → Forge (build) + Review (post-build verification) — used at different phases
 
 - **Provider format**: `provider/model-name` (e.g., `deepseek/DeepSeek V4 Pro`)

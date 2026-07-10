@@ -89,4 +89,4 @@ flowchart LR
 
 - Back to entry point: `AGENTS.md`
 - Next in technical series: `context/architecture.md`
-- Related business context: `os/03-product/product-system.md`
+- Related business context: AFFiNE OS (`https://affine.commissionk.it`)

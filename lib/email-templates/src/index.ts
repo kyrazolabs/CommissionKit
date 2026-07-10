@@ -33,3 +33,6 @@ export type { EmailVerificationTemplateProps } from "./email-verification.js";
 
 export { applicationTemplate } from "./application.js";
 export type { ApplicationTemplateProps } from "./application.js";
+
+export { leadNotificationTemplate } from "./lead.js";
+export type { LeadNotificationTemplateProps } from "./lead.js";

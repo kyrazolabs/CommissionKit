@@ -24,15 +24,9 @@ graph TD
     TECH --> C8[context/build-plan.md]
     TECH --> C9[context/progress-tracker.md]
 
-    BIZ --> O1[os/00-company/]
-    BIZ --> O2[os/01-strategy/]
-    BIZ --> O3[os/02-revenue/]
-    BIZ --> O4[os/03-product/]
-    BIZ --> O5[os/04-operations/]
-    BIZ --> O6[os/05-people/]
-    BIZ --> O7[os/06-customer/]
-    BIZ --> O8[os/07-tools/]
-    BIZ --> O9[os/08-governance/]
+    BIZ --> AFFINE["AFFiNE OS<br/>affine.commissionk.it"]
+    BIZ --> O1[os/agents/]
+    BIZ --> O2[os/skills/]
 
     AGENTS_CONFIG --> CONFIG["/root/.config/opencode/opencode.jsonc"]
     STATUS --> PT["context/progress-tracker.md"]
@@ -53,24 +47,20 @@ graph TD
 
 ### If you're writing content or doing sales:
 1. Read this file (AGENTS.md) — know the product
-2. `os/00-company/identity/company-identity.md` — who we are
-3. `os/02-revenue/sales/sales-system.md` — how we sell
-4. `os/02-revenue/marketing/marketing-system.md` — how we market
-5. Do the work → update `os/STATUS.md`
+2. Open AFFiNE OS (`https://affine.commissionk.it`) — company identity, sales system, marketing system
+3. Do the work → update `os/STATUS.md`
 
 ### If you're planning a feature:
 1. Read this file (AGENTS.md)
 2. `context/project-overview.md` + `context/architecture.md`
-3. `os/03-product/product-system.md` — product process
+3. Open AFFiNE OS — product system, OKRs
 4. Load `/architect` skill → produce plan
-5. `os/01-strategy/planning/okrs.md` — align with goals
 
 ### If you're deploying or handling infrastructure:
 1. Read this file (AGENTS.md)
 2. `context/build-plan.md` — build steps
-3. `os/03-product/engineering/engineering-system.md` — infra details
-4. `os/07-tools/tools-system.md` — tools and automation
-5. Load `/deploy-verify` skill → follow checklist
+3. Open AFFiNE OS — engineering system, tools & automation
+4. Load `/deploy-verify` skill → follow checklist
 
 ---
 
@@ -87,22 +77,12 @@ graph TD
 | **Library docs** | `context/library-docs.md` |
 | **Build & deploy** | `context/build-plan.md` |
 | **Progress tracker** | `context/progress-tracker.md` |
-| **Company identity** | `os/00-company/identity/company-identity.md` |
-| **Team structure** | `os/00-company/identity/team-structure.md` |
-| **Goals & OKRs** | `os/01-strategy/planning/okrs.md` |
-| **Revenue strategy** | `os/02-revenue/revenue-strategy.md` |
-| **Sales system** | `os/02-revenue/sales/sales-system.md` |
-| **Marketing system** | `os/02-revenue/marketing/marketing-system.md` |
-| **Engineering system** | `os/03-product/engineering/engineering-system.md` |
-| **Product system** | `os/03-product/product-system.md` |
-| **Operations** | `os/04-operations/operations-system.md` |
-| **People & culture** | `os/05-people/people-system.md` |
-| **Customer success** | `os/06-customer/customer-system.md` |
-| **Tools & automation** | `os/07-tools/tools-system.md` |
-| **Governance** | `os/08-governance/governance-system.md` |
+| **Business Operating System** | **AFFiNE** (`https://affine.commissionk.it`) — company identity, strategy, revenue, product, operations, people, customer, tools, governance |
 | **OS status** | `os/STATUS.md` |
 | **Agent models** | `os/agents/MODEL-ASSIGNMENTS.md` |
 | **How to use agents** | `os/agents/OPENCODE-GUIDE.md` |
+| **Agent workflows** | `os/agents/<team>/workflows/` |
+| **Business skills** | `os/skills/` |
 
 ---
 
@@ -128,19 +108,13 @@ Read in this exact order before any implementation:
 
 ## Business Operating System — Read Before Business Tasks
 
-The `os/` folder is the company operating system. Read the relevant department before doing business work:
+The company OS lives in **AFFiNE** at `https://affine.commissionk.it` for live document management. The `os/` folder in this repo retains the agent workforce, skills, and status tracking:
 
-- **Company foundation** → `os/00-company/` — Identity, team structure
-- **Strategy** → `os/01-strategy/` — OKRs, planning
-- **Revenue** → `os/02-revenue/` — Sales and marketing playbooks
-- **Product** → `os/03-product/` — Engineering and product development
-- **Operations** → `os/04-operations/` — Legal, finance, admin
-- **People** → `os/05-people/` — Culture, hiring, onboarding
-- **Customer** → `os/06-customer/` — Support and success
-- **Tools** → `os/07-tools/` — Automation, scripts, integrations
-- **Governance** → `os/08-governance/` — Security, compliance, risk
+- **Agent teams** → `os/agents/` — Agent configurations, model assignments, team workflows
+- **Business skills** → `os/skills/` — Skill definitions for research, content, sales, social, data, deploy, design
+- **Status** → `os/STATUS.md` — Current completion status across all departments
 
-See `os/README.md` for the full OS overview and `os/STATUS.md` for current completion status.
+For all company docs (identity, strategy, revenue, product, operations, people, customer, tools, governance), open AFFiNE OS.
 
 <!-- END:business-os -->
 
@@ -152,6 +126,7 @@ Agents are defined in `/root/.config/opencode/opencode.jsonc`. Use `@agent-name`
 
 **Available agents:**
 - `@nexus` — Chief of Staff (default). Routes tasks, coordinates teams.
+- `@blueprint` — Company Architect. Organizational design, process architecture, governance.
 - `@scout` — Lead Generation. Research, company profiling.
 - `@clutch` — Sales Closer. Outreach, demos, closing.
 - `@bridge` — Partnerships. Integration partners, co-marketing.
@@ -175,6 +150,7 @@ Agents are defined in `/root/.config/opencode/opencode.jsonc`. Use `@agent-name`
 graph LR
     subgraph Command
         NEXUS["@nexus"]
+        BLUEPRINT["@blueprint"]
     end
 
     subgraph GTM
@@ -201,6 +177,7 @@ graph LR
         CRAFT["@craft"]
     end
 
+    NEXUS --> BLUEPRINT
     NEXUS --> SCOUT
     NEXUS --> CLUTCH
     NEXUS --> BRIDGE
@@ -359,6 +336,6 @@ For custom commission engines (e.g., AISSOL), see:
 ## Additional context
 
 - `docs/` has enterprise engine architecture docs.
-- `os/` has the business operating system: 8 departments covering company, strategy, revenue, product, operations, people, customer, and governance.
+- `os/` retains the AI agent workforce (`os/agents/`), business skills (`os/skills/`), and status tracking (`os/STATUS.md`). All other company documents (identity, strategy, revenue, product, operations, people, customer, tools, governance) have been migrated to **AFFiNE** at `https://affine.commissionk.it`.
 - `context/` has technical context docs for the codebase.
 - No GitHub Actions CI is configured.

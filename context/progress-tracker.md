@@ -144,7 +144,7 @@ This tracker captures the current state of the codebase as of the latest explora
 | Enterprise engine architecture | ✅ Done | Full spec in `docs/`. |
 | Design system | ✅ Done | `context/ui-tokens.md` + `context/ui-rules.md`. |
 | Platform overview | ✅ Done | `context/architecture.md`. |
-| Payout architecture research | ✅ Done | `os/03-product/product-system.md`. |
+| Payout architecture research | ✅ Done | AFFiNE OS — `https://affine.commissionk.it`. |
 | Context docs | ✅ Done | This folder. |
 
 ## 9. Known Gaps / Next Steps
@@ -164,6 +164,10 @@ The following are potential areas for improvement or further verification:
 
 ## 10. Recent Changes
 
+- **OS migration to AFFiNE**: All company documentation (identity, strategy, revenue, product, operations, people, customer, tools, governance) migrated from `os/` numbered folders to AFFiNE at `https://affine.commissionk.it`. Numbered folders deleted from repo.
+- **os/agents/ restructured**: Team folder structure created with nexus/gtm/marketing/development/product/ directories, each with `workflows/` and `scripts/` subdirectories. Team READMEs and workflow templates created.
+- **Documentation updated**: AGENTS.md, os/README.md, os/STATUS.md all updated to point to AFFiNE as canonical business OS source.
+- AFFiNE MCP server (v2.5.0) configured and tested — full access to workspace via 95 tools.
 - Added pluggable commission engine architecture.
 - Added AISSOL enterprise engine and routes.
 - Added integration plugins (Odoo, Salesforce, HubSpot, custom REST).
@@ -176,6 +180,12 @@ The following are potential areas for improvement or further verification:
 - Added **OpenCode-native agent configuration** in global `opencode.jsonc` with 15 agents using optimized models.
 - Added **7 new business skills** in `os/skills/` (research, content-seo, social-engage, data-report, deploy-verify, design-ux, sales-outreach) all mapped to agents.
 - Cleaned and interconnected all markdown files: `AGENTS.md` is the single entry point for both technical (`context/`) and business (`os/`) documentation.
+- **Revenue Operations OS built in AFFiNE**: 7 interactive databases (Content Calendar, Social Media Calendar, SEO Keyword Tracker, Lead Magnet Tracker, Leads Database, Outreach Campaigns, Deal Pipeline) + Revenue Command Center hub under `02 Revenue Strategy`.
+- **Lead capture system**: `POST /api/leads` endpoint with Mongoose model (`lib/db/src/schema/leads.ts`), Zod validation, rate limiting (5/hr/IP), email notification to sales team, upsert for duplicate emails.
+- **Hero email capture**: Landing page hero form fires fire-and-forget `POST /api/leads` with `keepalive: true` before redirecting to `/register`.
+- **Calculator email gate**: Commission calculator shows headline results free, gates full breakdown + CTA behind email capture. `POST /api/leads` with `source: 'calculator'` on submit.
+- **Careers schedule field**: Added `schedule: "full-time" | "part-time"` to the `Job` interface in `lib/jobs.ts` and display it as a badge on both the careers listing page and job detail page, alongside the existing `type` badge. Also added schedule info to the job card metadata row with a `Clock` icon.
+- **AFFiNE agreement fix**: Replaced all instances of "Kyrazo Labs FZCO" / "Kyrazo Labs" with "KYRAZO LLC" in the Sales Representative Agreement document.
 
 ---
 ## Where to Go Next

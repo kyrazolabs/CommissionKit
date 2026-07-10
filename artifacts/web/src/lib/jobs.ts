@@ -4,6 +4,7 @@ export interface Job {
   department: string;
   location: string;
   type: "contract" | "full-time" | "part-time";
+  schedule: "full-time" | "part-time";
   description: string;
   responsibilities: string[];
   requirements: string[];
@@ -18,6 +19,7 @@ export const JOBS: Job[] = [
     department: "Sales",
     location: "Remote",
     type: "contract",
+    schedule: "full-time",
     description:
       "We're looking for independent sales contractors to help us grow CommissionKit across the GCC and beyond. You'll sell our commission management platform to SMBs and enterprises who are tired of spreadsheet chaos.",
     responsibilities: [
