@@ -103,6 +103,10 @@ export function CareersPage() {
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
                             {job.type === "contract" ? "Contract" : job.type === "full-time" ? "Full-time" : "Part-time"}
                           </span>
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                            <Clock className="size-3" />
+                            {job.schedule === "full-time" ? "Full-time" : "Part-time"}
+                          </span>
                         </div>
                         <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1.5">
@@ -112,6 +116,10 @@ export function CareersPage() {
                           <span className="flex items-center gap-1.5">
                             <MapPin className="size-3.5" />
                             {job.location}
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <Clock className="size-3.5" />
+                            {job.schedule === "full-time" ? "Full-time" : "Part-time"}
                           </span>
                         </div>
                       </div>
