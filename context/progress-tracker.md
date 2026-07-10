@@ -185,6 +185,7 @@ The following are potential areas for improvement or further verification:
 - **Hero email capture**: Landing page hero form fires fire-and-forget `POST /api/leads` with `keepalive: true` before redirecting to `/register`.
 - **Calculator email gate**: Commission calculator shows headline results free, gates full breakdown + CTA behind email capture. `POST /api/leads` with `source: 'calculator'` on submit.
 - **Careers schedule field**: Added `schedule: "full-time" | "part-time"` to the `Job` interface in `lib/jobs.ts` and display it as a badge on both the careers listing page and job detail page, alongside the existing `type` badge. Also added schedule info to the job card metadata row with a `Clock` icon.
+- **Careers page expansion**: Added part-time variant of the Sales Rep job (`slug: "sales-representative-part-time"`, `schedule: "part-time"`) with adjusted description (commission-only side income framing) and offers (flexible hours emphasized). Also renamed full-time title to "SaaS Sales Representative (Commission-Based)" for clarity.
 - **AFFiNE agreement fix**: Replaced all instances of "Kyrazo Labs FZCO" / "Kyrazo Labs" with "KYRAZO LLC" in the Sales Representative Agreement document.
 
 ---
