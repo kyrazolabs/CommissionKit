@@ -94,7 +94,7 @@ export class StandardEngine implements CalcEngine {
   }
 
   async calculate(input: CalcEngineInput): Promise<CalcEngineOutput> {
-    const { workspaceId, period, wsCurrency } = input;
+    const { workspaceId, period, wsCurrency, session } = input;
 
     logger.info(
       `[Engine:Standard] Calculating run ${input.runId} for workspace ${workspaceId}`,
@@ -108,14 +108,14 @@ export class StandardEngine implements CalcEngine {
     if (input.paymentStatuses) {
       dealQuery.paymentStatus = { $in: input.paymentStatuses };
     }
-    const deals = await Deal.find(dealQuery);
+    const deals = await Deal.find(dealQuery).session(session ?? null);
     logger.info(`[Engine:Standard] Found ${deals.length} deals for period ${period}`);
 
-    const reps = await Rep.find({ workspaceId: new Types.ObjectId(workspaceId) });
-    const plans = await Plan.find({ workspaceId: new Types.ObjectId(workspaceId) });
+    const reps = await Rep.find({ workspaceId: new Types.ObjectId(workspaceId) }).session(session ?? null);
+    const plans = await Plan.find({ workspaceId: new Types.ObjectId(workspaceId) }).session(session ?? null);
     const tiers = await PlanTier.find({
       planId: { $in: plans.map((p) => p._id) },
-    }).sort({ fromAmount: 1 });
+    }).sort({ fromAmount: 1 }).session(session ?? null);
 
     const planMap = new Map(plans.map((p) => [p._id.toString(), p]));
     const tierMap = new Map<

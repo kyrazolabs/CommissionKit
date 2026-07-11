@@ -200,7 +200,7 @@ export function DealsPage() {
                 {filteredDeals.flatMap((deal) => {
                   const rows: React.ReactNode[] = [
                     <TableRow key={deal.id}>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium p-1.5!">
                         <button
                           onClick={() => setExpandedDealId(expandedDealId === deal.id ? null : deal.id)}
                           className="flex items-center gap-1.5 hover:text-primary transition-colors text-left"
@@ -218,11 +218,11 @@ export function DealsPage() {
                         </button>
                       </TableCell>
                       <TableCell>{deal.repName}</TableCell>
-                      <TableCell className="font-medium text-primary text-right tabular-nums">
+                      <TableCell className="font-medium text-primary text-right tabular-nums p-1.5!">
                         {formatCurrency(deal.amount, deal.currency || currency)}
                       </TableCell>
-                      <TableCell>{deal.closeDate ? format(new Date(deal.closeDate), "MMM d, yyyy") : "—"}</TableCell>
-                      <TableCell>
+                      <TableCell className="p-1.5!">{deal.closeDate ? format(new Date(deal.closeDate), "MMM d, yyyy") : "—"}</TableCell>
+                      <TableCell className="p-1.5!">
                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
                           deal.stage === 'closed_won' ? 'bg-primary/10 text-primary border-primary/20' : 
                           deal.stage === 'closed_lost' ? 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/30' :
@@ -236,7 +236,7 @@ export function DealsPage() {
                           </span>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="p-1.5!">
                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
                           deal.paymentStatus === 'paid' ? 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800/30' : 
                           deal.paymentStatus === 'partial' ? 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/30' :
@@ -246,7 +246,7 @@ export function DealsPage() {
                           {(deal.paymentStatus || 'unpaid').replace('_', ' ').toUpperCase()}
                         </span>
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right p-1.5!">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="size-8">

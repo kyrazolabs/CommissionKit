@@ -3,17 +3,20 @@ import { useGetDashboardSummary, getGetDashboardSummaryQueryKey } from "@workspa
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   DollarSign, Users, Briefcase, Activity, CalendarDays,
-  ArrowUpRight, TrendingUp, Zap, Play
+  ArrowUpRight, TrendingUp, Zap, Play, CheckCircle2, Loader2, AlertCircle
 } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { HelpTooltip } from "@/components/help-tooltip";
 import { RepAvatar } from "@/components/rep-avatar";
 import { RunCalculationDialog } from "@/components/run-calculation-dialog";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useTranslation } from "react-i18next";
+import { SetupChecklist } from "@/components/setup-checklist";
 
 import { useRole } from "@/hooks/use-role";
 import { usePageMeta } from "@/hooks/use-page-meta";
@@ -24,6 +27,7 @@ export function Dashboard() {
   usePageMeta({ title: t("dashboard.title"), description: "Overview of your workspace commissions and performance.", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const { hasPermission, isLoading: roleLoading } = useRole();
+
   const currency = activeWorkspace?.currency || "USD";
   const currentPeriod = format(new Date(), "yyyy-MM");
   const { data: summary, isLoading: summaryLoading } = useGetDashboardSummary(
@@ -43,7 +47,7 @@ export function Dashboard() {
   }
 
   const repEarnings = summary.repEarnings ?? [];
-  const recentRuns = summary.recentRuns ?? [];
+  const recentRuns = (summary.recentRuns ?? []).slice(0, 3);
 
   const statCards = [
     { label: t("dashboard.totalCommissions"), value: formatCurrency(summary.totalCommission, currency), delta: t("dashboard.calculatedThisPeriod"), icon: DollarSign, tooltip: t("dashboard.totalCommissionsTooltip") },
@@ -62,6 +66,9 @@ export function Dashboard() {
           {t("dashboard.commissionPerformanceFor", { period: format(new Date(currentPeriod + "-01"), "MMMM yyyy") })}
         </p>
       </div>
+
+      {/* Setup checklist for new workspaces */}
+      <SetupChecklist />
 
       {/* Stat cards : 4 columns, all teal icon badges */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
@@ -90,7 +97,7 @@ export function Dashboard() {
       <div className="grid gap-5" style={{ gridTemplateColumns: "3fr 2fr" }}>
 
         {/* Top Earners : table style */}
-        <div className="bg-card border border-card-border rounded-2xl overflow-hidden" style={{ boxShadow: "var(--shadow-card)" }}>
+        <div className="bg-card border border-card-border rounded-xl overflow-auto" style={{ boxShadow: "var(--shadow-card)" }}>
           <div className="flex items-center justify-between px-[22px] py-[18px] border-b border-border">
             <div>
               <div className="flex items-center gap-1.5">
@@ -109,49 +116,73 @@ export function Dashboard() {
           ) : (
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-muted/60">
-                  {[t("dashboard.rep"), t("dashboard.plan"), t("dashboard.deals"), t("dashboard.revenue"), t("dashboard.commission")].map((h) => (
-                    <th key={h} className="p-4 text-left text-[11.5px] font-semibold uppercase tracking-[0.03em] text-muted-foreground">
-                      {h}
-                    </th>
-                  ))}
+                <tr className="border-b border-border">
+                  <th className="pl-[22px] pr-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t("dashboard.rep")}
+                  </th>
+                  <th className="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t("dashboard.plan")}
+                  </th>
+                  <th className="px-3 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t("dashboard.deals")}
+                  </th>
+                  <th className="px-3 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t("dashboard.revenue")}
+                  </th>
+                  <th className="pl-3 pr-[22px] py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t("dashboard.commission")}
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {repEarnings.map((rep, i) => (
-                  <tr key={rep.repId} className="border-t border-muted/60 hover:bg-muted/30 transition-colors">
-                    <td className="p-4">
-                      <div className="flex items-center gap-2.5">
-                        <RepAvatar name={rep.repName} size={28} className={i === 0 ? "size-7 shrink-0 rounded-full ring-2 ring-primary/30" : "size-7 shrink-0 rounded-full"} />
-                        <div>
+                {repEarnings.map((rep, i) => {
+                  // const isTop3 = i < 3;
+                  return (
+                    <tr
+                      key={rep.repId}
+                      className="border-b border-border last:border-0 hover:bg-muted/40 transition-colors"
+                    >
+                      <td className="pl-[22px] pr-3 py-2">
+                        <div className="flex items-center gap-3">
+                          {/* {isTop3 && (
+                            <div className={`flex items-center justify-center size-5 rounded-full font-bold text-[10px] shrink-0 ${
+                              i === 0 ? "bg-primary text-primary-foreground" :
+                              i === 1 ? "bg-secondary-foreground/20 text-foreground" :
+                              "bg-secondary-foreground/10 text-muted-foreground"
+                            }`}>
+                              {i + 1}
+                            </div>
+                          )} */}
+                          <RepAvatar
+                            name={rep.repName}
+                            size={32}
+                            className={`shrink-0 rounded-full ${i === 0 ? "ring-2 ring-primary/30" : ""}`}
+                          />
                           <Link
                             href={`/dash/reps/${rep.repId}`}
-                            className="text-[13.5px] font-semibold text-foreground hover:text-primary transition-colors"
+                            className="text-[13.5px] font-semibold text-foreground hover:text-primary transition-colors truncate"
                           >
                             {rep.repName}
                           </Link>
-                          {i === 0 && (
-                              <span className="ml-1.5 text-[10px] font-semibold text-primary bg-secondary border border-primary/20 rounded px-1.5 py-px">
-                                {t("dashboard.top")}
-                              </span>
-                          )}
                         </div>
-                      </div>
-                    </td>
-                    <td className="p-4 text-[12.5px] text-muted-foreground">
-                      <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-foreground">
-                        {(rep as any).planName || t("dashboard.none")}
-                      </span>
-                    </td>
-                    <td className="p-4 text-[13px] font-medium text-foreground text-right tabular-nums">{rep.totalDeals}</td>
-                    <td className="p-4 text-[13px] font-medium text-foreground text-right tabular-nums">
-                      {formatCurrency(rep.totalRevenue, currency)}
-                    </td>
-                    <td className="p-4 text-[13.5px] font-semibold text-primary text-right tabular-nums">
-                      {formatCurrency(rep.totalCommission, currency)}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-3 py-2">
+                        <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-foreground truncate">
+                          {(rep as any).planName || t("dashboard.none")}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-[13px] font-medium text-foreground text-center tabular-nums">
+                        {rep.totalDeals}
+                      </td>
+                      <td className="px-3 py-2 text-[13px] font-medium text-foreground text-right tabular-nums">
+                        {formatCurrency(rep.totalRevenue, currency)}
+                      </td>
+                      <td className="pl-3 pr-[22px] py-2 text-[13.5px] font-semibold text-primary text-right tabular-nums">
+                        {formatCurrency(rep.totalCommission, currency)}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
@@ -162,12 +193,8 @@ export function Dashboard() {
           {/* Quick action */}
           {hasPermission("calculations", "create") && (
             <div
-              className="rounded-2xl border px-[22px] py-5"
-              style={{
-                background: "hsl(var(--secondary))",
-                borderColor: "hsl(var(--primary) / 0.2)",
-                boxShadow: "var(--shadow-card)",
-              }}
+              className="rounded-xl border border-card-border bg-card px-[22px] py-5"
+              style={{ boxShadow: "var(--shadow-card)" }}
             >
               <div className="flex items-center gap-2 mb-2.5">
                 <Zap className="size-4 text-primary" />
@@ -188,7 +215,7 @@ export function Dashboard() {
 
           {/* Recent Runs */}
           <div
-            className="flex-1 bg-card border border-card-border rounded-2xl px-[22px] py-[18px]"
+            className="flex-1 rounded-xl border border-card-border bg-card px-[22px] py-[18px]"
             style={{ boxShadow: "var(--shadow-card)" }}
           >
               <div className="flex items-center gap-1.5 mb-0.5">
@@ -212,12 +239,34 @@ export function Dashboard() {
                         {format(new Date(run.createdAt), "MMM d, h:mm a")}
                       </p>
                     </div>
-                    <Link
-                      href={`/dash/runs/${run.id}`}
-                      className="flex items-center gap-0.5 text-[11px] font-semibold text-primary bg-secondary border border-primary/20 rounded-md px-2.5 py-0.5 hover:opacity-80 transition-opacity"
-                    >
-                      {t("dashboard.completed")}
-                    </Link>
+                    {run.status === "completed" && (
+                      <Link
+                        href={`/dash/runs/${run.id}`}
+                        className="flex items-center gap-0.5 text-[11px] font-semibold text-primary bg-secondary border border-primary/20 rounded-md px-2.5 py-0.5 hover:opacity-80 transition-opacity"
+                      >
+                        <CheckCircle2 className="size-3" />
+                        {t("dashboard.completed")}
+                      </Link>
+                    )}
+                    {(run.status === "pending" || run.status === "processing") && (
+                      <span className="flex items-center gap-0.5 text-[11px] font-semibold text-blue-500 bg-blue-500/10 border border-blue-500/20 rounded-md px-2.5 py-0.5">
+                        <Loader2 className="size-3 animate-spin" />
+                        {run.status === "processing" ? "Processing" : "Pending"}
+                      </span>
+                    )}
+                    {run.status === "failed" && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="flex items-center gap-0.5 text-[11px] font-semibold text-destructive bg-destructive/10 border border-destructive/20 rounded-md px-2.5 py-0.5 cursor-help">
+                            <AlertCircle className="size-3" />
+                            Failed
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{run.error || "Unknown error"}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
                   </div>
                 ))}
               </div>

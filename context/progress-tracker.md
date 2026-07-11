@@ -149,18 +149,17 @@ This tracker captures the current state of the codebase as of the latest explora
 
 ## 9. Known Gaps / Next Steps
 
-The following are potential areas for improvement or further verification:
-
-| Area | Suggested Action |
-|------|------------------|
-| Web component coverage | Add tests for tables, forms, dialogs, cards. |
-| E2E tests | No Playwright/Cypress detected; consider adding. |
-| CI/CD | No GitHub Actions configured; could add lint/test/build workflow. |
-| Payout providers | Research is documented; actual provider integrations not yet wired. |
-| Mobile layout polish | Verify all complex tables on small screens. |
-| Accessibility audit | Run automated a11y checks on key flows. |
-| Performance | Audit bundle size and query cache settings. |
-| Email deliverability | Verify SPF/DKIM/DMARC for production SMTP. |
+| Area | Status | Suggested Action |
+|------|--------|------------------|
+| **Setup Checklist & Sample Data** | ✅ P0 — Complete | Backend (Forge): `POST/DELETE /api/workspace/sample-data`, schema changes (`isSampleData`, `sampleDataLoaded`), 12 tests. Frontend (Pixel): `SetupChecklist` overlay, `use-setup-checklist` hook, dashboard integration, 9 tests. 21 total new tests, 0 regressions. |
+| Web component coverage | ⏳ | Add tests for tables, forms, dialogs, cards. |
+| E2E tests | ⏳ | No Playwright/Cypress detected; consider adding. |
+| CI/CD | ⏳ | No GitHub Actions configured; could add lint/test/build workflow. |
+| Payout providers | ⏳ | Research is documented; actual provider integrations not yet wired. |
+| Mobile layout polish | ⏳ | Verify all complex tables on small screens. |
+| Accessibility audit | ⏳ | Run automated a11y checks on key flows. |
+| Performance | ⏳ | Audit bundle size and query cache settings. |
+| Email deliverability | ⏳ | Verify SPF/DKIM/DMARC for production SMTP. |
 
 ## 10. Recent Changes
 
@@ -187,6 +186,12 @@ The following are potential areas for improvement or further verification:
 - **Careers schedule field**: Added `schedule: "full-time" | "part-time"` to the `Job` interface in `lib/jobs.ts` and display it as a badge on both the careers listing page and job detail page, alongside the existing `type` badge. Also added schedule info to the job card metadata row with a `Clock` icon.
 - **Careers page expansion**: Added part-time variant of the Sales Rep job (`slug: "sales-representative-part-time"`, `schedule: "part-time"`) with adjusted description (commission-only side income framing) and offers (flexible hours emphasized). Also renamed full-time title to "SaaS Sales Representative (Commission-Based)" for clarity.
 - **AFFiNE agreement fix**: Replaced all instances of "Kyrazo Labs FZCO" / "Kyrazo Labs" with "KYRAZO LLC" in the Sales Representative Agreement document.
+- **Careers page header**: Replaced full marketing `Navbar` on `/careers` listing page with a simple clean header (logo + "CommissionKit" wordmark + "Careers" label), matching the style from the job detail page (`careers-job.tsx`).
+- **Careers page scroll effect removed**: Removed `useScroll`, `useTransform`, `useIsMobile`, `containerRef`, and the `motion.div` wrapper with animated padding/borderRadius/borderWidth/maxWidth. The page now uses a standard full-height layout: fixed header, scrollable content div (`overflow-y-auto`), and static footer.
+- **Setup Checklist & Sample Data PRD**: Full product brief written by @compass — P0 priority to unblock founder-led sales. 3-step guided overlay (Add Reps → Create Plan → Import Deals) + one-click "Load Sample Data" seeding to populate workspace with demo-ready data. Saved at `docs/prd-setup-checklist.md`. Estimated 3-4 days to implement (@forge backend, @pixel frontend).
+- **Setup Checklist & Sample Data — IMPLEMENTED**: Backend (`POST/DELETE /api/workspace/sample-data`) + Frontend (`SetupChecklist` overlay, `use-setup-checklist` hook, dashboard integration). 21 new tests (12 backend + 9 frontend), 0 regressions.
+- **Workspace onboarding state**: Added database-backed onboarding sub-document to `Workspace` (`onboarding.checklistDismissed`, `checklistCompletedAt`, `checklistShownAt`), new Zod schemas in `@workspace/db`, `PATCH /api/workspaces/:id/onboarding` endpoint, onboarding included in workspace GET/PUT/PATCH responses, and full test coverage in `artifacts/api/src/routes/workspaces/onboarding.test.ts`.
+- **Setup Checklist & Sample Data — review fixes**: Fixed React Query invalidation keys in `use-setup-checklist` to use generated keys (`/api/reps`, `/api/plans`, `/api/deals`, `/api/runs`, `/api/dashboard/summary`). Refactored `seedSampleData` to use Mongoose transactions on replica sets with automatic fallback to best-effort cleanup on standalone MongoDB. `workspace.sampleDataLoaded` is now set inside the transaction to bypass rep limits during seeding. API test DB bootstrap updated to `MongoMemoryReplSet` so transaction paths are exercised.
 
 ---
 ## Where to Go Next

@@ -21,6 +21,7 @@ const DealSchema = new Schema({
   syncHash: { type: String },
   lastSyncedAt: { type: Date },
   metadata: { type: Schema.Types.Mixed },
+  isSampleData: { type: Boolean, default: false },
 }, { timestamps: { createdAt: true, updatedAt: false } });
 
 DealSchema.index(
@@ -49,6 +50,7 @@ export type Deal = mongoose.Document & {
   syncHash?: string;
   lastSyncedAt?: Date;
   metadata?: Record<string, unknown>;
+  isSampleData?: boolean;
   createdAt: Date;
 };
 
