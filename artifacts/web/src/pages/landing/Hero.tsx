@@ -75,9 +75,8 @@ export function Hero() {
           </div>
         </AnimatedBlock>
 
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-[-0.07em] text-foreground leading-[0.95] font-display">
-          <AnimatedWords text="Run commissions in minutes." inView={inView} delay={0.15} />
-          <br />
+        <h1 className="text-5xl md:text-6xl lg:text-8xl font-bold tracking-[-0.07em] text-foreground leading-[0.95] font-display">
+          <AnimatedWords text="Run commissions in minutes " inView={inView} delay={0.15} />
           <AnimatedWords text="Not days." className="text-primary" inView={inView} delay={0.75} />
         </h1>
 
