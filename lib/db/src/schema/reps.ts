@@ -14,6 +14,7 @@ const RepSchema = new Schema({
   syncHash: { type: String },
   lastSyncedAt: { type: Date },
   metadata: { type: Schema.Types.Mixed },
+  isSampleData: { type: Boolean, default: false },
 }, { timestamps: { createdAt: true, updatedAt: false } });
 
 RepSchema.index(
@@ -37,6 +38,7 @@ export type Rep = mongoose.Document & {
   syncHash?: string;
   lastSyncedAt?: Date;
   metadata?: Record<string, unknown>;
+  isSampleData?: boolean;
   createdAt: Date;
 };
 

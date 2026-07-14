@@ -10,6 +10,7 @@ const CommissionRunSchema = new Schema({
   repsCount: { type: Number, required: true, default: 0 },
   status: { type: String, enum: ["pending", "processing", "completed", "failed"], default: "pending" },
   error: { type: String },
+  isSampleData: { type: Boolean, default: false },
 }, { timestamps: { createdAt: true, updatedAt: true } });
 
 const CommissionResultSchema = new Schema({
@@ -33,6 +34,7 @@ const CommissionResultSchema = new Schema({
   rateSnapshotDate: { type: String },
   /** Engine-specific opaque metadata */
   meta: { type: Schema.Types.Mixed },
+  isSampleData: { type: Boolean, default: false },
 });
 
 export const CommissionRun = model("CommissionRun", CommissionRunSchema);
@@ -48,6 +50,7 @@ export type CommissionRun = mongoose.Document & {
   repsCount: number;
   status: "pending" | "processing" | "completed" | "failed";
   error?: string;
+  isSampleData?: boolean;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -70,6 +73,7 @@ export type CommissionResult = mongoose.Document & {
   rateSnapshotDate?: string;
   /** Engine-specific opaque metadata */
   meta?: Record<string, unknown>;
+  isSampleData?: boolean;
 };
 
 export const insertCommissionRunSchema = z.object({

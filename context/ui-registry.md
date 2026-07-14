@@ -113,6 +113,7 @@ Located in `artifacts/web/src/components/`.
 | CurrencyCombobox | `currency-combobox.tsx` | Currency selector with search |
 | MarkdownEditor | `markdown-editor.tsx` | Tiptap-based rich text editor |
 | HelpTooltip | `help-tooltip.tsx` | Contextual help icon + tooltip |
+| SetupChecklist | `setup-checklist.tsx` | Inline onboarding widget — collapsible card / pill, 3-step progress, Load Sample Data |
 
 ## Hooks
 

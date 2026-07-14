@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { usePageMeta } from "@/hooks/use-page-meta";
 import { useParams, Link } from "wouter";
+import { Footer } from "./landing/Footer";
+import { Navbar } from "./landing/Navbar";
 import {
   CheckCircle2,
   LoaderCircle,
@@ -172,18 +174,9 @@ export function CareersJobPage() {
   }
 
   return (
-    <div className="min-h-screen bg-sidebar">
-        {/* Simple header */}
-        <header className="flex h-14 shrink-0 items-center bg-header px-5 z-10 border-b border-header-border">
-          <a href="/" className="flex items-center gap-2">
-            <img src="/brand/logo-symbol.svg" alt="CommissionKit Logo" className="h-6" />
-            <span className="text-lg font-bold text-foreground tracking-tight">
-              Commission<span className="text-primary">Kit</span>
-            </span>
-          </a>
-        </header>
-
-        <main className="mx-auto p-8 lg:px-10 max-w-3xl py-10">
+    <>
+      <Navbar />
+      <main className="mx-auto p-8 lg:px-10 max-w-3xl py-36">
           {/* Back link */}
           <Link href="/careers" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
             <ArrowLeft className="size-3.5" />
@@ -447,6 +440,7 @@ export function CareersJobPage() {
             </Card>
           </div>
         </main>
-      </div>
+      <Footer />
+    </>
   );
 }

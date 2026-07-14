@@ -411,8 +411,19 @@
     "pipelineRevenue": "Pipeline Revenue", "vsPriorAvg": "vs prior avg",
     "commissionsPaid": "Commissions Paid", "ofRevenue": "of revenue",
     "effectiveWinRate": "Effective Win Rate", "totalDeals": "total deals",
-    "avgDealSize": "Avg Deal Size", "avgDaysToClose": "Avg {{days}} days to close",
-    "totalDealsLabel": "Total Deals", "pendingRevenue": "Pending Revenue"
+    "avgDealSize": "Avg Deal Size", "avg": "Avg", "daysToClose": "days to close",
+    "totalDealsLabel": "Total Deals", "pendingRevenue": "Pending Revenue",
+    "uncollectedPipeline": "uncollected & pipeline revenue",
+    "avgDaysToClose": "Avg Days to Close", "daysFromCreation": "days from creation to close",
+    "netMargin": "Net Margin", "revenueMinusCommission": "revenue minus commission",
+    "revenueMarginTrends": "Revenue & Margin Trends", "trackingPipelineImpact": "Tracking pipeline impact against commission cost",
+    "commissionByRep": "Commission by Rep", "topEarnersRanked": "Top earners ranked by total commission paid",
+    "dealValueDistribution": "Deal Value Distribution", "dealDistributionAcrossBands": "How won deals are distributed across value bands",
+    "paymentStatus": "Payment Status", "paymentStatusDesc": "Breakdown of deals by payment status",
+    "topWonDeals": "Top Won Deals", "topWonDealsDesc": "Highest-value closed-won deals this period",
+    "repPerformanceMatrix": "Rep Performance Matrix", "decisionMetricsDesc": "Decision metrics for sales leadership",
+    "dealsWon": "Deals Won", "winRate": "Win Rate", "revenueDriven": "Revenue Driven", "effectiveRate": "Effective Rate",
+    "noRepData": "No rep data available for this period."
   },
   "roles": {
     "title": "Roles & Permissions", "description": "Manage custom roles and define granular access controls for your workspace members.",
