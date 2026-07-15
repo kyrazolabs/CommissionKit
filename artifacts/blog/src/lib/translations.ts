@@ -21,6 +21,19 @@ export interface Translations {
   selectLanguage: string;
   filterByLanguage: string;
   all: string;
+  justNow: string;
+  oneMinuteAgo: string;
+  minutesAgo: string;
+  oneHourAgo: string;
+  hoursAgo: string;
+  yesterday: string;
+  daysAgo: string;
+  oneWeekAgo: string;
+  weeksAgo: string;
+  oneMonthAgo: string;
+  monthsAgo: string;
+  oneYearAgo: string;
+  yearsAgo: string;
   languageNames: Record<string, string>;
 }
 
@@ -70,6 +83,19 @@ export const translations: Record<string, Translations> = {
     selectLanguage: "Select language",
     filterByLanguage: "Filter by language",
     all: "All",
+    justNow: "Just now",
+    oneMinuteAgo: "1 minute ago",
+    minutesAgo: "{count} minutes ago",
+    oneHourAgo: "1 hour ago",
+    hoursAgo: "{count} hours ago",
+    yesterday: "Yesterday",
+    daysAgo: "{count} days ago",
+    oneWeekAgo: "1 week ago",
+    weeksAgo: "{count} weeks ago",
+    oneMonthAgo: "1 month ago",
+    monthsAgo: "{count} months ago",
+    oneYearAgo: "1 year ago",
+    yearsAgo: "{count} years ago",
     languageNames: {
       en: "English",
       ar: "العربية",
@@ -105,6 +131,19 @@ export const translations: Record<string, Translations> = {
     selectLanguage: "اختر اللغة",
     filterByLanguage: "تصفية حسب اللغة",
     all: "الكل",
+    justNow: "الآن",
+    oneMinuteAgo: "منذ دقيقة واحدة",
+    minutesAgo: "منذ {count} دقيقة",
+    oneHourAgo: "منذ ساعة واحدة",
+    hoursAgo: "منذ {count} ساعة",
+    yesterday: "أمس",
+    daysAgo: "منذ {count} يوم",
+    oneWeekAgo: "منذ أسبوع واحد",
+    weeksAgo: "منذ {count} أسبوع",
+    oneMonthAgo: "منذ شهر واحد",
+    monthsAgo: "منذ {count} شهر",
+    oneYearAgo: "منذ سنة واحدة",
+    yearsAgo: "منذ {count} سنة",
     languageNames: {
       en: "English",
       ar: "العربية",
@@ -140,6 +179,19 @@ export const translations: Record<string, Translations> = {
     selectLanguage: "Seleccionar idioma",
     filterByLanguage: "Filtrar por idioma",
     all: "Todos",
+    justNow: "Ahora mismo",
+    oneMinuteAgo: "hace 1 minuto",
+    minutesAgo: "hace {count} minutos",
+    oneHourAgo: "hace 1 hora",
+    hoursAgo: "hace {count} horas",
+    yesterday: "Ayer",
+    daysAgo: "hace {count} días",
+    oneWeekAgo: "hace 1 semana",
+    weeksAgo: "hace {count} semanas",
+    oneMonthAgo: "hace 1 mes",
+    monthsAgo: "hace {count} meses",
+    oneYearAgo: "hace 1 año",
+    yearsAgo: "hace {count} años",
     languageNames: {
       en: "English",
       ar: "العربية",
@@ -175,6 +227,19 @@ export const translations: Record<string, Translations> = {
     selectLanguage: "Choisir la langue",
     filterByLanguage: "Filtrer par langue",
     all: "Tout",
+    justNow: "À l'instant",
+    oneMinuteAgo: "il y a 1 minute",
+    minutesAgo: "il y a {count} minutes",
+    oneHourAgo: "il y a 1 heure",
+    hoursAgo: "il y a {count} heures",
+    yesterday: "Hier",
+    daysAgo: "il y a {count} jours",
+    oneWeekAgo: "il y a 1 semaine",
+    weeksAgo: "il y a {count} semaines",
+    oneMonthAgo: "il y a 1 mois",
+    monthsAgo: "il y a {count} mois",
+    oneYearAgo: "il y a 1 an",
+    yearsAgo: "il y a {count} ans",
     languageNames: {
       en: "English",
       ar: "العربية",
@@ -210,6 +275,19 @@ export const translations: Record<string, Translations> = {
     selectLanguage: "Sprache auswählen",
     filterByLanguage: "Nach Sprache filtern",
     all: "Alle",
+    justNow: "Gerade eben",
+    oneMinuteAgo: "vor 1 Minute",
+    minutesAgo: "vor {count} Minuten",
+    oneHourAgo: "vor 1 Stunde",
+    hoursAgo: "vor {count} Stunden",
+    yesterday: "Gestern",
+    daysAgo: "vor {count} Tagen",
+    oneWeekAgo: "vor 1 Woche",
+    weeksAgo: "vor {count} Wochen",
+    oneMonthAgo: "vor 1 Monat",
+    monthsAgo: "vor {count} Monaten",
+    oneYearAgo: "vor 1 Jahr",
+    yearsAgo: "vor {count} Jahren",
     languageNames: {
       en: "English",
       ar: "العربية",
@@ -245,6 +323,19 @@ export const translations: Record<string, Translations> = {
     selectLanguage: "Selecionar idioma",
     filterByLanguage: "Filtrar por idioma",
     all: "Todos",
+    justNow: "Agora mesmo",
+    oneMinuteAgo: "há 1 minuto",
+    minutesAgo: "há {count} minutos",
+    oneHourAgo: "há 1 hora",
+    hoursAgo: "há {count} horas",
+    yesterday: "Ontem",
+    daysAgo: "há {count} dias",
+    oneWeekAgo: "há 1 semana",
+    weeksAgo: "há {count} semanas",
+    oneMonthAgo: "há 1 mês",
+    monthsAgo: "há {count} meses",
+    oneYearAgo: "há 1 ano",
+    yearsAgo: "há {count} anos",
     languageNames: {
       en: "English",
       ar: "العربية",
@@ -280,6 +371,19 @@ export const translations: Record<string, Translations> = {
     selectLanguage: "भाषा चुनें",
     filterByLanguage: "भाषा के अनुसार फ़िल्टर करें",
     all: "सभी",
+    justNow: "अभी-अभी",
+    oneMinuteAgo: "1 मिनट पहले",
+    minutesAgo: "{count} मिनट पहले",
+    oneHourAgo: "1 घंटे पहले",
+    hoursAgo: "{count} घंटे पहले",
+    yesterday: "कल",
+    daysAgo: "{count} दिन पहले",
+    oneWeekAgo: "1 हफ्ते पहले",
+    weeksAgo: "{count} हफ्ते पहले",
+    oneMonthAgo: "1 महीने पहले",
+    monthsAgo: "{count} महीने पहले",
+    oneYearAgo: "1 साल पहले",
+    yearsAgo: "{count} साल पहले",
     languageNames: {
       en: "English",
       ar: "العربية",

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getPost, getAvailableLanguages, getAllSlugs } from "@/lib/posts";
 import { t, formatFallbackBanner, formatReadIn } from "@/lib/translations";
-import { formatDate } from "@/lib/format";
+import { formatRelativeDate } from "@/lib/format";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { LanguagePills } from "@/components/language-pills";
 import { FallbackBanner } from "@/components/fallback-banner";
@@ -175,7 +175,7 @@ export default async function BlogPost({ params }: Props) {
           <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6 flex-wrap">
             <span className="flex items-center gap-1.5">
               <Clock className="size-4" />
-              {formatDate(post.date, lang)}
+              {formatRelativeDate(post.date, lang)}
             </span>
             <span className="text-muted-foreground/40">&middot;</span>
             <span>{post.readingTime}</span>
