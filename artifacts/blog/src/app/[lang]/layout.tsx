@@ -11,14 +11,20 @@ interface LayoutProps {
   params: Promise<{ lang: string }>;
 }
 
-export async function generateMetadata({ params }: LayoutProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: LayoutProps): Promise<Metadata> {
   const { lang } = await params;
   const languages = getAllLanguages();
 
   return {
+    metadataBase: new URL("https://commissionk.it"),
     alternates: {
       canonical: `/blog/${lang}`,
-      languages: Object.fromEntries(languages.map((l) => [l, `/blog/${l}`])),
+      languages: {
+        ...Object.fromEntries(languages.map((l) => [l, `/blog/${l}`])),
+        "x-default": `/blog/en`,
+      },
     },
   };
 }
@@ -33,7 +39,12 @@ export default async function LangLayout({ children, params }: LayoutProps) {
   return (
     <html lang={lang} dir={dir} suppressHydrationWarning>
       <body>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
           <div className="flex min-h-screen flex-col selection:bg-primary/20 selection:text-primary">
             <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-sm">
               <div className="max-w-6xl mx-auto flex h-14 items-center px-4 sm:px-6">
@@ -43,7 +54,12 @@ export default async function LangLayout({ children, params }: LayoutProps) {
                     className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {isRtl ? (
-                      <ArrowLeft className={cn("size-4 rotate-180", isRtl && "rtl:rotate-180")} />
+                      <ArrowLeft
+                        className={cn(
+                          "size-4 rotate-180",
+                          isRtl && "rtl:rotate-180",
+                        )}
+                      />
                     ) : (
                       <ArrowLeft className="size-4" />
                     )}

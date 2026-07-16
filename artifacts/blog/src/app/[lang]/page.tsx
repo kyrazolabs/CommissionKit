@@ -20,16 +20,22 @@ export async function generateStaticParams() {
 
 export const dynamicParams = true;
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { lang } = await params;
   const languages = getAllLanguages();
   const dict = t(lang);
   return {
+    metadataBase: new URL("https://commissionk.it"),
     title: dict.blog,
     description: dict.blogDescription,
     alternates: {
       canonical: `/blog/${lang}`,
-      languages: Object.fromEntries(languages.map((l) => [l, `/blog/${l}`])),
+      languages: {
+        ...Object.fromEntries(languages.map((l) => [l, `/blog/${l}`])),
+        "x-default": `/blog/en`,
+      },
     },
     openGraph: {
       locale: lang === "ar" ? "ar_AR" : lang,
@@ -48,14 +54,19 @@ export default async function BlogIndex({ params, searchParams }: PageProps) {
   const currentPage = Math.max(1, parseInt(search.page || "1", 10) || 1);
   const pageSize = 12;
   const totalPages = Math.ceil(allPosts.length / pageSize);
-  const posts = allPosts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const posts = allPosts.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
 
   const isRtl = lang === "ar";
 
   if (!allPosts.length) {
     return (
       <div className="text-center py-20">
-        <h1 className="text-4xl font-bold text-foreground mb-4 tracking-tight font-display">{dict.blog}</h1>
+        <h1 className="text-4xl font-bold text-foreground mb-4 tracking-tight font-display">
+          {dict.blog}
+        </h1>
         <p className="text-muted-foreground mb-8">{dict.noArticles}</p>
         <Button asChild variant="outline">
           <a href="https://commissionk.it">{dict.backToHome}</a>
@@ -100,8 +111,12 @@ export default async function BlogIndex({ params, searchParams }: PageProps) {
           <Tag className="size-3.5 text-primary" />
           {dict.insights}
         </div>
-        <h1 className="text-4xl font-bold text-foreground mb-4 tracking-tight font-display">{dict.blog}</h1>
-        <p className="text-lg text-muted-foreground max-w-2xl">{dict.blogDescription}</p>
+        <h1 className="text-4xl font-bold text-foreground mb-4 tracking-tight font-display">
+          {dict.blog}
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-2xl">
+          {dict.blogDescription}
+        </p>
       </div>
 
       <BlogGrid posts={posts} lang={lang} t={dict} />
