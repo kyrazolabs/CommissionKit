@@ -123,11 +123,14 @@ Agents automatically load OpenCode skills:
 - **/recover** → @forge and @vault use this for incident response
 - **/remember** → @nexus uses this for session continuity
 
-Business skills in `os/skills/`:
-- **agent-browser** → @scout for LinkedIn research
-- **research** → @scout, @clutch, @ink, @compass
-- **data-manipulation** → @lens, @pulse, @scout
-- **dashboard-building** → @lens for CRM dashboards
+Business skills in `.agents/skills/`:
+- **customer-research** → @scout, @compass, @pulse, @bridge for multi-source research
+- **draft-outreach** → @clutch for personalized outreach sequences
+- **content-creation** → @ink for blog posts, social copy, landing pages
+- **seo-audit** → @ink for keyword research and content gap analysis
+- **linkedin-marketing** → @signal for LinkedIn content and engagement
+- **competitive-brief** → @compass, @bridge for competitor and partnership analysis
+- **interview-prep** → @pulse for structured customer interview plans
 
 ### 7. Configuration
 

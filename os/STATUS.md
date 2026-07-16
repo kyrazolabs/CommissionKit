@@ -77,6 +77,7 @@ This tracker shows the current state of every part of the CommissionKit OS.
 | Tool Inventory | ✅ Done | All tools listed with owners |
 | Automation Workflows | ✅ Done | 5 core workflows defined |
 | Scripts | ⏳ Planned | Referenced but not all built yet |
+| AI Workforce Skills | ✅ Done | Migrated from `os/skills/` (7 legacy skills) to `.agents/skills/` (27 specialized skills). All 16 agents updated with proper skill references.
 
 ## Governance
 
