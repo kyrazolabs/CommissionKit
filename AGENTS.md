@@ -26,7 +26,8 @@ graph TD
 
     BIZ --> AFFINE["AFFiNE OS<br/>affine.commissionk.it"]
     BIZ --> O1[os/agents/]
-    BIZ --> O2[os/skills/]
+    BIZ --> O2[.agents/skills/]
+    BIZ --> O3[.opencode/skills/]
 
     AGENTS_CONFIG --> CONFIG["/root/.config/opencode/opencode.jsonc"]
     STATUS --> PT["context/progress-tracker.md"]
@@ -60,7 +61,7 @@ graph TD
 1. Read this file (AGENTS.md)
 2. `context/build-plan.md` — build steps
 3. Open AFFiNE OS — engineering system, tools & automation
-4. Load `/deploy-verify` skill → follow checklist
+4. Load relevant infrastructure skills → follow checklist
 
 ---
 
@@ -82,7 +83,8 @@ graph TD
 | **Agent models** | `os/agents/MODEL-ASSIGNMENTS.md` |
 | **How to use agents** | `os/agents/OPENCODE-GUIDE.md` |
 | **Agent workflows** | `os/agents/<team>/workflows/` |
-| **Business skills** | `os/skills/` |
+| **Agent skills** | `.agents/skills/` — 27 specialized skills (content, research, outreach, SEO, documents, compliance, LinkedIn, and more) |
+| **Technical skills** | `.opencode/skills/` — architect, imprint, recover, remember, review |
 
 ---
 
@@ -111,7 +113,8 @@ Read in this exact order before any implementation:
 The company OS lives in **AFFiNE** at `https://affine.commissionk.it` for live document management. The `os/` folder in this repo retains the agent workforce, skills, and status tracking:
 
 - **Agent teams** → `os/agents/` — Agent configurations, model assignments, team workflows
-- **Business skills** → `os/skills/` — Skill definitions for research, content, sales, social, data, deploy, design
+- **Agent skills** → `.agents/skills/` — 27 specialized skills (content, research, outreach, SEO, documents, compliance, LinkedIn, and more)
+- **Technical skills** → `.opencode/skills/` — architect, imprint, recover, remember, review
 - **Status** → `os/STATUS.md` — Current completion status across all departments
 
 For all company docs (identity, strategy, revenue, product, operations, people, customer, tools, governance), open AFFiNE OS.
@@ -208,7 +211,7 @@ These never change. Violate them and the PR gets rejected.
 - **Test everything that matters.** Run `bun test` before marking work complete. Mock all external services (Stripe, SMTP, S3, Redis).
 - **Update `context/progress-tracker.md`** after completing any feature or significant change.
 - **Update `os/STATUS.md`** after completing any business process or significant OS change.
-- **Before adding a library**, read `context/library-docs.md` for project-specific rules, then check if a skill covers it in `.opencode/skills/`.
+- **Before adding a library**, read `context/library-docs.md` for project-specific rules, then check if a skill covers it in `.opencode/skills/` or `.agents/skills/`.
 - **If the same problem persists after one corrective prompt** — stop immediately and run `/recover`.
 
 <!-- END:immutable-rules -->
@@ -225,14 +228,19 @@ These never change. Violate them and the PR gets rejected.
 - `/remember save` — when a feature spans multiple sessions.
 - `/remember restore` — when returning after a multi-session feature.
 
-### Business Skills (`os/skills/`)
-- `/research` — systematic web research with source verification
-- `/content-seo` — SEO-optimized content creation
-- `/sales-outreach` — outreach methodology and objection handling
-- `/social-engage` — social media engagement rules
-- `/data-report` — structured analytics and reporting
-- `/deploy-verify` — safe deployment checklists
-- `/design-ux` — UX design workflow and accessibility
+### Business Skills (`.agents/skills/`)
+- `content-creation` — blog posts, social media, newsletters, landing pages, case studies
+- `customer-research` — multi-source research with source attribution and confidence scoring
+- `draft-outreach` — personalized cold outreach sequences, emails, LinkedIn messages
+- `linkedin-marketing` — plan, draft, audit, and publish LinkedIn content
+- `seo-audit` — comprehensive SEO audits, keyword research, content gap analysis
+- `competitive-brief` — competitor analysis, positioning comparison, battlecards
+- `browser-use` — direct browser-based research and automation
+- `skill-creator` — create, modify, and evaluate agent skills
+- `interview-prep` — structured interview plans with scoring rubrics
+- `compliance-tracking` — SOC 2, GDPR, ISO 27001 compliance tracking
+- `xlsx` / `pdf` / `pptx` / `docx` — document generation and reporting
+- `find-skills` — discover available skills and match to tasks
 
 <!-- END:available-skills -->
 
@@ -336,6 +344,6 @@ For custom commission engines (e.g., AISSOL), see:
 ## Additional context
 
 - `docs/` has enterprise engine architecture docs.
-- `os/` retains the AI agent workforce (`os/agents/`), business skills (`os/skills/`), and status tracking (`os/STATUS.md`). All other company documents (identity, strategy, revenue, product, operations, people, customer, tools, governance) have been migrated to **AFFiNE** at `https://affine.commissionk.it`.
+- `os/` retains the AI agent workforce (`os/agents/`), business skills (`.agents/skills/`), and status tracking (`os/STATUS.md`). All other company documents (identity, strategy, revenue, product, operations, people, customer, tools, governance) have been migrated to **AFFiNE** at `https://affine.commissionk.it`.
 - `context/` has technical context docs for the codebase.
 - No GitHub Actions CI is configured.
