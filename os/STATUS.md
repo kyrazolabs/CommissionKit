@@ -89,24 +89,29 @@ This tracker shows the current state of every part of the CommissionKit OS.
 
 ---
 
-## Quick Wins (Do These First)
+## Quick Wins (Do These First — Updated July 2026)
 
-1. **Set up accounting tool** (Wave / QuickBooks) — needed for financial tracking
-2. **Configure email** (support@, sales@) — needed for customer communication
-3. **Build help center** (Mintlify) — reduces support load
-4. **Start Monday Dashboard** — gives visibility into all metrics
-5. **Run first agent performance review** — calibrate agent effectiveness
+> **See `os/90-day-operational-rhythm.md` for the full execution plan. Only ONE quick win matters: get Customer #1.**
+
+1. **Activate Core Agents** — Nexus (daily coordination) + Scout (daily lead gen). All other agents dormant until needed.
+2. **Founder sends first 5 outreach messages** — Week 1 target. Quality over quantity.
+3. **Merge pipeline databases** — Combine Leads + Outreach + Pipeline into single AFFiNE tracker.
+4. **First demo booked** — Week 1-2 target.
+5. **First customer closed** — Month 1 target ($49 MRR minimum).
 
 ## What's Missing
 
 | Gap | Priority | Owner |
 |-----|----------|-------|
-| Actual CRM data in Twenty | High | Scout |
-| Content published (blog posts) | High | Ink |
-| First paying customers | Critical | Clutch |
-| Automated deployment scripts | Medium | Vault |
-| Security audit | Medium | Vault |
-| Legal entity formed | Low | Founder |
+| First paying customer | **CRITICAL** | Founder + Clutch |
+| Qualified leads in pipeline | **CRITICAL** | Scout |
+| Outreach messages sent | **HIGH** | Clutch (draft) → Founder (send) |
+| Pipeline process operating daily | **HIGH** | Nexus |
+| Content supporting outreach (not calendar filler) | **MEDIUM** | Ink |
+| Social presence for credibility | **MEDIUM** | Signal |
+| Post-customer support process | **LOW** (activate after Customer #1) | Founder |
+| Automated deployment scripts | **LOW** | Vault |
+| Legal entity formed | **LOW** | Founder |
 
 ---
 ## Where to Go Next

@@ -37,6 +37,7 @@ This repo's `os/` folder retains only operational files:
 
 | What | Where | Purpose |
 |------|-------|---------|
+| **90-Day Execution Plan** | `os/90-day-operational-rhythm.md` | Active strategy: operational cadence, agent activation model, pipeline process, strip list. **Start here for execution.** |
 | Agent teams & workflows | `os/agents/` | AI workforce configuration, team structure, team-specific workflows and scripts |
 | Business skills | `os/skills/` | Skill definitions used by agents (research, content, sales, social, data, deploy, design) |
 | Status tracker | `os/STATUS.md` | Current completion status across all departments |
