@@ -7,6 +7,12 @@
       "skillPath": "skills/affine-mcp-server-integration/SKILL.md",
       "computedHash": "7f79d00c61533668f2a90e9c8662ea971576f3d0e0e824fdb4474957f51d3c82"
     },
+    "browser-use": {
+      "source": "browser-use/browser-use",
+      "sourceType": "github",
+      "skillPath": "skills/browser-use/SKILL.md",
+      "computedHash": "8447c4adea0d257a75741e65cba3c2196f6295ac1cd59bcc6c4ec9e380df08a0"
+    },
     "find-skills": {
       "source": "vercel-labs/skills",
       "sourceType": "github",
@@ -18,6 +24,12 @@
       "sourceType": "github",
       "skillPath": "SKILL.md",
       "computedHash": "32dad2d85d584bb51882bc8215349ea79fce7c0332bd47815065e9909fc4191f"
+    },
+    "skill-creator": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/skill-creator/SKILL.md",
+      "computedHash": "5ea13a6d9f0d4bb694405d79acd00cadec0d21bb138c4dd10fcf3c500cb835c2"
     }
   }
 }
