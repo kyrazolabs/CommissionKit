@@ -26,20 +26,61 @@ export async function generateMetadata({
   const { lang } = await params;
   const languages = getAllLanguages();
   const dict = t(lang);
+
+  const localeMap: Record<string, string> = {
+    en: "en_US",
+    ar: "ar_AR",
+    es: "es_ES",
+    fr: "fr_FR",
+    de: "de_DE",
+    pt: "pt_BR",
+    hi: "hi_IN",
+  };
+  const locale = localeMap[lang] ?? "en_US";
+
   return {
     metadataBase: new URL("https://commissionk.it"),
     title: dict.blog,
     description: dict.blogDescription,
+    keywords: [
+      "commission management",
+      "sales compensation",
+      "commission plans",
+      "B2B sales",
+      "sales operations",
+      "sales strategy",
+    ],
+    authors: [{ name: "CommissionKit" }],
+    openGraph: {
+      type: "website",
+      siteName: "CommissionKit",
+      locale,
+      url: `https://commissionk.it/blog/${lang}`,
+      title: dict.blog,
+      description: dict.blogDescription,
+      images: [
+        {
+          url: "/blog/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: "CommissionKit Blog - Sales Commission Management Guides",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      site: "@commissionkit",
+      creator: "@commissionkit",
+      title: dict.blog,
+      description: dict.blogDescription,
+      images: ["/blog/og-image.png"],
+    },
     alternates: {
       canonical: `/blog/${lang}`,
       languages: {
         ...Object.fromEntries(languages.map((l) => [l, `/blog/${l}`])),
-        "x-default": `/blog/en`,
+        "x-default": "/blog/en",
       },
-    },
-    openGraph: {
-      locale: lang === "ar" ? "ar_AR" : lang,
-      url: `https://commissionk.it/blog/${lang}`,
     },
   };
 }
@@ -77,6 +118,39 @@ export default async function BlogIndex({ params, searchParams }: PageProps) {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "CommissionKit Blog",
+            description: dict.blogDescription,
+            url: `https://commissionk.it/blog/${lang}`,
+            publisher: {
+              "@type": "Organization",
+              name: "CommissionKit",
+              url: "https://commissionk.it",
+              logo: {
+                "@type": "ImageObject",
+                url: "https://commissionk.it/brand/logo-full.svg",
+              },
+              sameAs: [
+                "https://twitter.com/commissionkit",
+                "https://www.linkedin.com/company/commissionkit",
+              ],
+            },
+            potentialAction: {
+              "@type": "SearchAction",
+              target: {
+                "@type": "EntryPoint",
+                urlTemplate: `https://commissionk.it/blog/${lang}?q={search_term_string}`,
+              },
+              "query-input": "required name=search_term_string",
+            },
+          }),
+        }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

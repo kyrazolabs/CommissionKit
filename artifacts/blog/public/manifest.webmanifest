@@ -1,0 +1,23 @@
+{
+  "name": "CommissionKit Blog",
+  "short_name": "CK Blog",
+  "description": "Expert guides on sales commission management, plan design, deal tracking, and automating commission calculations for B2B sales teams.",
+  "start_url": "/blog",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0D9488",
+  "icons": [
+    {
+      "src": "/blog/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/blog/logo-symbol.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

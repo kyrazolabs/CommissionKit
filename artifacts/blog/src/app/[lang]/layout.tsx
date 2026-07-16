@@ -16,14 +16,88 @@ export async function generateMetadata({
 }: LayoutProps): Promise<Metadata> {
   const { lang } = await params;
   const languages = getAllLanguages();
+  const dict = t(lang);
+
+  const localeMap: Record<string, string> = {
+    en: "en_US",
+    ar: "ar_AR",
+    es: "es_ES",
+    fr: "fr_FR",
+    de: "de_DE",
+    pt: "pt_BR",
+    hi: "hi_IN",
+  };
+  const locale = localeMap[lang] ?? "en_US";
 
   return {
     metadataBase: new URL("https://commissionk.it"),
+    title: {
+      default: dict.blog,
+      template: "%s | CommissionKit Blog",
+    },
+    description: dict.blogDescription,
+    keywords: [
+      "commission management",
+      "sales compensation",
+      "commission plans",
+      "B2B sales",
+      "sales operations",
+      "sales strategy",
+    ],
+    openGraph: {
+      type: "website",
+      siteName: "CommissionKit",
+      locale,
+      url: `https://commissionk.it/blog/${lang}`,
+      title: dict.blog,
+      description: dict.blogDescription,
+      images: [
+        {
+          url: "/blog/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: "CommissionKit Blog",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      site: "@commissionkit",
+      creator: "@commissionkit",
+      title: dict.blog,
+      description: dict.blogDescription,
+      images: ["/blog/og-image.png"],
+    },
+    icons: {
+      icon: [
+        {
+          url: "/blog/favicon.svg",
+          type: "image/svg+xml",
+        },
+      ],
+      apple: [
+        {
+          url: "/blog/logo-symbol.svg",
+          type: "image/svg+xml",
+        },
+      ],
+    },
+    manifest: "/blog/manifest.webmanifest",
+    robots: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+      },
+    },
     alternates: {
       canonical: `/blog/${lang}`,
       languages: {
         ...Object.fromEntries(languages.map((l) => [l, `/blog/${l}`])),
-        "x-default": `/blog/en`,
+        "x-default": "/blog/en",
       },
     },
   };
