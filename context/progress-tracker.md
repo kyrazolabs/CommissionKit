@@ -111,8 +111,8 @@ This tracker captures the current state of the codebase as of the latest explora
 
 | Area | Status | Notes |
 |------|--------|-------|
-| Agent definitions | ✅ Done | 14 agents across 4 teams + Nexus leader. |
-| Skill registry | ✅ Done | 12 skills: 5 technical (.opencode/skills/) + 7 business (os/skills/). All assigned to agents. |
+| Agent definitions | ✅ Done | 16 agents across 5 teams + Nexus leader. All 16 updated with proper `.agents/skills/` references. |
+| Skill registry | ✅ Done | Migrated from 7 legacy `os/skills/` (flat .md) to 27 directory-based skills in `.agents/skills/`. 5 technical skills in `.opencode/skills/`. |
 | Task orchestrator | ✅ Done | Nexus routes tasks by skill match, tools, access, workload. |
 | Web access layer | ✅ Done | Quota-based browsing (20/hr/agent), full audit trail. |
 | CLI interface | ✅ Done | `agents-cli.ts` with status, org, brief, skills, nexus commands. |
@@ -196,6 +196,7 @@ This tracker captures the current state of the codebase as of the latest explora
 - **Blog dynamic language support**: Removed hardcoded `SUPPORTED_LANGUAGES` from `posts.ts`; language list is now derived from actual translation files. Pages no longer 404 for new languages — they try the requested language, fall back to English, then 404 only if English is also missing. Added `es`, `fr`, `de`, `hi` translations for `welcome-to-commissionkit`. Updated `LANGUAGE_LABELS` in `language-pills.tsx`. Updated `posts.test.ts` to assert dynamic behavior. Verified all new language URLs load (`/blog/es|fr|de|hi|pt|ar|en/welcome-to-commissionkit`) and unknown slugs 404. Full monorepo typecheck passes.
 - **Blog UI multi-language**: Created `artifacts/blog/src/lib/translations.ts` with full UI translation dictionaries for `en`, `ar`, `es`, `fr`, `de`, `pt`, `hi`. All blog chrome (layout header/footer, index page, article page, fallback banner, blog grid empty state, language pills/filter/switcher/badge) now reads from translations. Dynamic strings use `{placeholder}` templates with format helpers to stay serializable across the Next.js RSC/client boundary. Added `translations.test.ts`. Verified all 7 language index and article pages render translated UI; blog build and full monorepo typecheck pass.
 - **Blog indexation fix (P0)**: Diagnosed and fixed GSC sitemap error causing the blog to be invisible to Google. Root cause: `/blog/sitemap.xml` included `https://commissionk.it/blog` which is a 307 redirect to `/blog/en`, and the sitemap alternates lacked `x-default` hreflang. Fixed by removing the redirecting root URL from `sitemap.ts`, adding `x-default` to all sitemap alternates, setting `metadataBase` on blog pages (fixing absolute canonical/hreflang/OG URLs), and adding `Sitemap: https://commissionk.it/blog/sitemap.xml` to the main `robots.txt`. Added `sitemap.test.ts` with 5 assertions. Verified `/blog/sitemap.xml` returns 200 `application/xml` with 21 valid URLs through the nginx proxy.
+- **Skill registry migration (P0)**: Deleted all 7 legacy `os/skills/` flat `.md` files. All 16 agent definitions in `.agents/agents/` updated with proper `.agents/skills/` references — each agent now loads 1-3 domain-specific skills from the 27-skill catalog. Documentation updated: `AGENTS.md`, `os/README.md`, `os/STATUS.md`, `context/progress-tracker.md`.
 
 ---
 ## Where to Go Next
