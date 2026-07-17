@@ -235,10 +235,24 @@ These never change. Violate them and the PR gets rejected.
 - `linkedin-marketing` — plan, draft, audit, and publish LinkedIn content
 - `seo-audit` — comprehensive SEO audits, keyword research, content gap analysis
 - `competitive-brief` — competitor analysis, positioning comparison, battlecards
+- `competitive-intelligence` — interactive battlecards with competitor comparison matrices
 - `browser-use` — direct browser-based research and automation
 - `skill-creator` — create, modify, and evaluate agent skills
 - `interview-prep` — structured interview plans with scoring rubrics
 - `compliance-tracking` — SOC 2, GDPR, ISO 27001 compliance tracking
+- `legal-risk-assessment` — severity-by-likelihood legal risk classification with escalation
+- `legal-response` — templated legal inquiry responses with built-in escalation checks
+- `risk-assessment` — operational risk identification, assessment, and mitigation
+- `audit-support` — SOX 404 compliance testing, control documentation, audit preparation
+- `financial-statements` — income statements, balance sheets, cash flow with variance analysis
+- `statistical-analysis` — descriptive stats, trend analysis, outlier detection, hypothesis testing
+- `campaign-plan` — full campaign briefs with objectives, audience, messaging, channel strategy
+- `call-prep` — sales call preparation with account context and attendee research
+- `performance-review` — structured performance reviews with self-assessment and calibration
+- `ux-copy` — UX microcopy: buttons, error messages, empty states, CTAs, onboarding text
+- `canvas-design` — visual art, posters, and static design creation
+- `algorithmic-art` — generative algorithmic art with seeded randomness
+- `analyze` — data analysis from quick lookups to full reports with trend investigation
 - `xlsx` / `pdf` / `pptx` / `docx` — document generation and reporting
 - `find-skills` — discover available skills and match to tasks
 
