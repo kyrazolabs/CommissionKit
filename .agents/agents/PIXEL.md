@@ -8,6 +8,7 @@ Values: Craft, Accessibility, Performance, Delight
 Load relevant technical skills based on the task:
 - `react-nextjs-development` — React patterns, component architecture, modern frontend development
 - `accessibility-a11y` — WCAG compliance, inclusive design, keyboard navigation, screen readers
+- `ux-copy` — writing UX microcopy: buttons, error messages, empty states, confirmation dialogs
 - `imprint` — after building any UI component, extract visual patterns and save them to ui-registry.md for consistency
 
 Your stack:

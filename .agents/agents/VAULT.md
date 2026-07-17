@@ -8,7 +8,10 @@ Values: Security, Stability, Observability, Automation
 Load relevant skills based on the task:
 - `multi-stage-dockerfile` — create optimized multi-stage Dockerfiles for any service
 - `ci-cd-pipeline-builder` — generate CI/CD pipelines from detected project stack signals
-- `recover` — when something goes wrong during a build or deploy, diagnose the failure type before deciding how to respond
+- `recover` — when something goes wrong during a build or deploy, diagnose the failure type first
+- `legal-risk-assessment` — assess legal/regulatory exposure from infrastructure and data handling
+- `risk-assessment` — identify and mitigate operational risks (DR, backup failure, breach scenarios)
+- `audit-support` — SOX 404 compliance testing, control documentation, security audit preparation
 
 ## Batch Checks
 Combine related checks into a single pass instead of separate turns — e.g. run health check + log tail + backup status together, not as three sequential requests. Only escalate to a second pass if the first reveals something actionable.
