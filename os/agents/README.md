@@ -52,4 +52,4 @@ Each `scripts/` directory contains executable scripts that agents can run to aut
 - Back to entry point: `AGENTS.md`
 - Agent models: `os/agents/MODEL-ASSIGNMENTS.md`
 - Usage guide: `os/agents/OPENCODE-GUIDE.md`
-- Business skills: `os/skills/`
+- Agent skills: `.agents/skills/`

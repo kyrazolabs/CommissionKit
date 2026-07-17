@@ -24,6 +24,7 @@ Located in `artifacts/web/src/components/ui/`.
 | MonthPicker | `month-picker.tsx` | react-day-picker |
 | Calendar | `calendar.tsx` | react-day-picker |
 | InputOTP | `input-otp.tsx` | input-otp |
+| DropdownMenu | `dropdown-menu.tsx` | Radix DropdownMenu (also in blog) |
 
 ### Layout & Surfaces
 
@@ -53,7 +54,7 @@ Located in `artifacts/web/src/components/ui/`.
 | Accordion | `accordion.tsx` | Radix Accordion |
 | Collapsible | `collapsible.tsx` | Radix Collapsible |
 | Menubar | `menubar.tsx` | Radix Menubar |
-| DropdownMenu | `dropdown-menu.tsx` | Radix DropdownMenu |
+| DropdownMenu | `dropdown-menu.tsx` | Radix DropdownMenu (also in blog at `artifacts/blog/src/components/ui/`) |
 | ContextMenu | `context-menu.tsx` | Radix ContextMenu |
 | Toggle | `toggle.tsx` | Radix Toggle |
 | ToggleGroup | `toggle-group.tsx` | Radix ToggleGroup |
@@ -114,6 +115,14 @@ Located in `artifacts/web/src/components/`.
 | MarkdownEditor | `markdown-editor.tsx` | Tiptap-based rich text editor |
 | HelpTooltip | `help-tooltip.tsx` | Contextual help icon + tooltip |
 | SetupChecklist | `setup-checklist.tsx` | Inline onboarding widget — collapsible card / pill, 3-step progress, Load Sample Data |
+
+## Blog Components
+
+Located in `artifacts/blog/src/components/`.
+
+| Component | File | Purpose |
+|-----------|------|---------|
+| LanguagePills | `language-pills.tsx` | Blog article language switcher — dropdown with Globe icon, native language labels, active language highlighted with code badge |
 
 ## Hooks
 

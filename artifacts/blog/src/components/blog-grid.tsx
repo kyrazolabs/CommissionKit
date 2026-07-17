@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatDate } from "@/lib/format";
+import { formatRelativeDate } from "@/lib/format";
 import type { Translations } from "@/lib/translations";
 import { cn } from "@/lib/utils";
 
@@ -63,7 +63,7 @@ export function BlogGrid({ posts, lang, t }: BlogGridProps) {
                 <div className="flex items-center justify-between text-xs text-muted-foreground/70">
                   <span className="flex items-center gap-1">
                     <Clock className="size-3" />
-                    {formatDate(post.date, lang)}
+                    {formatRelativeDate(post.date, lang)}
                   </span>
                   <span>{post.readingTime}</span>
                 </div>

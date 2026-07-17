@@ -37,8 +37,10 @@ This repo's `os/` folder retains only operational files:
 
 | What | Where | Purpose |
 |------|-------|---------|
+| **90-Day Execution Plan** | `os/90-day-operational-rhythm.md` | Active strategy: operational cadence, agent activation model, pipeline process, strip list. **Start here for execution.** |
 | Agent teams & workflows | `os/agents/` | AI workforce configuration, team structure, team-specific workflows and scripts |
-| Business skills | `os/skills/` | Skill definitions used by agents (research, content, sales, social, data, deploy, design) |
+| Agent skills | `.agents/skills/` | 27 specialized skill definitions used by agents (content, research, outreach, SEO, LinkedIn, and more) |
+| Technical skills | `.opencode/skills/` | 5 technical skills (architect, imprint, recover, remember, review) |
 | Status tracker | `os/STATUS.md` | Current completion status across all departments |
 
 ```mermaid
@@ -49,7 +51,8 @@ graph TD
     AGENTS --> DEV["development/"]
     AGENTS --> PROD["product/"]
     AGENTS --> NEXUS["nexus/"]
-    AGENTS --> SKILLS["os/skills/<br/>Business Skills"]
+    AGENTS --> SKILLS[".agents/skills/<br/>Agent Skills"]
+    AGENTS --> TECHSKILLS[".opencode/skills/<br/>Technical Skills"]
     AGENTS --> STATUS["os/STATUS.md<br/>Progress"]
     AFFINE["AFFiNE OS<br/>affine.commissionk.it"] --> COMPANY["Company Docs"]
     AFFINE --> STRATEGY["Strategy Docs"]

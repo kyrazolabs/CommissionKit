@@ -68,6 +68,7 @@ Disallow: /app/
 Disallow: /_/
 
 Sitemap: https://commissionk.it/sitemap.xml
+Sitemap: https://commissionk.it/blog/sitemap.xml
 
 # ═══════════════════════════════════════════════════════════════
 # AI Crawler Directives — GEO (Generative Engine Optimization)
