@@ -25,20 +25,13 @@ export const metadata: Metadata = {
     siteName: "CommissionKit",
     locale: "en_US",
     url: "https://commissionk.it/blog",
-    images: [
-      {
-        url: "/blog/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "CommissionKit Blog",
-      },
-    ],
+      images: [{ url: "https://commissionk.it/blog/og.png", width: 1600, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
     site: "@commissionkit",
     creator: "@commissionkit",
-    images: ["/blog/og-image.png"],
+    images: ["https://commissionk.it/blog/og.png"],
   },
   icons: {
     icon: [

@@ -17,6 +17,7 @@ export interface BlogPostMeta {
   coverImage?: string;
   lang?: string;
   availableLanguages?: string[];
+  ogImage?: string;
 }
 
 export interface BlogPost extends BlogPostMeta {
@@ -55,6 +56,9 @@ function readPostFile(slugDir: string, filePath: string, slug: string, lang: str
   const coverPath = path.join(slugDir, "cover.png");
   const coverImage = fs.existsSync(coverPath) ? `/blog/api/cover/${slug}` : undefined;
 
+  const ogImagePath = path.join(slugDir, "opengraphimages", `${lang}.webp`);
+  const ogImage = fs.existsSync(ogImagePath) ? `/blog/api/og/${slug}/${lang}` : undefined;
+
   return {
     slug,
     title: data.title || slug.replace(/-/g, " "),
@@ -64,6 +68,7 @@ function readPostFile(slugDir: string, filePath: string, slug: string, lang: str
     tags: data.tags || [],
     image: data.image,
     coverImage,
+    ogImage,
     content,
     readingTime: calcReadingTime(content),
     lang,
@@ -195,4 +200,19 @@ export function getAllLanguages(): string[] {
     }
   }
   return [...languages].sort();
+}
+
+export function findArticleDir(slug: string): string | null {
+  if (!fs.existsSync(ARTICLES_DIR)) return null;
+
+  const dateEntries = fs.readdirSync(ARTICLES_DIR, { withFileTypes: true });
+  for (const dateEntry of dateEntries) {
+    if (!dateEntry.isDirectory()) continue;
+    const dateDir = path.join(ARTICLES_DIR, dateEntry.name);
+    const slugDir = path.join(dateDir, slug);
+    if (fs.existsSync(slugDir) && fs.statSync(slugDir).isDirectory()) {
+      return slugDir;
+    }
+  }
+  return null;
 }

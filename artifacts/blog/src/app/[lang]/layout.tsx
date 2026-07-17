@@ -51,14 +51,7 @@ export async function generateMetadata({
       url: `https://commissionk.it/blog/${lang}`,
       title: dict.blog,
       description: dict.blogDescription,
-      images: [
-        {
-          url: "/blog/og-image.png",
-          width: 1200,
-          height: 630,
-          alt: "CommissionKit Blog",
-        },
-      ],
+      images: [{ url: "https://commissionk.it/blog/og-default.webp", width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
@@ -66,7 +59,7 @@ export async function generateMetadata({
       creator: "@commissionkit",
       title: dict.blog,
       description: dict.blogDescription,
-      images: ["/blog/og-image.png"],
+      images: ["https://commissionk.it/blog/og-default.webp"],
     },
     icons: {
       icon: [

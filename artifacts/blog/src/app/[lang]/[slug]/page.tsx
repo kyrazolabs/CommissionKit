@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!post) return { title: dict.postNotFound };
 
   const availableLanguages = getAvailableLanguages(slug);
-  const ogImage = post.image || post.coverImage;
+  const ogImage = post.coverImage || post.image;
   const canonicalUrl = `https://commissionk.it/blog/${lang}/${slug}`;
 
   const hreflangLanguages: Record<string, string> = {};
@@ -98,7 +98,7 @@ export default async function BlogPost({ params }: Props) {
   const availableLanguages = getAvailableLanguages(slug);
   const isRtl = lang === "ar";
   const fallbackUrl = `/blog/en/${slug}`;
-  const ogImage = post.image || post.coverImage;
+  const ogImage = post.coverImage || post.image;
   const canonicalUrl = `https://commissionk.it/blog/${lang}/${slug}`;
 
   return (
