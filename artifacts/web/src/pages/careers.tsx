@@ -25,7 +25,7 @@ export function CareersPage() {
               Join the team
             </h1>
             <p className="text-muted-foreground text-lg max-w-2xl">
-              We're building the platform that helps sales teams get paid what they deserve. If you're passionate about sales, fintech, and great product experiences, we'd love to hear from you.
+              We help sales teams get paid correctly, on time, without the spreadsheet chaos. Our reps get the same deal: real leads, fast payouts, and no cap on what you can earn.
             </p>
           </div>
 
@@ -51,6 +51,31 @@ export function CareersPage() {
               </div>
               <h3 className="font-semibold text-foreground mb-2">Global Impact</h3>
               <p className="text-sm text-muted-foreground">Help sales teams across the GCC, Europe, and beyond eliminate commission chaos.</p>
+            </div>
+          </div>
+
+          {/* Why sell CommissionKit */}
+          <div className="mb-16 md:mb-20">
+            <h2 className="text-2xl font-bold text-foreground mb-2 tracking-tight">Why sell CommissionKit</h2>
+            <p className="text-muted-foreground mb-6">Four numbers that matter if you're thinking about applying.</p>
+
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div className="p-5 rounded-xl border border-primary/20 bg-primary/5">
+                <p className="text-2xl font-bold text-primary tabular-nums mb-1">$3K–$8K</p>
+                <p className="text-[13px] text-muted-foreground">Monthly earnings for top performers</p>
+              </div>
+              <div className="p-5 rounded-xl border border-border bg-card">
+                <p className="text-2xl font-bold text-foreground tabular-nums mb-1">10+</p>
+                <p className="text-[13px] text-muted-foreground">Qualified leads provided monthly — no cold outreach required</p>
+              </div>
+              <div className="p-5 rounded-xl border border-border bg-card">
+                <p className="text-2xl font-bold text-foreground tabular-nums mb-1">15 days</p>
+                <p className="text-[13px] text-muted-foreground">Payout after first invoice — no thresholds, no delays</p>
+              </div>
+              <div className="p-5 rounded-xl border border-border bg-card">
+                <p className="text-2xl font-bold text-foreground tabular-nums mb-1">30% + 10%</p>
+                <p className="text-[13px] text-muted-foreground">First-month + lifetime recurring commission</p>
+              </div>
             </div>
           </div>
 
