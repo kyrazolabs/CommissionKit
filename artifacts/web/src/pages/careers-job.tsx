@@ -255,6 +255,63 @@ export function CareersJobPage() {
                 ))}
               </ul>
             </section>
+
+            {job.earningsExample && (
+              <section>
+                <h2 className="text-[15px] font-semibold text-foreground mb-3">Earnings Potential</h2>
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
+                  <p className="text-[14px] text-foreground leading-relaxed">{job.earningsExample}</p>
+                </div>
+              </section>
+            )}
+
+            <section>
+              <h2 className="text-[15px] font-semibold text-foreground mb-3">The product you'll be selling</h2>
+              <div className="rounded-xl border border-border overflow-hidden">
+                <img
+                  src="/imgs/demo.jpg"
+                  alt="CommissionKit platform dashboard"
+                  className="w-full h-auto"
+                />
+              </div>
+              <p className="text-[13px] text-muted-foreground mt-2">
+                CommissionKit is a sales commission management tool for teams with 5–100+ reps.
+                It replaces commission spreadsheets with a real system: import deals, build plans, run calculations, manage payouts,
+                and give reps their own portal to see what they're earning. Three pricing tiers: Starter ($49/mo), Growth ($99/mo), Pro ($249/mo).
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-[15px] font-semibold text-foreground mb-3">About CommissionKit</h2>
+              <div className="rounded-xl border border-border bg-card p-5">
+                <p className="text-[14px] text-muted-foreground leading-relaxed mb-3">
+                  Founded by Abdullah — someone who's been on both sides of the commission equation. We built CommissionKit because we got tired of watching sales teams fight over spreadsheets, do shadow accounting in Excel, and argue about whether a payout was correct. We made the tool we wanted when we were in your shoes.
+                </p>
+                <p className="text-[14px] text-muted-foreground leading-relaxed">
+                  We're early-stage, self-funded, and already have paying customers across the GCC.
+                  The reps who join now get in on the ground floor. You'll help define how we sell, and
+                  you'll earn bigger commissions from the accounts you bring in as we grow.
+                </p>
+              </div>
+            </section>
+
+            {job.leadPromise && (
+              <section>
+                <h2 className="text-[15px] font-semibold text-foreground mb-3">Lead Generation</h2>
+                <div className="rounded-xl border border-border bg-card p-5">
+                  <p className="text-[14px] text-foreground leading-relaxed">{job.leadPromise}</p>
+                </div>
+              </section>
+            )}
+
+            {job.payoutTimeline && (
+              <section>
+                <h2 className="text-[15px] font-semibold text-foreground mb-3">Payout Timeline</h2>
+                <div className="rounded-xl border border-border bg-card p-5">
+                  <p className="text-[14px] text-foreground leading-relaxed">{job.payoutTimeline}</p>
+                </div>
+              </section>
+            )}
           </div>
 
           {/* Application Form */}
@@ -396,7 +453,7 @@ export function CareersJobPage() {
                       <div className="text-[13px] text-muted-foreground space-y-1">
                         <p className="font-medium text-foreground">Independent Contractor Terms</p>
                         <p>
-                          This is an independent contractor engagement, not employment. Compensation and terms are outlined above under "What we offer." By applying, you confirm you understand and agree to these terms.
+                          This is an independent contractor engagement, not employment. You'll earn 30% first-month + 10% lifetime commission on every deal you close. Payouts arrive within 15 days, no minimum thresholds. By applying, you confirm you understand and agree to these terms.
                         </p>
                       </div>
                     </div>
