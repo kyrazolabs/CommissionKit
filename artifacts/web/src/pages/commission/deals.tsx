@@ -200,7 +200,7 @@ export function DealsPage() {
                 {filteredDeals.flatMap((deal) => {
                   const rows: React.ReactNode[] = [
                     <TableRow key={deal.id}>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium p-1.5!">
                         <button
                           onClick={() => setExpandedDealId(expandedDealId === deal.id ? null : deal.id)}
                           className="flex items-center gap-1.5 hover:text-primary transition-colors text-left"
@@ -218,11 +218,11 @@ export function DealsPage() {
                         </button>
                       </TableCell>
                       <TableCell>{deal.repName}</TableCell>
-                      <TableCell className="font-medium text-primary text-right tabular-nums">
+                      <TableCell className="font-medium text-primary text-right tabular-nums p-1.5!">
                         {formatCurrency(deal.amount, deal.currency || currency)}
                       </TableCell>
-                      <TableCell>{format(new Date(deal.closeDate), "MMM d, yyyy")}</TableCell>
-                      <TableCell>
+                      <TableCell className="p-1.5!">{deal.closeDate ? format(new Date(deal.closeDate), "MMM d, yyyy") : "—"}</TableCell>
+                      <TableCell className="p-1.5!">
                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
                           deal.stage === 'closed_won' ? 'bg-primary/10 text-primary border-primary/20' : 
                           deal.stage === 'closed_lost' ? 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/30' :
@@ -236,7 +236,7 @@ export function DealsPage() {
                           </span>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="p-1.5!">
                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
                           deal.paymentStatus === 'paid' ? 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800/30' : 
                           deal.paymentStatus === 'partial' ? 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/30' :
@@ -246,7 +246,7 @@ export function DealsPage() {
                           {(deal.paymentStatus || 'unpaid').replace('_', ' ').toUpperCase()}
                         </span>
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right p-1.5!">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="size-8">
@@ -356,7 +356,7 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
     name: deal.name,
     amount: deal.amount,
     currency: deal.currency || workspaceCurrency,
-    closeDate: format(new Date(deal.closeDate), "yyyy-MM-dd"),
+    closeDate: deal.closeDate ? format(new Date(deal.closeDate), "yyyy-MM-dd") : "",
     period: deal.period,
     stage: deal.stage as any,
     paymentStatus: deal.paymentStatus || "unpaid",
@@ -369,6 +369,15 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
     e.preventDefault();
     const stageChangedToLost = deal.stage === "closed_won" && formData.stage === "closed_lost";
     const markingPaid = deal.paymentStatus !== "paid" && formData.paymentStatus === "paid";
+    const stageIsClosed = ["closed_won", "closed_lost"].includes(formData.stage);
+    if (stageIsClosed && !formData.closeDate) {
+      toast({
+        title: t("deals.validationError"),
+        description: "Close date is required when stage is Closed Won or Closed Lost.",
+        variant: "destructive",
+      });
+      return;
+    }
     if (stageChangedToLost) {
       setShowClawbackConfirm(true);
       return;
@@ -525,6 +534,15 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
         confirmLabel={t("deals.markAsPaidConfirm")}
         variant="default"
         onConfirm={() => {
+          if (!formData.closeDate) {
+            toast({
+              title: t("deals.validationError"),
+              description: "Close date is required to mark a deal as paid.",
+              variant: "destructive",
+            });
+            setShowPaidConfirm(false);
+            return;
+          }
           setShowPaidConfirm(false);
           updateMutation.mutate({ id: deal.id, data: { ...formData, stage: "closed_won" } });
           setOpen(false);
@@ -623,7 +641,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
       const dealName = (row['Deal Name'] || row['Name'] || row['Deal'] || row['deal_name'] || '').trim();
       const amountStr = (row['Amount'] || row['Price'] || row['Value'] || row['Deal Amount'] || row['deal_amount'] || '0').toString().replace(/[^0-9.-]+/g, "");
       const closeDateStr = (row['Close Date'] || row['Date'] || row['close_date'] || '').trim();
-      const stageRaw = (row['Stage'] || row['stage'] || 'closed_won').toString().trim().toLowerCase().replace(' ', '_');
+      const stageRaw = (row['Stage'] || row['stage'] || 'pending').toString().trim().toLowerCase().replace(' ', '_');
       const rowCurrency = (row['Currency'] || row['currency'] || defaultCurrency).trim().toUpperCase();
       const paymentStatusRaw = (row['Payment Status'] || row['payment_status'] || row['Payment'] || 'unpaid').toString().trim().toLowerCase().replace(' ', '_');
       const notes = (row['Notes'] || row['Description'] || row['notes'] || '').trim();
@@ -633,9 +651,9 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
         r.name.toLowerCase() === repEmail.toLowerCase()
       );
       
-      let stage: 'closed_won' | 'closed_lost' | 'pending' = 'closed_won';
-      if (stageRaw.includes('lost')) stage = 'closed_lost';
-      else if (stageRaw.includes('pending') || stageRaw.includes('open')) stage = 'pending';
+      let stage: 'closed_won' | 'closed_lost' | 'pending' = 'pending';
+      if (stageRaw.includes('won')) stage = 'closed_won';
+      else if (stageRaw.includes('lost')) stage = 'closed_lost';
 
       let paymentStatus = 'unpaid';
       if (paymentStatusRaw.includes('paid')) paymentStatus = 'paid';
@@ -648,7 +666,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
         repEmail,
         name: dealName || 'Unknown Deal',
         amount: parseFloat(amountStr) || 0,
-        closeDate: closeDateStr || new Date().toISOString().split('T')[0],
+        closeDate: closeDateStr || "",
         period: period,
         stage,
         paymentStatus,
@@ -986,9 +1004,9 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
     name: "",
     amount: 0,
     currency: workspaceCurrency,
-    closeDate: format(new Date(), "yyyy-MM-dd"),
+    closeDate: "",
     period: period,
-    stage: "closed_won" as any,
+    stage: "pending" as any,
     paymentStatus: "unpaid" as any,
     notes: ""
   });
@@ -996,6 +1014,15 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.repId || !formData.name) return;
+    const stageIsClosed = ["closed_won", "closed_lost"].includes(formData.stage);
+    if (stageIsClosed && !formData.closeDate) {
+      toast({
+        title: t("deals.validationError"),
+        description: "Close date is required when stage is Closed Won or Closed Lost.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     createMutation.mutate({ data: { period, deals: [formData] } }, {
       onSuccess: () => {
@@ -1004,9 +1031,9 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
           name: "",
           amount: 0,
           currency: workspaceCurrency,
-          closeDate: format(new Date(), "yyyy-MM-dd"),
+          closeDate: "",
           period: period,
-          stage: "closed_won" as any,
+          stage: "pending" as any,
           paymentStatus: "unpaid" as any,
           notes: ""
         });

@@ -14,9 +14,13 @@ const RepSchema = new Schema({
   syncHash: { type: String },
   lastSyncedAt: { type: Date },
   metadata: { type: Schema.Types.Mixed },
+  isSampleData: { type: Boolean, default: false },
 }, { timestamps: { createdAt: true, updatedAt: false } });
 
-RepSchema.index({ workspaceId: 1, sourceSystem: 1, externalId: 1 }, { unique: true, sparse: true });
+RepSchema.index(
+  { workspaceId: 1, sourceSystem: 1, externalId: 1 },
+  { unique: true, partialFilterExpression: { sourceSystem: { $type: "string" }, externalId: { $type: "string" } } },
+);
 
 export const Rep = model("Rep", RepSchema);
 
@@ -34,6 +38,7 @@ export type Rep = mongoose.Document & {
   syncHash?: string;
   lastSyncedAt?: Date;
   metadata?: Record<string, unknown>;
+  isSampleData?: boolean;
   createdAt: Date;
 };
 

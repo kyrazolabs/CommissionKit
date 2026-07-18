@@ -1,9 +1,13 @@
+import type { ClientSession } from "mongoose";
+
 export interface CalcEngineInput {
   workspaceId: string;
   runId: string;
   period: string;
   paymentStatuses?: ("unpaid" | "paid" | "partial" | "on_hold")[];
   wsCurrency: string;
+  /** Optional MongoDB session for transactional reads (e.g. sample-data seeding). */
+  session?: ClientSession;
 }
 
 export interface CalcEngineResult {

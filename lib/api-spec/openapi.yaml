@@ -227,6 +227,11 @@ paths:
           description: "Filter by period (YYYY-MM)"
           schema:
             type: string
+        - name: paymentStatus
+          in: query
+          description: "Filter by payment status"
+          schema:
+            $ref: "#/components/schemas/DealPaymentStatus"
       responses:
         "200":
           description: List of deals
@@ -569,6 +574,10 @@ components:
       required: [name, type]
 
     # ── Deal ─────────────────────────────────────────────────────────────────
+    DealPaymentStatus:
+      type: string
+      enum: [unpaid, paid, partial, on_hold]
+
     Deal:
       type: object
       properties:
@@ -592,12 +601,14 @@ components:
           enum: [closed_won, closed_lost, pending]
         currency:
           type: string
+        paymentStatus:
+          $ref: "#/components/schemas/DealPaymentStatus"
         notes:
           type: string
           nullable: true
         createdAt:
           type: string
-      required: [id, repId, repName, name, amount, closeDate, period, stage, currency, notes, createdAt]
+      required: [id, repId, repName, name, amount, closeDate, period, stage, currency, paymentStatus, notes, createdAt]
 
     CreateDealBody:
       type: object
@@ -617,10 +628,13 @@ components:
           enum: [closed_won, closed_lost, pending]
         currency:
           type: string
+        paymentStatus:
+          $ref: "#/components/schemas/DealPaymentStatus"
+          default: unpaid
         notes:
           type: string
           nullable: true
-      required: [repId, name, amount, closeDate, period, stage, currency]
+      required: [repId, name, amount, period, stage, currency]
 
     UpdateDealBody:
       type: object
@@ -640,10 +654,12 @@ components:
           enum: [closed_won, closed_lost, pending]
         currency:
           type: string
+        paymentStatus:
+          $ref: "#/components/schemas/DealPaymentStatus"
         notes:
           type: string
           nullable: true
-      required: [repId, name, amount, closeDate, period, stage, currency]
+      required: [repId, name, amount, period, stage, currency]
 
     ImportDealsBody:
       type: object
@@ -754,6 +770,11 @@ components:
         period:
           type: string
           description: "YYYY-MM period to calculate"
+        paymentStatuses:
+          type: array
+          items:
+            $ref: "#/components/schemas/DealPaymentStatus"
+          description: "Filter to deals with these payment statuses"
       required: [period]
 
     # ── Dashboard ─────────────────────────────────────────────────────────────

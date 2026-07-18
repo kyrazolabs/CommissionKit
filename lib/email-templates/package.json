@@ -12,7 +12,8 @@
     "./password-reset": "./src/password-reset.ts",
     "./clawback-alert": "./src/clawback-alert.ts",
     "./verification-code": "./src/verification-code.ts",
-    "./email-verification": "./src/email-verification.ts"
+    "./email-verification": "./src/email-verification.ts",
+    "./lead": "./src/lead.ts"
   },
   "devDependencies": {
     "@types/node": "^25.3.3",

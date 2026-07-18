@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { Workspace, WorkspaceMember } from "@workspace/db";
+import { updateWorkspaceOnboardingSchema } from "@workspace/db";
 import { Types } from "mongoose";
-import { requireAuth, requirePermission, type AuthenticatedRequest } from "../../middleware/auth";
+import { requireAuth, requireWorkspaceMember, requirePermission, type AuthenticatedRequest } from "../../middleware/auth";
 import { sendHighPriorityEmail } from "@workspace/queue";
 import { invitationTemplate } from "@workspace/email-templates";
 import { checkLimits } from "../../lib/limits";
@@ -27,6 +28,14 @@ async function getMembership(workspaceId: string, userId: string) {
   });
 }
 
+function serializeOnboarding(workspace: any) {
+  return {
+    checklistDismissed: workspace.onboarding?.checklistDismissed ?? false,
+    checklistCompletedAt: workspace.onboarding?.checklistCompletedAt ?? null,
+    checklistShownAt: workspace.onboarding?.checklistShownAt ?? null,
+  };
+}
+
 router.get("/workspaces", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
   const userId = req.userId!;
   const userEmail = req.userEmail ?? "";
@@ -49,6 +58,8 @@ router.get("/workspaces", requireAuth, async (req: AuthenticatedRequest, res): P
       currency: (m.workspaceId as any).currency || "USD",
       fiscalYearStart: (m.workspaceId as any).fiscalYearStart || "January",
       commissionEngine: (m.workspaceId as any).commissionEngine || "standard",
+      sampleDataLoaded: (m.workspaceId as any).sampleDataLoaded || false,
+      onboarding: serializeOnboarding(m.workspaceId),
       role: m.role,
       createdAt: (m.workspaceId as any).createdAt.toISOString(),
     }))
@@ -117,6 +128,9 @@ router.get("/workspaces/:id", requireAuth, async (req: AuthenticatedRequest, res
     name: workspace.name,
     currency: (workspace as any).currency || "USD",
     fiscalYearStart: (workspace as any).fiscalYearStart || "January",
+    commissionEngine: (workspace as any).commissionEngine || "standard",
+    sampleDataLoaded: (workspace as any).sampleDataLoaded || false,
+    onboarding: serializeOnboarding(workspace),
     role: membership.role,
     createdAt: workspace.createdAt.toISOString(),
     members: members.map((m) => ({
@@ -155,6 +169,7 @@ router.put("/workspaces/:id", ...requirePermission("workspace", "edit"), async (
     name: updated!.name,
     currency: (updated as any).currency || "USD",
     fiscalYearStart: (updated as any).fiscalYearStart || "January",
+    onboarding: serializeOnboarding(updated),
     role: req.workspaceRole,
   });
 });
@@ -305,6 +320,8 @@ router.get("/workspaces/:id/settings", requireAuth, async (req: AuthenticatedReq
     currency: (workspace as any).currency || "USD",
     fiscalYearStart: (workspace as any).fiscalYearStart || "January",
     commissionEngine: (workspace as any).commissionEngine || "standard",
+    sampleDataLoaded: (workspace as any).sampleDataLoaded || false,
+    onboarding: serializeOnboarding(workspace),
   });
 });
 
@@ -329,7 +346,38 @@ router.patch("/workspaces/:id/settings", ...requirePermission("workspace", "edit
     currency: (workspace as any).currency || "USD",
     fiscalYearStart: (workspace as any).fiscalYearStart || "January",
     commissionEngine: (workspace as any).commissionEngine || "standard",
+    sampleDataLoaded: (workspace as any).sampleDataLoaded || false,
+    onboarding: serializeOnboarding(workspace),
   });
+});
+
+// ─── Onboarding ──────────────────────────────────────────────────────────────────
+
+router.patch("/workspaces/:id/onboarding", ...requireWorkspaceMember("member"), async (req: AuthenticatedRequest, res): Promise<void> => {
+  const workspaceId = String(req.params.id);
+
+  const parsed = updateWorkspaceOnboardingSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid action" });
+    return;
+  }
+
+  const workspace = await Workspace.findById(workspaceId);
+  if (!workspace) { res.status(404).json({ error: "Workspace not found" }); return; }
+
+  const { action } = parsed.data;
+  if (action === "dismiss") {
+    workspace.set("onboarding.checklistDismissed", true);
+  } else if (action === "complete") {
+    workspace.set("onboarding.checklistCompletedAt", new Date());
+    workspace.set("onboarding.checklistDismissed", true);
+  } else if (action === "show") {
+    workspace.set("onboarding.checklistDismissed", false);
+  }
+
+  await workspace.save();
+
+  res.json({ onboarding: serializeOnboarding(workspace) });
 });
 
 // ─── Features (sidebar nav) ─────────────────────────────────────────────────────

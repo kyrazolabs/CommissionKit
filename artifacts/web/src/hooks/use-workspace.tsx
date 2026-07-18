@@ -13,6 +13,12 @@ import { useAuth } from "./use-auth";
 import { Analytics } from "@/lib/analytics";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 
+export interface WorkspaceOnboarding {
+  checklistDismissed: boolean;
+  checklistCompletedAt: string | null;
+  checklistShownAt: string | null;
+}
+
 export interface Workspace {
   id: string;
   slug: string;
@@ -22,6 +28,7 @@ export interface Workspace {
   commissionEngine: string;
   role: "owner" | "admin" | "member";
   createdAt: string;
+  onboarding?: WorkspaceOnboarding;
 }
 
 interface EngineNavItem {

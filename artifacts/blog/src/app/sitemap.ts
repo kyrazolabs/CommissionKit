@@ -1,25 +1,50 @@
 import type { MetadataRoute } from "next";
-import { getAllPosts } from "@/lib/posts";
+import { getAllSlugs, getAllLanguages } from "@/lib/posts";
+
+const baseUrl = "https://commissionk.it";
+
+function buildAlternates(
+  languages: string[],
+  urlForLang: (lang: string) => string,
+) {
+  const map: Record<string, string> = Object.fromEntries(
+    languages.map((l) => [l, urlForLang(l)]),
+  );
+  map["x-default"] = urlForLang("en");
+  return map;
+}
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://commissionk.it";
+  const now = new Date();
+  const languages = getAllLanguages();
 
-  const staticRoutes: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}/blog`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 1.0,
+  const langIndexRoutes: MetadataRoute.Sitemap = languages.map((lang) => ({
+    url: `${baseUrl}/blog/${lang}`,
+    lastModified: now,
+    changeFrequency: "daily",
+    priority: 1.0,
+    alternates: {
+      languages: buildAlternates(languages, (l) => `${baseUrl}/blog/${l}`),
     },
-  ];
-
-  const posts = getAllPosts();
-  const postRoutes: MetadataRoute.Sitemap = posts.map((post) => ({
-    url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: post.date ? new Date(post.date) : new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.9,
   }));
 
-  return [...staticRoutes, ...postRoutes];
+  const slugs = getAllSlugs();
+  const postRoutes: MetadataRoute.Sitemap = slugs.flatMap(
+    ({ slug, languages }) => {
+      return languages.map((lang) => ({
+        url: `${baseUrl}/blog/${lang}/${slug}`,
+        lastModified: now,
+        changeFrequency: "weekly" as const,
+        priority: lang === "en" ? 0.9 : 0.8,
+        alternates: {
+          languages: buildAlternates(
+            languages,
+            (l) => `${baseUrl}/blog/${l}/${slug}`,
+          ),
+        },
+      }));
+    },
+  );
+
+  return [...langIndexRoutes, ...postRoutes];
 }

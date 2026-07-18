@@ -9,6 +9,7 @@ const PlanSchema = new Schema({
   acceleratorThreshold: { type: Number },
   acceleratorRate: { type: Number },
   clawbackDays: { type: Number },
+  isSampleData: { type: Boolean, default: false },
 }, { timestamps: { createdAt: true, updatedAt: false } });
 
 const PlanTierSchema = new Schema({
@@ -30,6 +31,7 @@ export type Plan = mongoose.Document & {
   acceleratorThreshold?: number;
   acceleratorRate?: number;
   clawbackDays?: number;
+  isSampleData?: boolean;
   createdAt: Date;
 };
 

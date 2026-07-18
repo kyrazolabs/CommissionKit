@@ -1,8 +1,8 @@
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { MongoMemoryReplSet } from "mongodb-memory-server";
 import mongoose from "mongoose";
 
-let mongoServer: MongoMemoryServer | null = (globalThis as any).__MONGO_SERVER__ || null;
-let initPromise: Promise<MongoMemoryServer> | null = null;
+let mongoServer: MongoMemoryReplSet | null = (globalThis as any).__MONGO_SERVER__ || null;
+let initPromise: Promise<MongoMemoryReplSet> | null = null;
 let refCount = 0;
 
 export async function setupTestDB(): Promise<string> {
@@ -24,7 +24,9 @@ export async function setupTestDB(): Promise<string> {
   }
 
   initPromise = (async () => {
-    mongoServer = await MongoMemoryServer.create();
+    mongoServer = await MongoMemoryReplSet.create({
+      replSet: { count: 1, name: "rs0" },
+    });
     const uri = mongoServer.getUri();
     process.env.MONGO_URL = uri;
     await mongoose.connect(uri);

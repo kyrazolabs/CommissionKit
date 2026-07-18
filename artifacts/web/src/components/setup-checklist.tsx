@@ -1,0 +1,356 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "wouter";
+import { CheckCircle, Circle, Zap, X, Minus, ChevronUp, ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useSetupChecklist } from "@/hooks/use-setup-checklist";
+import { useWorkspace } from "@/hooks/use-workspace";
+import { toast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import { Spinner } from "@/components/ui/spinner";
+
+const steps = [
+  { key: "plans" as const, title: "Create a Commission Plan", href: "/dash/plans" },
+  { key: "reps" as const, title: "Add Your Sales Reps", href: "/dash/reps" },
+  { key: "deals" as const, title: "Import Deals", href: "/dash/deals" },
+];
+
+function StepRow({
+  title,
+  href,
+  isComplete,
+}: {
+  title: string;
+  href: string;
+  isComplete: boolean;
+}) {
+  const [, setLocation] = useLocation();
+
+  return (
+    <button
+      onClick={() => setLocation(href)}
+      className={cn(
+        "w-full flex items-center gap-2.5 py-2 px-1 rounded-md text-left transition-all duration-150",
+        "hover:bg-accent/30 cursor-pointer",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      )}
+      role="link"
+      aria-label={`Step: ${title} — ${isComplete ? "completed" : "not completed"}`}
+    >
+      <div className="shrink-0">
+        {isComplete ? (
+          <CheckCircle className="size-4 text-primary" />
+        ) : (
+          <Circle className="size-4 text-muted-foreground" />
+        )}
+      </div>
+      <span
+        className={cn(
+          "flex-1 text-[13px] font-semibold transition-all duration-150",
+          isComplete
+            ? "text-muted-foreground line-through"
+            : "text-foreground"
+        )}
+      >
+        {title}
+      </span>
+      <ChevronDown className="size-3.5 text-muted-foreground shrink-0 -rotate-90" />
+    </button>
+  );
+}
+
+interface SetupChecklistProps {
+  onShowGuide?: () => void;
+}
+
+export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
+  // ── All hooks always called on every render ──────────────────────────────
+  const {
+    isVisible,
+    isDismissed,
+    isCompleted,
+    steps: stepStatus,
+    completedCount,
+    allComplete,
+    dismiss,
+    complete,
+    loadSampleData,
+    show,
+    isSeeding,
+  } = useSetupChecklist();
+
+  const { activeWorkspace } = useWorkspace();
+  const workspaceId = activeWorkspace?.id;
+
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const prevCountRef = useRef(completedCount);
+
+  // ── Effects ──────────────────────────────────────────────────────────────
+
+  // Reset minimize when workspace changes
+  useEffect(() => {
+    setIsCollapsed(false);
+  }, [workspaceId]);
+
+  // Load persisted minimize state
+  useEffect(() => {
+    if (!workspaceId) return;
+    const stored = localStorage.getItem(`ck_checklist_minimized_${workspaceId}`);
+    if (stored === "true") setIsCollapsed(true);
+  }, [workspaceId]);
+
+  // Persist minimize state
+  useEffect(() => {
+    if (!workspaceId) return;
+    localStorage.setItem(`ck_checklist_minimized_${workspaceId}`, String(isCollapsed));
+  }, [isCollapsed, workspaceId]);
+
+  // All-complete animation
+  useEffect(() => {
+    if (completedCount === 3 && prevCountRef.current < 3 && !isCompleted) {
+      complete().then(() => {
+        const timer = setTimeout(() => {
+          setIsExiting(true);
+        }, 500);
+        return () => clearTimeout(timer);
+      });
+    }
+    prevCountRef.current = completedCount;
+  }, [completedCount, isCompleted, complete]);
+
+  // ── Derived state ─────────────────────────────────────────────────────────
+  const shouldRender = isVisible && !isCompleted && !isExiting;
+  const showSetupGuideButton = isDismissed && !allComplete && !isCompleted && !isVisible;
+  const progressPercent = (completedCount / 3) * 100;
+
+  // ── Handlers ─────────────────────────────────────────────────────────────
+  const handleLoadSampleData = useCallback(() => {
+    setShowConfirmDialog(true);
+  }, []);
+
+  const handleConfirmLoad = useCallback(async () => {
+    try {
+      await loadSampleData();
+      toast({ title: "Sample data loaded", description: "Explore your workspace!" });
+      await dismiss();
+    } catch (err: any) {
+      toast({ title: "Failed to load sample data", description: err.message || "Please try again.", variant: "destructive" });
+    }
+  }, [loadSampleData, dismiss]);
+
+  const handleDismiss = useCallback(async () => {
+    setIsExiting(true);
+    setTimeout(async () => { await dismiss(); }, 200);
+  }, [dismiss]);
+
+  const handleToggleCollapse = () => setIsCollapsed((p) => !p);
+  const [, setLocation] = useLocation();
+
+  // ── Early return: Setup Guide button only ────────────────────────────────
+  if (showSetupGuideButton) {
+    return (
+      <Button variant="ghost" size="sm" onClick={show} className="gap-2">
+        <Zap className="size-4" />
+        <span>Setup Guide</span>
+      </Button>
+    );
+  }
+
+  // ── Don't render at all ──────────────────────────────────────────────────
+  if (!shouldRender) return null;
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Render — single element, collapsed/expanded transition on border-radius
+  // ═══════════════════════════════════════════════════════════════════════════
+  return (
+    <>
+      <div
+        className={cn(
+          "fixed -bottom-1 right-6 z-50 w-full max-w-[420px] border border-card-border bg-card shadow-lg overflow-hidden",
+          "transition-all duration-300 rounded-xl",
+          isExiting && "animate-[ckExit_200ms_ease-in_forwards]"
+        )}
+        style={{ boxShadow: "var(--shadow-card)" }}
+        role="region"
+        aria-label="Setup checklist"
+      >
+        {/* Header / Pill content */}
+        <div
+          className={cn(
+            "flex items-center justify-between",
+            isCollapsed ? "px-3.5 py-2 gap-2" : "px-4 py-2.5"
+          )}
+        >
+          <div className="flex items-center gap-2">
+            <CheckCircle className={cn("text-primary shrink-0", isCollapsed ? "size-3.5" : "size-4")} />
+            {isCollapsed ? (
+              <>
+                <span className="text-[12px] font-semibold tabular-nums text-foreground">{completedCount}/3</span>
+                {(() => {
+                  const firstIncomplete = steps.find((s) => !stepStatus[s.key]);
+                  return (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        {completedCount === 0 ? (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setShowConfirmDialog(true); }}
+                            className="flex items-center gap-1 text-[12px] font-semibold text-foreground rounded-full px-2 py-0.5 ring-1 ring-primary/30 hover:bg-accent/30"
+                            aria-label="Load sample data"
+                          >
+                            <Zap className="size-3" />
+                            <span className="hidden sm:inline">Load Sample Data</span>
+                          </button>
+                        ) : firstIncomplete ? (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setLocation(firstIncomplete.href); }}
+                            className="flex items-center gap-1 text-sm font-semibold text-foreground rounded-full px-2 py-0.5 hover:bg-accent/30"
+                            aria-label={firstIncomplete.title}
+                          >
+                            <Zap className="size-3" />
+                            <span className="hidden sm:inline">{firstIncomplete.title}</span>
+                          </button>
+                        ) : (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setShowConfirmDialog(true); }}
+                            className="flex items-center gap-1 text-[12px] font-semibold text-foreground rounded-full px-2 py-0.5 ring-1 ring-primary/30 hover:bg-accent/30"
+                            aria-label="Load sample data"
+                          >
+                            <Zap className="size-3" />
+                            <span className="hidden sm:inline">Load Sample Data</span>
+                          </button>
+                        )}
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {completedCount === 0
+                          ? "See the product in action with demo data"
+                          : firstIncomplete
+                          ? `Go to: ${firstIncomplete.title}`
+                          : "See the product in action with demo data"}
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                })()}
+              </>
+            ) : (
+              <h2 className="text-[15px] font-bold tracking-tight text-foreground ">Get Started</h2>
+            )}
+          </div>
+          {!isCollapsed && (
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" onClick={handleToggleCollapse} className="size-7 rounded-md" aria-label="Minimize checklist">
+                <Minus className="size-3.5" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={handleDismiss} className="size-7 rounded-md" aria-label="Close checklist">
+                <X className="size-3.5" />
+              </Button>
+            </div>
+          )}
+          {isCollapsed && (
+            <button
+              onClick={handleToggleCollapse}
+              className="flex items-center gap-1 p-1 rounded-md hover:bg-accent/30 cursor-pointer"
+              aria-label={`Setup checklist: ${completedCount} of 3 complete. Click to expand.`}
+            >
+              <ChevronUp className="size-3.5 text-muted-foreground" />
+            </button>
+          )}
+        </div>
+
+        {/* Body — hidden when collapsed */}
+        <div className={cn(
+          "transition-all duration-300 overflow-hidden",
+          isCollapsed ? "max-h-0 opacity-0" : "max-h-[500px] opacity-100"
+        )}>
+          {/* Progress */}
+          <div className="px-4 pb-2">
+            <div className="flex items-center justify-between mb-1.5">
+              <p className="text-[11px] font-medium text-muted-foreground tabular-nums">
+                {completedCount === 0
+                  ? "3 steps to your first commission run"
+                  : completedCount === 3
+                  ? "3/3 complete"
+                  : `${completedCount}/3 complete`}
+              </p>
+            </div>
+            <div className="h-1.5 rounded-full bg-muted overflow-hidden" role="progressbar" aria-valuenow={completedCount} aria-valuemin={0} aria-valuemax={3}>
+              <div
+                className={cn(
+                  "h-full rounded-full bg-primary transition-all duration-300 ease-out",
+                  completedCount === 3 && "animate-[ckPulse_500ms_ease-in-out]"
+                )}
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Step rows */}
+          <div className="px-3 pb-1">
+            {steps.map((step) => (
+              <StepRow key={step.key} title={step.title} href={step.href} isComplete={stepStatus[step.key]} />
+            ))}
+          </div>
+
+          {/* Load Sample Data */}
+          <div className="px-3 pb-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setShowConfirmDialog(true)}
+                  disabled={isSeeding}
+                  className={cn(
+                    "w-full flex items-center gap-2 py-2 px-4 rounded-md text-left transition-all duration-150",
+                    "hover:bg-accent/30 cursor-pointer",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "disabled:opacity-50 disabled:cursor-not-allowed",
+                    completedCount === 0 && "ring-1 ring-primary/30"
+                  )}
+                >
+                  <div className="shrink-0">
+                    {isSeeding ? <Spinner className="size-3.5 text-primary" /> : <Zap className="size-3.5 text-primary" />}
+                  </div>
+                  <span className="text-[13px] font-semibold text-foreground flex-1">
+                    {isSeeding ? "Loading..." : "Load Sample Data"}
+                  </span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>See the product in action with demo data</TooltipContent>
+            </Tooltip>
+          </div>
+
+          {/* Footer */}
+          <div className="px-4 py-2 flex items-center">
+            <Button variant="ghost" size="sm" onClick={handleDismiss} className="text-xs text-muted-foreground font-medium">
+              Skip for now
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <ConfirmDialog
+        open={showConfirmDialog}
+        onOpenChange={setShowConfirmDialog}
+        title="Load Sample Data"
+        description="This will add sample reps, a commission plan, and 18 deals to your workspace. You can remove them later from Settings."
+        confirmLabel="Load Sample Data"
+        cancelLabel="Cancel"
+        variant="default"
+        onConfirm={handleConfirmLoad}
+        loading={isSeeding}
+      />
+
+      <style>{`
+        @keyframes ckPulse {
+          0%, 100% { transform: scaleX(1); }
+          50% { transform: scaleX(1.02); }
+        }
+        @keyframes ckExit {
+          0% { opacity: 1; transform: translateY(0); }
+          100% { opacity: 0; transform: translateY(8px); }
+        }
+      `}</style>
+    </>
+  );
+}

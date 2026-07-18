@@ -1,51 +1,61 @@
 import { useInView, fadeIn } from "./hooks";
 
-const LOGO_SLOTS = [
-  { id: "acme", w: 80, label: "Acme Corp" },
-  { id: "vertex", w: 72, label: "Vertex" },
-  { id: "northstar", w: 90, label: "NorthStar" },
-  { id: "apex", w: 64, label: "Apex" },
-  { id: "meridian", w: 86, label: "Meridian" },
-  { id: "skyline", w: 76, label: "Skyline" },
+const STATS = [
+  { value: "8 days", label: "→ 4 hours", desc: "Commission cycle time" },
+  { value: "99%", label: "accuracy", desc: "Disputes eliminated" },
+  { value: "14 hrs", label: "saved", desc: "Per month, per team" },
+  { value: "<30 min", label: "setup", desc: "No consultants needed" },
 ];
 
-function WordmarkPlaceholder({ label, w }: { label: string; w: number }) {
-  return (
-    <svg width={w} height={22} viewBox={`0 0 ${w} 22`} fill="none" aria-label={label}>
-      <text
-        x="0"
-        y="16"
-        fontFamily="'Inter', -apple-system, sans-serif"
-        fontSize="13"
-        fontWeight="700"
-        letterSpacing="0.06em"
-        fill="currentColor"
-      >
-        {label.toUpperCase()}
-      </text>
-    </svg>
-  );
-}
+const LOGOS = [
+  { id: "odoo", label: "Odoo", src: "/plugins/odoo.webp" },
+  { id: "salesforce", label: "Salesforce", src: "/plugins/salesforce.webp" },
+  { id: "hubspot", label: "HubSpot", src: "/plugins/hubspot.webp" },
+];
 
 export function SocialProof() {
   const { ref, inView } = useInView(0.15);
 
   return (
-    <></>
-    // <section className="bg-white border-y border-slate-200 py-12 px-6">
-    //   <div ref={ref} className="max-w-[1000px] mx-auto" style={fadeIn(inView)}>
-    //     <p className="text-center text-xs font-semibold tracking-widest uppercase text-slate-400 mb-8">
-    //       Trusted by modern sales teams
-    //     </p>
+    <section className="border-y border-border/60 bg-muted/30">
+      <div ref={ref} className="max-w-[1200px] mx-auto px-6 py-10">
+        {/* Metrics row */}
+        <div
+          className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border/60 rounded-xl overflow-hidden"
+          style={fadeIn(inView)}
+        >
+          {STATS.map((s) => (
+            <div key={s.label} className="bg-background px-5 py-6 text-center">
+              <div className="text-2xl md:text-3xl font-bold text-foreground tracking-tight font-display tabular-nums">
+                {s.value}
+              </div>
+              <div className="text-xs font-semibold text-primary mt-1 uppercase tracking-wide">
+                {s.label}
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">{s.desc}</div>
+            </div>
+          ))}
+        </div>
 
-    //     <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-6 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-    //       {LOGO_SLOTS.map((s) => (
-    //         <div key={s.id} className="text-slate-400 hover:text-slate-900 transition-colors">
-    //           <WordmarkPlaceholder label={s.label} w={s.w} />
-    //         </div>
-    //       ))}
-    //     </div>
-    //   </div>
-    // </section>
+        {/* Integrations strip */}
+        <div
+          className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8"
+          style={fadeIn(inView, 120)}
+        >
+          <p className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground">
+            Works with your stack
+          </p>
+          <div className="flex items-center gap-6 opacity-70">
+            {LOGOS.map((l) => (
+              <div key={l.id} className="flex items-center gap-2 text-muted-foreground">
+                <img src={l.src} alt={l.label} className="size-5 object-contain" />
+                <span className="text-sm font-semibold tracking-tight">{l.label}</span>
+              </div>
+            ))}
+            <span className="text-sm font-semibold text-muted-foreground/70">+ custom REST API</span>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }

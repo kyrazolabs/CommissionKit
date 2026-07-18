@@ -24,6 +24,9 @@ export const MailJobSchema = z.object({
   /** Reply-To address override */
   replyTo: z.string().email().optional(),
 
+  /** BCC address */
+  bcc: z.string().email().optional(),
+
   /** Routing priority — determines which queue receives the job */
   priority: z.enum(["high", "medium", "low"]).default("medium"),
 
