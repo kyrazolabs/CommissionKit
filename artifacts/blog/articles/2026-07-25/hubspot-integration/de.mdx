@@ -1,0 +1,108 @@
+---
+title: "HubSpot-Integration"
+date: "2026-07-25"
+author: "CommissionKit Team"
+tags: ["Integrationen", "HubSpot", "Provisionsmanagement", "Vertriebsprozesse"]
+keywords: ["HubSpot Provisions-Integration", "HubSpot Verkaufsprovisionssoftware", "HubSpot mit Provisionen-Tracking synchronisieren", "HubSpot CRM Provisionsverwaltung", "HubSpot Provisionsberechnung automatisieren", "HubSpot Deal-Provisionen synchronisieren"]
+description: "Verbinden Sie HubSpot mit CommissionKit und synchronisieren Sie Deals automatisch. Kein CSV-Export mehr, keine manuellen Importe, kein wochenlanges Warten auf Provisionstransparenz."
+---
+
+Ich habe drei Jahre lang zugesehen, wie Sales-Ops-Manager jeden Freitagnachmittag CSV-Dateien aus HubSpot exportiert haben. Sie öffneten die Datei, löschten Spalten, korrigierten Datumsformate, fügte Vertreternamen hinzu, wo HubSpot nur Owner-IDs anzeigte, und luden dann die bereinigte Tabelle in ein Provisionstool hoch. Oder auf ein gemeinsames Laufwerk. Oder in einen E-Mail-Thread.
+
+Wenn Sie schon einmal Provisionen für ein HubSpot-basiertes Vertriebsteam verwaltet haben, kennen Sie diese Routine. Der Deal wird am Dienstag im CRM abgeschlossen. Der Vertreter fragt am Mittwoch nach seiner Provision. Die Antwort lautet: „Wir bearbeiten noch die Zahlen vom letzten Monat", weil niemand Zeit hat, 200 Deals vor dem 15. manuell abzugleichen.
+
+Wir haben den HubSpot-Connector gebaut, um genau diesen Arbeitsprozess endgültig abzuschaffen. Deals werden in HubSpot abgeschlossen und treffen innerhalb von Minuten in CommissionKit ein, und die Vertreter sehen ihre Verdienste in Echtzeit aktualisiert. Kein CSV. Keine Bereinigung. Kein Warten.
+
+## Was der Connector tatsächlich macht
+
+Das HubSpot-Plugin synchronisiert zwei Dinge aus Ihrem HubSpot-Account in CommissionKit:
+
+**Owner werden zu Vertretern.** Jeder HubSpot-Owner (Ihre Vertriebsmitarbeiter, Account Executives, SDRs) wird einem CommissionKit-Vertreterdatensatz zugeordnet. Wenn Sie einen neuen Vertreter in HubSpot hinzufügen, erscheint er automatisch beim nächsten Synchronisierungszyklus in CommissionKit.
+
+**Deals werden provisionsfähige Deals.** Jeder HubSpot-Deal in Ihrer Pipeline wird einem CommissionKit-Deal zugeordnet. Der Connector liest Deal-Betrag, Abschlussdatum, Pipeline-Stufe und Owner und normalisiert alles in das Standardformat von CommissionKit.
+
+Der Connector erkennt Ihre Pipeline-Stufen automatisch. Sie müssen ihm nicht sagen, dass „Closed Won" bedeutet, dass der Deal abgeschlossen ist. Er findet das selbst heraus aus Ihrer HubSpot-Konfiguration. Wenn Sie benutzerdefinierte Stufen wie „Legal Review" oder „Implementation Started" haben, können Sie diese bestimmten Provisions-Triggern zuordnen (zum Beispiel Zahlung nur bei „Closed Won" oder eine Teilprovision, wenn ein Deal „Contract Signed" erreicht).
+
+Die Authentifizierung funktioniert auf zwei Arten. Sie können einen HubSpot Service Key verwenden (empfohlen für neue Setups) oder einen Legacy App token, wenn Sie eine ältere HubSpot-Integration nutzen. Beides wird auf der Integrationsseite von CommissionKit konfiguriert. Kein OAuth-Tanz, keine Redirect-URLs, keine Callback-Endpunkte.
+
+## So richten Sie es ein
+
+Der gesamte Vorgang dauert etwa fünfzehn Minuten, wenn Ihre HubSpot-Zugangsdaten bereitliegen.
+
+**Schritt 1: Connector installieren.** Gehen Sie zu Settings > Integrations in CommissionKit. Klicken Sie auf die HubSpot-Karte. Sie sehen ein Konfigurationsformular mit Feldern für Authentifizierung und Synchronisierungseinstellungen.
+
+**Schritt 2: Authentifizieren.** Fügen Sie Ihren HubSpot Service Key (oder Legacy App token) ein. Klicken Sie auf „Test Connection." Der Connector ruft Ihre Kontoinformationen ab und bestätigt, dass er auf Ihre HubSpot-Daten zugreifen kann. Wenn der Test bestanden wird, sind Sie authentifiziert.
+
+**Schritt 3: Owner den Vertretern zuordnen.** Der Connector listet alle HubSpot-Owner in Ihrem Account auf. Sie bestätigen, welche davon provisionsberechtigte Vertreter sind. Manche Owner könnten Vertriebsleiter oder Support-Mitarbeiter sein, die keine Provisionen verdienen sollen. Entfernen Sie die Markierung. Der Rest wird Ihre Vertreterliste.
+
+**Schritt 4: Pipeline-Stufen konfigurieren.** Der Connector erkennt automatisch jede Stufe in jeder Pipeline Ihres HubSpot-Accounts. Sie legen fest, welche Stufen für die Provisionsberechnung als „abgeschlossen" gelten. Die meisten Teams wählen „Closed Won." Manche Teams beziehen auch Stufen wie „Signed" oder „Bookings Confirmed" ein, wenn sie bei Buchung statt bei Geldeingang zahlen.
+
+Sie können auch bestimmte Pipelines herausfiltern. Wenn Sie eine interne Test-Pipeline oder eine Partner-Referral-Pipeline haben, die keine Provisionen generieren soll, schließen Sie sie hier aus.
+
+**Schritt 5: Synchronisierungszeitplan festlegen.** Wählen Sie, wie oft CommissionKit Daten aus HubSpot abruft. Die Optionen reichen von alle 15 Minuten bis einmal täglich. Die meisten Teams mit aktiven Verkaufszyklen wählen stündlich oder alle 30 Minuten. Teams mit längeren Deal-Zyklen können täglich arbeiten, ohne etwas Wichtiges zu verpassen.
+
+**Schritt 6: Automatische Berechnung aktivieren.** Das ist die Einstellung, die das Ganze lohnenswert macht. Wenn die automatische Berechnung eingeschaltet ist, wird jeder neue Deal, der aus HubSpot eintrifft, sofort gegen Ihren aktiven Provisionsplan geprüft. Der Vertreter sieht seine geschätzte Provision aktualisiert, ohne dass jemand auf „Run Calculation" klicken muss.
+
+Das war's. Der Connector läuft nach Zeitplan, erkennt mithilfe eines hash-basierten Vergleichs, was sich seit der letzten Synchronisierung geändert hat (sodass unveränderte Deals nicht erneut verarbeitet werden), und aktualisiert CommissionKit entsprechend.
+
+Wenn sich ein Deal-Betrag in HubSpot nach der Synchronisierung ändert, erkennt der Connector das beim nächsten Zyklus und aktualisiert den CommissionKit-Datensatz. Wenn ein Vertreter einen Deal einem anderen Owner zuweist, wird diese Änderung ebenfalls übernommen.
+
+Webhooks bieten Echtzeit-Updates zwischen den geplanten Synchronisierungen. Wenn ein Deal in HubSpot abgeschlossen wird, löst der Webhook das Ereignis aus und CommissionKit verarbeitet die Änderung sofort. Sie müssen nicht auf den nächsten geplanten Abruf warten, um die Provision auf dem Dashboard des Vertreters zu sehen.
+
+## Die Rechnung der Zeitersparnis
+
+Lassen Sie mich das mit Zahlen untermauern, denn „spart Zeit" ist eine vage Behauptung, die ohne Kontext nichts bedeutet.
+
+Ein typischer CommissionKit-Kunde hat rund 20 Vertreter und schließt etwa 200 Deals pro Monat ab. Der manuelle Arbeitsablauf sieht so aus:
+
+Deals aus HubSpot exportieren. Das ist ein CSV-Download, vielleicht 10 Minuten einschließlich der Auswahl des richtigen Datumsbereichs und der richtigen Filter. Daten bereinigen. Test-Deals entfernen, Formatierung korrigieren, Owner-IDs den Vertreternamen zuordnen, Währungen umrechnen, wenn Sie international verkaufen. Das ist der Teil, der die meiste Zeit frisst. Rechnen Sie mit 2 bis 3 Stunden für 200 Deals, abhängig davon, wie chaotisch Ihre HubSpot-Datenhygiene ist. In Ihr Provisionssystem hochladen. Nochmal 30 Minuten, wenn die Importvorlage zu Ihrer Datenstruktur passt. Wenn nicht, rechnen Sie eine weitere Stunde für Neufomatierung hinzu. Abweichungen abgleichen. HubSpot sagt, der Deal wurde am 14. abgeschlossen, Ihre Provisionstabelle sagt der 15. Was stimmt? Im CRM nachsehen. Im E-Mail-Thread nachsehen. Den Vertreter fragen. Planen Sie dafür 30 bis 60 Minuten pro Monat ein.
+
+Gesamt: 4 bis 6 Stunden pro Monat für ein 20-köpfiges Team.
+
+Mit dem HubSpot-Connector sinkt diese Zahl auf null. Die Synchronisierung läuft automatisch. Deals kommen sauber und normalisiert an. Provisionsberechnungen erfolgen beim Eingang.
+
+Über ein Jahr gerechnet sprechen wir von 50 bis 70 Stunden manueller Datenarbeit, die schlichtweg nicht mehr anfällt. Für eine Sales-Ops-Person mit einem Gehalt von $70.000 bis $90.000 sind das $1.700 bis $3.100 an wiedererlangten Arbeitskosten. Der Connector kostet weniger als eine dieser Stunden.
+
+Aber die Zeitersparnis ist der kleinere Teil des Wertes. Die Genauigkeitsgewinne wiegen schwerer.
+
+Manuelle CSV-Importe führen Fehler ein. Der Name eines Vertreters wird falsch geschrieben, sodass seine Deals nicht zu seinem Datensatz passen. Ein Datumsformat wechselt von MM/DD zu DD/MM und plötzlich taucht ein Dezember-Deal in der Provisionsabrechnung für Januar auf. Ein Dezimalpunkt verschiebt sich und ein $12.000-Deal wird zu $120.000. Diese Fehler fallen erst auf, wenn ein Vertreter seine Provisionsabrechnung beanstandet — normalerweise 30 Tage nach dem Vorfall, und es erfordert das Zurückrollen von Zahlungsdatensätzen, um sie zu beheben.
+
+Die automatisierte Synchronisierung beseitigt diese gesamte Kategorie von Problemen. Die Daten kommen in einem strukturierten Format aus HubSpot. Der Connector normalisiert sie deterministisch. Es gibt keinen menschlichen Copy-Paste-Schritt, bei dem etwas schiefgehen kann.
+
+Außerdem verlieren Sie keine Deals mehr. Manuelle Importe hängen davon ab, dass jemand daran denkt, den Export auszuführen, daran denkt, den richtigen Datumsbereich einzubeziehen, daran denkt, die richtigen Pipelines herauszufiltern. Menschen vergessen. Deals rutschen durch. Vertreter werden für abgeschlossene Geschäfte nicht bezahlt — und nichts zerstört das Vertrauen in Ihren Provisionsprozess schneller.
+
+Mit der automatisierten Synchronisierung kommt jeder Deal, der in HubSpot „Closed Won" erreicht, in CommissionKit an. Keine Ausnahmen. Keine vergessenen Exporte. Kein „Ich dachte, du kümmerst dich darum."
+
+## Was passiert, wenn sich Dinge ändern
+
+Vertriebsteams werden umstrukturiert. Pipelines werden neu gestaltet. Vertreter gehen und neue kommen.
+
+Der Connector bewältigt all das ohne manuellen Eingriff. Ein neuer Owner in HubSpot wird beim nächsten Sync zu einem neuen Vertreter in CommissionKit. Ein ausscheidender Vertreter kann in CommissionKit deaktiviert werden, während seine historischen Deals intakt bleiben. Änderungen an Pipeline-Stufen werden erkannt und der Connector passt sich an.
+
+Wenn Sie eine Pipeline-Stufe in HubSpot umbenennen, übernimmt der Connector den neuen Namen. Wenn Sie Provisionsregeln hatten, die an den alten Stufennamen gebunden waren, müssen Sie diese Regeln in CommissionKit aktualisieren, aber die Datensynchronisierung selbst bricht nicht ab.
+
+Multi-Währungs-Teams bekommen die Wechselkursbehandlung eingebaut. Wenn Ihre HubSpot-Deals in EUR sind, aber Ihr CommissionKit-Workspace in USD läuft, rechnet der Connector zum Wechselkurs-Snapshot vom Abschlussdatum des Deals um. Sie erhalten nachvollziehbare Umrechnungsdatensätze für jeden Deal — was wichtig ist, wenn die Finanzabteilung fragt, warum eine Q3-Provisionszahl nicht mit der Bankgutschrift übereinstimmt.
+
+## Für wen ist das
+
+Der HubSpot-Connector ist sinnvoll, wenn Sie drei Bedingungen erfüllen:
+
+Sie verwenden HubSpot als Ihr primäres CRM für die Deal-Verwaltung. Das klingt selbstverständlich, aber manche Teams nutzen HubSpot für Marketing und ein anderes System für den Vertrieb. Der Connector zieht aus der Deals-API von HubSpot, Ihre Deal-Daten müssen also dort liegen.
+
+Sie haben mindestens fünf Vertreter, die Provisionen verdienen. Unter dieser Schwelle ist der manuelle Workflow schmerzhaft, aber überlebensfähig. Darüber steigt der Zeitaufwand schnell exponentiell.
+
+Sie exportieren derzeit regelmäßig Daten aus HubSpot, um Provisionen zu berechnen. Wenn Sie das bereits tun, ersetzt der Connector diesen Arbeitsablauf vollständig.
+
+Teams auf dem Growth-Plan von CommissionKit oder höher haben vollen Zugriff auf den HubSpot-Connector, einschließlich geplanter Synchronisierungen, Webhook-Eingang und automatischer Berechnung.
+
+## HubSpot heute verbinden
+
+Wenn Sie bereit sind, aufzuhören CSV-Dateien zu exportieren und Provisionen in Echtzeit aktualisiert zu sehen, dauert die Einrichtung fünfzehn Minuten.
+
+Gehen Sie zu Settings > Integrations in Ihrem CommissionKit-Workspace, klicken Sie auf HubSpot und folgen Sie den Konfigurationsschritten. Halten Sie Ihren HubSpot Service Key oder Legacy App token bereit.
+
+Die vollständige Einrichtungs­dokumentation finden Sie unter [docs.commissionk.it/integrations/hubspot](https://docs.commissionk.it/integrations/hubspot).
+
+Wenn Sie noch kein CommissionKit-Kunde sind und die HubSpot-Integration erst in Aktion sehen möchten, bevor Sie sich festlegen, starten Sie eine 14-tägige Testversion. Sie können Ihren HubSpot-Account während des Onboardings verbinden und zusehen, wie die Deals innerhalb der ersten Stunde eintreffen.
+
+[Starten Sie Ihre kostenlose Testversion](https://commissionk.it/register)

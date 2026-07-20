@@ -7,5 +7,15 @@
   "noArticlesFilter": "Aucun article trouvé pour cette langue.",
   "share": "Partager",
   "fallbackBanner": "Cet article n'est pas disponible en {requested}. Affichage de la version en {fallback}.",
-  "readIn": "Lire en {lang} →"
+  "readIn": "Lire en {lang} →",
+  "leadHeading": "Arrêtez de gérer les commissions dans des tableurs",
+  "leadDescription": "Connectez votre CRM et automatisez les calculs de commissions. Entrez votre email pour commencer.",
+  "leadEmailPlaceholder": "Votre email professionnel",
+  "leadNamePlaceholder": "Votre nom (facultatif)",
+  "leadSubmit": "Commencer",
+  "leadSubmitting": "Envoi en cours…",
+  "leadSuccess": "Merci ! Nous vous contacterons bientôt.",
+  "leadFormError": "Une erreur s'est produite. Veuillez réessayer.",
+  "leadEmailRequired": "Veuillez entrer votre adresse email.",
+  "leadNoSpam": "Pas de spam. Désabonnez-vous à tout moment."
 }

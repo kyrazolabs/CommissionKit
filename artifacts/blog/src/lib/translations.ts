@@ -26,6 +26,16 @@ export interface Translations {
   share: string;
   fallbackBanner: string;
   readIn: string;
+  leadHeading: string;
+  leadDescription: string;
+  leadEmailPlaceholder: string;
+  leadNamePlaceholder: string;
+  leadSubmit: string;
+  leadSubmitting: string;
+  leadSuccess: string;
+  leadFormError: string;
+  leadEmailRequired: string;
+  leadNoSpam: string;
   selectLanguage: string;
   filterByLanguage: string;
   all: string;

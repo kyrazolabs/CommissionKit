@@ -1,0 +1,108 @@
+---
+title: "HubSpot Integration"
+date: "2026-07-25"
+author: "CommissionKit Team"
+tags: ["Integrations", "HubSpot", "Commission Management", "Sales Operations"]
+keywords: ["hubspot commission integration", "hubspot sales commission software", "sync hubspot to commission tracking", "hubspot CRM commission management", "automate hubspot commission calculation", "hubspot deal commission sync"]
+description: "Connect HubSpot to CommissionKit and sync deals automatically. No more CSV exports, manual imports, or waiting weeks for commission visibility."
+---
+
+I spent three years watching sales ops managers export CSV files from HubSpot every Friday afternoon. They'd open the file, delete columns, fix date formats, add rep names where HubSpot only showed owner IDs, and then upload the cleaned spreadsheet to a commission tool. Or a shared drive. Or an email thread.
+
+If you've managed commissions for a HubSpot-powered sales team, you know this routine. The deal closes in your CRM on Tuesday. The rep asks about their commission on Wednesday. The answer comes back "we're still processing last month's numbers" because nobody has time to manually reconcile 200 deals before the 15th.
+
+We built the HubSpot connector to kill that workflow entirely. Deals close in HubSpot, they arrive in CommissionKit within minutes, and reps see their earnings update in real time. No CSV. No cleanup. No waiting.
+
+## What the connector actually does
+
+The HubSpot plugin syncs two things from your HubSpot account into CommissionKit:
+
+**Owners become reps.** Every HubSpot owner (your sales reps, account executives, SDRs) maps to a CommissionKit rep record. When you add a new rep in HubSpot, they show up in CommissionKit automatically on the next sync cycle.
+
+**Deals become commissionable deals.** Every HubSpot deal in your pipeline maps to a CommissionKit deal. The connector reads deal amount, close date, pipeline stage, and owner, then normalizes all of it into CommissionKit's standard format.
+
+The connector discovers your pipeline stages automatically. You don't need to tell it that "Closed Won" means the deal is done. It figures that out from your HubSpot configuration. If you have custom stages like "Legal Review" or "Implementation Started," you can map those to specific commission triggers (for example, pay on "Closed Won" only, or pay a partial commission when a deal reaches "Contract Signed").
+
+Authentication works two ways. You can use a HubSpot Service Key (recommended for new setups) or a Legacy App token if you're on an older HubSpot integration. Both are configured in the CommissionKit integrations page. No OAuth dance, no redirect URLs, no callback endpoints to manage.
+
+## How to set it up
+
+The whole process takes about fifteen minutes if you have your HubSpot credentials ready.
+
+**Step 1: Install the connector.** Go to Settings > Integrations in CommissionKit. Click the HubSpot card. You'll see a configuration form with fields for authentication and sync preferences.
+
+**Step 2: Authenticate.** Paste your HubSpot Service Key (or Legacy App token). Click "Test Connection." The connector pulls your account info and confirms it can reach your HubSpot data. If the test passes, you're authenticated.
+
+**Step 3: Map owners to reps.** The connector lists all HubSpot owners in your account. You confirm which ones are commissionable reps. Some owners might be sales managers or support staff who shouldn't earn commissions. Uncheck them. The rest become your rep roster.
+
+**Step 4: Configure pipeline stages.** The connector auto-discovers every stage in every pipeline in your HubSpot account. You tell it which stages count as "closed" for commission purposes. Most teams select "Closed Won." Some teams also include stages like "Signed" or "Bookings Confirmed" if they pay on booking rather than cash collected.
+
+You can also filter out specific pipelines. If you have an internal test pipeline or a partner referral pipeline that shouldn't generate commissions, exclude it here.
+
+**Step 5: Set the sync schedule.** Choose how often CommissionKit pulls data from HubSpot. Options range from every 15 minutes to once daily. Most teams with active sales cycles pick hourly or every 30 minutes. Teams with longer deal cycles can go daily without missing anything important.
+
+**Step 6: Enable auto-calculation.** This is the setting that makes the whole thing worthwhile. When auto-calculation is on, every new deal that arrives from HubSpot gets immediately evaluated against your active commission plan. The rep sees their estimated commission update without anybody clicking "Run Calculation."
+
+That's it. The connector runs on schedule, detects what changed since the last sync using hash-based comparison (so it doesn't reprocess deals that haven't moved), and updates CommissionKit accordingly.
+
+If a deal amount changes in HubSpot after it was already synced, the connector catches that on the next cycle and updates the CommissionKit record. If a rep reassigns a deal to a different owner, that change propagates too.
+
+Webhooks provide real-time updates between scheduled syncs. When a deal closes in HubSpot, the webhook fires and CommissionKit processes the change immediately. You don't have to wait for the next scheduled pull to see the commission hit the rep's dashboard.
+
+## The math on time saved
+
+Let me put some numbers to this because "saves time" is the kind of vague claim that means nothing without context.
+
+A typical CommissionKit customer has around 20 reps and closes roughly 200 deals per month. The manual workflow looks like this:
+
+Export deals from HubSpot. That's a CSV download, maybe 10 minutes including selecting the right date range and filters. Clean the data. Remove test deals, fix formatting, match owner IDs to rep names, convert currencies if you sell internationally. This is the part that eats most of the time. Expect 2 to 3 hours for 200 deals, depending on how messy your HubSpot hygiene is. Upload to your commission system. Another 30 minutes if the import template matches your data shape. If it doesn't, add another hour of reformatting. Reconcile discrepancies. HubSpot says the deal closed on the 14th, your commission spreadsheet says the 15th. Which is right? Go check the CRM. Go check the email thread. Go ask the rep. Budget 30 to 60 minutes per month for this.
+
+Total: 4 to 6 hours per month for a 20-rep team.
+
+With the HubSpot connector, that number drops to zero. The sync runs automatically. Deals arrive clean and normalized. Commission calculations happen on arrival.
+
+Over a year, you're looking at 50 to 70 hours of manual data work that simply doesn't happen anymore. For a sales ops person earning $70,000 to $90,000, that's $1,700 to $3,100 in recovered labor cost. The connector costs less than one of those hours.
+
+But the time savings are the smaller part of the value. The accuracy gains matter more.
+
+Manual CSV imports introduce errors. A rep's name gets misspelled, so their deals don't match their record. A date format flips from MM/DD to DD/MM and suddenly a December deal shows up in January's commission run. A decimal point shifts and a $12,000 deal becomes $120,000. These mistakes don't get caught until a rep disputes their commission statement, which is usually 30 days after the fact and requires unwinding payout records to fix.
+
+Automated sync eliminates that entire category of problems. The data comes from HubSpot in a structured format. The connector normalizes it deterministically. There's no human copy-paste step where things go wrong.
+
+You also stop losing deals. Manual imports rely on somebody remembering to run the export, remembering to include the right date range, remembering to filter out the right pipelines. People forget. Deals slip through. Reps don't get paid for closed business, which is the fastest way to destroy trust in your commission process.
+
+With automated sync, every deal that hits "Closed Won" in HubSpot arrives in CommissionKit. No exceptions. No forgotten exports. No "I thought you were handling that."
+
+## What happens when things change
+
+Sales teams restructure. Pipelines get redesigned. Reps leave and new ones join.
+
+The connector handles all of this without manual intervention. A new owner in HubSpot becomes a new rep in CommissionKit on the next sync. A rep who leaves can be deactivated in CommissionKit while their historical deals remain intact. Pipeline stage changes are detected and the connector adapts.
+
+If you rename a pipeline stage in HubSpot, the connector picks up the new name. If you had commission rules tied to the old stage name, you'll need to update those rules in CommissionKit, but the data sync itself doesn't break.
+
+Multi-currency teams get exchange rate handling built in. If your HubSpot deals are in EUR but your CommissionKit workspace runs in USD, the connector converts at the exchange rate snapshot from the deal close date. You get auditable conversion records for every deal, which matters when finance asks why a Q3 commission number doesn't match the bank deposit.
+
+## Who this is for
+
+The HubSpot connector makes sense if you meet three conditions:
+
+You use HubSpot as your primary CRM for deal tracking. This sounds obvious, but some teams use HubSpot for marketing and a different system for sales. The connector pulls from HubSpot's deals API, so your deal data needs to live there.
+
+You have at least five reps earning commissions. Below that threshold, the manual workflow is painful but survivable. Above it, the time cost compounds quickly.
+
+You currently export data from HubSpot on a regular basis to calculate commissions. If you're already doing this, the connector replaces that workflow entirely.
+
+Teams on CommissionKit's Growth plan or above get full access to the HubSpot connector, including scheduled syncs, webhook ingress, and auto-calculation.
+
+## Connect HubSpot today
+
+If you're ready to stop exporting CSV files and start seeing commissions update in real time, the setup takes fifteen minutes.
+
+Go to Settings > Integrations in your CommissionKit workspace, click HubSpot, and follow the configuration steps. You'll need your HubSpot Service Key or Legacy App token handy.
+
+Full setup documentation is available at [docs.commissionk.it/integrations/hubspot](https://docs.commissionk.it/integrations/hubspot).
+
+If you're not yet a CommissionKit customer and want to see the HubSpot integration in action before committing, start a 14-day trial. You can connect your HubSpot account during onboarding and watch deals flow in within the first hour.
+
+[Start your free trial](https://commissionk.it/register)

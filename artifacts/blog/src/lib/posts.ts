@@ -13,6 +13,7 @@ export interface BlogPostMeta {
   date: string;
   author?: string;
   tags?: string[];
+  keywords?: string[];
   image?: string;
   coverImage?: string;
   lang?: string;
@@ -53,8 +54,10 @@ function readPostFile(slugDir: string, filePath: string, slug: string, lang: str
   const raw = fs.readFileSync(filePath, "utf-8");
   const { data, content } = matter(raw);
 
-  const coverPath = path.join(slugDir, "cover.png");
-  const coverImage = fs.existsSync(coverPath) ? `/blog/api/cover/${slug}` : undefined;
+  const coverPath = (["cover.webp", "cover.png", "cover.jpg", "cover.jpeg"] as const)
+    .map((ext) => path.join(slugDir, ext))
+    .find((p) => fs.existsSync(p));
+  const coverImage = coverPath ? `/blog/api/cover/${slug}` : undefined;
 
   const ogImagePath = path.join(slugDir, "opengraphimages", `${lang}.webp`);
   const ogImage = fs.existsSync(ogImagePath) ? `/blog/api/og/${slug}/${lang}` : undefined;
@@ -66,6 +69,7 @@ function readPostFile(slugDir: string, filePath: string, slug: string, lang: str
     date: data.date || parseDate(slugDir),
     author: data.author,
     tags: data.tags || [],
+    keywords: data.keywords || [],
     image: data.image,
     coverImage,
     ogImage,

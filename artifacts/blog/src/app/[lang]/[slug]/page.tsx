@@ -10,6 +10,7 @@ import { formatRelativeDate } from "@/lib/format";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { LanguagePills } from "@/components/language-pills";
 import { FallbackBanner } from "@/components/fallback-banner";
+import { BlogLeadCapture } from "@/components/blog-lead-capture";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -74,6 +75,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: ogImage ? [ogImage] : undefined,
     },
     robots: "index, follow, max-image-preview:large, max-snippet:-1",
+    keywords: post.keywords,
     other: {
       "article:published_time": post.date,
       ...(post.tags?.length && { "article:tag": post.tags.join(",") }),
@@ -210,6 +212,8 @@ export default async function BlogPost({ params }: Props) {
         <div className="blog-content" dir={isRtl ? "rtl" : "ltr"}>
           <MDXRemote source={post.content} />
         </div>
+
+        <BlogLeadCapture lang={lang} />
 
         <div className="mt-16 pt-8 border-t border-border">
           <div className="flex items-center justify-between">
