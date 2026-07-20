@@ -19,6 +19,16 @@ export interface WorkspaceOnboarding {
   checklistShownAt: string | null;
 }
 
+export interface WorkspaceMember {
+  id: string;
+  userId?: string;
+  email: string;
+  role: string;
+  roleIds?: string[];
+  status: "active" | "pending";
+  createdAt: string;
+}
+
 export interface Workspace {
   id: string;
   slug: string;
@@ -29,6 +39,7 @@ export interface Workspace {
   role: "owner" | "admin" | "member";
   createdAt: string;
   onboarding?: WorkspaceOnboarding;
+  members?: WorkspaceMember[];
 }
 
 interface EngineNavItem {
