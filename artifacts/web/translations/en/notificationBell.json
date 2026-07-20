@@ -1,0 +1,16 @@
+{
+  "notifications": "Notifications",
+  "newNotification": " new",
+  "markAllRead": "Mark all read",
+  "noNotifications": "No notifications",
+  "allCaughtUp": "You're all caught up!",
+  "markAsRead": "Mark as read",
+  "showingLast": "Showing last {{count}} notifications",
+  "run": "Run",
+  "rep": "Rep",
+  "deal": "Deal",
+  "clawback": "Clawback",
+  "invite": "Invite",
+  "role": "Role",
+  "plan": "Plan"
+}

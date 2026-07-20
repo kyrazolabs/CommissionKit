@@ -1,0 +1,16 @@
+{
+  "notifications": "Notificaciones",
+  "newNotification": " nueva",
+  "markAllRead": "Marcar todo leído",
+  "noNotifications": "Sin notificaciones",
+  "allCaughtUp": "¡Estás al día!",
+  "markAsRead": "Marcar como leído",
+  "showingLast": "Mostrando últimas {{count}} notificaciones",
+  "run": "Ejecución",
+  "rep": "Representante",
+  "deal": "Negocio",
+  "clawback": "Clawback",
+  "invite": "Invitación",
+  "role": "Rol",
+  "plan": "Plan"
+}

@@ -1,0 +1,10 @@
+{
+  "main": "Main",
+  "operations": "Operations",
+  "account": "Account",
+  "newWorkspace": "New workspace",
+  "workspaceNamePlaceholder": "Workspace name",
+  "workspaces": "Workspaces",
+  "accountSettings": "Account Settings",
+  "signOut": "Sign out"
+}

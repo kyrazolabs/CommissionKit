@@ -1,31 +1,21 @@
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 import type { AuditEvent } from "@/types/audit-log";
 
 interface AuditLogDiffProps {
   event: AuditEvent;
 }
 
-const ACTION_LABELS: Record<string, string> = {
-  create: "Created",
-  update: "Updated",
-  delete: "Deleted",
-  bulk_create: "Bulk created",
-  invite_sent: "Invite sent",
-  invite_accepted: "Invite accepted",
-  role_change: "Role changed",
-  login: "Logged in",
-  logout: "Logged out",
-  password_changed: "Password changed",
-  approved: "Approved",
-  rejected: "Rejected",
-  mark_paid: "Marked paid",
-};
-
 export function AuditLogDiff({ event }: AuditLogDiffProps) {
+  const { t } = useTranslation();
+
+  const key = `auditLog.actionDescriptions.${event.action}` as const;
+  const description = t(key);
+
   if (!event.changes?.length) {
     return (
       <span className="text-[12px] text-muted-foreground">
-        {ACTION_LABELS[event.action] ?? event.action}
+        {description !== key ? description : event.action}
       </span>
     );
   }
@@ -33,7 +23,7 @@ export function AuditLogDiff({ event }: AuditLogDiffProps) {
   return (
     <div className="space-y-1">
       <span className="text-[12px] text-muted-foreground">
-        {event.changes.length} field{event.changes.length !== 1 ? "s" : ""} changed
+        {t("auditLog.table.fieldsChanged", { count: event.changes.length })}
       </span>
     </div>
   );
@@ -42,7 +32,6 @@ export function AuditLogDiff({ event }: AuditLogDiffProps) {
 export function DiffRow({ change }: { change: { field: string; from?: unknown; to?: unknown } }) {
   const { field, from, to } = change;
 
-  // Format scalar values for display
   const fmt = (v: unknown): string => {
     if (v === null || v === undefined) return "—";
     if (typeof v === "boolean") return v ? "true" : "false";
@@ -71,5 +60,3 @@ export function DiffRow({ change }: { change: { field: string; from?: unknown; t
     </div>
   );
 }
-
-export { ACTION_LABELS };

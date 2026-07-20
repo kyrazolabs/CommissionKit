@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuditLogFilters } from "@/hooks/use-audit-log";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { useTranslation } from "react-i18next";
 import { FilterChip } from "./filter-chip";
 import {
   Select,
@@ -19,6 +20,7 @@ import { format } from "date-fns";
 import { AUDIT_ACTIONS, AUDIT_RESOURCE_TYPES } from "@/types/audit-log";
 
 export function AuditLogFilters() {
+  const { t } = useTranslation();
   const { filters, updateFilters, clearFilters } = useAuditLogFilters();
   const { activeWorkspace } = useWorkspace();
   const [localSearch, setLocalSearch] = useState(filters.search);
@@ -40,7 +42,6 @@ export function AuditLogFilters() {
     }, 350);
   }
 
-  // Parse "yyyy-MM-dd" as local calendar date (not UTC) to avoid off-by-one
   function parseLocalDate(dateStr: string): Date {
     const [year, month, day] = dateStr.split("-").map(Number);
     return new Date(year, month - 1, day);
@@ -57,12 +58,11 @@ export function AuditLogFilters() {
 
   return (
     <div className="space-y-3">
-      {/* Search + quick actions row */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
-            placeholder="Search by user, resource, or action..."
+            placeholder={t("auditLog.filters.searchPlaceholder")}
             value={localSearch}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-9 pr-9"
@@ -85,10 +85,10 @@ export function AuditLogFilters() {
           onValueChange={(v) => updateFilters({ userId: v === "__all__" ? "" : v })}
         >
           <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="All users" />
+            <SelectValue placeholder={t("auditLog.filters.allUsers")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="__all__">All users</SelectItem>
+            <SelectItem value="__all__">{t("auditLog.filters.allUsers")}</SelectItem>
             {activeWorkspace?.members?.map((member) => (
               <SelectItem key={member.id} value={member.id}>
                 {member.email}
@@ -98,14 +98,13 @@ export function AuditLogFilters() {
         </Select>
 
         {hasActiveFilters && (
-          <Button variant="ghost" size='lg' onClick={clearFilters} className="gap-1 text-muted-foreground">
+          <Button variant="ghost" size="lg" onClick={clearFilters} className="gap-1 text-muted-foreground">
             <X className="size-3.5" />
-            Clear
+            {t("auditLog.filters.clear")}
           </Button>
         )}
       </div>
 
-      {/* Date range + filter chips row */}
       <div className="flex items-center gap-2 flex-wrap">
         <DateRangePicker
           from={filters.dateRange.from ? parseLocalDate(filters.dateRange.from) : undefined}
@@ -118,7 +117,7 @@ export function AuditLogFilters() {
           options={AUDIT_ACTIONS.map((a) => ({ value: a, label: a.replace(/_/g, " ") }))}
           selected={filters.actions}
           onChange={(actions) => updateFilters({ actions })}
-          placeholder="All actions"
+          placeholder={t("auditLog.filters.allActions")}
           className="w-[150px]"
         />
 
@@ -126,17 +125,16 @@ export function AuditLogFilters() {
           options={AUDIT_RESOURCE_TYPES.map((r) => ({ value: r, label: r }))}
           selected={filters.resourceTypes}
           onChange={(resourceTypes) => updateFilters({ resourceTypes })}
-          placeholder="All resources"
+          placeholder={t("auditLog.filters.allResources")}
           className="w-[170px]"
         />
       </div>
 
-      {/* Active filter chips */}
       {hasActiveFilters && (
         <div className="flex items-center gap-1.5 flex-wrap">
           {filters.search && (
             <FilterChip
-              label="Search"
+              label={t("auditLog.filters.searchChip")}
               value={filters.search}
               onRemove={() => {
                 setLocalSearch("");
@@ -146,7 +144,7 @@ export function AuditLogFilters() {
           )}
           {(filters.dateRange.from || filters.dateRange.to) && (
             <FilterChip
-              label="Date"
+              label={t("auditLog.filters.dateChip")}
               value={`${filters.dateRange.from || "…"} – ${filters.dateRange.to || "…"}`}
               onRemove={() =>
                 updateFilters({ dateRange: { from: undefined, to: undefined } })
@@ -156,7 +154,7 @@ export function AuditLogFilters() {
           {filters.actions.map((a) => (
             <FilterChip
               key={a}
-              label="Action"
+              label={t("auditLog.filters.actionChip")}
               value={a.replace(/_/g, " ")}
               onRemove={() =>
                 updateFilters({
@@ -168,7 +166,7 @@ export function AuditLogFilters() {
           {filters.resourceTypes.map((r) => (
             <FilterChip
               key={r}
-              label="Resource"
+              label={t("auditLog.filters.resourceChip")}
               value={r}
               onRemove={() =>
                 updateFilters({

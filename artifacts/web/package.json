@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --config vite.config.ts --host 0.0.0.0",
-    "build": "bun run scripts/generate-sitemap.ts && vite build --config vite.config.ts && vite build --ssr src/entry-server.tsx --outDir dist/server --config vite.config.ts --emptyOutDir false && bun run scripts/prerender.ts && rm -rf dist/server",
+    "dev": "bun run scripts/merge-translations.ts && vite --config vite.config.ts --host 0.0.0.0",
+    "build": "bun run scripts/merge-translations.ts && bun run scripts/generate-sitemap.ts && vite build --config vite.config.ts && vite build --ssr src/entry-server.tsx --outDir dist/server --config vite.config.ts --emptyOutDir false && bun run scripts/prerender.ts && rm -rf dist/server",
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "bun test --preload ../../test/dom-setup.ts",

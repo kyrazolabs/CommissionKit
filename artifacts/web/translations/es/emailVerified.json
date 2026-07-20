@@ -1,0 +1,11 @@
+{
+  "verificationFailed": "Verificación Fallida",
+  "verificationFailedDescription": "El enlace de verificación es inválido o ha expirado.",
+  "trySigningIn": "Intenta iniciar sesión. Si tu correo no está verificado, se enviará un nuevo enlace automáticamente.",
+  "goToLogin": "Ir al inicio de sesión",
+  "emailVerified": "Correo Verificado",
+  "emailVerifiedDescription": "Tu dirección de correo ha sido verificada exitosamente.",
+  "thankYou": "Gracias por verificar tu correo. Ya puedes acceder a tu espacio de trabajo.",
+  "goToDashboard": "Ir al panel",
+  "commissionKitRights": "© {{year}} COMMISSIONKIT. TODOS LOS DERECHOS RESERVADOS."
+}

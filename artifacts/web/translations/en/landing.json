@@ -1,0 +1,14 @@
+{
+  "navbar": {
+    "login": "Login",
+    "signUp": "Sign Up — It's Free",
+    "getStarted": "Get Started"
+  },
+  "hero": {
+    "title": "Automate Sales Commissions. Focus on Growth.",
+    "description": "CommissionKit simplifies commission management for growing teams. Track deals, calculate earnings, and generate payouts — all in one platform.",
+    "startFreeTrial": "Start Your Free Trial",
+    "noCreditCard": "No credit card required. 14-day free trial.",
+    "trustedBy": "Trusted by growing sales teams"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "notifications": "सूचनाएं",
+  "newNotification": " नई",
+  "markAllRead": "सभी पढ़ा हुआ चिह्नित करें",
+  "noNotifications": "कोई सूचना नहीं",
+  "allCaughtUp": "आप अप-टू-डेट हैं!",
+  "markAsRead": "पढ़ा हुआ चिह्नित करें",
+  "showingLast": "अंतिम {{count}} सूचनाएं दिखा रहे हैं",
+  "run": "{{period}} चलाएं",
+  "rep": "प्रतिनिधि",
+  "deal": "सौदा",
+  "clawback": "क्लॉबैक",
+  "invite": "आमंत्रण",
+  "role": "भूमिका",
+  "plan": "योजना"
+}

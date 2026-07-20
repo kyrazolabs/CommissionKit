@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useState, useMemo } from "react";
 import { format, formatDistanceToNow } from "date-fns";
 import {
   Table,
@@ -17,65 +17,16 @@ import { DiffRow } from "./audit-log-diff";
 import type { AuditEvent } from "@/types/audit-log";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import {
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
+  ChevronRight as ChevronRightIcon,
   Pencil,
   Plus,
   Trash2,
   Copy,
 } from "lucide-react";
-
-// Semantic action styles - color communicates meaning
-const ACTION_STYLES: Record<
-  string,
-  {
-    label: string;
-    variant: "default" | "secondary" | "destructive" | "outline";
-    className?: string;
-    tooltip: string;
-  }
-> = {
-  create: { label: "Create", variant: "default", tooltip: "New record created" },
-  update: { label: "Update", variant: "secondary", tooltip: "Record modified" },
-  delete: { label: "Delete", variant: "destructive", tooltip: "Record permanently removed" },
-  bulk_create: {
-    label: "Bulk Create",
-    variant: "outline",
-    className: "border-purple-500/50 text-purple-600 dark:text-purple-400",
-    tooltip: "Multiple records imported at once",
-  },
-  invite_sent: { label: "Invite Sent", variant: "secondary", tooltip: "Invitation email sent to user" },
-  invite_accepted: { label: "Invite Accepted", variant: "secondary", tooltip: "User accepted invitation" },
-  role_change: {
-    label: "Role Change",
-    variant: "outline",
-    className: "border-slate-400/50 text-slate-600 dark:text-slate-400",
-    tooltip: "User permission level changed",
-  },
-  login: {
-    label: "Login",
-    variant: "outline",
-    className: "border-slate-400/50 text-slate-600 dark:text-slate-400",
-    tooltip: "User signed in",
-  },
-  logout: {
-    label: "Logout",
-    variant: "outline",
-    className: "border-slate-400/50 text-slate-600 dark:text-slate-400",
-    tooltip: "User signed out",
-  },
-  password_changed: {
-    label: "Password Changed",
-    variant: "outline",
-    className: "border-slate-400/50 text-slate-600 dark:text-slate-400",
-    tooltip: "User updated their password",
-  },
-  approved: { label: "Approved", variant: "default", tooltip: "Record approved" },
-  rejected: { label: "Rejected", variant: "destructive", tooltip: "Record rejected" },
-  mark_paid: { label: "Marked Paid", variant: "default", tooltip: "Payment marked as completed" },
-};
 
 interface AuditLogTableProps {
   events: AuditEvent[];
@@ -86,15 +37,55 @@ interface AuditLogTableProps {
   onPageChange: (page: number) => void;
 }
 
-function copyToClipboard(text: string, label: string) {
-  navigator.clipboard
-    .writeText(text)
-    .then(() => {
-      toast.success(`${label} copied`);
-    })
-    .catch(() => {
-      toast.error("Failed to copy");
-    });
+function useActionStyles(t: ReturnType<typeof useTranslation>["t"]) {
+  return useMemo((): Record<
+    string,
+    {
+      label: string;
+      variant: "default" | "secondary" | "destructive" | "outline";
+      className?: string;
+      tooltip: string;
+    }
+  > => ({
+    create: { label: t("auditLog.actions.create"), variant: "default", tooltip: t("auditLog.actionTooltips.create") },
+    update: { label: t("auditLog.actions.update"), variant: "secondary", tooltip: t("auditLog.actionTooltips.update") },
+    delete: { label: t("auditLog.actions.delete"), variant: "destructive", tooltip: t("auditLog.actionTooltips.delete") },
+    bulk_create: {
+      label: t("auditLog.actions.bulk_create"),
+      variant: "outline",
+      className: "border-purple-500/50 text-purple-600 dark:text-purple-400",
+      tooltip: t("auditLog.actionTooltips.bulk_create"),
+    },
+    invite_sent: { label: t("auditLog.actions.invite_sent"), variant: "secondary", tooltip: t("auditLog.actionTooltips.invite_sent") },
+    invite_accepted: { label: t("auditLog.actions.invite_accepted"), variant: "secondary", tooltip: t("auditLog.actionTooltips.invite_accepted") },
+    role_change: {
+      label: t("auditLog.actions.role_change"),
+      variant: "outline",
+      className: "border-slate-400/50 text-slate-600 dark:text-slate-400",
+      tooltip: t("auditLog.actionTooltips.role_change"),
+    },
+    login: {
+      label: t("auditLog.actions.login"),
+      variant: "outline",
+      className: "border-slate-400/50 text-slate-600 dark:text-slate-400",
+      tooltip: t("auditLog.actionTooltips.login"),
+    },
+    logout: {
+      label: t("auditLog.actions.logout"),
+      variant: "outline",
+      className: "border-slate-400/50 text-slate-600 dark:text-slate-400",
+      tooltip: t("auditLog.actionTooltips.logout"),
+    },
+    password_changed: {
+      label: t("auditLog.actions.password_changed"),
+      variant: "outline",
+      className: "border-slate-400/50 text-slate-600 dark:text-slate-400",
+      tooltip: t("auditLog.actionTooltips.password_changed"),
+    },
+    approved: { label: t("auditLog.actions.approved"), variant: "default", tooltip: t("auditLog.actionTooltips.approved") },
+    rejected: { label: t("auditLog.actions.rejected"), variant: "destructive", tooltip: t("auditLog.actionTooltips.rejected") },
+    mark_paid: { label: t("auditLog.actions.mark_paid"), variant: "default", tooltip: t("auditLog.actionTooltips.mark_paid") },
+  }), [t]);
 }
 
 export function AuditLogTable({
@@ -105,11 +96,24 @@ export function AuditLogTable({
   total,
   onPageChange,
 }: AuditLogTableProps) {
+  const { t } = useTranslation();
+  const actionStyles = useActionStyles(t);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const toggleExpanded = (id: string) => {
     setExpandedId((prev) => (prev === id ? null : id));
   };
+
+  function copyToClipboard(text: string, label: string) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        toast.success(t("auditLog.table.copiedLabel", { label }));
+      })
+      .catch(() => {
+        toast.error(t("auditLog.table.copyFailed"));
+      });
+  }
 
   if (isLoading) {
     return (
@@ -133,9 +137,9 @@ export function AuditLogTable({
             <polyline points="10 9 9 9 8 9" />
           </svg>
         </EmptyMedia>
-        <EmptyTitle>No audit events found</EmptyTitle>
+        <EmptyTitle>{t("auditLog.table.noEvents")}</EmptyTitle>
         <EmptyDescription>
-          No events match your current filters. Try adjusting your search or clearing filters.
+          {t("auditLog.table.noEventsDesc")}
         </EmptyDescription>
       </Empty>
     );
@@ -149,17 +153,17 @@ export function AuditLogTable({
           <TableHeader>
             <TableRow className="border-b border-card-border hover:bg-transparent">
               <TableHead className="w-10" />
-              <TableHead className="w-[160px]">Timestamp</TableHead>
-              <TableHead className="w-[100px]">Action</TableHead>
-              <TableHead className="w-[120px]">User</TableHead>
-              <TableHead className="w-[120px]">Resource</TableHead>
-              <TableHead>Details</TableHead>
+              <TableHead className="w-[160px]">{t("auditLog.table.timestamp")}</TableHead>
+              <TableHead className="w-[100px]">{t("auditLog.table.action")}</TableHead>
+              <TableHead className="w-[120px]">{t("auditLog.table.user")}</TableHead>
+              <TableHead className="w-[120px]">{t("auditLog.table.resource")}</TableHead>
+              <TableHead>{t("auditLog.table.details")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {events.map((event, index) => {
+            {events.map((event) => {
               const isExpanded = expandedId === event.id;
-              const style = ACTION_STYLES[event.action] ?? {
+              const style = actionStyles[event.action] ?? {
                 label: event.action,
                 variant: "outline" as const,
                 tooltip: event.action,
@@ -185,11 +189,11 @@ export function AuditLogTable({
                             }}
                             className="text-muted-foreground hover:text-foreground transition-colors"
                           >
-                            <ChevronRight className={cn("size-4 transform duration-150", isExpanded ? "rotate-90" : "rotate-0")} />
+                            <ChevronRightIcon className={cn("size-4 transform duration-150", isExpanded ? "rotate-90" : "rotate-0")} />
                           </button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          {isExpanded ? "Hide details" : "View details"}
+                          {isExpanded ? t("auditLog.table.hideDetails") : t("auditLog.table.viewDetails")}
                         </TooltipContent>
                       </Tooltip>
                     </TableCell>
@@ -218,13 +222,13 @@ export function AuditLogTable({
                         <TooltipTrigger asChild>
                           <div
                             className="text-sm font-medium text-foreground truncate max-w-30"
-                            title={event.userName || "Unknown"}
+                            title={event.userName || t("auditLog.table.unknown")}
                           >
                             {event.userName || "-"}
                           </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                          {event.userName || "Unknown"}
+                          {event.userName || t("auditLog.table.unknown")}
                           {event.userEmail && `\n(${event.userEmail})`}
                         </TooltipContent>
                       </Tooltip>
@@ -243,7 +247,7 @@ export function AuditLogTable({
                       </Tooltip>
                     </TableCell>
                     <TableCell>
-                      <DetailsCell event={event} />
+                      <DetailsCell event={event} t={t} />
                     </TableCell>
                   </TableRow>
 
@@ -254,24 +258,23 @@ export function AuditLogTable({
                         style={{ maxHeight: isExpanded ? 500 : 0, opacity: isExpanded ? 1 : 0 }}
                       >
                         <div className="px-4 py-3 bg-muted/20 border-t space-y-3">
-                          {/* Resource + User full info */}
                           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                             <span className="text-muted-foreground">
-                              <span className="font-medium">Resource:</span> {event.resourceType}
+                              <span className="font-medium">{t("auditLog.table.resourceLabel")}</span> {event.resourceType}
                               {event.resourceName && <> - {event.resourceName}</>}
                             </span>
-                            
-                              <CopyButton
-                                text={event.resourceId ?? ""}
-                                label="Resource ID"
-                              />
+                            <CopyButton
+                              text={event.resourceId ?? ""}
+                              label={t("auditLog.table.resourceId")}
+                              t={t}
+                              copyToClipboard={copyToClipboard}
+                            />
                             <span className="text-muted-foreground">
-                              <span className="font-medium">User:</span> {event.userName || "Unknown"}
+                              <span className="font-medium">{t("auditLog.table.userLabel")}</span> {event.userName || t("auditLog.table.unknown")}
                               {event.userEmail && <> ({event.userEmail})</>}
                             </span>
                           </div>
 
-                          {/* Field-level diffs */}
                           {event.changes && event.changes.length > 0 && (
                             <div className="space-y-1">
                               {event.changes.map((change, i) => (
@@ -280,23 +283,20 @@ export function AuditLogTable({
                             </div>
                           )}
 
-                          {/* Metadata */}
                           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                             {event.ipAddress && (
                               <span className="inline-flex items-center gap-1">
-                                <span className="font-medium">IP:</span> {event.ipAddress}
-                                
-                                  <CopyButton text={event.ipAddress} label="IP address" />
-                                
+                                <span className="font-medium">{t("auditLog.table.ipLabel")}</span> {event.ipAddress}
+                                <CopyButton text={event.ipAddress} label={t("auditLog.table.ipAddress")} t={t} copyToClipboard={copyToClipboard} />
                               </span>
                             )}
                             {event.userAgent && (
                               <span className="truncate max-w-75" title={event.userAgent}>
-                                <span className="font-medium">UA:</span> {event.userAgent}
+                                <span className="font-medium">{t("auditLog.table.uaLabel")}</span> {event.userAgent}
                               </span>
                             )}
                             <span>
-                              <span className="font-medium">Time:</span>{" "}
+                              <span className="font-medium">{t("auditLog.table.timeLabel")}</span>{" "}
                               {format(new Date(event.timestamp), "MMM d, yyyy HH:mm:ss zzz")}
                             </span>
                           </div>
@@ -314,7 +314,7 @@ export function AuditLogTable({
       {totalPages > 1 && (
         <div className="flex items-center justify-between px-1">
           <p className="text-sm text-muted-foreground">
-            {total.toLocaleString()} event{total !== 1 ? "s" : ""} total
+            {t("auditLog.table.eventsTotal", { count: total })}
           </p>
           <div className="flex items-center gap-1">
             <Button
@@ -327,7 +327,7 @@ export function AuditLogTable({
               <ChevronLeft className="size-4" />
             </Button>
             <span className="text-sm tabular-nums px-2">
-              Page {page} of {totalPages}
+              {t("auditLog.table.pagination", { current: page, total: totalPages })}
             </span>
             <Button
               variant="ghost"
@@ -336,29 +336,13 @@ export function AuditLogTable({
               disabled={page >= totalPages}
               className="size-8 p-0"
             >
-              <ChevronRight className="size-4" />
+              <ChevronRightIcon className="size-4" />
             </Button>
           </div>
         </div>
       )}
     </div>
     </TooltipProvider>
-  );
-}
-
-function ActionBadge({ action }: { action: string }) {
-  const style = ACTION_STYLES[action] ?? {
-    label: action,
-    variant: "outline" as const,
-    tooltip: action,
-  };
-  return (
-    <Badge
-      variant={style.variant}
-      className={cn("text-xs capitalize", style.className)}
-    >
-      {style.label}
-    </Badge>
   );
 }
 
@@ -376,7 +360,13 @@ function TimestampCell({ timestamp }: { timestamp: string }) {
   );
 }
 
-function DetailsCell({ event }: { event: AuditEvent }) {
+function DetailsCell({
+  event,
+  t,
+}: {
+  event: AuditEvent;
+  t: ReturnType<typeof useTranslation>["t"];
+}) {
   const hasChanges = event.changes && event.changes.length > 0;
   const isCreate = event.action === "create";
   const isDelete = event.action === "delete";
@@ -386,13 +376,13 @@ function DetailsCell({ event }: { event: AuditEvent }) {
 
   if (hasChanges) {
     icon = <Pencil className="size-3 text-muted-foreground/60" />;
-    text = `${event.changes!.length} field${event.changes!.length !== 1 ? "s" : ""} changed`;
+    text = t("auditLog.table.fieldsChanged", { count: event.changes!.length });
   } else if (isCreate) {
     icon = <Plus className="size-3 text-muted-foreground/60" />;
-    text = "Created";
+    text = t("auditLog.table.created");
   } else if (isDelete) {
     icon = <Trash2 className="size-3 text-muted-foreground/60" />;
-    text = "Deleted";
+    text = t("auditLog.table.deleted");
   } else {
     text = "-";
   }
@@ -411,18 +401,28 @@ function DetailsCell({ event }: { event: AuditEvent }) {
       </TooltipTrigger>
       <TooltipContent>
         {hasChanges
-          ? "Click to see what changed"
+          ? t("auditLog.table.clickToSeeChanges")
           : isCreate
-            ? "New record was created"
+            ? t("auditLog.table.newRecordCreated")
             : isDelete
-              ? "Record was deleted"
+              ? t("auditLog.table.recordDeleted")
               : event.action}
       </TooltipContent>
     </Tooltip>
   );
 }
 
-function CopyButton({ text, label }: { text: string; label: string }) {
+function CopyButton({
+  text,
+  label,
+  t,
+  copyToClipboard,
+}: {
+  text: string;
+  label: string;
+  t: ReturnType<typeof useTranslation>["t"];
+  copyToClipboard: (text: string, label: string) => void;
+}) {
   if (!text) return null;
 
   return (
@@ -434,12 +434,12 @@ function CopyButton({ text, label }: { text: string; label: string }) {
             copyToClipboard(text, label);
           }}
           className="inline-flex items-center justify-center size-6 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
-          aria-label={`Copy ${label}`}
+          aria-label={t("auditLog.table.copyLabel", { label })}
         >
           <Copy className="size-3" />
         </button>
       </TooltipTrigger>
-      <TooltipContent>Copy {label}</TooltipContent>
+      <TooltipContent>{t("auditLog.table.copyLabel", { label })}</TooltipContent>
     </Tooltip>
   );
 }

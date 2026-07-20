@@ -1,0 +1,11 @@
+{
+  "verificationFailed": "सत्यापन विफल",
+  "verificationFailedDescription": "The verification link is invalid or has expired.",
+  "trySigningIn": "Try signing in to your account. If your email is unverified, a fresh verification link will be sent automatically.",
+  "goToLogin": "Go to login",
+  "emailVerified": "ईमेल सत्यापित",
+  "emailVerifiedDescription": "Your email address has been successfully verified.",
+  "thankYou": "अपना ईमेल सत्यापित करने के लिए धन्यवाद। अब आप अपने कार्यक्षेत्र तक पहुंच सकते हैं।",
+  "goToDashboard": "डैशबोर्ड पर जाएं",
+  "commissionKitRights": "© {{year}} COMMISSIONKIT. ALL RIGHTS RESERVED."
+}

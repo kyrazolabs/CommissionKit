@@ -1,0 +1,11 @@
+{
+  "title": "Create your workspace",
+  "description": "A workspace holds your team's reps, plans, and deals.",
+  "workspaceName": "Workspace Name",
+  "workspaceNamePlaceholder": "e.g. Acme Sales",
+  "currency": "Currency",
+  "currencyHelp": "Used for all amount formatting.",
+  "createWorkspace": "Create workspace",
+  "creating": "Creating…",
+  "failedToCreate": "Failed to create workspace. Please try again."
+}

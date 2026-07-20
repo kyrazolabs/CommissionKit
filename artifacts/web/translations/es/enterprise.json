@@ -1,0 +1,46 @@
+{
+  "projects": {
+    "title": "Proyectos",
+    "searchProjects": "Buscar proyectos…",
+    "selectRep": "Seleccionar rep",
+    "allReps": "Todos los Reps",
+    "allPeriods": "Todos los Períodos"
+  },
+  "matrix": {
+    "title": "Matriz de Comisiones",
+    "noLimit": "Sin límite"
+  },
+  "runs": {
+    "title": "Ejecuciones de Cálculo",
+    "runHistory": "Historial de Ejecuciones",
+    "runHistoryDescription": "Todos los lotes históricos de cálculo.",
+    "runId": "ID de Ejecución",
+    "period": "Período",
+    "executedOn": "Ejecutado el",
+    "status": "Estado",
+    "reps": "Representantes",
+    "deals": "Negocios",
+    "totalCommission": "Comisión Total"
+  },
+  "repPortal": {
+    "earningsHistory": "Historial de Ganancias",
+    "earningsHistoryDesc": "Últimos 6 meses de pagos de comisiones.",
+    "projectBreakdown": "Desglose por Proyecto",
+    "projectBreakdownDesc": "Proyectos y detalles de comisión del período."
+  },
+  "runDetails": {
+    "projectBreakdown": "Desglose por Proyecto",
+    "projectBreakdownDesc": "Resumen por proyecto con totales.",
+    "invoiceResults": "Resultados de Facturas",
+    "invoiceResultsDesc": "Detalles de cálculo por factura."
+  },
+  "publicPortal": {
+    "repPortal": "Portal del Representante",
+    "repPortalDescription": "Ingresa tu contraseña para ver tus comisiones.",
+    "passwordLabel": "Contraseña"
+  },
+  "projectDetail": {
+    "notesOptional": "Notas (opcional)",
+    "notesPlaceholder": "Detalles de factura, condiciones de pago..."
+  }
+}

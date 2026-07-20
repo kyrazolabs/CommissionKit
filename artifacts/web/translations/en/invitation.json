@@ -1,0 +1,10 @@
+{
+  "title": "Workspace Invitation",
+  "description": "You have been invited to join a workspace.",
+  "loggedInAs": "Logged in as",
+  "acceptInvitation": "Accept Invitation",
+  "accepted": "Invitation Accepted!",
+  "acceptedDescription": "You have joined the workspace successfully.",
+  "failedToAccept": "Failed to accept invitation",
+  "unexpectedError": "An unexpected error occurred."
+}

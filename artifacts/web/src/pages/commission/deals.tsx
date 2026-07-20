@@ -205,13 +205,13 @@ export function DealsPage() {
                 <TableRow>
                   <TableHead>
                     <div className="flex items-center gap-1.5">
-                      Deal Name
+                      {t("deals.dealName")}
                       <HelpTooltip content="The unique identifier for this revenue event." />
                     </div>
                   </TableHead>
                   <TableHead>Rep</TableHead>
                   <TableHead className="text-right tabular-nums">Amount</TableHead>
-                  <TableHead>Close Date</TableHead>
+                  <TableHead>{t("deals.closeDate")}</TableHead>
                   <TableHead>Stage</TableHead>
                   <TableHead>Payment</TableHead>
                   <TableHead className="text-right"></TableHead>
@@ -450,7 +450,7 @@ function UpdateDealDialog({ deal, queryParams, workspaceCurrency }: { deal: any,
                   This deal is <strong>closed won</strong>. Changing the stage to <strong>Closed Lost</strong> will trigger a <strong>clawback</strong> if the plan has a clawback period configured.
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-stage">Stage</Label>
+                  <Label htmlFor="edit-stage">{t("deals.stage")}</Label>
                   <Select value={formData.stage} onValueChange={(val) => setFormData(prev => ({ ...prev, stage: val }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -460,7 +460,7 @@ function UpdateDealDialog({ deal, queryParams, workspaceCurrency }: { deal: any,
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-paymentStatus">Payment Status</Label>
+                  <Label htmlFor="edit-paymentStatus">{t("deals.paymentStatus")}</Label>
                   <Select value={formData.paymentStatus} onValueChange={(val) => setFormData(prev => ({ ...prev, paymentStatus: val }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -489,7 +489,7 @@ function UpdateDealDialog({ deal, queryParams, workspaceCurrency }: { deal: any,
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-name">Deal Name</Label>
+            <Label htmlFor="edit-name">{t("deals.dealName")}</Label>
             <Input id="edit-name" value={formData.name} onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))} required />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -507,14 +507,14 @@ function UpdateDealDialog({ deal, queryParams, workspaceCurrency }: { deal: any,
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-closeDate">Close Date</Label>
+              <Label htmlFor="edit-closeDate">{t("deals.closeDate")}</Label>
               <DatePicker 
                 date={formData.closeDate ? parseISO(formData.closeDate) : undefined} 
                 onChange={(d) => setFormData(prev => ({ ...prev, closeDate: d ? format(d, "yyyy-MM-dd") : "" }))}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-stage">Stage</Label>
+              <Label htmlFor="edit-stage">{t("deals.stage")}</Label>
               <Select value={formData.stage} onValueChange={(val) => setFormData(prev => ({ ...prev, stage: val }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -526,7 +526,7 @@ function UpdateDealDialog({ deal, queryParams, workspaceCurrency }: { deal: any,
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-paymentStatus">Payment Status</Label>
+            <Label htmlFor="edit-paymentStatus">{t("deals.paymentStatus")}</Label>
             <Select value={formData.paymentStatus} onValueChange={(val) => setFormData(prev => ({ ...prev, paymentStatus: val }))}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -620,7 +620,7 @@ function DealDeleteAction({ deal, queryParams, currency }: { deal: any, queryPar
         }
         useSyncStore.getState().setSyncError(true);
         toast({
-          title: "Sync Error",
+          title: t("deals.syncError"),
           description: t("deals.dealDeleteFailedDescription"),
           variant: "destructive",
         });
@@ -708,7 +708,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
         id: Math.random().toString(36).substr(2, 9), // Temp ID for list management
         repId: rep?.id || "",
         repEmail,
-        name: dealName || 'Unknown Deal',
+        name: dealName || t("deals.unknownDeal"),
         amount: parseFloat(amountStr) || 0,
         closeDate: closeDateStr || "",
         period: period,
@@ -871,11 +871,11 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
                   <TableHeader className="bg-muted/50 sticky top-0 z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
                     <TableRow>
                       <TableHead className="w-[200px]">Sales Rep</TableHead>
-                      <TableHead className="w-[200px]">Deal Name</TableHead>
+                      <TableHead className="w-[200px]">{t("deals.dealName")}</TableHead>
                       <TableHead className="w-[120px]">Amount</TableHead>
                       <TableHead className="w-[160px]">Currency</TableHead>
-                      <TableHead className="w-[150px]">Close Date</TableHead>
-                      <TableHead className="w-[140px]">Stage</TableHead>
+                      <TableHead className="w-[150px]">{t("deals.closeDate")}</TableHead>
+                      <TableHead className="w-[140px]">{t("deals.stage")}</TableHead>
                       <TableHead className="w-[140px]">Payment</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
@@ -993,7 +993,7 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
         const previousDealsQueries = queryClient.getQueriesData<any[]>({ queryKey: ['/api/deals'] });
 
         const rep = searchReps?.find((r: any) => String(r.id || r._id) === String(newDeal.repId));
-        const repName = rep ? rep.name : "Unknown Rep";
+        const repName = rep ? rep.name : t("deals.unknownRep");
 
         const tempId = `temp-deal-${Date.now()}`;
         const optimisticDeal = {
@@ -1025,15 +1025,15 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
         }
         useSyncStore.getState().setSyncError(true);
         toast({
-          title: "Failed to create deal",
-          description: "Recovering your input...",
+          title: t("deals.dealCreateFailed"),
+          description: t("deals.recoveringInput"),
           variant: "destructive",
         });
         setOpen(true);
       },
       onSuccess: () => {
         useSyncStore.getState().setSyncError(false);
-        toast({ title: "Deal created successfully" });
+        toast({ title: t("deals.dealCreated") });
       },
       onSettled: (data, error, variables) => {
         const dealsToImport = variables.data.deals;
@@ -1112,7 +1112,7 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="name">Deal Name</Label>
+            <Label htmlFor="name">{t("deals.dealName")}</Label>
             <Input id="name" value={formData.name} onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))} required />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -1130,14 +1130,14 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="closeDate">Close Date</Label>
+              <Label htmlFor="closeDate">{t("deals.closeDate")}</Label>
               <DatePicker 
                 date={formData.closeDate ? parseISO(formData.closeDate) : undefined} 
                 onChange={(d) => setFormData(prev => ({ ...prev, closeDate: d ? format(d, "yyyy-MM-dd") : "" }))}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="stage">Stage</Label>
+              <Label htmlFor="stage">{t("deals.stage")}</Label>
               <Select value={formData.stage} onValueChange={(val) => setFormData(prev => ({ ...prev, stage: val }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -1148,7 +1148,7 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="paymentStatus">Payment Status</Label>
+            <Label htmlFor="paymentStatus">{t("deals.paymentStatus")}</Label>
             <Select value={formData.paymentStatus} onValueChange={(val) => setFormData(prev => ({ ...prev, paymentStatus: val }))}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -1191,7 +1191,7 @@ function ExportDealsButton() {
     if (!isGrowth) {
       toast({
         title: t("deals.growthPlanRequired"),
-        description: "Bulk CSV export is a premium feature. Please upgrade to the Growth plan to export your data.",
+        description: t("deals.growthPlanDescription"),
         variant: "destructive",
       });
       return;
@@ -1220,13 +1220,13 @@ function ExportDealsButton() {
       document.body.removeChild(a);
       
       toast({
-        title: "Export Successful",
-        description: "Your deals data has been exported to CSV.",
+        title: t("deals.exportSuccessful"),
+        description: t("deals.exportSuccessfulDescription"),
       });
     } catch (err) {
       toast({
-        title: "Export Failed",
-        description: "There was an error exporting your data. Please try again.",
+        title: t("deals.exportFailed"),
+        description: t("deals.exportFailedDescription"),
         variant: "destructive",
       });
     } finally {

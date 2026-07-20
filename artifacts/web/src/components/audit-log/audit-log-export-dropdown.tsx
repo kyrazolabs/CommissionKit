@@ -56,12 +56,16 @@ export function AuditLogExportDropdown({ filters }: AuditLogExportDropdownProps)
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(downloadUrl);
-        toast.success("Audit log exported as CSV");
+        toast.success(t("auditLog.export.success"));
       } else {
-        toast.info("PDF export coming soon");
+        toast.info(t("auditLog.export.comingSoon"));
       }
     } catch (err) {
-      toast.error("Export failed: " + (err instanceof Error ? err.message : "Unknown error"));
+      toast.error(
+        t("auditLog.export.failed", {
+          error: err instanceof Error ? err.message : "Unknown error",
+        }),
+      );
     } finally {
       setLoading(null);
     }
@@ -72,7 +76,7 @@ export function AuditLogExportDropdown({ filters }: AuditLogExportDropdownProps)
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1.5">
           <Download className="size-3.5" />
-          Export
+          {t("auditLog.export.button")}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -86,7 +90,7 @@ export function AuditLogExportDropdown({ filters }: AuditLogExportDropdownProps)
           ) : (
             <Download className="size-3.5" />
           )}
-          Export as CSV
+          {t("auditLog.export.csv")}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => exportAs("pdf")}
@@ -98,7 +102,7 @@ export function AuditLogExportDropdown({ filters }: AuditLogExportDropdownProps)
           ) : (
             <Download className="size-3.5" />
           )}
-          Export as PDF
+          {t("auditLog.export.pdf")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

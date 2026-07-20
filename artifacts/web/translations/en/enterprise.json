@@ -1,0 +1,46 @@
+{
+  "projects": {
+    "title": "Projects",
+    "searchProjects": "Search projects…",
+    "selectRep": "Select rep",
+    "allReps": "All Reps",
+    "allPeriods": "All Periods"
+  },
+  "matrix": {
+    "title": "Commission Matrix",
+    "noLimit": "No limit"
+  },
+  "runs": {
+    "title": "Calculation Runs",
+    "runHistory": "Run History",
+    "runHistoryDescription": "All historical commission calculation batches.",
+    "runId": "Run ID",
+    "period": "Period",
+    "executedOn": "Executed On",
+    "status": "Status",
+    "reps": "Reps",
+    "deals": "Deals",
+    "totalCommission": "Total Commission"
+  },
+  "runDetails": {
+    "projectBreakdown": "Project Breakdown",
+    "projectBreakdownDesc": "Summary per project with slab, GM, and commission totals.",
+    "invoiceResults": "Invoice Results",
+    "invoiceResultsDesc": "Per-invoice commission calculation details."
+  },
+  "repPortal": {
+    "earningsHistory": "Earnings History",
+    "earningsHistoryDesc": "Past 6 months of commission payouts.",
+    "projectBreakdown": "Project Breakdown",
+    "projectBreakdownDesc": "Projects and their commission details for this period."
+  },
+  "publicPortal": {
+    "repPortal": "Rep Portal",
+    "repPortalDescription": "Enter your portal password to view your commissions.",
+    "passwordLabel": "Password"
+  },
+  "projectDetail": {
+    "notesOptional": "Notes (optional)",
+    "notesPlaceholder": "Invoice details, payment terms..."
+  }
+}

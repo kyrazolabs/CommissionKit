@@ -1,0 +1,27 @@
+{
+  "contactSupport": "सहायता से संपर्क करें",
+  "lightMode": "लाइट मोड",
+  "darkMode": "डार्क मोड",
+  "syncing": "पृष्ठभूमि में सिंक हो रहा है...",
+  "syncError": "सिंक त्रुटि। सूचना साफ़ करने के लिए क्लिक करें।",
+  "dashboard": "डैशबोर्ड",
+  "reps": "प्रतिनिधि",
+  "plans": "योजनाएं",
+  "deals": "सौदे",
+  "runs": "निष्पादन",
+  "reports": "रिपोर्ट",
+  "team": "टीम",
+  "settings": "सेटिंग्स",
+  "billing": "बिलिंग",
+  "payouts": "भुगतान",
+  "disputes": "विवाद",
+  "integrations": "एकीकरण",
+  "main": "मुख्य",
+  "operations": "संचालन",
+  "account": "खाता",
+  "enterprise": {
+    "projects": "परियोजनाएं",
+    "matrix": "मैट्रिक्स",
+    "repPortal": "प्रतिनिधि पोर्टल"
+  }
+}
