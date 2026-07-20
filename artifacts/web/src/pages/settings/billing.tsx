@@ -334,9 +334,12 @@ export function BillingPage() {
       .catch((err) => console.error("Failed to fetch rates", err));
   }, [activeWorkspace?.id]);
 
-  const { data: reps = [], isLoading: repsLoading } = TanStackReactQuery.useQuery({
+  const { data: repsResponse, isLoading: repsLoading } = TanStackReactQuery.useQuery({
     queryKey: ["reps", activeWorkspace?.id],
-    queryFn: () => apiFetch(`/api/reps`),
+    queryFn: () => apiFetch(`/api/reps?limit=1`) as Promise<{
+      data: unknown[];
+      pagination: { page: number; limit: number; total: number; totalPages: number };
+    }>,
     enabled: Boolean(activeWorkspace?.id),
   });
   
@@ -431,7 +434,7 @@ export function BillingPage() {
     sub.status && ACTIVE_BILLING_SUB_STATUSES.has(sub.status)
   );
 
-  const repsCount = Array.isArray(reps) ? reps.length : null;
+  const repsCount = repsResponse?.pagination?.total ?? null;
   const plansCount = Array.isArray(commissionPlans) ? commissionPlans.length : null;
 
   const handleCheckout = async (priceId: string, plan: string, mode: string, extraQty: number) => {

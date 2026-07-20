@@ -8,6 +8,7 @@ const replSet = await MongoMemoryReplSet.create({
 });
 const uri = replSet.getUri();
 process.env.MONGO_URL = uri;
+process.env.REDIS_URL = "redis://localhost:6379";
 await mongoose.connect(uri);
 
 // Store reference for cleanup — test files can access via global
