@@ -1,0 +1,21 @@
+{
+  "blog": "Blog",
+  "blogDescription": "Expert insights on sales commission management, plan design, rep motivation, and revenue operations.",
+  "backToSite": "commissionk.it",
+  "backToBlog": "Back to Blog",
+  "backToHome": "Back to CommissionKit",
+  "insights": "Insights",
+  "privacy": "Privacy",
+  "terms": "Terms",
+  "home": "Home",
+  "allRightsReserved": "© {year} COMMISSIONKIT. ALL RIGHTS RESERVED.",
+  "languageNames": {
+    "en": "English",
+    "ar": "العربية",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "pt": "Português",
+    "hi": "हिन्दी"
+  }
+}

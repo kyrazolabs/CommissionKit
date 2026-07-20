@@ -1,0 +1,21 @@
+{
+  "blog": "ब्लॉग",
+  "blogDescription": "सेल्स कमीशन मैनेजमेंट, प्लान डिज़ाइन, रिप प्रेरणा और रेवेन्यू ऑपरेशंस पर विशेषज्ञ जानकारी।",
+  "backToSite": "commissionk.it",
+  "backToBlog": "ब्लॉग पर वापस जाएँ",
+  "backToHome": "CommissionKit पर वापस जाएँ",
+  "insights": "जानकारी",
+  "privacy": "गोपनीयता",
+  "terms": "नियम",
+  "home": "होम",
+  "allRightsReserved": "© {year} COMMISSIONKIT. सर्वाधिकार सुरक्षित।",
+  "languageNames": {
+    "en": "English",
+    "ar": "العربية",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "pt": "Português",
+    "hi": "हिन्दी"
+  }
+}

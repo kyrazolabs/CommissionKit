@@ -1,0 +1,11 @@
+{
+  "postNotFound": "المقال غير موجود",
+  "previous": "السابق",
+  "next": "التالي",
+  "pageXofY": "الصفحة {current} من {total}",
+  "noArticles": "لا توجد مقالات متاحة بهذه اللغة بعد.",
+  "noArticlesFilter": "لم يُعثر على مقالات بهذه اللغة.",
+  "share": "مشاركة",
+  "fallbackBanner": "هذا المقال غير متاح باللغة {requested}. يتم عرض النسخة باللغة {fallback}.",
+  "readIn": "اقرأ باللغة {lang} →"
+}

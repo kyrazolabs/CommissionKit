@@ -1,0 +1,21 @@
+{
+  "blog": "Blog",
+  "blogDescription": "Perspectives d'experts sur la gestion des commissions de vente, la conception des plans, la motivation des commerciaux et les opérations de revenus.",
+  "backToSite": "commissionk.it",
+  "backToBlog": "Retour au Blog",
+  "backToHome": "Retour à CommissionKit",
+  "insights": "Perspectives",
+  "privacy": "Confidentialité",
+  "terms": "Conditions",
+  "home": "Accueil",
+  "allRightsReserved": "© {year} COMMISSIONKIT. TOUS DROITS RÉSERVÉS.",
+  "languageNames": {
+    "en": "English",
+    "ar": "العربية",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "pt": "Português",
+    "hi": "हिन्दी"
+  }
+}

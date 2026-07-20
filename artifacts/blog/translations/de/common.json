@@ -1,0 +1,21 @@
+{
+  "blog": "Blog",
+  "blogDescription": "Experteneinblicke zu Vertriebsprovisionen, Plangestaltung, Vertriebsmotivation und Revenue Operations.",
+  "backToSite": "commissionk.it",
+  "backToBlog": "Zurück zum Blog",
+  "backToHome": "Zurück zu CommissionKit",
+  "insights": "Einblicke",
+  "privacy": "Datenschutz",
+  "terms": "Nutzungsbedingungen",
+  "home": "Startseite",
+  "allRightsReserved": "© {year} COMMISSIONKIT. ALLE RECHTE VORBEHALTEN.",
+  "languageNames": {
+    "en": "English",
+    "ar": "العربية",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "pt": "Português",
+    "hi": "हिन्दी"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "blog": "Blog",
+  "blogDescription": "Insights de especialistas sobre gestão de comissões de vendas, design de planos, motivação de representantes e operações de receita.",
+  "backToSite": "commissionk.it",
+  "backToBlog": "Voltar ao Blog",
+  "backToHome": "Voltar ao CommissionKit",
+  "insights": "Insights",
+  "privacy": "Privacidade",
+  "terms": "Termos",
+  "home": "Início",
+  "allRightsReserved": "© {year} COMMISSIONKIT. TODOS OS DIREITOS RESERVADOS.",
+  "languageNames": {
+    "en": "English",
+    "ar": "العربية",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "pt": "Português",
+    "hi": "हिन्दी"
+  }
+}

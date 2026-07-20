@@ -1,0 +1,11 @@
+{
+  "postNotFound": "Article introuvable",
+  "previous": "Précédent",
+  "next": "Suivant",
+  "pageXofY": "Page {current} sur {total}",
+  "noArticles": "Aucun article disponible dans cette langue pour le moment.",
+  "noArticlesFilter": "Aucun article trouvé pour cette langue.",
+  "share": "Partager",
+  "fallbackBanner": "Cet article n'est pas disponible en {requested}. Affichage de la version en {fallback}.",
+  "readIn": "Lire en {lang} →"
+}
