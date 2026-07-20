@@ -41,6 +41,12 @@ paths:
       operationId: listReps
       tags: [reps]
       summary: List all sales reps
+      parameters:
+        - name: search
+          in: query
+          description: "Search by rep name or email"
+          schema:
+            type: string
       responses:
         "200":
           description: List of reps
@@ -218,6 +224,11 @@ paths:
       tags: [deals]
       summary: List deals
       parameters:
+        - name: search
+          in: query
+          description: "Search by deal name or rep name"
+          schema:
+            type: string
         - name: repId
           in: query
           schema:

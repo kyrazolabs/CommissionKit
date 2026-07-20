@@ -18,6 +18,10 @@ export const HealthCheckResponse = zod.object({
 /**
  * @summary List all sales reps
  */
+export const ListRepsQueryParams = zod.object({
+  "search": zod.coerce.string().optional().describe('Search by rep name or email')
+})
+
 export const ListRepsResponseItem = zod.object({
   "id": zod.string(),
   "name": zod.string(),
@@ -207,12 +211,11 @@ export const DeletePlanParams = zod.object({
 /**
  * @summary List deals
  */
-const DealPaymentStatus = zod.enum(['unpaid', 'paid', 'partial', 'on_hold']);
-
 export const ListDealsQueryParams = zod.object({
+  "search": zod.coerce.string().optional().describe('Search by deal name or rep name'),
   "repId": zod.coerce.string().optional(),
   "period": zod.coerce.string().optional().describe('Filter by period (YYYY-MM)'),
-  "paymentStatus": DealPaymentStatus.optional().describe('Filter by payment status')
+  "paymentStatus": zod.enum(['unpaid', 'paid', 'partial', 'on_hold']).optional().describe('Filter by payment status')
 })
 
 export const ListDealsResponseItem = zod.object({
@@ -225,7 +228,7 @@ export const ListDealsResponseItem = zod.object({
   "period": zod.string().describe('YYYY-MM'),
   "stage": zod.enum(['closed_won', 'closed_lost', 'pending']),
   "currency": zod.string(),
-  "paymentStatus": DealPaymentStatus,
+  "paymentStatus": zod.enum(['unpaid', 'paid', 'partial', 'on_hold']),
   "notes": zod.string().nullable(),
   "createdAt": zod.string()
 })
@@ -235,6 +238,8 @@ export const ListDealsResponse = zod.array(ListDealsResponseItem)
 /**
  * @summary Create a single deal
  */
+export const createDealBodyPaymentStatusDefault = `unpaid`;
+
 export const CreateDealBody = zod.object({
   "repId": zod.string(),
   "name": zod.string(),
@@ -243,7 +248,7 @@ export const CreateDealBody = zod.object({
   "period": zod.string(),
   "stage": zod.enum(['closed_won', 'closed_lost', 'pending']),
   "currency": zod.string(),
-  "paymentStatus": DealPaymentStatus.default("unpaid"),
+  "paymentStatus": zod.enum(['unpaid', 'paid', 'partial', 'on_hold']).default(createDealBodyPaymentStatusDefault),
   "notes": zod.string().nullish()
 })
 
@@ -251,6 +256,8 @@ export const CreateDealBody = zod.object({
 /**
  * @summary Bulk import deals from parsed CSV rows
  */
+export const importDealsBodyDealsItemPaymentStatusDefault = `unpaid`;
+
 export const ImportDealsBody = zod.object({
   "period": zod.string().describe('YYYY-MM period for these deals'),
   "deals": zod.array(zod.object({
@@ -261,7 +268,7 @@ export const ImportDealsBody = zod.object({
   "period": zod.string(),
   "stage": zod.enum(['closed_won', 'closed_lost', 'pending']),
   "currency": zod.string(),
-  "paymentStatus": DealPaymentStatus.default("unpaid"),
+  "paymentStatus": zod.enum(['unpaid', 'paid', 'partial', 'on_hold']).default(importDealsBodyDealsItemPaymentStatusDefault),
   "notes": zod.string().nullish()
 }))
 })
@@ -296,7 +303,7 @@ export const UpdateDealBody = zod.object({
   "period": zod.string(),
   "stage": zod.enum(['closed_won', 'closed_lost', 'pending']),
   "currency": zod.string(),
-  "paymentStatus": DealPaymentStatus.optional(),
+  "paymentStatus": zod.enum(['unpaid', 'paid', 'partial', 'on_hold']).optional(),
   "notes": zod.string().nullish()
 })
 
@@ -310,7 +317,7 @@ export const UpdateDealResponse = zod.object({
   "period": zod.string().describe('YYYY-MM'),
   "stage": zod.enum(['closed_won', 'closed_lost', 'pending']),
   "currency": zod.string(),
-  "paymentStatus": DealPaymentStatus,
+  "paymentStatus": zod.enum(['unpaid', 'paid', 'partial', 'on_hold']),
   "notes": zod.string().nullable(),
   "createdAt": zod.string()
 })
@@ -338,7 +345,7 @@ export const ListRunsResponse = zod.array(ListRunsResponseItem)
  */
 export const CreateRunBody = zod.object({
   "period": zod.string().describe('YYYY-MM period to calculate'),
-  "paymentStatuses": zod.array(DealPaymentStatus).optional().describe('Filter to deals with these payment statuses')
+  "paymentStatuses": zod.array(zod.enum(['unpaid', 'paid', 'partial', 'on_hold'])).optional().describe('Filter to deals with these payment statuses')
 })
 
 
@@ -417,7 +424,7 @@ export const GetReportsResponse = zod.object({
   "revenueGrowth": zod.number(),
   "commissionGrowth": zod.number(),
   "dealGrowth": zod.number()
-}).optional(),
+}),
   "topPerformers": zod.array(zod.object({
   "name": zod.string(),
   "commission": zod.number(),
@@ -504,24 +511,3 @@ export const GetRepSummaryResponse = zod.object({
   "totalDeals": zod.number()
 }))
 })
-
-// ─── Manual additions (not auto-generated) ────────────────────────────────────
-
-/**
- * @summary Send (or resend) a portal access link email to a rep
- */
-export const SendPortalLinkParams = zod.object({
-  "id": zod.coerce.string()
-})
-
-/**
- * @summary Get the public portal data for a rep using their access code
- */
-export const GetPortalByCodeParams = zod.object({
-  "accessCode": zod.coerce.string()
-})
-
-export const GetPortalByCodeQueryParams = zod.object({
-  "period": zod.coerce.string().optional().describe("Filter by period (YYYY-MM). Defaults to current period.")
-})
-

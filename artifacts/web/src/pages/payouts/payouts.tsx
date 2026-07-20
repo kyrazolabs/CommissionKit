@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { DataPagination } from "@/components/ui/data-pagination";
 import { Input } from "@/components/ui/input";
 import { NumberInput } from "@/components/number-input";
 import { Label } from "@/components/ui/label";
@@ -39,6 +40,7 @@ import { cn } from "@/lib/utils";
 import { apiFetch } from "@/lib/api";
 import { usePageMeta } from "@/hooks/use-page-meta";
 import { useSyncStore } from "@/hooks/use-sync-store";
+import { useRepSearch } from "@/hooks/use-rep-search";
 import { RepCombobox } from "@/components/rep-combobox";
 
 
@@ -88,14 +90,17 @@ function StatusBadge({ status, i18nKey }: { status: Payout["status"]; i18nKey?: 
   );
 }
 
-function useFetchPayouts(workspaceId: string, filters: any) {
+function useFetchPayouts(workspaceId: string, filters: any, search: string, page: number, limit: number) {
   return useQuery({
-    queryKey: ["payouts", workspaceId, filters],
+    queryKey: ["payouts", workspaceId, filters, search, page],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (filters.status) params.set("status", filters.status);
       if (filters.repId) params.set("repId", filters.repId);
-      return apiFetch(`/api/payouts?${params.toString()}`);
+      if (search.trim()) params.set("search", search.trim());
+      params.set("page", String(page));
+      params.set("limit", String(limit));
+      return apiFetch(`/api/payouts?${params.toString()}`) as Promise<{ data: Payout[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>;
     },
     enabled: Boolean(workspaceId),
   });
@@ -248,12 +253,14 @@ function CreatePayoutModal({ workspaceId, open, setOpen }: { workspaceId: string
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: reps } = useQuery({
+  const { data: repsRaw } = useQuery({
     queryKey: ["reps-list", workspaceId],
     queryFn: async () => {
-      return apiFetch(`/api/reps`);
+      return apiFetch(`/api/reps?limit=500`);
     },
   });
+  const reps = (repsRaw as any)?.data ?? (Array.isArray(repsRaw) ? repsRaw : []);
+  const { reps: searchReps, searching: repSearching, onSearch: onRepSearch } = useRepSearch(workspaceId);
 
   const { setSyncError } = useSyncStore();
   const mutation = useMutation({
@@ -330,7 +337,9 @@ function CreatePayoutModal({ workspaceId, open, setOpen }: { workspaceId: string
         <div className="grid gap-2">
           <Label>Sales Rep</Label>
           <RepCombobox
-            reps={Array.isArray(reps) ? reps.map((r: any) => ({ id: String(r.id), name: r.name })) : []}
+            reps={searchReps}
+            onSearch={onRepSearch}
+            searching={repSearching}
             value={repId}
             onChange={setRepId}
             placeholder={t("payouts.selectRep")}
@@ -429,9 +438,16 @@ export function PayoutsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
   const [expandedPayoutId, setExpandedPayoutId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const LIMIT = 50;
 
-  const { data: payouts = [], isLoading } = useFetchPayouts(workspaceId, filters);
+  const { data: payoutsResult, isLoading, error } = useFetchPayouts(workspaceId, filters, search, page, LIMIT);
+  const payouts = payoutsResult?.data ?? [];
+  const pagination = payoutsResult?.pagination;
   const mutation = usePayoutMutation(workspaceId);
+
+  // Reset to page 1 when server-side filters change
+  useEffect(() => { setPage(1); }, [filters.status, filters.repId]);
 
   if (roleLoading || subLoading) {
     return (
@@ -458,10 +474,6 @@ export function PayoutsPage() {
       </div>
     );
   }
-
-  const filtered = payouts.filter((p: Payout) =>
-    p.repName.toLowerCase().includes(search.toLowerCase()),
-  );
 
   const executeStatusChange = (payout: Payout, status: string, extra?: any) => {
     mutation.mutate(
@@ -535,7 +547,7 @@ export function PayoutsPage() {
   };
 
   const toggleAll = () => {
-    const pendingIds = filtered.filter((p: Payout) => p.status === "pending").map((p: Payout) => p.id);
+    const pendingIds = payouts.filter((p: Payout) => p.status === "pending").map((p: Payout) => p.id);
     if (pendingIds.every((id: string) => selectedIds.has(id))) {
       setSelectedIds(new Set());
     } else {
@@ -622,21 +634,22 @@ export function PayoutsPage() {
             <div className="p-5 space-y-2">
               {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full" />)}
             </div>
-          ) : filtered.length === 0 ? (
+           ) : payouts.length === 0 ? (
             <div className="text-center py-14">
               <DollarSign className="size-10 text-muted-foreground mx-auto mb-3" />
               <h3 className="text-base font-semibold">No payouts found</h3>
               <p className="text-sm text-muted-foreground mt-1">Create a payout or adjust your filters.</p>
             </div>
           ) : (
+            <>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-10">
                     <Checkbox
                       checked={
-                        filtered.filter((p: Payout) => p.status === "pending").length > 0 &&
-                        filtered.filter((p: Payout) => p.status === "pending").every((p: Payout) => selectedIds.has(p.id))
+                        payouts.filter((p: Payout) => p.status === "pending").length > 0 &&
+                        payouts.filter((p: Payout) => p.status === "pending").every((p: Payout) => selectedIds.has(p.id))
                       }
                       onCheckedChange={toggleAll}
                     />
@@ -653,7 +666,7 @@ export function PayoutsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((payout: Payout) => {
+                {payouts.map((payout: Payout) => {
                   const isPaid = payout.status === "paid";
                   return (
                     <>
@@ -760,6 +773,18 @@ export function PayoutsPage() {
                 })}
               </TableBody>
             </Table>
+            {pagination ? (
+              <div className="border-t px-4 py-3">
+                <DataPagination
+                  page={page}
+                  totalPages={pagination.totalPages}
+                  total={pagination.total}
+                  limit={LIMIT}
+                  onPageChange={setPage}
+                />
+              </div>
+            ) : null}
+            </>
           )}
         </CardContent>
       </Card>
