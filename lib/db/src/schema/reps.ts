@@ -1,5 +1,6 @@
 import mongoose, { Schema, model, Types } from "mongoose";
 import { z } from "zod";
+import { auditPlugin } from "../plugins/audit.js";
 
 const RepSchema = new Schema({
   workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
@@ -21,6 +22,8 @@ RepSchema.index(
   { workspaceId: 1, sourceSystem: 1, externalId: 1 },
   { unique: true, partialFilterExpression: { sourceSystem: { $type: "string" }, externalId: { $type: "string" } } },
 );
+
+RepSchema.plugin(auditPlugin({ resourceType: "rep", resourceNameField: "name" }));
 
 export const Rep = model("Rep", RepSchema);
 

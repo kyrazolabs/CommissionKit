@@ -3,6 +3,7 @@ import { auth } from "../lib/auth";
 import { WorkspaceMember } from "@workspace/db";
 import { Types } from "mongoose";
 import { getUserPermissions, hasPermission } from "../lib/rbac";
+import { setAuditUser } from "../lib/audit-context";
 
 export interface AuthenticatedRequest extends Request {
   userId?: string;
@@ -28,6 +29,11 @@ export async function requireAuth(
 
   req.userId = session.user.id;
   req.userEmail = session.user.email;
+  setAuditUser({
+    userId: session.user.id,
+    userName: session.user.name ?? undefined,
+    userEmail: session.user.email ?? undefined,
+  });
   next();
 }
 

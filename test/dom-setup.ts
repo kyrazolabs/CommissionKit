@@ -9,3 +9,11 @@ for (const key of Object.getOwnPropertyNames(window)) {
 }
 if (!globalThis.document) (globalThis as any).document = window.document;
 if (!globalThis.window) (globalThis as any).window = globalThis;
+
+// Mock clipboard API
+if (!globalThis.navigator?.clipboard) {
+  (globalThis.navigator as any).clipboard = {
+    writeText: async () => {},
+    readText: async () => "",
+  };
+}

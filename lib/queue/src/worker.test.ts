@@ -40,6 +40,11 @@ mock.module("./queues", () => ({
   commissionCalcQueue: { add: mockAddForQueue },
   exchangeRateQueue: { add: mockAddForQueue },
   logsFlushQueue: { add: mockAddForQueue },
+  auditLogQueue: { add: mockAddForQueue },
+  syncRepsQueue: { add: mockAddForQueue },
+  syncDealsQueue: { add: mockAddForQueue },
+  webhookIngressQueue: { add: mockAddForQueue },
+  syncEgressQueue: { add: mockAddForQueue },
 }));
 
 mock.module("./mailer", () => ({

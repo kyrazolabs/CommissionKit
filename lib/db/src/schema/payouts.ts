@@ -1,5 +1,6 @@
 import mongoose, { Schema, model, Types } from "mongoose";
 import { z } from "zod";
+import { auditPlugin } from "../plugins/audit.js";
 
 const PayoutSchema = new Schema(
   {
@@ -43,6 +44,8 @@ const PayoutSchema = new Schema(
 PayoutSchema.index({ workspaceId: 1, repId: 1 });
 PayoutSchema.index({ workspaceId: 1, status: 1 });
 PayoutSchema.index({ workspaceId: 1, periodStart: 1, periodEnd: 1 });
+
+PayoutSchema.plugin(auditPlugin({ resourceType: "payout" }));
 
 export const Payout = model("Payout", PayoutSchema);
 

@@ -29,3 +29,6 @@ export const SYNC_DEALS_QUEUE = "{ck-sync-deals}";
 export const WEBHOOK_INGRESS_QUEUE = "{ck-webhook-ingress}";
 export const SYNC_EGRESS_QUEUE = "{ck-sync-egress}";
 
+// ─── Audit log queue ─────────────────────────────────────────────────────────
+export const AUDIT_LOG_QUEUE = "{ck-audit-log}";
+

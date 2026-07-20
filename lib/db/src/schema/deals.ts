@@ -1,5 +1,6 @@
 import mongoose, { Schema, model, Types } from "mongoose";
 import { z } from "zod";
+import { auditPlugin } from "../plugins/audit.js";
 
 const DealPaymentStatus = ["unpaid", "paid", "partial", "on_hold"] as const;
 
@@ -28,6 +29,8 @@ DealSchema.index(
   { workspaceId: 1, sourceSystem: 1, externalId: 1 },
   { unique: true, partialFilterExpression: { sourceSystem: { $type: "string" }, externalId: { $type: "string" } } },
 );
+
+DealSchema.plugin(auditPlugin({ resourceType: "deal", resourceNameField: "name" }));
 
 export const Deal = model("Deal", DealSchema);
 

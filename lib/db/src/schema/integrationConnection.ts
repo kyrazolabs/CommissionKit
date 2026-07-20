@@ -1,5 +1,6 @@
 import mongoose, { Schema, model, Types } from "mongoose";
 import { z } from "zod";
+import { auditPlugin } from "../plugins/audit.js";
 
 const SyncScheduleSchema = new Schema({
   reps: { type: String, enum: ["realtime", "hourly", "daily", "manual"], default: "hourly" },
@@ -25,6 +26,8 @@ const IntegrationConnectionSchema = new Schema({
 }, { timestamps: true });
 
 IntegrationConnectionSchema.index({ workspaceId: 1, connectorName: 1 });
+
+IntegrationConnectionSchema.plugin(auditPlugin({ resourceType: "integration", resourceNameField: "connectorName" }));
 
 export const IntegrationConnection = model("IntegrationConnection", IntegrationConnectionSchema);
 

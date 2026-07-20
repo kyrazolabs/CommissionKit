@@ -1,5 +1,6 @@
 import mongoose, { Schema, model, Types } from "mongoose";
 import { z } from "zod";
+import { auditPlugin } from "../plugins/audit.js";
 
 const PlanSchema = new Schema({
   workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
@@ -18,6 +19,8 @@ const PlanTierSchema = new Schema({
   toAmount: { type: Number },
   rate: { type: Number, required: true },
 });
+
+PlanSchema.plugin(auditPlugin({ resourceType: "plan", resourceNameField: "name" }));
 
 export const Plan = model("Plan", PlanSchema);
 export const PlanTier = model("PlanTier", PlanTierSchema);

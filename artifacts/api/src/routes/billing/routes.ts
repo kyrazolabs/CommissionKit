@@ -15,6 +15,7 @@ import { logger } from "../../lib/logger";
 import { getLatestRates } from "../../lib/exchange";
 import { findUserById } from "../../lib/auth";
 import { webhookRateLimit } from "../../middleware/rate-limiter";
+import { logAudit } from "../../lib/audit";
 
 const router = Router();
 
@@ -726,6 +727,13 @@ router.post("/webhook", webhookRateLimit, async (req, res): Promise<void> => {
                { $set: { trialUsed: true } }
              );
           }
+          logAudit("billing_changed", "billing", {
+            workspaceId,
+            resourceId: subscriptionId,
+            resourceName: plan,
+            metadata: { event: "checkout.session.completed", plan, customerId, isTrial: session.metadata?.isTrial },
+          }).catch(() => {});
+
           logger.info({ workspaceId, plan }, "Subscription activated");
         }
         break;
@@ -734,10 +742,11 @@ router.post("/webhook", webhookRateLimit, async (req, res): Promise<void> => {
       // ── Subscription updated ────────────────────────────────────────────────
       case "customer.subscription.updated": {
         const sub = event.data.object as Stripe.Subscription;
-        const workspaceId = sub.metadata?.workspaceId;
+        let workspaceId = sub.metadata?.workspaceId as string | undefined;
+        let found: any;
         if (!workspaceId) {
           // Try to look up via customer
-          const found = await WorkspaceSubscription.findOne({
+          found = await WorkspaceSubscription.findOne({
             stripeSubscriptionId: sub.id,
           });
           if (!found) {
@@ -747,6 +756,7 @@ router.post("/webhook", webhookRateLimit, async (req, res): Promise<void> => {
             );
             break;
           }
+          workspaceId = found.workspaceId?.toString();
         }
 
         const plan = getPlanFromSubscription(sub) ?? "starter";
@@ -782,6 +792,16 @@ router.post("/webhook", webhookRateLimit, async (req, res): Promise<void> => {
             currentPeriodEnd: periodEnd,
           },
         });
+        const subscriptionWorkspaceId = workspaceId ?? found?.workspaceId?.toString();
+        if (subscriptionWorkspaceId) {
+          logAudit("billing_changed", "billing", {
+            workspaceId: subscriptionWorkspaceId,
+            resourceId: sub.id,
+            resourceName: plan,
+            metadata: { event: "customer.subscription.updated", status: sub.status, plan },
+          }).catch(() => {});
+        }
+
         logger.info(
           { subId: sub.id, status: sub.status, plan },
           "Subscription updated",
@@ -804,6 +824,18 @@ router.post("/webhook", webhookRateLimit, async (req, res): Promise<void> => {
             },
           },
         );
+        const cancelledSub = await WorkspaceSubscription.findOne({
+          stripeSubscriptionId: sub.id,
+        });
+        if (cancelledSub?.workspaceId) {
+          logAudit("billing_changed", "billing", {
+            workspaceId: cancelledSub.workspaceId.toString(),
+            resourceId: sub.id,
+            resourceName: "free",
+            metadata: { event: "customer.subscription.deleted", status: "canceled" },
+          }).catch(() => {});
+        }
+
         logger.info(
           { subId: sub.id },
           "Subscription cancelled → downgraded to free",

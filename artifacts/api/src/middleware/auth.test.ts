@@ -9,6 +9,7 @@ mock.module("../lib/auth", () => ({
       getSession: mock(() => Promise.resolve(null)),
     },
   },
+  findUserById: mock(() => Promise.resolve(null)),
 }));
 
 mock.module("../lib/rbac", () => ({

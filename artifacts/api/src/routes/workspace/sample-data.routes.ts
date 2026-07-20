@@ -2,6 +2,7 @@ import { Router } from "express";
 import { requireWorkspaceMember, type AuthenticatedRequest } from "../../middleware/auth";
 import { seedSampleData, clearSampleData } from "../../lib/sample-data";
 import { logger } from "../../lib/logger";
+import { logAudit } from "../../lib/audit";
 
 const router = Router();
 
@@ -14,6 +15,10 @@ router.post(
       // can load the full demo dataset. The workspace is flagged
       // sampleDataLoaded = true inside the seeding transaction.
       const result = await seedSampleData(req.workspaceId!);
+      logAudit("sample_data_loaded", "sample_data", {
+        workspaceId: req.workspaceId,
+        metadata: { counts: result.counts },
+      }).catch(() => {});
       res.status(201).json(result);
     } catch (err: any) {
       if (err.status === 409 || err.alreadySeeded) {
@@ -32,6 +37,10 @@ router.delete(
   async (req: AuthenticatedRequest, res): Promise<void> => {
     try {
       const result = await clearSampleData(req.workspaceId!);
+      logAudit("sample_data_deleted", "sample_data", {
+        workspaceId: req.workspaceId,
+        metadata: { removed: result.removed },
+      }).catch(() => {});
       res.status(200).json(result);
     } catch (err: any) {
       logger.error({ err, workspaceId: req.workspaceId }, "[SampleData] DELETE failed");

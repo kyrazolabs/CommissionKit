@@ -13,6 +13,7 @@ import {
 import { logger } from "../../lib/logger";
 import { encryptConfig, decryptConfig, stripSensitiveFields } from "../../lib/crypto";
 import { webhookRateLimit } from "../../middleware/rate-limiter";
+import { logAudit } from "../../lib/audit";
 
 const router: IRouter = Router();
 
@@ -224,6 +225,12 @@ router.post(
 
       logger.info({ workspaceId, connectorName }, "[Integrations] Workspace connected");
 
+      logAudit("integration_connected", "integration", {
+        workspaceId,
+        resourceName: connectorName,
+        metadata: { connectorName, writeBackEnabled: conn.writeBackEnabled },
+      }).catch(() => {});
+
       res.json({
         success: true,
         connection: {
@@ -359,6 +366,11 @@ router.delete(
 
     logger.info({ workspaceId, connectorName: conn.connectorName }, "[Integrations] Workspace disconnected");
 
+    logAudit("integration_disconnected", "integration", {
+      workspaceId,
+      resourceName: conn.connectorName,
+    }).catch(() => {});
+
     res.json({ success: true });
   },
 );
@@ -411,6 +423,12 @@ router.post(
       trigger: "manual",
       options: { externalIds, fullSync },
     });
+
+    logAudit("sync_triggered", "integration", {
+      workspaceId,
+      resourceName: conn.connectorName,
+      metadata: { entityType, syncId: job.id, externalIds, fullSync },
+    }).catch(() => {});
 
     res.json({ syncId: job.id, status: "running" });
   },
