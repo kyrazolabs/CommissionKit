@@ -1,4 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+
+export const viewport: Viewport = {
+  themeColor: "#0D9488",
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://commissionk.it"),
@@ -25,13 +31,13 @@ export const metadata: Metadata = {
     siteName: "CommissionKit",
     locale: "en_US",
     url: "https://commissionk.it/blog",
-      images: [{ url: "https://commissionk.it/blog/og.png", width: 1600, height: 630 }],
+      images: [{ url: "/blog/og.png", width: 1600, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
     site: "@commissionkit",
     creator: "@commissionkit",
-    images: ["https://commissionk.it/blog/og.png"],
+    images: ["/blog/og.png"],
   },
   icons: {
     icon: [

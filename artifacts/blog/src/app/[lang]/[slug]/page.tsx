@@ -39,21 +39,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!post) return { title: dict.postNotFound };
 
   const availableLanguages = getAvailableLanguages(slug);
-  const ogImage = post.coverImage || post.image;
-  const canonicalUrl = `https://commissionk.it/blog/${lang}/${slug}`;
+  // posts.ts always returns an OG image URL (API route with fallback to og.png)
+  const ogImage = post.ogImage || post.coverImage || post.image;
 
   const hreflangLanguages: Record<string, string> = {};
   for (const l of availableLanguages) {
-    hreflangLanguages[l] = `https://commissionk.it/blog/${l}/${slug}`;
+    hreflangLanguages[l] = `/blog/${l}/${slug}`;
   }
-  hreflangLanguages["x-default"] = `https://commissionk.it/blog/en/${slug}`;
+  hreflangLanguages["x-default"] = `/blog/en/${slug}`;
 
   return {
     metadataBase: new URL("https://commissionk.it"),
     title: post.title,
     description: post.description || "",
     alternates: {
-      canonical: canonicalUrl,
+      canonical: `/blog/${lang}/${slug}`,
       languages: hreflangLanguages,
     },
     openGraph: {
@@ -62,7 +62,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       locale: lang === "ar" ? "ar_AR" : lang,
       title: `${post.title} — Blog`,
       description: post.description || "",
-      url: canonicalUrl,
+      url: `/blog/${lang}/${slug}`,
       publishedTime: post.date,
       images: ogImage
         ? [{ url: ogImage, width: 1200, height: 630 }]
@@ -100,7 +100,7 @@ export default async function BlogPost({ params }: Props) {
   const availableLanguages = getAvailableLanguages(slug);
   const isRtl = lang === "ar";
   const fallbackUrl = `/blog/en/${slug}`;
-  const ogImage = post.coverImage || post.image;
+  const ogImage = post.ogImage || post.coverImage || post.image;
   const canonicalUrl = `https://commissionk.it/blog/${lang}/${slug}`;
 
   return (
@@ -227,7 +227,7 @@ export default async function BlogPost({ params }: Props) {
             </Button>
             <Button variant="ghost" size="sm" asChild>
               <a
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(canonicalUrl)}`}
+                href={`https://x.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(canonicalUrl)}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >

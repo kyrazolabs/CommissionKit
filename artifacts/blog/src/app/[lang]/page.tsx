@@ -60,8 +60,8 @@ export async function generateMetadata({
       description: dict.blogDescription,
       images: [
         {
-          url: "/blog/og-image.png",
-          width: 1200,
+          url: "/blog/og.png",
+          width: 1600,
           height: 630,
           alt: "CommissionKit Blog - Sales Commission Management Guides",
         },
@@ -73,7 +73,7 @@ export async function generateMetadata({
       creator: "@commissionkit",
       title: dict.blog,
       description: dict.blogDescription,
-      images: ["/blog/og-image.png"],
+      images: ["/blog/og.png"],
     },
     alternates: {
       canonical: `/blog/${lang}`,

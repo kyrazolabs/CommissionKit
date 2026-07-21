@@ -1,4 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+
+export const viewport: Viewport = {
+  themeColor: "#0D9488",
+  width: "device-width",
+  initialScale: 1,
+};
 import { ThemeProvider } from "next-themes";
 import { ArrowLeft } from "lucide-react";
 import { getAllLanguages } from "@/lib/posts";
@@ -51,7 +57,7 @@ export async function generateMetadata({
       url: `https://commissionk.it/blog/${lang}`,
       title: dict.blog,
       description: dict.blogDescription,
-      images: [{ url: "https://commissionk.it/blog/og-default.webp", width: 1200, height: 630 }],
+      images: [{ url: "/blog/og.png", width: 1600, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
@@ -59,7 +65,7 @@ export async function generateMetadata({
       creator: "@commissionkit",
       title: dict.blog,
       description: dict.blogDescription,
-      images: ["https://commissionk.it/blog/og-default.webp"],
+      images: ["/blog/og.png"],
     },
     icons: {
       icon: [
