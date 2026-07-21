@@ -131,6 +131,7 @@ export function FeaturesPage() {
     title: "Features — CommissionKit",
     description:
       "Explore CommissionKit's full feature set — commission engine, rep portal, deal management, payout tracking, and platform capabilities.",
+    keywords: "commission calculation software, sales commission tracking, sales commission tracking software, commission sales software, commission software, sales rep commission software, commissions systems, software for commission sales",
     robots: "index, follow",
   });
 

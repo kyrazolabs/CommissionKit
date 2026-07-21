@@ -16,7 +16,7 @@ const DEFAULT_DESCRIPTION = "Automate sales commissions for your team. Track rep
  * Imperatively updates <title>, meta description, and robots tag for
  * client-rendered pages. Use this in every page component.
  */
-export function usePageMeta({ title, description, robots = "noindex, nofollow" }: PageMeta) {
+export function usePageMeta({ title, description, robots = "noindex, nofollow", keywords }: PageMeta) {
   useEffect(() => {
     // Title
     const fullTitle = title === APP_NAME ? APP_NAME : `${title} — ${APP_NAME}`;
