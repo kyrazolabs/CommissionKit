@@ -34,6 +34,19 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   return res.json();
 }
 
+export async function rawFetch(endpoint: string, options: RequestInit = {}): Promise<Response> {
+  const url = endpoint.startsWith("http") ? endpoint : `${API_URL}${endpoint}`;
+  const workspaceId = localStorage.getItem("ck_active_workspace");
+  return fetch(url, {
+    ...options,
+    headers: {
+      ...(workspaceId ? { "x-workspace-id": workspaceId } : {}),
+      ...options.headers,
+    },
+    credentials: "include",
+  });
+}
+
 export interface PaginatedResult<T> {
   data: T[];
   totalCount: number;

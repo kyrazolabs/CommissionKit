@@ -1,0 +1,21 @@
+{
+  "postNotFound": "Post Not Found",
+  "previous": "Previous",
+  "next": "Next",
+  "pageXofY": "Page {current} of {total}",
+  "noArticles": "No articles available in this language yet.",
+  "noArticlesFilter": "No articles found for this language.",
+  "share": "Share",
+  "fallbackBanner": "This article is not available in {requested}. Showing the {fallback} version.",
+  "readIn": "Read in {lang} →",
+  "leadHeading": "Stop managing commissions in spreadsheets",
+  "leadDescription": "Connect your CRM and automate commission calculations. Enter your email to get started.",
+  "leadEmailPlaceholder": "Your work email",
+  "leadNamePlaceholder": "Your name (optional)",
+  "leadSubmit": "Get Started",
+  "leadSubmitting": "Sending…",
+  "leadSuccess": "Thanks! We'll be in touch shortly.",
+  "leadFormError": "Something went wrong. Please try again.",
+  "leadEmailRequired": "Please enter your email address.",
+  "leadNoSpam": "No spam, ever. Unsubscribe anytime."
+}

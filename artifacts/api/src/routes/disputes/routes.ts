@@ -145,13 +145,23 @@ router.get("/", ...requirePermission("disputes", "read"), async (req: Authentica
 
   if (!hasFullAccess) {
     const rep = await Rep.findOne({ workspaceId: new Types.ObjectId(workspaceId), email: req.userEmail });
-    if (!rep) { res.json([]); return; }
+    if (!rep) { res.json({ data: [], pagination: { page: 1, limit: 50, total: 0, totalPages: 0 } }); return; }
     query.repId = rep._id;
   }
   if (req.query.status) query.status = req.query.status;
 
-  const disputes = await Dispute.find(query).populate("repId").populate("payoutId").sort({ createdAt: -1 });
-  res.json(disputes.filter((d) => d.repId != null).map(formatDispute));
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const limit = Math.min(500, Math.max(1, Number(req.query.limit) || 50));
+
+  const [disputes, total] = await Promise.all([
+    Dispute.find(query).populate("repId").populate("payoutId").sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit),
+    Dispute.countDocuments(query),
+  ]);
+
+  res.json({
+    data: disputes.filter((d) => d.repId != null).map(formatDispute),
+    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+  });
 });
 
 // ─── PATCH /:id — admin updates dispute ──────────────────────────────────────

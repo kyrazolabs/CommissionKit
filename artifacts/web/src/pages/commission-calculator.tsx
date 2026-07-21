@@ -121,6 +121,7 @@ export function CommissionCalculator() {
   usePageMeta({
     title: "Free Sales Commission Calculator",
     description: "Calculate sales commissions instantly with our free online calculator. Supports flat rate, tiered, and accelerator commission structures. No signup required.",
+    keywords: "commission pay calculator, calculating commissions, calculator commission, commissions calculator, payroll commission calculator, commission on sales calculator, sales commission calculator, sales and commission calculator",
     robots: "index, follow",
   });
 

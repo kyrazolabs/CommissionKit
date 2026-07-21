@@ -1,0 +1,10 @@
+{
+  "main": "Principal",
+  "operations": "Operaciones",
+  "account": "Cuenta",
+  "newWorkspace": "Nuevo espacio de trabajo",
+  "workspaceNamePlaceholder": "Nombre del espacio",
+  "workspaces": "Espacios de trabajo",
+  "accountSettings": "Configuración de Cuenta",
+  "signOut": "Cerrar sesión"
+}

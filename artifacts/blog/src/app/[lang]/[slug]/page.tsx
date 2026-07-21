@@ -10,6 +10,8 @@ import { formatRelativeDate } from "@/lib/format";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { LanguagePills } from "@/components/language-pills";
 import { FallbackBanner } from "@/components/fallback-banner";
+import { BlogLeadCapture } from "@/components/blog-lead-capture";
+import { baseUrl, makeAbsolute } from "@/lib/baseUrl";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -38,17 +40,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!post) return { title: dict.postNotFound };
 
   const availableLanguages = getAvailableLanguages(slug);
-  const ogImage = post.coverImage || post.image;
-  const canonicalUrl = `https://commissionk.it/blog/${lang}/${slug}`;
+  const ogImageRaw = post.ogImage || post.coverImage || post.image;
+  const ogImage = ogImageRaw ? makeAbsolute(ogImageRaw) : undefined;
+  const canonicalUrl = `${baseUrl}/blog/${lang}/${slug}`;
 
   const hreflangLanguages: Record<string, string> = {};
   for (const l of availableLanguages) {
-    hreflangLanguages[l] = `https://commissionk.it/blog/${l}/${slug}`;
+    hreflangLanguages[l] = `${baseUrl}/blog/${l}/${slug}`;
   }
-  hreflangLanguages["x-default"] = `https://commissionk.it/blog/en/${slug}`;
+  hreflangLanguages["x-default"] = `${baseUrl}/blog/en/${slug}`;
 
   return {
-    metadataBase: new URL("https://commissionk.it"),
+    metadataBase: new URL(baseUrl),
     title: post.title,
     description: post.description || "",
     alternates: {
@@ -74,6 +77,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: ogImage ? [ogImage] : undefined,
     },
     robots: "index, follow, max-image-preview:large, max-snippet:-1",
+    keywords: post.keywords,
     other: {
       "article:published_time": post.date,
       ...(post.tags?.length && { "article:tag": post.tags.join(",") }),
@@ -98,8 +102,9 @@ export default async function BlogPost({ params }: Props) {
   const availableLanguages = getAvailableLanguages(slug);
   const isRtl = lang === "ar";
   const fallbackUrl = `/blog/en/${slug}`;
-  const ogImage = post.coverImage || post.image;
-  const canonicalUrl = `https://commissionk.it/blog/${lang}/${slug}`;
+  const ogImageRaw = post.ogImage || post.coverImage || post.image;
+  const ogImage = ogImageRaw ? makeAbsolute(ogImageRaw) : undefined;
+  const canonicalUrl = `${baseUrl}/blog/${lang}/${slug}`;
 
   return (
     <>
@@ -122,10 +127,10 @@ export default async function BlogPost({ params }: Props) {
             publisher: {
               "@type": "Organization",
               name: "CommissionKit",
-              url: "https://commissionk.it",
+              url: baseUrl,
               logo: {
                 "@type": "ImageObject",
-                url: "https://commissionk.it/brand/logo-full.svg",
+                url: `${baseUrl}/brand/logo-full.svg`,
               },
             },
             mainEntityOfPage: {
@@ -211,6 +216,8 @@ export default async function BlogPost({ params }: Props) {
           <MDXRemote source={post.content} />
         </div>
 
+        <BlogLeadCapture lang={lang} />
+
         <div className="mt-16 pt-8 border-t border-border">
           <div className="flex items-center justify-between">
             <Button variant="outline" size="sm" asChild>
@@ -223,7 +230,7 @@ export default async function BlogPost({ params }: Props) {
             </Button>
             <Button variant="ghost" size="sm" asChild>
               <a
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(canonicalUrl)}`}
+                href={`https://x.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(canonicalUrl)}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >

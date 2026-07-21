@@ -1,0 +1,11 @@
+{
+  "title": "Crea tu espacio de trabajo",
+  "description": "Un espacio de trabajo contiene los representantes, planes y negocios de tu equipo.",
+  "workspaceName": "Nombre del espacio de trabajo",
+  "workspaceNamePlaceholder": "ej. Ventas Acme",
+  "currency": "Moneda",
+  "currencyHelp": "Usada para todo el formato de montos.",
+  "createWorkspace": "Crear espacio de trabajo",
+  "creating": "Creando…",
+  "failedToCreate": "No se pudo crear el espacio de trabajo. Intenta de nuevo."
+}

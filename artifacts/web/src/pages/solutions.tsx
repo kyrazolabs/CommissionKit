@@ -106,6 +106,7 @@ export function SolutionsPage() {
     title: "Solutions — CommissionKit",
     description:
       "Commission management solutions for finance teams, sales ops, startups, and enterprises. Automate commissions at any scale.",
+    keywords: "sales performance management software, manage sales performance, sales performance management, commission software, sales commission management software",
     robots: "index, follow",
   });
 

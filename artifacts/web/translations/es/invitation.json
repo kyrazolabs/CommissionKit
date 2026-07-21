@@ -1,0 +1,21 @@
+{
+  "workspaceInvitation": "Invitación al Espacio de Trabajo",
+  "invitedToJoin": "Has sido invitado a unirte a un equipo en CommissionKit.",
+  "validating": "Validando invitación…",
+  "noInvitationId": "No se proporcionó ID de invitación.",
+  "failedToLoad": "Error al cargar los detalles de la invitación.",
+  "needToSignIn": "Necesitas iniciar sesión para aceptar esta invitación.",
+  "signInToContinue": "Iniciar sesión para continuar",
+  "loggedInAs": "Conectado como",
+  "acceptInvitation": "Aceptar Invitación",
+  "accepting": "Aceptando…",
+  "invitationAccepted": "¡Invitación Aceptada!",
+  "invitationAcceptedDescription": "Te has unido al espacio de trabajo exitosamente.",
+  "backToHome": "Volver al inicio",
+  "title": "Invitación al Espacio de Trabajo",
+  "description": "Has sido invitado a unirte a un espacio de trabajo.",
+  "accepted": "¡Invitación Aceptada!",
+  "acceptedDescription": "Te has unido al espacio de trabajo exitosamente.",
+  "failedToAccept": "Error al aceptar la invitación",
+  "unexpectedError": "Ocurrió un error inesperado."
+}

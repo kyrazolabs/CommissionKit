@@ -13,19 +13,21 @@ export interface Job {
   earningsExample?: string;
   leadPromise?: string;
   payoutTimeline?: string;
+  clawbackPolicy?: string;
 }
 
 export const JOBS: Job[] = [
   {
     slug: "sales-representative",
-    title: "SaaS Sales Representative (Commission-Based)",
+    title: "Inside Sales Representative (SaaS / Commission-Based)",
     department: "Sales",
     location: "Remote",
     type: "contract",
     schedule: "full-time",
     description:
-      "We're looking for independent sales contractors to sell CommissionKit to SMBs and enterprises tired of managing commissions in spreadsheets. We provide qualified leads. You close them. No cold calling unless you want to.",
+      "We're looking for independent sales contractors to sell CommissionKit to SMBs and enterprises tired of managing commissions in spreadsheets. We provide qualified leads. You close them — across Starter, Growth, and Pro tiers. You get the full product to sell. No cold calling unless you want to.",
     responsibilities: [
+      "Close deals across all tiers — Starter ($49/mo), Growth ($99/mo), and Pro ($249/mo)",
       "Close qualified leads we provide and convert them into paying customers",
       "Run product demos and show finance and sales leaders how CommissionKit solves their commission problems",
       "Close deals and manage the sales cycle from first contact to signed contract",
@@ -40,8 +42,9 @@ export const JOBS: Job[] = [
       "Existing network of decision-makers in HR, Finance, or Sales Operations is a plus",
     ],
     offers: [
-      "30% commission on the customer's first invoice",
-      "10% lifetime recurring commission — as long as the customer stays, you get paid",
+      "30% commission on the customer's first invoice — paid within 15 days",
+      "10% lifetime recurring commission on every invoice after the first — as long as the customer stays, you get paid",
+      "1.25x multiplier on deals you self-source from your own network",
       "Payout within 15 days after first invoice. No minimums. No delays.",
       "Flexible schedule. Work when you want.",
       "Fully remote. Work from wherever.",
@@ -50,22 +53,25 @@ export const JOBS: Job[] = [
     ],
     isActive: true,
     leadPromise:
-      "We send you 10+ qualified leads every month. These are people who've already shown interest. Your job is to close them. If you have your own network you want to tap into too, even better.",
+      "We send you 10+ qualified leads every month. These are people who've already shown interest. Your job is to close them. If you have your own network you want to tap into too, even better — and you'll earn 1.25x on those deals.",
     payoutTimeline:
       "Get paid within 15 days after the customer's first invoice. No minimum payout thresholds. Your commission hits your account like clockwork.",
     earningsExample:
-      "Top reps make $3,000–$8,000/month. Here's the math: close 5 Pro deals at $249/mo and you get $373.50 upfront plus $124.50 every month after. Close 10 Growth deals at $99/mo and that's $297 upfront plus $99/month recurring. The real money comes from stacking — deals you closed in January still pay you in June.",
+      "$3,000–$8,000/month for top performers. Here's how it stacks: close 5 Pro deals at $249/mo from our leads, that's $373 upfront. Do that every month and your recurring portfolio builds — after 6 months your residual alone is over $750/month and climbing. Add a few self-sourced deals at 1.25x and you're clearing $3K–$5K easily. Reps who hustle and blend our leads with their own network hit the high end of the range.",
+    clawbackPolicy:
+      "Clawback applies only to the recurring portion, not the upfront commission. 100% if customer cancels within 30 days, 75% within 90 days, 50% within 180 days. After 180 days, no clawback.",
   },
   {
     slug: "sales-representative-part-time",
-    title: "SaaS Sales Representative (Commission-Based, Part-Time)",
+    title: "Inside Sales Representative (SaaS / Commission-Based, Part-Time)",
     department: "Sales",
     location: "Remote",
     type: "contract",
     schedule: "part-time",
     description:
-      "We're looking for part-time independent sales contractors to sell CommissionKit. If you want commission-only side income without giving up your day job or your schedule, this is built for that. We provide qualified leads. You close them. No cold calling unless you want to.",
+      "We're looking for part-time independent sales contractors to sell CommissionKit. If you want commission-only side income without giving up your day job, this is built for that. We provide qualified leads. You close them — across all tiers. No cold calling unless you want to.",
     responsibilities: [
+      "Close deals across all tiers — Starter ($49/mo), Growth ($99/mo), and Pro ($249/mo)",
       "Close qualified leads we provide and convert them into paying customers",
       "Run product demos and articulate CommissionKit's value proposition to finance and sales leaders",
       "Close deals and manage the sales cycle from first contact to signed contract",
@@ -80,8 +86,9 @@ export const JOBS: Job[] = [
       "Existing network of decision-makers in HR, Finance, or Sales Operations is a plus",
     ],
     offers: [
-      "30% commission on the customer's first invoice",
-      "10% lifetime recurring commission — as long as the customer stays, you get paid",
+      "30% commission on the customer's first invoice — paid within 15 days",
+      "10% lifetime recurring commission on every invoice after the first — as long as the customer stays, you get paid",
+      "1.25x multiplier on deals you self-source from your own network",
       "Payout within 15 days after first invoice. No minimums. No delays.",
       "Flexible hours — work when it fits your life, not the other way around",
       "Fully remote. Anywhere in the world.",
@@ -90,11 +97,13 @@ export const JOBS: Job[] = [
     ],
     isActive: true,
     leadPromise:
-      "We send you qualified leads every month. Your job is to close them. If you have your own network to tap into, even better. Fewer leads than the full-time role since you're part-time.",
+      "We send you qualified leads every month. Your job is to close them. If you have your own network to tap into, even better — 1.25x on those deals. Fewer leads than the full-time role since you're part-time.",
     payoutTimeline:
       "Get paid within 15 days after the customer's first invoice. No minimum payout thresholds. Your commission hits your account like clockwork.",
     earningsExample:
-      "On your own schedule. Close 2 Pro deals at $249/mo and make $149.40 upfront plus $49.80/month. Close 5 Growth deals at $99/mo for $148.50 upfront plus $49.50/month. The beauty of recurring commission: every month your deals keep paying you, even while you're doing other things.",
+      "Earn on your own schedule. Close 2-3 Pro deals a month from our leads and you're making $150–$225 upfront plus building a residual base that grows every month. Add your own network at 1.25x and the per-deal earnings jump higher. The recurring commission is the real play here — deals you closed months ago still pay you while you're doing other things.",
+    clawbackPolicy:
+      "Clawback applies only to the recurring portion, not the upfront commission. 100% if customer cancels within 30 days, 75% within 90 days, 50% within 180 days. After 180 days, no clawback.",
   },
 ];
 

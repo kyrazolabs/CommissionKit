@@ -1,0 +1,46 @@
+{
+  "projects": {
+    "title": "शीर्षक",
+    "searchProjects": "Search projects…",
+    "selectRep": "प्रतिनिधि चुनें",
+    "allReps": "सभी प्रतिनिधि",
+    "allPeriods": "सभी अवधियाँ"
+  },
+  "matrix": {
+    "title": "शीर्षक",
+    "noLimit": "कोई सीमा नहीं"
+  },
+  "runs": {
+    "title": "शीर्षक",
+    "runHistory": "निष्पादन इतिहास",
+    "runHistoryDescription": "सभी ऐतिहासिक कमीशन गणना बैच।",
+    "runId": "निष्पादन ID",
+    "period": "अवधि",
+    "executedOn": "निष्पादित तिथि",
+    "status": "स्थिति",
+    "reps": "प्रतिनिधि",
+    "deals": "सौदे",
+    "totalCommission": "कुल कमीशन"
+  },
+  "runDetails": {
+    "projectBreakdown": "प्रोजेक्ट विवरण",
+    "projectBreakdownDesc": "Summary per project with slab, GM, and commission totals.",
+    "invoiceResults": "चालान परिणाम",
+    "invoiceResultsDesc": "Per-invoice commission calculation details."
+  },
+  "repPortal": {
+    "earningsHistory": "कमाई का इतिहास",
+    "earningsHistoryDesc": "पिछले 6 महीनों के कमीशन भुगतान।",
+    "projectBreakdown": "प्रोजेक्ट विवरण",
+    "projectBreakdownDesc": "Projects and their commission details for this period."
+  },
+  "publicPortal": {
+    "repPortal": "प्रतिनिधि पोर्टल",
+    "repPortalDescription": "Enter your portal password to view your commissions.",
+    "passwordLabel": "Password"
+  },
+  "projectDetail": {
+    "notesOptional": "नोट्स (वैकल्पिक)",
+    "notesPlaceholder": "Invoice details, payment terms..."
+  }
+}

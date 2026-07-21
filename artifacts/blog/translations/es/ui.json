@@ -1,0 +1,18 @@
+{
+  "selectLanguage": "Seleccionar idioma",
+  "filterByLanguage": "Filtrar por idioma",
+  "all": "Todos",
+  "justNow": "Ahora mismo",
+  "oneMinuteAgo": "hace 1 minuto",
+  "minutesAgo": "hace {count} minutos",
+  "oneHourAgo": "hace 1 hora",
+  "hoursAgo": "hace {count} horas",
+  "yesterday": "Ayer",
+  "daysAgo": "hace {count} días",
+  "oneWeekAgo": "hace 1 semana",
+  "weeksAgo": "hace {count} semanas",
+  "oneMonthAgo": "hace 1 mes",
+  "monthsAgo": "hace {count} meses",
+  "oneYearAgo": "hace 1 año",
+  "yearsAgo": "hace {count} años"
+}

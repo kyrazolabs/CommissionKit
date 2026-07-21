@@ -1,14 +1,17 @@
 import {
   MailJobSchema,
+  AuditLogJobSchema,
   type MailJob,
   type CommissionCalcPayload,
   type ExchangeRatePayload,
+  type AuditLogJob,
 } from "./schemas.js";
 import {
   PRIORITY_QUEUE_MAP,
   commissionCalcQueue,
   exchangeRateQueue,
   logsFlushQueue,
+  auditLogQueue,
 } from "./queues.js";
 
 /**
@@ -122,5 +125,19 @@ export async function enqueueLogsFlush(
   }
 
   console.info(`[Queue] Logs flush periodic sync scheduled (cron: ${cronPattern})`);
+}
+
+/**
+ * Enqueue an audit log event.
+ */
+export async function enqueueAuditEvent(job: AuditLogJob): Promise<void> {
+  const withTimestamp = {
+    ...job,
+    timestamp: job.timestamp ?? new Date().toISOString(),
+  };
+  const parsed = AuditLogJobSchema.parse(withTimestamp);
+  await auditLogQueue.add("audit-event", parsed, {
+    jobId: `audit-${parsed.workspaceId}-${parsed.resourceType}-${parsed.resourceId ?? "none"}-${Date.now()}`,
+  });
 }
 

@@ -8,6 +8,7 @@ import { invitationTemplate } from "@workspace/email-templates";
 import { checkLimits } from "../../lib/limits";
 import { seedWorkspaceRoles } from "../../lib/seeds/roles";
 import { getUserPermissions } from "../../lib/rbac";
+import { logAudit } from "../../lib/audit";
 
 const router = Router();
 
@@ -183,6 +184,13 @@ router.delete("/workspaces/:id", requireAuth, async (req: AuthenticatedRequest, 
 
   await WorkspaceMember.deleteMany({ workspaceId: new Types.ObjectId(workspaceId) });
   await Workspace.findByIdAndDelete(workspaceId);
+
+  logAudit("workspace_deleted", "workspace", {
+    workspaceId,
+    resourceId: workspaceId,
+    resourceName: (membership.workspaceId as any)?.name ?? undefined,
+  }).catch(() => {});
+
   res.status(204).send();
 });
 
@@ -257,6 +265,13 @@ router.post("/workspaces/:id/members/invite", ...requirePermission("team", "crea
     }
   });
 
+  logAudit("invite_sent", "member", {
+    workspaceId: req.workspaceId,
+    resourceId: String(member._id),
+    resourceName: member.email,
+    metadata: { email: member.email, roleIds: member.roleIds?.map((id) => id.toString()) },
+  }).catch(() => {});
+
   res.status(201).json({ id: member._id, email: member.email, roleIds: member.roleIds, status: "pending" });
 });
 
@@ -279,6 +294,13 @@ router.patch("/workspaces/:id/members/:memberId", ...requirePermission("team", "
 
   target.roleIds = roleIds.map(id => new Types.ObjectId(id));
   await target.save();
+
+  logAudit("role_change", "member", {
+    workspaceId: req.workspaceId,
+    resourceId: String(target._id),
+    resourceName: target.email,
+    metadata: { roleIds: target.roleIds.map((id) => id.toString()) },
+  }).catch(() => {});
 
   res.json({ id: target._id, email: target.email, roleIds: target.roleIds });
 });

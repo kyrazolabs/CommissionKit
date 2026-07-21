@@ -37,18 +37,19 @@ const PAYOUT_STATUS_CLASSES: Record<string, string> = {
 
 function PayoutsSection({ repId, workspaceId, currency }: { repId: string; workspaceId: string; currency: string }) {
   const { t } = useTranslation();
-  const { data: payouts = [], isLoading } = useQuery<any[]>({
+  const { data: payoutsRaw = {} as any, isLoading } = useQuery<any>({
     queryKey: ["rep-payouts", repId, workspaceId],
     queryFn: async () => {
       try {
-        return await apiFetch(`/api/payouts?repId=${repId}`);
+        return await apiFetch(`/api/payouts?repId=${repId}&limit=500`);
       } catch (err) {
         console.error(err);
-        return [];
+        return { data: [] };
       }
     },
     enabled: Boolean(repId && workspaceId),
   });
+  const payouts = payoutsRaw?.data ?? (Array.isArray(payoutsRaw) ? payoutsRaw : []);
 
   return (
     <Card>

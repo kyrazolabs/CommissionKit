@@ -3,6 +3,7 @@ export { mongoose };
 
 export * from "./schema";
 export * from "./limits";
+export { setAuditDispatcher, setAuditContextProvider } from "./plugins/audit-dispatcher.js";
 
 const MONGO_URL = process.env.MONGO_URL || "mongodb://localhost:27017/commissionkit";
 

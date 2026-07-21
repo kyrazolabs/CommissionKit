@@ -121,7 +121,7 @@ router.get(
 
     if (!hasEditPermission) {
       const rep = await Rep.findOne({ workspaceId: new Types.ObjectId(workspaceId), email: req.userEmail });
-      if (!rep) { res.json([]); return; }
+      if (!rep) { res.json({ data: [], pagination: { page: 1, limit: 50, total: 0, totalPages: 0 } }); return; }
       query.repId = rep._id;
     }
 
@@ -130,8 +130,26 @@ router.get(
     if (req.query.periodStart) query.periodStart = { $gte: new Date(String(req.query.periodStart)) };
     if (req.query.periodEnd) query.periodEnd = { $lte: new Date(String(req.query.periodEnd)) };
 
-    const payouts = await Payout.find(query).populate("repId").sort({ periodStart: -1 });
-    res.json(payouts.filter((p) => p.repId != null).map(formatPayout));
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(500, Math.max(1, Number(req.query.limit) || 50));
+    const [total, data] = await Promise.all([
+      Payout.countDocuments(query),
+      Payout.find(query).populate("repId").sort({ periodStart: -1 }).skip((page - 1) * limit).limit(limit),
+    ]);
+
+    let formatted = data.filter((p) => p.repId != null).map(formatPayout);
+
+    // Filter by rep name search
+    const search = req.query.search as string | undefined;
+    if (search && search.trim()) {
+      const searchRegex = new RegExp(search.trim(), "i");
+      formatted = formatted.filter((p) => searchRegex.test(p.repName || ""));
+    }
+
+    res.json({
+      data: formatted,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
   },
 );
 

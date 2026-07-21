@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { useTranslation } from "react-i18next";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useSyncStore } from "@/hooks/use-sync-store";
 import {
-  useListReps, getListRepsQueryKey,
   useCreateRep,
   useUpdateRep,
   useDeleteRep,
@@ -12,6 +11,7 @@ import {
 } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { DataPagination } from "@/components/ui/data-pagination";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -35,20 +35,37 @@ import { usePageMeta } from "@/hooks/use-page-meta";
 
 export function RepsPage() {
   const { t } = useTranslation();
-  usePageMeta({ title: t("reps.title"), description: "Manage your sales representatives and their commission assignments.", robots: "noindex, nofollow" });
+  usePageMeta({ title: t("reps.title"), description: "Manage your sales representatives and their commission assignments.", keywords: "sales reps, commission representatives, rep management, sales team, commission assignments", robots: "noindex, nofollow" });
   const { data: plans } = orvalUseListPlans({ query: { queryKey: getListPlansQueryKey() } });
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const { can, hasPermission, isLoading: roleLoading } = useRole();
   const { limits } = useBillingStatus();
-  const {
-  data: reps,
-  isLoading,
-} = useListReps({
-  query: {
-    queryKey: ["/api/reps"],
-  },
-});
+  const [page, setPage] = useState(1);
+  const LIMIT = 50;
+
+  // Unfiltered total for limit check (search-filtered total is inaccurate)
+  const { data: totalRepsForLimit } = useQuery({
+    queryKey: ["/api/reps", "count"],
+    queryFn: () => apiFetch("/api/reps?limit=1&page=1") as Promise<{ pagination: { total: number } }>,
+    staleTime: 1000 * 60,
+  });
+
+  const { data: repsResult, isLoading, error } = useQuery({
+    queryKey: ["/api/reps", page, searchTerm],
+    queryFn: () => {
+      const sp = new URLSearchParams();
+      sp.set("page", String(page));
+      sp.set("limit", String(LIMIT));
+      if (searchTerm.trim()) sp.set("search", searchTerm.trim());
+      return apiFetch(`/api/reps?${sp}`) as Promise<{ data: any[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>;
+    },
+  });
+  const reps = repsResult?.data ?? [];
+  const pagination = repsResult?.pagination;
+
+  // Reset to page 1 when search term changes
+  useEffect(() => { setPage(1); }, [searchTerm]);
 
   if (roleLoading) {
     return (
@@ -75,11 +92,6 @@ export function RepsPage() {
     );
   }
 
-  const filteredReps = Array.isArray(reps) ? reps.filter(rep =>
-    rep.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    rep.email.toLowerCase().includes(searchTerm.toLowerCase())
-  ) : [];
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -93,7 +105,7 @@ export function RepsPage() {
             open={isCreateOpen}
             onOpenChange={setIsCreateOpen}
             plans={plans || []}
-            isLimitReached={limits.reps !== -1 && Array.isArray(reps) && reps.length >= limits.reps}
+            isLimitReached={limits.reps !== -1 && (totalRepsForLimit?.pagination?.total ?? 0) >= limits.reps}
           />
         )}
       </div>
@@ -118,7 +130,7 @@ export function RepsPage() {
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
             </div>
-          ) : filteredReps.length === 0 ? (
+           ) : reps.length === 0 ? (
             <div className="text-center p-10">
               <div className="bg-muted size-12 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Users className="size-6 text-muted-foreground" />
@@ -135,6 +147,7 @@ export function RepsPage() {
               )}
             </div>
           ) : (
+            <>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -161,7 +174,7 @@ export function RepsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredReps.map((rep) => (
+                {reps.map((rep) => (
                   <TableRow key={rep.id}>
                     <TableCell>
                       <div className="flex items-center gap-2.5">
@@ -217,6 +230,18 @@ export function RepsPage() {
                 ))}
               </TableBody>
             </Table>
+            {pagination ? (
+              <div className="border-t px-4 py-3">
+                <DataPagination
+                  page={page}
+                  totalPages={pagination.totalPages}
+                  total={pagination.total}
+                  limit={LIMIT}
+                  onPageChange={setPage}
+                />
+              </div>
+            ) : null}
+            </>
           )}
         </CardContent>
       </Card>

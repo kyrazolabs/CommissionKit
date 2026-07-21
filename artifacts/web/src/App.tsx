@@ -13,6 +13,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 
 import { Dashboard } from "@/pages/dashboard";
 import { ReportsPage } from "@/pages/reports/reports";
+import AuditLogPage from "@/pages/audit-log/audit-log";
 
 import { PlansPage } from "@/pages/commission/plans";
 import { DealsPage } from "@/pages/commission/deals";
@@ -47,7 +48,6 @@ import { LandingPage } from "@/pages/landing";
 import { PayoutsPage } from "@/pages/payouts/payouts";
 import { DisputesPage } from "@/pages/payouts/disputes";
 import { IntegrationsPage } from "@/pages/integrations/integrations";
-
 import { CommissionCalculator } from "@/pages/commission-calculator";
 import { PrivacyPage } from "@/pages/legal/privacy";
 import { TermsPage } from "@/pages/legal/terms";
@@ -319,6 +319,7 @@ function ProtectedRouter() {
         <Route path="/dash/billing" component={BillingPage} />
         <Route path="/dash/payouts" component={PayoutsPage} />
         <Route path="/dash/disputes" component={DisputesPage} />
+        <Route path="/dash/audit-log" component={AuditLogPage} />
         <Route path="/dash/integrations" component={IntegrationsPage} />
         <Route component={NotFound} />
       </Switch>
@@ -372,7 +373,6 @@ function App() {
                 </AuthProvider>
               )} />
               <Route path="/calculator" component={CommissionCalculator} />
-              <Route path="/commission-calculator" component={CommissionCalculator} />
               <Route path="/privacy" component={PrivacyPage} />
               <Route path="/terms" component={TermsPage} />
               <Route path="/security" component={SecurityPage} />

@@ -23,6 +23,7 @@ import { format } from "date-fns";
 import { Plus, Search, Trash2, UploadCloud, FileDown, FolderKanban, Loader2, Download } from "lucide-react";
 import { CurrencyCombobox } from "@/components/currency-combobox";
 import { RepCombobox } from "@/components/rep-combobox";
+import { useRepSearch } from "@/hooks/use-rep-search";
 import { HelpTooltip } from "@/components/help-tooltip";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
@@ -53,11 +54,13 @@ export function AissolProjectsPage() {
     staleTime: 0,
   });
 
-  const { data: reps } = useQuery({
+  const { data: repsRaw } = useQuery({
     queryKey: ["reps-list", activeWorkspace?.id],
-    queryFn: () => apiFetch(`/api/reps`),
+    queryFn: () => apiFetch(`/api/reps?limit=500`),
     enabled: !!activeWorkspace?.id && activeWorkspace?.commissionEngine === "aissol",
   });
+  const reps = (repsRaw as any)?.data ?? (Array.isArray(repsRaw) ? repsRaw : []);
+  const { reps: searchReps, searching: repSearching, onSearch: onRepSearch } = useRepSearch(activeWorkspace?.id);
 
   const createMutation = useMutation({
     mutationFn: (data: typeof form) =>
@@ -71,7 +74,7 @@ export function AissolProjectsPage() {
     onMutate: async (data: typeof form) => {
       await queryClient.cancelQueries({ queryKey: ["aissol-projects"] });
       const previous = queryClient.getQueryData(["aissol-projects", activeWorkspace?.id]);
-      const rep = reps?.find((r: any) => String(r.id) === String(data.repId));
+      const rep = searchReps?.find((r: any) => String(r.id) === String(data.repId));
       const optimistic = {
         _id: `temp-${Date.now()}`,
         name: data.name,
@@ -136,7 +139,7 @@ export function AissolProjectsPage() {
     onError: () => toast({ title: "Import failed", variant: "destructive" }),
   });
 
-  const repMap = new Map((reps as any[])?.map((r: any) => [String(r.id), r.name]) ?? []);
+  const repMap = new Map((searchReps as any[])?.map((r: any) => [String(r.id), r.name]) ?? []);
 
   const handleExportProjects = () => {
     const arr = Array.isArray(projects) ? projects : [];
@@ -183,7 +186,6 @@ export function AissolProjectsPage() {
                 workspaceId={activeWorkspace?.id ?? ""}
                 period={filterPeriod}
                 defaultCurrency={activeWorkspace?.currency || "SAR"}
-                reps={reps}
                 onImport={(data: any[]) => importMutation.mutate(data)}
                 importing={importMutation.isPending}
               />
@@ -210,7 +212,9 @@ export function AissolProjectsPage() {
               <div className="space-y-2">
                 <Label htmlFor="proj-rep">Sales Rep</Label>
                 <RepCombobox
-                  reps={Array.isArray(reps) ? reps.map((r: any) => ({ id: String(r.id), name: r.name })) : []}
+                  reps={searchReps}
+                  onSearch={onRepSearch}
+                  searching={repSearching}
                   value={form.repId}
                   onChange={(v) => setForm(p => ({ ...p, repId: v }))}
                   placeholder={t("enterprise.projects.selectRep")}
@@ -238,7 +242,9 @@ export function AissolProjectsPage() {
           <div className="flex flex-wrap gap-2">
             <div className="w-40">
               <RepCombobox
-                reps={Array.isArray(reps) ? reps.map((r: any) => ({ id: String(r.id), name: r.name })) : []}
+                reps={searchReps}
+                onSearch={onRepSearch}
+                searching={repSearching}
                 value={filterRep}
                 onChange={setFilterRep}
                 includeAll
@@ -335,12 +341,13 @@ export function AissolProjectsPage() {
   );
 }
 
-function ImportProjectsDialog({ workspaceId, period, defaultCurrency, reps, onImport, importing }: { workspaceId: string; period: string; defaultCurrency: string; reps: any; onImport: (data: any[]) => void; importing: boolean }) {
+function ImportProjectsDialog({ workspaceId, period, defaultCurrency, onImport, importing }: { workspaceId: string; period: string; defaultCurrency: string; onImport: (data: any[]) => void; importing: boolean }) {
   const [open, setOpen] = useState(false);
   const [parsedData, setParsedData] = useState<any[] | null>(null);
   const [isParsing, setIsParsing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { reps: searchReps, searching: repSearching, onSearch: onRepSearch } = useRepSearch(workspaceId);
 
   const downloadProjectTemplate = (type: "csv" | "xlsx") => {
     const data = [
@@ -357,7 +364,7 @@ function ImportProjectsDialog({ workspaceId, period, defaultCurrency, reps, onIm
   const processData = (data: any[]) => {
     const mapped = data.map((row: any) => {
       const repName = (row['Rep'] || row['Sales Rep'] || row['rep'] || '').trim();
-      const rep = reps?.find((r: any) => r.name.toLowerCase() === repName.toLowerCase() || r.email?.toLowerCase() === repName.toLowerCase());
+      const rep = searchReps?.find((r: any) => r.name.toLowerCase() === repName.toLowerCase() || r.email?.toLowerCase() === repName.toLowerCase());
       return {
         id: Math.random().toString(36).substr(2, 9),
         name: (row['Project Name'] || row['Name'] || row['Project'] || '').trim() || 'Unnamed Project',
@@ -465,7 +472,9 @@ function ImportProjectsDialog({ workspaceId, period, defaultCurrency, reps, onIm
                         <TableCell><Input value={row.name} onChange={(e) => updateRow(row.id, 'name', e.target.value)} className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent" /></TableCell>
                         <TableCell>
                           <RepCombobox
-                            reps={Array.isArray(reps) ? reps.map((r: any) => ({ id: String(r.id), name: r.name })) : []}
+                            reps={searchReps}
+                            onSearch={onRepSearch}
+                            searching={repSearching}
                             value={row.repId}
                             onChange={(v) => updateRow(row.id, 'repId', v)}
                             className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent shadow-none"

@@ -168,7 +168,7 @@ Located in `artifacts/web/src/pages/`.
 | Features | `features.tsx` | `/features` |
 | Solutions | `solutions.tsx` | `/solutions` |
 | Contact | `contact.tsx` | `/contact` |
-| Commission Calculator | `commission-calculator.tsx` | `/calculator`, `/commission-calculator` |
+| Commission Calculator | `commission-calculator.tsx` | `/calculator` |
 | Privacy | `legal/privacy.tsx` | `/privacy` |
 | Terms | `legal/terms.tsx` | `/terms` |
 | Security | `legal/security.tsx` | `/security` |

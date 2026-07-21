@@ -15,6 +15,11 @@ mock.module("./queues", () => ({
   commissionCalcQueue: { add: mockAdd },
   exchangeRateQueue: { add: mockAdd },
   logsFlushQueue: { add: mockAdd },
+  auditLogQueue: { add: mockAdd },
+  syncRepsQueue: { add: mockAdd },
+  syncDealsQueue: { add: mockAdd },
+  webhookIngressQueue: { add: mockAdd },
+  syncEgressQueue: { add: mockAdd },
 }));
 
 describe("enqueueEmail", () => {

@@ -7,6 +7,9 @@ import { logger } from "./lib/logger";
 import { decryptConfig } from "./lib/crypto";
 import { getRedisClient, verifySmtp, enqueueExchangeRateSync, enqueueLogsFlush } from "@workspace/queue";
 import { connectDB } from "@workspace/db";
+import { setAuditDispatcher, setAuditContextProvider } from "@workspace/db";
+import { enqueueAuditEvent } from "@workspace/queue";
+import { getAuditContext } from "./lib/audit-context";
 import { bootstrapEngines } from "./workers/engines/registry";
 import { pluginRegistry } from "@workspace/plugins-core";
 import { CustomConnector } from "@workspace/plugins-custom";
@@ -36,6 +39,12 @@ if (process.env.SMTP_HOST) {
 async function boot() {
   try {
     await connectDB();
+
+    // Register audit event dispatcher and context provider
+    setAuditDispatcher((event) => {
+      enqueueAuditEvent(event).catch(() => {});
+    });
+    setAuditContextProvider(getAuditContext);
 
     // Register all commission engines
     await bootstrapEngines();
@@ -74,6 +83,7 @@ async function boot() {
     // ─── Boot workers ─────────────────────────────────────────────────────────────
     // Register BullMQ workers only AFTER DB is connected.
     await import("@workspace/queue/worker");
+    await import("./workers/audit-worker");
     await import("./workers/calc-worker");
     await import("./workers/logs-worker");
     await import("./workers/sync-reps-worker");
@@ -158,9 +168,11 @@ async function boot() {
           await syncDealsWorker.close();
           await webhookIngressWorker.close();
 
-          // Close calc + logs workers
+          // Close audit + calc + logs workers
+          const { auditWorker } = await import("./workers/audit-worker");
           const { calcWorker } = await import("./workers/calc-worker");
           const { logsWorker } = await import("./workers/logs-worker");
+          await auditWorker.close();
           await calcWorker.close();
           await logsWorker.close();
 

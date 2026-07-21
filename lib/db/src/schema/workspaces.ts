@@ -1,5 +1,6 @@
 import mongoose, { Schema, model, Types } from "mongoose";
 import { z } from "zod";
+import { auditPlugin } from "../plugins/audit.js";
 
 const WorkspaceOnboardingSchema = new Schema({
   checklistDismissed: { type: Boolean, default: false },
@@ -18,6 +19,8 @@ const WorkspaceSchema = new Schema({
   sampleDataLoaded: { type: Boolean, default: false },
   onboarding: { type: WorkspaceOnboardingSchema, default: () => ({ checklistDismissed: false, checklistCompletedAt: null, checklistShownAt: null }) },
 }, { timestamps: { createdAt: true, updatedAt: false } });
+
+WorkspaceSchema.plugin(auditPlugin({ resourceType: "workspace", resourceNameField: "name" }));
 
 const WorkspaceMemberSchema = new Schema({
   workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },

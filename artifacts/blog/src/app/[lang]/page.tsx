@@ -4,6 +4,7 @@ import { Tag, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getAllPosts, getAllLanguages } from "@/lib/posts";
 import { t, formatPageXofY } from "@/lib/translations";
+import { baseUrl } from "@/lib/baseUrl";
 import { BlogGrid } from "@/components/blog-grid";
 
 interface PageProps {
@@ -39,7 +40,7 @@ export async function generateMetadata({
   const locale = localeMap[lang] ?? "en_US";
 
   return {
-    metadataBase: new URL("https://commissionk.it"),
+    metadataBase: new URL(baseUrl),
     title: dict.blog,
     description: dict.blogDescription,
     keywords: [
@@ -55,13 +56,13 @@ export async function generateMetadata({
       type: "website",
       siteName: "CommissionKit",
       locale,
-      url: `https://commissionk.it/blog/${lang}`,
+      url: `${baseUrl}/blog/${lang}`,
       title: dict.blog,
       description: dict.blogDescription,
       images: [
         {
-          url: "/blog/og-image.png",
-          width: 1200,
+          url: `${baseUrl}/blog/og.png`,
+          width: 1600,
           height: 630,
           alt: "CommissionKit Blog - Sales Commission Management Guides",
         },
@@ -73,7 +74,7 @@ export async function generateMetadata({
       creator: "@commissionkit",
       title: dict.blog,
       description: dict.blogDescription,
-      images: ["/blog/og-image.png"],
+      images: [`${baseUrl}/blog/og.png`],
     },
     alternates: {
       canonical: `/blog/${lang}`,
@@ -110,7 +111,7 @@ export default async function BlogIndex({ params, searchParams }: PageProps) {
         </h1>
         <p className="text-muted-foreground mb-8">{dict.noArticles}</p>
         <Button asChild variant="outline">
-          <a href="https://commissionk.it">{dict.backToHome}</a>
+          <a href={baseUrl}>{dict.backToHome}</a>
         </Button>
       </div>
     );
@@ -126,14 +127,14 @@ export default async function BlogIndex({ params, searchParams }: PageProps) {
             "@type": "WebSite",
             name: "CommissionKit Blog",
             description: dict.blogDescription,
-            url: `https://commissionk.it/blog/${lang}`,
+            url: `${baseUrl}/blog/${lang}`,
             publisher: {
               "@type": "Organization",
               name: "CommissionKit",
-              url: "https://commissionk.it",
+              url: baseUrl,
               logo: {
                 "@type": "ImageObject",
-                url: "https://commissionk.it/brand/logo-full.svg",
+                url: `${baseUrl}/brand/logo-full.svg`,
               },
               sameAs: [
                 "https://twitter.com/commissionkit",
@@ -144,7 +145,7 @@ export default async function BlogIndex({ params, searchParams }: PageProps) {
               "@type": "SearchAction",
               target: {
                 "@type": "EntryPoint",
-                urlTemplate: `https://commissionk.it/blog/${lang}?q={search_term_string}`,
+                urlTemplate: `${baseUrl}/blog/${lang}?q={search_term_string}`,
               },
               "query-input": "required name=search_term_string",
             },
@@ -159,21 +160,21 @@ export default async function BlogIndex({ params, searchParams }: PageProps) {
             "@type": "Blog",
             name: "CommissionKit Blog",
             description: dict.blogDescription,
-            url: `https://commissionk.it/blog/${lang}`,
+            url: `${baseUrl}/blog/${lang}`,
             publisher: {
               "@type": "Organization",
               name: "CommissionKit",
-              url: "https://commissionk.it",
+              url: baseUrl,
               logo: {
                 "@type": "ImageObject",
-                url: "https://commissionk.it/brand/logo-full.svg",
+                url: `${baseUrl}/brand/logo-full.svg`,
               },
             },
             blogPost: allPosts.slice(0, 50).map((p) => ({
               "@type": "BlogPosting",
               headline: p.title,
               description: p.description,
-              url: `https://commissionk.it/blog/${lang}/${p.slug}`,
+              url: `${baseUrl}/blog/${lang}/${p.slug}`,
               datePublished: p.date,
               ...(p.image && { image: p.image }),
             })),

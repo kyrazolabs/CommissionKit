@@ -27,9 +27,10 @@ COPY artifacts/blog/tsconfig.json artifacts/blog/
 COPY artifacts/blog/next.config.ts artifacts/blog/
 COPY artifacts/blog/postcss.config.mjs artifacts/blog/
 
-# Copy source, scripts, and articles
+# Copy source, scripts, translations, and articles
 COPY artifacts/blog/src artifacts/blog/src/
 COPY artifacts/blog/scripts artifacts/blog/scripts/
+COPY artifacts/blog/translations artifacts/blog/translations/
 COPY artifacts/blog/public artifacts/blog/public/
 COPY artifacts/blog/articles artifacts/blog/articles/
 

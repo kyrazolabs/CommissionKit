@@ -1,0 +1,18 @@
+{
+  "selectLanguage": "اختر اللغة",
+  "filterByLanguage": "تصفية حسب اللغة",
+  "all": "الكل",
+  "justNow": "الآن",
+  "oneMinuteAgo": "منذ دقيقة واحدة",
+  "minutesAgo": "منذ {count} دقيقة",
+  "oneHourAgo": "منذ ساعة واحدة",
+  "hoursAgo": "منذ {count} ساعة",
+  "yesterday": "أمس",
+  "daysAgo": "منذ {count} يوم",
+  "oneWeekAgo": "منذ أسبوع واحد",
+  "weeksAgo": "منذ {count} أسبوع",
+  "oneMonthAgo": "منذ شهر واحد",
+  "monthsAgo": "منذ {count} شهر",
+  "oneYearAgo": "منذ سنة واحدة",
+  "yearsAgo": "منذ {count} سنة"
+}

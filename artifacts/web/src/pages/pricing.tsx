@@ -105,6 +105,7 @@ export function PricingPage() {
   usePageMeta({
     title: "Pricing — CommissionKit",
     description: "Simple, predictable pricing for commission management. Plans start at $19.99/month. 14-day free trial, no credit card required.",
+    keywords: "commission software pricing, sales commission cost, commission management plans, team pricing, rep commission software",
     robots: "index, follow",
   });
 

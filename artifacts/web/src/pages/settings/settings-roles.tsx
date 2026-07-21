@@ -34,6 +34,7 @@ const PERMISSION_RESOURCES = [
   { id: "payouts", name: "Payouts", i18nKey: "roles.payouts", actions: ["read", "create", "edit", "delete", "approve", "mark_paid", "adjust", "export"] },
   { id: "plans", name: "Commission Plans", i18nKey: "roles.commissionPlans", actions: ["read", "create", "edit", "delete"] },
   { id: "reps", name: "Sales Reps", i18nKey: "roles.salesReps", actions: ["read", "create", "edit", "delete"] },
+  { id: "audit_log", name: "Audit Log", i18nKey: "roles.auditLog", actions: ["read", "export"] },
   { id: "disputes", name: "Disputes", i18nKey: "roles.disputes2", actions: ["read", "edit", "delete"] },
   { id: "analytics", name: "Reports", i18nKey: "roles.reports2", actions: ["read", "export"] },
   { id: "calculations", name: "Commission Runs", i18nKey: "roles.commissionRuns", actions: ["read", "create", "edit", "delete", "export"] },

@@ -1,11 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { useTranslation } from "react-i18next";
-import { useQueryClient } from "@tanstack/react-query";
-import { 
-  useListRuns, getListRunsQueryKey,
-  useCreateRun
-} from "@workspace/api-client-react";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useCreateRun } from "@workspace/api-client-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +15,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { parseISO } from "date-fns";
 import { HelpTooltip } from "@/components/help-tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DataPagination } from "@/components/ui/data-pagination";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -36,17 +34,29 @@ export function RunsPage() {
   usePageMeta({ title: t("runs.title"), description: "View and manage commission calculation runs.", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const currency = activeWorkspace?.currency || "USD";
-  const { data: runs, isLoading } = useListRuns({ 
-    query: { 
-      queryKey: getListRunsQueryKey(),
+  const [page, setPage] = useState(1);
+  const LIMIT = 50;
+
+  const { data: runsResult, isLoading, error } = useQuery({
+    queryKey: ["/api/runs", page],
+    queryFn: () => {
+      const sp = new URLSearchParams();
+      sp.set("page", String(page));
+      sp.set("limit", String(LIMIT));
+      return apiFetch(`/api/runs?${sp}`) as Promise<{ data: any[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>;
+    },
     refetchInterval: (query: any) => {
-        const data = query?.state?.data;
+      const data = query?.state?.data?.data;
       const hasActiveRuns = Array.isArray(data) && data.some((r: any) => r.status === "pending" || r.status === "processing");
       return hasActiveRuns ? 2000 : false;
-      }
-    } 
+    },
   });
+  const runs = runsResult?.data ?? [];
+  const pagination = runsResult?.pagination;
   const { can, hasPermission, isLoading: roleLoading } = useRole();
+
+  // Keep page reset on mount (runs are not filtered, so no dep changes expected)
+  useEffect(() => { setPage(1); }, []);
 
   if (roleLoading) {
     return (
@@ -110,6 +120,7 @@ export function RunsPage() {
               </p>
             </div>
           ) : (
+            <>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -190,6 +201,18 @@ export function RunsPage() {
                 ))}
               </TableBody>
             </Table>
+            {pagination ? (
+              <div className="border-t px-4 py-3">
+                <DataPagination
+                  page={page}
+                  totalPages={pagination.totalPages}
+                  total={pagination.total}
+                  limit={LIMIT}
+                  onPageChange={setPage}
+                />
+              </div>
+            ) : null}
+            </>
           )}
         </CardContent>
       </Card>

@@ -74,7 +74,7 @@ export function CareersPage() {
               </div>
               <div className="p-5 rounded-xl border border-border bg-card">
                 <p className="text-2xl font-bold text-foreground tabular-nums mb-1">30% + 10%</p>
-                <p className="text-[13px] text-muted-foreground">First-month + lifetime recurring commission</p>
+                <p className="text-[13px] text-muted-foreground">30% of first invoice + 10% lifetime recurring</p>
               </div>
             </div>
           </div>
