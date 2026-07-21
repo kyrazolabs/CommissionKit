@@ -7,7 +7,7 @@ import { usePageMeta } from "@/hooks/use-page-meta";
 
 export default function NotFound() {
   const { t } = useTranslation();
-  usePageMeta({ title: t("notFound.heading"), description: t("notFound.description"), robots: "noindex, nofollow" });
+  usePageMeta({ title: t("notFound.heading"), description: t("notFound.description"), keywords: "page not found, 404 error", robots: "noindex, nofollow" });
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center gap-4">
       <div className="flex size-14 items-center justify-center rounded-full bg-destructive/10">

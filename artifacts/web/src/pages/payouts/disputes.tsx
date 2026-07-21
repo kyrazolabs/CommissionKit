@@ -272,7 +272,7 @@ function DisputeRow({ dispute, onAction }: { dispute: Dispute; onAction: (d: Dis
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export function DisputesPage() {
   const { t } = useTranslation();
-  usePageMeta({ title: t("disputes.title"), description: "{t('disputes.description')}.", robots: "noindex, nofollow" });
+  usePageMeta({ title: t("disputes.title"), description: t("disputes.description"), keywords: "commission disputes, payout disputes, rep disputes, commission disputes resolution", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const { hasPermission, isLoading: roleLoading } = useRole();
   const { sub, loading: subLoading } = useBillingStatus();

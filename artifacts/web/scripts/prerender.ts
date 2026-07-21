@@ -6,11 +6,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function injectMeta(
   template: string,
-  meta: { title: string; description: string; robots?: string; canonical: string },
+  meta: { title: string; description: string; robots?: string; keywords?: string; canonical: string },
 ) {
   const robots = meta.robots ?? "index, follow";
 
-  return template
+  let result = template
     .replace(
       /<title>.*?<\/title>/,
       `<title>${meta.title}</title>`,
@@ -41,7 +41,8 @@ function injectMeta(
     )
     .replace(
       /<link rel="canonical"[^>]*>/,
-      `<!-- Prerender: verified static HTML served for this route -->\n    <link rel="canonical" href="${meta.canonical}">`,
+      `<!-- Prerender: verified static HTML served for this route -->
+    <link rel="canonical" href="${meta.canonical}">`,
     )
     .replace(
       /<link rel="alternate" hreflang="([^"]+)" href="[^"]*" ?\/?>/g,
@@ -51,6 +52,29 @@ function injectMeta(
       /<meta property="og:url"[^>]*\/?>/,
       `<meta property="og:url" content="${meta.canonical}">`,
     );
+
+  // Keywords: replace existing or inject before </head>
+  if (meta.keywords !== undefined) {
+    const kwTag = `<meta name="keywords" content="${meta.keywords}" />`;
+    result = result.replace(
+      /<meta name="keywords"[^>]*\/?>/,
+      kwTag,
+    );
+    if (!result.includes(`name="keywords"`)) {
+      result = result.replace("</head>", `  ${kwTag}\n</head>`);
+    }
+
+    const twKwTag = `<meta name="twitter:keywords" content="${meta.keywords}" />`;
+    result = result.replace(
+      /<meta name="twitter:keywords"[^>]*\/?>/,
+      twKwTag,
+    );
+    if (!result.includes(`name="twitter:keywords"`)) {
+      result = result.replace("</head>", `  ${twKwTag}\n</head>`);
+    }
+  }
+
+  return result;
 }
 
 async function run() {

@@ -35,7 +35,7 @@ import { usePageMeta } from "@/hooks/use-page-meta";
 
 export function RepsPage() {
   const { t } = useTranslation();
-  usePageMeta({ title: t("reps.title"), description: "Manage your sales representatives and their commission assignments.", robots: "noindex, nofollow" });
+  usePageMeta({ title: t("reps.title"), description: "Manage your sales representatives and their commission assignments.", keywords: "sales reps, commission representatives, rep management, sales team, commission assignments", robots: "noindex, nofollow" });
   const { data: plans } = orvalUseListPlans({ query: { queryKey: getListPlansQueryKey() } });
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);

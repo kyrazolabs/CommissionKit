@@ -416,7 +416,7 @@ function StatusConfirmModal({
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export function PayoutsPage() {
-  usePageMeta({ title: "Payouts", description: "Manage and track commission payouts for your team.", robots: "noindex, nofollow" });
+  usePageMeta({ title: "Payouts", description: "Manage and track commission payouts for your team.", keywords: "commission payouts, rep payouts, payout management, commission payments, payroll integration", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const { t } = useTranslation();
   const { hasPermission, isLoading: roleLoading } = useRole();

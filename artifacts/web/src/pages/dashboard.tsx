@@ -24,7 +24,7 @@ import { usePageMeta } from "@/hooks/use-page-meta";
 
 export function Dashboard() {
   const { t } = useTranslation();
-  usePageMeta({ title: t("dashboard.title"), description: "Overview of your workspace commissions and performance.", robots: "noindex, nofollow" });
+  usePageMeta({ title: t("dashboard.title"), description: "Overview of your workspace commissions and performance.", keywords: "commission dashboard, sales performance, rep earnings overview, commission summary", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const { hasPermission, isLoading: roleLoading } = useRole();
 

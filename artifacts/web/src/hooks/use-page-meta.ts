@@ -5,6 +5,8 @@ interface PageMeta {
   description?: string;
   /** Robots directive, defaults to "noindex, nofollow" for authenticated pages */
   robots?: string;
+  /** SEO keywords, comma-separated */
+  keywords?: string;
 }
 
 const APP_NAME = "CommissionKit";
@@ -55,5 +57,27 @@ export function usePageMeta({ title, description, robots = "noindex, nofollow" }
       document.head.appendChild(ogDescEl);
     }
     ogDescEl.setAttribute("content", description ?? DEFAULT_DESCRIPTION);
-  }, [title, description, robots]);
+
+    // Keywords
+    if (keywords !== undefined) {
+      let kwEl = document.querySelector<HTMLMetaElement>('meta[name="keywords"]');
+      if (!kwEl) {
+        kwEl = document.createElement("meta");
+        kwEl.setAttribute("name", "keywords");
+        document.head.appendChild(kwEl);
+      }
+      kwEl.setAttribute("content", keywords);
+    }
+
+    // Twitter keywords
+    if (keywords !== undefined) {
+      let twKwEl = document.querySelector<HTMLMetaElement>('meta[name="twitter:keywords"]');
+      if (!twKwEl) {
+        twKwEl = document.createElement("meta");
+        twKwEl.setAttribute("name", "twitter:keywords");
+        document.head.appendChild(twKwEl);
+      }
+      twKwEl.setAttribute("content", keywords);
+    }
+  }, [title, description, robots, keywords]);
 }
