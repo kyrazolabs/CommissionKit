@@ -23,6 +23,7 @@ mock.module("@workspace/queue", () => ({
   enqueueCommissionCalc: () => Promise.resolve(),
   enqueueExchangeRateSync: () => Promise.resolve(),
   enqueueLogsFlush: () => Promise.resolve(),
+  enqueueAuditEvent: () => Promise.resolve(),
   fetchAndSaveRates: () => Promise.resolve(),
   closeRedis: () => Promise.resolve(),
   mailHighQueue: { add: () => Promise.resolve() },

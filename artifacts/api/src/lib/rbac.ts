@@ -40,7 +40,7 @@ export async function getUserPermissions(workspaceId: string, userId: string): P
       const adminPerms = [
         "deals:*", "reps:*", "plans:*", "payouts:*", "reports:*", "analytics:*",
         "disputes:*", "team:*", "teams:*", "roles:*", "workspace:*", "workspaces:*",
-        "calculations:*"
+        "calculations:*", "audit_log:*"
       ];
       adminPerms.forEach(p => permissions.add(p));
     } else {

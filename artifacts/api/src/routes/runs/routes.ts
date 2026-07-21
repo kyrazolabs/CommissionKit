@@ -67,10 +67,17 @@ async function formatRun(run: any) {
 
 router.get("/runs", ...requirePermission("calculations", "read"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.workspaceId!;
-  const runs = await CommissionRun.find({ workspaceId: new Types.ObjectId(workspaceId) })
-    .sort({ createdAt: -1 });
-  res.json(
-    runs.map((r) => ({
+  const conditions = { workspaceId: new Types.ObjectId(workspaceId) };
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const limit = Math.min(500, Math.max(1, Number(req.query.limit) || 50));
+
+  const [runs, total] = await Promise.all([
+    CommissionRun.find(conditions).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit),
+    CommissionRun.countDocuments(conditions),
+  ]);
+
+  res.json({
+    data: runs.map((r) => ({
       id: r._id,
       period: r.period,
       totalCommission: Number(r.totalCommission),
@@ -78,8 +85,9 @@ router.get("/runs", ...requirePermission("calculations", "read"), async (req: Au
       repsCount: r.repsCount,
       status: r.status,
       createdAt: r.createdAt.toISOString(),
-    }))
-  );
+    })),
+    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+  });
 });
 
 router.post("/runs", ...requirePermission("calculations", "create"), async (req: AuthenticatedRequest, res): Promise<void> => {

@@ -1,0 +1,10 @@
+{
+  "main": "मुख्य",
+  "operations": "संचालन",
+  "account": "खाता",
+  "newWorkspace": "नया कार्यक्षेत्र",
+  "workspaceNamePlaceholder": "कार्यक्षेत्र का नाम",
+  "workspaces": "कार्यक्षेत्र",
+  "accountSettings": "खाता सेटिंग्स",
+  "signOut": "साइन आउट"
+}

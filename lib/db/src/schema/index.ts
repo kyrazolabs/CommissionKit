@@ -13,3 +13,4 @@ export * from "./integrationConnection";
 export * from "./integrationSync";
 export * from "./integrationLog";
 export * from "./leads";
+export * from "./auditEvents";

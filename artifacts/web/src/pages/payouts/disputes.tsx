@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DataPagination } from "@/components/ui/data-pagination";
 import { useToast } from "@/hooks/use-toast";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useRole } from "@/hooks/use-role";
@@ -271,24 +272,35 @@ function DisputeRow({ dispute, onAction }: { dispute: Dispute; onAction: (d: Dis
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export function DisputesPage() {
   const { t } = useTranslation();
-  usePageMeta({ title: t("disputes.title"), description: "{t('disputes.description')}.", robots: "noindex, nofollow" });
+  usePageMeta({ title: t("disputes.title"), description: t("disputes.description"), keywords: "commission disputes, payout disputes, rep disputes, commission disputes resolution", robots: "noindex, nofollow" });
   const { activeWorkspace } = useWorkspace();
   const { hasPermission, isLoading: roleLoading } = useRole();
   const { sub, loading: subLoading } = useBillingStatus();
   const workspaceId = activeWorkspace?.id ?? "";
   const [resolveTarget, setResolveTarget] = useState<Dispute | null>(null);
   const [showResolved, setShowResolved] = useState(false);
+  const [page, setPage] = useState(1);
+  const LIMIT = 50;
 
   const plan = sub?.plan ?? "free";
   const isGrowthPlus = ["growth", "annual", "pro"].includes(plan);
 
-  const { data: disputes = [], isLoading } = useQuery<Dispute[]>({
-    queryKey: ["disputes", workspaceId],
-    queryFn: async () => {
-      return apiFetch(`/api/disputes`);
+  const { data: disputesResult, isLoading, error } = useQuery({
+    queryKey: ["/api/disputes", page, workspaceId],
+    queryFn: () => {
+      const sp = new URLSearchParams();
+      sp.set("page", String(page));
+      sp.set("limit", String(LIMIT));
+      return apiFetch(`/api/disputes?${sp}`) as Promise<{ data: Dispute[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>;
     },
     enabled: Boolean(workspaceId) && hasPermission("disputes", "read") && !roleLoading,
   });
+
+  const disputes = disputesResult?.data ?? [];
+  const pagination = disputesResult?.pagination;
+
+  // Debug: log the actual response shape
+  console.log("[disputes] disputesResult:", disputesResult, "error:", error);
 
   if (roleLoading || subLoading) {
     return (
@@ -350,8 +362,8 @@ export function DisputesPage() {
     );
   }
 
-  const openDisputes = disputes.filter(d => d.status !== "resolved");
-  const resolvedDisputes = disputes.filter(d => d.status === "resolved");
+  const openDisputes = disputes.filter((d: Dispute) => d.status !== "resolved");
+  const resolvedDisputes = disputes.filter((d: Dispute) => d.status === "resolved");
 
   return (
     <div className="space-y-7">
@@ -390,6 +402,7 @@ export function DisputesPage() {
               <p className="text-sm text-muted-foreground mt-1">{t('disputes.allResolved')}</p>
             </div>
           ) : (
+            <>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -409,6 +422,18 @@ export function DisputesPage() {
                 ))}
               </TableBody>
             </Table>
+            {pagination ? (
+              <div className="border-t px-4 py-3">
+                <DataPagination
+                  page={page}
+                  totalPages={pagination.totalPages}
+                  total={pagination.total}
+                  limit={LIMIT}
+                  onPageChange={setPage}
+                />
+              </div>
+            ) : null}
+            </>
           )}
         </CardContent>
       </Card>

@@ -13,6 +13,7 @@ interface PageMeta {
   title: string;
   description: string;
   robots?: string;
+  keywords?: string;
   canonical: string;
 }
 
@@ -26,66 +27,77 @@ const routeMeta: Record<string, PageMeta> = {
     title: APP_NAME,
     description: DEFAULT_DESCRIPTION,
     robots: "index, follow",
+    keywords: "sales commission software, commission tracking, commission management, sales comp, commission calculator, payout automation",
     canonical: `${BASE_URL}/`,
   },
   "/home": {
     title: APP_NAME,
     description: DEFAULT_DESCRIPTION,
     robots: "index, follow",
+    keywords: "sales commission software, commission tracking, commission management, sales comp, commission calculator, payout automation",
     canonical: `${BASE_URL}/`,
   },
   "/calculator": {
     title: "Commission Calculator — CommissionKit",
     description: "Calculate sales commissions instantly. Try flat, tiered, and accelerator commission structures for free. No login required.",
     robots: "index, follow",
+    keywords: "commission calculator, sales commission calculator, tiered commission, accelerator commission, flat commission, comp plan, quota",
     canonical: `${BASE_URL}/calculator`,
   },
   "/commission-calculator": {
     title: "Commission Calculator — CommissionKit",
     description: "Calculate sales commissions instantly. Try flat, tiered, and accelerator commission structures for free. No login required.",
     robots: "index, follow",
+    keywords: "commission calculator, sales commission calculator, tiered commission, accelerator commission, flat commission, comp plan, quota",
     canonical: `${BASE_URL}/calculator`,
   },
   "/privacy": {
     title: "Privacy Policy — CommissionKit",
     description: "Learn how CommissionKit collects and uses your data.",
     robots: "index, follow",
+    keywords: "CommissionKit privacy policy, data protection, GDPR compliance, CCPA, sales commission software privacy",
     canonical: `${BASE_URL}/privacy`,
   },
   "/terms": {
     title: "Terms of Service — CommissionKit",
     description: "CommissionKit terms of service and usage agreement.",
     robots: "index, follow",
+    keywords: "CommissionKit terms of service, usage agreement, software terms, SaaS terms, commission platform terms",
     canonical: `${BASE_URL}/terms`,
   },
   "/security": {
     title: "Security — CommissionKit",
     description: "CommissionKit security practices and data protection information.",
     robots: "index, follow",
+    keywords: "CommissionKit security, SOC 2, data encryption, secure commission software, cloud security, GDPR security",
     canonical: `${BASE_URL}/security`,
   },
   "/contact": {
     title: "Contact — CommissionKit",
     description: "Get in touch with the CommissionKit team for sales, support, or general inquiries.",
     robots: "index, follow",
+    keywords: "contact sales commission software, commission management support, sales comp help, get commission software demo",
     canonical: `${BASE_URL}/contact`,
   },
   "/features": {
     title: "Features — CommissionKit",
-    description: "Explore CommissionKit's full feature set — commission engine, rep portal, deal management, payout tracking, and platform capabilities.",
+    description: "Everything you need to manage sales commissions — from plan modeling to final payout.",
     robots: "index, follow",
+    keywords: "sales commission features, commission tracking software, rep portal, commission automation, payout management, deal tracking",
     canonical: `${BASE_URL}/features`,
   },
   "/solutions": {
     title: "Solutions — CommissionKit",
     description: "Commission management solutions for finance teams, sales ops, startups, and enterprises. Automate commissions at any scale.",
     robots: "index, follow",
+    keywords: "sales commission solution, commission management for teams, SaaS commission software, sales comp automation, B2B commission tool",
     canonical: `${BASE_URL}/solutions`,
   },
   "/pricing": {
     title: "Pricing — CommissionKit",
-    description: "Simple, predictable pricing for commission management. Plans start at $19.99/month. 14-day free trial, no credit card required.",
+    description: "Simple, transparent pricing for teams of all sizes. Start free, scale as you grow.",
     robots: "index, follow",
+    keywords: "commission software pricing, sales commission cost, commission management plans, team pricing, rep commission software",
     canonical: `${BASE_URL}/pricing`,
   },
 };

@@ -19,6 +19,7 @@ mock.module("@workspace/queue", () => ({
   enqueueCommissionCalc: () => Promise.resolve(),
   enqueueExchangeRateSync: () => Promise.resolve(),
   enqueueLogsFlush: () => Promise.resolve(),
+  enqueueAuditEvent: () => Promise.resolve(),
   fetchAndSaveRates: () => Promise.resolve(),
   closeRedis: () => Promise.resolve(),
   mailHighQueue: { add: () => Promise.resolve() },
@@ -26,7 +27,12 @@ mock.module("@workspace/queue", () => ({
   mailLowQueue: { add: () => Promise.resolve() },
   mailSendQueue: { add: () => Promise.resolve() },
   commissionCalcQueue: { add: () => Promise.resolve() },
+  exchangeRateQueue: { add: () => Promise.resolve() },
   logsFlushQueue: { add: () => Promise.resolve() },
+  syncRepsQueue: { add: () => Promise.resolve() },
+  syncDealsQueue: { add: () => Promise.resolve() },
+  webhookIngressQueue: { add: () => Promise.resolve() },
+  syncEgressQueue: { add: () => Promise.resolve() },
   PRIORITY_QUEUE_MAP: { high: { add: () => Promise.resolve() }, medium: { add: () => Promise.resolve() }, low: { add: () => Promise.resolve() } },
 }));
 

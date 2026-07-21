@@ -4,6 +4,7 @@ import {
   LayoutDashboard, Users, FileText, Briefcase, PlayCircle,
   Settings, CreditCard, LogOut, ChevronsUpDown, Check, Plus,
   Building2, Shield, Crown, PieChart, Wallet, AlertOctagon, FolderKanban, Grid3X3, Plug,
+  ScrollText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -178,6 +179,7 @@ export function Sidebar() {
   const [location] = useLocation();
   const { user, signOut } = useAuth();
   const { activeWorkspace, engineNavItems, loading: wsLoading } = useWorkspace();
+  const { can, hasPermission } = useRole();
 
   const initials = user?.email
     ? user.email.slice(0, 2).toUpperCase()
@@ -207,6 +209,9 @@ export function Sidebar() {
         { name: t("layout.runs"),     href: "/dash/runs",     icon: "PlayCircle" },
         { name: t("layout.payouts"),  href: "/dash/payouts",  icon: "Wallet" },
         { name: t("layout.disputes"), href: "/dash/disputes", icon: "AlertOctagon" },
+        ...(hasPermission("audit_log", "read")
+          ? [{ name: "Audit Log", href: "/dash/audit-log", icon: "ScrollText" }]
+          : []),
       ],
     },
     {

@@ -1,5 +1,6 @@
 import mongoose, { Schema, model, Types } from "mongoose";
 import { z } from "zod";
+import { auditPlugin } from "../plugins/audit.js";
 
 const DisputeSchema = new Schema(
   {
@@ -21,6 +22,8 @@ const DisputeSchema = new Schema(
 DisputeSchema.index({ workspaceId: 1, status: 1 });
 DisputeSchema.index({ workspaceId: 1, repId: 1 });
 DisputeSchema.index({ payoutId: 1 }, { unique: true }); // one dispute per payout
+
+DisputeSchema.plugin(auditPlugin({ resourceType: "dispute" }));
 
 export const Dispute = model("Dispute", DisputeSchema);
 

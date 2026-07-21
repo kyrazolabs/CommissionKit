@@ -1,10 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "next-themes";
 import { ArrowLeft } from "lucide-react";
 import { getAllLanguages } from "@/lib/posts";
 import { t, formatAllRightsReserved } from "@/lib/translations";
+import { baseUrl } from "@/lib/baseUrl";
 import { cn } from "@/lib/utils";
 import "../globals.css";
+
+export const viewport: Viewport = {
+  themeColor: "#0D9488",
+  width: "device-width",
+  initialScale: 1,
+};
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -30,7 +37,7 @@ export async function generateMetadata({
   const locale = localeMap[lang] ?? "en_US";
 
   return {
-    metadataBase: new URL("https://commissionk.it"),
+    metadataBase: new URL(baseUrl),
     title: {
       default: dict.blog,
       template: "%s | CommissionKit Blog",
@@ -48,10 +55,10 @@ export async function generateMetadata({
       type: "website",
       siteName: "CommissionKit",
       locale,
-      url: `https://commissionk.it/blog/${lang}`,
+      url: `${baseUrl}/blog/${lang}`,
       title: dict.blog,
       description: dict.blogDescription,
-      images: [{ url: "https://commissionk.it/blog/og-default.webp", width: 1200, height: 630 }],
+      images: [{ url: `${baseUrl}/blog/og.png`, width: 1600, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
@@ -59,7 +66,7 @@ export async function generateMetadata({
       creator: "@commissionkit",
       title: dict.blog,
       description: dict.blogDescription,
-      images: ["https://commissionk.it/blog/og-default.webp"],
+      images: [`${baseUrl}/blog/og.png`],
     },
     icons: {
       icon: [
@@ -117,7 +124,7 @@ export default async function LangLayout({ children, params }: LayoutProps) {
               <div className="max-w-6xl mx-auto flex h-14 items-center px-4 sm:px-6">
                 <div className="flex items-center gap-6">
                   <a
-                    href="https://commissionk.it"
+                    href={baseUrl}
                     className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {isRtl ? (
@@ -151,19 +158,19 @@ export default async function LangLayout({ children, params }: LayoutProps) {
                 </p>
                 <nav className="flex gap-6">
                   <a
-                    href="https://commissionk.it/privacy"
+                    href={`${baseUrl}/privacy`}
                     className="text-xs text-muted-foreground hover:text-primary transition-colors"
                   >
                     {dict.privacy}
                   </a>
                   <a
-                    href="https://commissionk.it/terms"
+                    href={`${baseUrl}/terms`}
                     className="text-xs text-muted-foreground hover:text-primary transition-colors"
                   >
                     {dict.terms}
                   </a>
                   <a
-                    href="https://commissionk.it"
+                    href={baseUrl}
                     className="text-xs text-muted-foreground hover:text-primary transition-colors"
                   >
                     {dict.home}

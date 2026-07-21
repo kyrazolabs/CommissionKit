@@ -1,5 +1,6 @@
 import mongoose, { Schema, model, Types } from "mongoose";
 import { z } from "zod";
+import { auditPlugin } from "../plugins/audit.js";
 
 const RoleSchema = new Schema({
   workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
@@ -11,6 +12,8 @@ const RoleSchema = new Schema({
 
 // Ensure role names are unique per workspace
 RoleSchema.index({ workspaceId: 1, name: 1 }, { unique: true });
+
+RoleSchema.plugin(auditPlugin({ resourceType: "role", resourceNameField: "name" }));
 
 export const Role = model("Role", RoleSchema);
 

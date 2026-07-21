@@ -114,6 +114,7 @@ export function ReportsPage() {
   usePageMeta({
     title: t("reports.title"),
     description: "Detailed commission reports and analytics for your workspace.",
+    keywords: "commission reports, sales analytics, rep performance reports, commission analytics, payout reports",
     robots: "noindex, nofollow",
   });
   const { activeWorkspace } = useWorkspace();

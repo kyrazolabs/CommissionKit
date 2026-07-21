@@ -3,7 +3,7 @@ import { Rep, Plan, Workspace } from "@workspace/db";
 import { Types } from "mongoose";
 import mongoose from "mongoose";
 import { randomBytes } from "crypto";
-import { CreateRepBody, UpdateRepBody, GetRepParams, UpdateRepParams, DeleteRepParams, SendPortalLinkParams } from "@workspace/api-zod";
+import { CreateRepBody, UpdateRepBody, GetRepParams, UpdateRepParams, DeleteRepParams, SendPortalLinkParams, ListRepsQueryParams } from "@workspace/api-zod";
 import { requirePermission, type AuthenticatedRequest } from "../../middleware/auth";
 import { checkLimits } from "../../lib/limits";
 import { sendMediumPriorityEmail } from "@workspace/queue";
@@ -50,18 +50,38 @@ async function sendPortalLinkEmail(
 
 router.get("/reps", ...requirePermission("reps", "read"), async (req: AuthenticatedRequest, res): Promise<void> => {
   const workspaceId = req.workspaceId!;
-  const reps = await Rep.find({ workspaceId: new Types.ObjectId(workspaceId) }).populate('planId').sort({ name: 1 });
+  const query = ListRepsQueryParams.parse(req.query);
+  const conditions: any = { workspaceId: new Types.ObjectId(workspaceId) };
 
-  res.json(reps.map((r) => ({
-    id: r._id,
-    name: r.name,
-    email: r.email,
-    role: r.role,
-    planId: r.planId ? (r.planId as any)._id ?? r.planId : null,
-    planName: r.planId ? (r.planId as any).name ?? null : null,
-    portalAccessCode: r.portalAccessCode ?? null,
-    createdAt: r.createdAt.toISOString(),
-  })));
+  if (query.search !== undefined && query.search.trim() !== "") {
+    const searchRegex = new RegExp(query.search.trim(), "i");
+    conditions.$or = [
+      { name: searchRegex },
+      { email: searchRegex },
+    ];
+  }
+
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const limit = Math.min(500, Math.max(1, Number(req.query.limit) || 50));
+
+  const [reps, total] = await Promise.all([
+    Rep.find(conditions).populate('planId').sort({ name: 1 }).skip((page - 1) * limit).limit(limit),
+    Rep.countDocuments(conditions),
+  ]);
+
+  res.json({
+    data: reps.map((r) => ({
+      id: r._id,
+      name: r.name,
+      email: r.email,
+      role: r.role,
+      planId: r.planId ? (r.planId as any)._id ?? r.planId : null,
+      planName: r.planId ? (r.planId as any).name ?? null : null,
+      portalAccessCode: r.portalAccessCode ?? null,
+      createdAt: r.createdAt.toISOString(),
+    })),
+    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+  });
 });
 
 router.post("/reps", ...requirePermission("reps", "create"), async (req: AuthenticatedRequest, res): Promise<void> => {

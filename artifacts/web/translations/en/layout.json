@@ -1,0 +1,27 @@
+{
+  "contactSupport": "Contact support",
+  "lightMode": "Light mode",
+  "darkMode": "Dark mode",
+  "syncing": "Syncing in background...",
+  "syncError": "Sync error. Click to clear notification.",
+  "dashboard": "Dashboard",
+  "reps": "Reps",
+  "plans": "Plans",
+  "deals": "Deals",
+  "runs": "Runs",
+  "reports": "Reports",
+  "team": "Team",
+  "settings": "Settings",
+  "billing": "Billing",
+  "payouts": "Payouts",
+  "disputes": "Disputes",
+  "integrations": "Integrations",
+  "main": "Main",
+  "operations": "Operations",
+  "account": "Account",
+  "enterprise": {
+    "projects": "Projects",
+    "matrix": "Matrix",
+    "repPortal": "Rep Portal"
+  }
+}

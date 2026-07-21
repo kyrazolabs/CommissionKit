@@ -12,6 +12,7 @@ import {
   SYNC_DEALS_QUEUE,
   WEBHOOK_INGRESS_QUEUE,
   SYNC_EGRESS_QUEUE,
+  AUDIT_LOG_QUEUE,
 } from "./constants.js";
 import type {
   MailSendPayload,
@@ -20,6 +21,7 @@ import type {
   SyncRepsPayload,
   SyncDealsPayload,
   WebhookIngressPayload,
+  AuditLogJob,
 } from "./schemas.js";
 
 /** Shared BullMQ queue options — exponential back-off, 10 retries */
@@ -116,4 +118,10 @@ export const webhookIngressQueue = new Queue<WebhookIngressPayload>(
 export const syncEgressQueue = new Queue<{ workspaceId: string; runId: string }>(
   SYNC_EGRESS_QUEUE,
   buildOptions({ defaultJobOptions: { attempts: 3, backoff: { type: "exponential", delay: 10_000 } } }),
+);
+
+/** Audit log write queue. */
+export const auditLogQueue = new Queue<AuditLogJob>(
+  AUDIT_LOG_QUEUE,
+  buildOptions({ defaultJobOptions: { attempts: 5, backoff: { type: "exponential", delay: 2_000 }, removeOnComplete: { count: 1_000 }, removeOnFail: { count: 10_000 } } }),
 );

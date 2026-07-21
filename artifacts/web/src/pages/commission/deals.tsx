@@ -1,17 +1,17 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import * as XLSX from 'xlsx';
 import { downloadTemplate } from "@/lib/templates";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useSyncStore } from "@/hooks/use-sync-store";
 import {
-  useListDeals, getListDealsQueryKey,
   useDeleteDeal,
   useUpdateDeal,
   useListReps, getListRepsQueryKey,
-  useImportDeals
+  useImportDeals, getListDealsQueryKey
 } from "@workspace/api-client-react";
+import { DataPagination } from "@/components/ui/data-pagination";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +37,7 @@ import { useRole } from "@/hooks/use-role";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { CurrencyCombobox } from "@/components/currency-combobox";
 import { RepCombobox } from "@/components/rep-combobox";
+import { useRepSearch } from "@/hooks/use-rep-search";
 import { MarkdownEditor } from "@/components/markdown-editor";
 import { useBillingStatus } from "@/hooks/use-billing-status";
 import { Download } from "lucide-react";
@@ -54,18 +55,40 @@ export function DealsPage() {
   const [paymentStatus, setPaymentStatus] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedDealId, setExpandedDealId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const LIMIT = 50;
 
   const { can, hasPermission, isLoading: roleLoading } = useRole();
-  const { data: reps } = useListReps({ query: { queryKey: getListRepsQueryKey() } });
+  const { reps: searchReps, searching: repSearching, onSearch: onRepSearch } = useRepSearch(activeWorkspace?.id);
 
-  const queryParams: any = { period };
+  const queryParams: any = { period, page, limit: LIMIT };
   if (repId !== "all") queryParams.repId = repId;
   if (paymentStatus !== "all") queryParams.paymentStatus = paymentStatus;
+  if (searchTerm.trim()) queryParams.search = searchTerm.trim();
 
-  const { data: deals, isLoading } = useListDeals(
-    queryParams,
-    { query: { queryKey: getListDealsQueryKey(queryParams) } }
-  );
+  // Reset page when filters change
+  useEffect(() => { setPage(1); }, [repId, paymentStatus, period, searchTerm]);
+
+  const { data: dealsResult, isLoading, error } = useQuery({
+    queryKey: ["/api/deals", queryParams],
+    queryFn: () => {
+      const sp = new URLSearchParams();
+      if (queryParams.period) sp.set("period", queryParams.period);
+      if (queryParams.repId) sp.set("repId", queryParams.repId);
+      if (queryParams.paymentStatus) sp.set("paymentStatus", queryParams.paymentStatus);
+      if (queryParams.search) sp.set("search", queryParams.search);
+      sp.set("page", String(queryParams.page));
+      sp.set("limit", String(queryParams.limit));
+      return apiFetch(`/api/deals?${sp}`) as Promise<{ data: any[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>;
+    },
+    enabled: Boolean(activeWorkspace?.id),
+  });
+
+  // Debug: log the actual response shape
+  console.log("[deals] dealsResult:", dealsResult, "error:", error);
+
+  const deals = dealsResult?.data ?? [];
+  const pagination = dealsResult?.pagination;
 
   if (roleLoading) {
     return (
@@ -89,11 +112,6 @@ export function DealsPage() {
       </div>
     );
   }
-
-  const filteredDeals = Array.isArray(deals) ? deals.filter(deal => 
-    deal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    deal.repName.toLowerCase().includes(searchTerm.toLowerCase())
-  ) : [];
 
   return (
     <div className="space-y-6">
@@ -130,11 +148,13 @@ export function DealsPage() {
           <div className="flex flex-wrap gap-2">
             <div className="w-40">
               <RepCombobox
-                reps={Array.isArray(reps) ? reps.map((r: any) => ({ id: String(r.id), name: r.name })) : []}
+                reps={searchReps}
                 value={repId}
                 onChange={setRepId}
                 includeAll
                 allLabel={t("deals.allReps")}
+                onSearch={onRepSearch}
+                searching={repSearching}
               />
             </div>
             <div className="w-40">
@@ -168,7 +188,7 @@ export function DealsPage() {
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
             </div>
-          ) : filteredDeals.length === 0 ? (
+           ) : deals.length === 0 ? (
             <div className="text-center py-12">
               <div className="bg-muted size-12 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Briefcase className="size-6 text-muted-foreground" />
@@ -179,25 +199,26 @@ export function DealsPage() {
               </p>
             </div>
           ) : (
+            <>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>
                     <div className="flex items-center gap-1.5">
-                      Deal Name
+                      {t("deals.dealName")}
                       <HelpTooltip content="The unique identifier for this revenue event." />
                     </div>
                   </TableHead>
                   <TableHead>Rep</TableHead>
                   <TableHead className="text-right tabular-nums">Amount</TableHead>
-                  <TableHead>Close Date</TableHead>
+                  <TableHead>{t("deals.closeDate")}</TableHead>
                   <TableHead>Stage</TableHead>
                   <TableHead>Payment</TableHead>
                   <TableHead className="text-right"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredDeals.flatMap((deal) => {
+                {deals.flatMap((deal) => {
                   const rows: React.ReactNode[] = [
                     <TableRow key={deal.id}>
                       <TableCell className="font-medium p-1.5!">
@@ -256,13 +277,13 @@ export function DealsPage() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             {hasPermission("deals", "edit") && deal.paymentStatus !== "paid" && (
-                              <UpdateDealDialog deal={deal} queryParams={queryParams} reps={reps} workspaceCurrency={currency} />
+                              <UpdateDealDialog deal={deal} queryParams={queryParams} workspaceCurrency={currency} />
                             )}
                             {hasPermission("deals", "delete") && (
                               <>
                                 <DropdownMenuSeparator />
                                 <DealDeleteAction deal={deal} queryParams={queryParams} currency={currency} />
-                              </>
+            </>
                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -290,6 +311,18 @@ export function DealsPage() {
                 })}
               </TableBody>
             </Table>
+            {pagination && (
+              <div className="border-t px-4 py-3">
+                <DataPagination
+                  page={page}
+                  totalPages={pagination.totalPages}
+                  total={pagination.total}
+                  limit={LIMIT}
+                  onPageChange={setPage}
+                />
+              </div>
+            )}
+            </>
           )}
         </CardContent>
       </Card>
@@ -297,11 +330,13 @@ export function DealsPage() {
   );
 }
 
-function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal: any, queryParams: any, reps: any, workspaceCurrency: string }) {
+function UpdateDealDialog({ deal, queryParams, workspaceCurrency }: { deal: any, queryParams: any, workspaceCurrency: string }) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { activeWorkspace } = useWorkspace();
+  const { reps: searchReps, searching: repSearching, onSearch: onRepSearch } = useRepSearch(activeWorkspace?.id);
   const updateMutation = useUpdateDeal({
     mutation: {
       onMutate: async (variables) => {
@@ -309,8 +344,8 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
         await queryClient.cancelQueries({ queryKey: ['/api/deals'] });
         const previousDealsQueries = queryClient.getQueriesData<any[]>({ queryKey: ['/api/deals'] });
 
-        const rep = reps?.find((r: any) => String(r.id || r._id) === String(data.repId));
-        const repName = rep ? rep.name : t("deals.creator.title");
+        const rep = searchReps?.find((r) => r.id === String(data.repId));
+        const repName = rep ? rep.name : (formData.repName ?? t("deals.creator.title"));
 
         queryClient.setQueriesData<any[]>({ queryKey: ['/api/deals'] }, (old) => {
           if (!old) return [];
@@ -353,6 +388,7 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
 
   const [formData, setFormData] = useState({
     repId: String(deal.repId?._id ?? deal.repId ?? ""),
+    repName: deal.repId?.name ?? "",
     name: deal.name,
     amount: deal.amount,
     currency: deal.currency || workspaceCurrency,
@@ -414,7 +450,7 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
                   This deal is <strong>closed won</strong>. Changing the stage to <strong>Closed Lost</strong> will trigger a <strong>clawback</strong> if the plan has a clawback period configured.
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-stage">Stage</Label>
+                  <Label htmlFor="edit-stage">{t("deals.stage")}</Label>
                   <Select value={formData.stage} onValueChange={(val) => setFormData(prev => ({ ...prev, stage: val }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -424,7 +460,7 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-paymentStatus">Payment Status</Label>
+                  <Label htmlFor="edit-paymentStatus">{t("deals.paymentStatus")}</Label>
                   <Select value={formData.paymentStatus} onValueChange={(val) => setFormData(prev => ({ ...prev, paymentStatus: val }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -441,14 +477,19 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
           <div className="space-y-2">
             <Label htmlFor="edit-repId">Sales Rep</Label>
             <RepCombobox
-              key={`rep-select-${formData.repId}-${reps?.length || 0}`}
-              reps={Array.isArray(reps) ? reps.map((r: any) => ({ id: String(r.id || r._id), name: r.name })) : []}
+              key={`rep-select-${formData.repId}-${searchReps?.length || 0}`}
+              reps={searchReps}
               value={formData.repId}
-              onChange={(val) => setFormData(prev => ({ ...prev, repId: val }))}
+              onChange={(val) => {
+                const selected = searchReps?.find(r => r.id === val);
+                setFormData(prev => ({ ...prev, repId: val, repName: selected?.name ?? prev.repName }));
+              }}
+              onSearch={onRepSearch}
+              searching={repSearching}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-name">Deal Name</Label>
+            <Label htmlFor="edit-name">{t("deals.dealName")}</Label>
             <Input id="edit-name" value={formData.name} onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))} required />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -466,14 +507,14 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-closeDate">Close Date</Label>
+              <Label htmlFor="edit-closeDate">{t("deals.closeDate")}</Label>
               <DatePicker 
                 date={formData.closeDate ? parseISO(formData.closeDate) : undefined} 
                 onChange={(d) => setFormData(prev => ({ ...prev, closeDate: d ? format(d, "yyyy-MM-dd") : "" }))}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-stage">Stage</Label>
+              <Label htmlFor="edit-stage">{t("deals.stage")}</Label>
               <Select value={formData.stage} onValueChange={(val) => setFormData(prev => ({ ...prev, stage: val }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -485,7 +526,7 @@ function UpdateDealDialog({ deal, queryParams, reps, workspaceCurrency }: { deal
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-paymentStatus">Payment Status</Label>
+            <Label htmlFor="edit-paymentStatus">{t("deals.paymentStatus")}</Label>
             <Select value={formData.paymentStatus} onValueChange={(val) => setFormData(prev => ({ ...prev, paymentStatus: val }))}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -579,7 +620,7 @@ function DealDeleteAction({ deal, queryParams, currency }: { deal: any, queryPar
         }
         useSyncStore.getState().setSyncError(true);
         toast({
-          title: "Sync Error",
+          title: t("deals.syncError"),
           description: t("deals.dealDeleteFailedDescription"),
           variant: "destructive",
         });
@@ -629,7 +670,10 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
   const [isParsing, setIsParsing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const { data: reps } = useListReps({ query: { queryKey: getListRepsQueryKey() } });
+  const { data: repsRaw } = useListReps();
+  const repsRef = useRef(repsRaw ? (repsRaw as any).data ?? [] : []);
+  repsRef.current = repsRaw ? (repsRaw as any).data ?? [] : [];
+  const reps = repsRef.current;
   const { t } = useTranslation();
   const importMutation = useImportDeals();
   const queryClient = useQueryClient();
@@ -646,7 +690,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
       const paymentStatusRaw = (row['Payment Status'] || row['payment_status'] || row['Payment'] || 'unpaid').toString().trim().toLowerCase().replace(' ', '_');
       const notes = (row['Notes'] || row['Description'] || row['notes'] || '').trim();
 
-      const rep = reps?.find(r => 
+      const rep = reps?.find((r: any) => 
         r.email.toLowerCase() === repEmail.toLowerCase() || 
         r.name.toLowerCase() === repEmail.toLowerCase()
       );
@@ -664,7 +708,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
         id: Math.random().toString(36).substr(2, 9), // Temp ID for list management
         repId: rep?.id || "",
         repEmail,
-        name: dealName || 'Unknown Deal',
+        name: dealName || t("deals.unknownDeal"),
         amount: parseFloat(amountStr) || 0,
         closeDate: closeDateStr || "",
         period: period,
@@ -827,11 +871,11 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
                   <TableHeader className="bg-muted/50 sticky top-0 z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
                     <TableRow>
                       <TableHead className="w-[200px]">Sales Rep</TableHead>
-                      <TableHead className="w-[200px]">Deal Name</TableHead>
+                      <TableHead className="w-[200px]">{t("deals.dealName")}</TableHead>
                       <TableHead className="w-[120px]">Amount</TableHead>
                       <TableHead className="w-[160px]">Currency</TableHead>
-                      <TableHead className="w-[150px]">Close Date</TableHead>
-                      <TableHead className="w-[140px]">Stage</TableHead>
+                      <TableHead className="w-[150px]">{t("deals.closeDate")}</TableHead>
+                      <TableHead className="w-[140px]">{t("deals.stage")}</TableHead>
                       <TableHead className="w-[140px]">Payment</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
@@ -933,7 +977,8 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
 
 function CreateDealDialog({ period, workspaceCurrency }: { period: string, workspaceCurrency: string }) {
   const [open, setOpen] = useState(false);
-  const { data: reps } = useListReps({ query: { queryKey: getListRepsQueryKey() } });
+  const { activeWorkspace } = useWorkspace();
+  const { reps: searchReps, searching, onSearch } = useRepSearch(activeWorkspace?.id);
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -947,8 +992,8 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
         await queryClient.cancelQueries({ queryKey: ['/api/deals'] });
         const previousDealsQueries = queryClient.getQueriesData<any[]>({ queryKey: ['/api/deals'] });
 
-        const rep = reps?.find((r: any) => String(r.id || r._id) === String(newDeal.repId));
-        const repName = rep ? rep.name : "Unknown Rep";
+        const rep = searchReps?.find((r: any) => String(r.id || r._id) === String(newDeal.repId));
+        const repName = rep ? rep.name : t("deals.unknownRep");
 
         const tempId = `temp-deal-${Date.now()}`;
         const optimisticDeal = {
@@ -980,15 +1025,15 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
         }
         useSyncStore.getState().setSyncError(true);
         toast({
-          title: "Failed to create deal",
-          description: "Recovering your input...",
+          title: t("deals.dealCreateFailed"),
+          description: t("deals.recoveringInput"),
           variant: "destructive",
         });
         setOpen(true);
       },
       onSuccess: () => {
         useSyncStore.getState().setSyncError(false);
-        toast({ title: "Deal created successfully" });
+        toast({ title: t("deals.dealCreated") });
       },
       onSettled: (data, error, variables) => {
         const dealsToImport = variables.data.deals;
@@ -1059,13 +1104,15 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
           <div className="space-y-2">
             <Label htmlFor="repId">Sales Rep</Label>
             <RepCombobox
-              reps={Array.isArray(reps) ? reps.map((r: any) => ({ id: String(r.id), name: r.name })) : []}
+              reps={searchReps}
               value={formData.repId}
-              onChange={(val) => setFormData(prev => ({ ...prev, repId: val }))}
+              onChange={(val) => setFormData((prev: any) => ({ ...prev, repId: val }))}
+              onSearch={onSearch}
+              searching={searching}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="name">Deal Name</Label>
+            <Label htmlFor="name">{t("deals.dealName")}</Label>
             <Input id="name" value={formData.name} onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))} required />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -1083,14 +1130,14 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="closeDate">Close Date</Label>
+              <Label htmlFor="closeDate">{t("deals.closeDate")}</Label>
               <DatePicker 
                 date={formData.closeDate ? parseISO(formData.closeDate) : undefined} 
                 onChange={(d) => setFormData(prev => ({ ...prev, closeDate: d ? format(d, "yyyy-MM-dd") : "" }))}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="stage">Stage</Label>
+              <Label htmlFor="stage">{t("deals.stage")}</Label>
               <Select value={formData.stage} onValueChange={(val) => setFormData(prev => ({ ...prev, stage: val }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -1101,7 +1148,7 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="paymentStatus">Payment Status</Label>
+            <Label htmlFor="paymentStatus">{t("deals.paymentStatus")}</Label>
             <Select value={formData.paymentStatus} onValueChange={(val) => setFormData(prev => ({ ...prev, paymentStatus: val }))}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -1144,7 +1191,7 @@ function ExportDealsButton() {
     if (!isGrowth) {
       toast({
         title: t("deals.growthPlanRequired"),
-        description: "Bulk CSV export is a premium feature. Please upgrade to the Growth plan to export your data.",
+        description: t("deals.growthPlanDescription"),
         variant: "destructive",
       });
       return;
@@ -1173,13 +1220,13 @@ function ExportDealsButton() {
       document.body.removeChild(a);
       
       toast({
-        title: "Export Successful",
-        description: "Your deals data has been exported to CSV.",
+        title: t("deals.exportSuccessful"),
+        description: t("deals.exportSuccessfulDescription"),
       });
     } catch (err) {
       toast({
-        title: "Export Failed",
-        description: "There was an error exporting your data. Please try again.",
+        title: t("deals.exportFailed"),
+        description: t("deals.exportFailedDescription"),
         variant: "destructive",
       });
     } finally {

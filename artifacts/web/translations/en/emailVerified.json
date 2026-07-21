@@ -1,0 +1,11 @@
+{
+  "verificationFailed": "Verification Failed",
+  "verificationFailedDescription": "The verification link is invalid or has expired.",
+  "trySigningIn": "Try signing in to your account. If your email is unverified, a fresh verification link will be sent automatically.",
+  "goToLogin": "Go to login",
+  "emailVerified": "Email Verified",
+  "emailVerifiedDescription": "Your email address has been successfully verified.",
+  "thankYou": "Thank you for verifying your email. You can now access your workspace and get started.",
+  "goToDashboard": "Go to dashboard",
+  "commissionKitRights": "© {{year}} COMMISSIONKIT. ALL RIGHTS RESERVED."
+}

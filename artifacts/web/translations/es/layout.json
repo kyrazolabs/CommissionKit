@@ -1,0 +1,27 @@
+{
+  "contactSupport": "Contactar soporte",
+  "lightMode": "Modo claro",
+  "darkMode": "Modo oscuro",
+  "syncing": "Sincronizando en segundo plano...",
+  "syncError": "Error de sincronización. Haz clic para limpiar.",
+  "dashboard": "Panel",
+  "reps": "Representantes",
+  "plans": "Planes",
+  "deals": "Negocios",
+  "runs": "Ejecuciones",
+  "reports": "Informes",
+  "team": "Equipo",
+  "settings": "Configuración",
+  "billing": "Facturación",
+  "payouts": "Pagos",
+  "disputes": "Disputas",
+  "integrations": "Integraciones",
+  "main": "Principal",
+  "operations": "Operaciones",
+  "account": "Cuenta",
+  "enterprise": {
+    "projects": "Proyectos",
+    "matrix": "Matriz",
+    "repPortal": "Portal del Representante"
+  }
+}

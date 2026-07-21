@@ -16,6 +16,7 @@ import { sendMediumPriorityEmail } from "@workspace/queue";
 import { clawbackAlertTemplate } from "@workspace/email-templates";
 import { createNotification } from "../../lib/notify";
 import { logger } from "../../lib/logger";
+import { logAudit } from "../../lib/audit";
 
 const router = Router();
 
@@ -54,25 +55,52 @@ router.get(
     const query = ListDealsQueryParams.parse(req.query);
     const conditions: any = { workspaceId: new Types.ObjectId(workspaceId) };
 
+    if (query.search !== undefined && query.search.trim() !== "") {
+      const searchRegex = new RegExp(query.search.trim(), "i");
+      conditions.$or = [
+        { name: searchRegex },
+        { repId: { $exists: true } },
+      ];
+      // We'll filter rep name in memory after populate
+    }
     if (query.repId !== undefined)
       conditions.repId = new Types.ObjectId(query.repId);
     if (query.period !== undefined) conditions.period = query.period;
     if (query.paymentStatus !== undefined) conditions.paymentStatus = query.paymentStatus;
 
-    const deals = await Deal.find(conditions)
-      .populate("repId")
-      .sort({ createdAt: -1 });
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(500, Math.max(1, Number(req.query.limit) || 50));
+    const skip = (page - 1) * limit;
 
-    res.json(
-      deals
-        .filter((d) => d.repId != null)
-        .map((d) =>
-          formatDeal(
-            d,
-            (d.repId as any).name ?? "Unknown",
-          ),
-        ),
-    );
+    const [deals, total] = await Promise.all([
+      Deal.find(conditions)
+        .populate("repId")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Deal.countDocuments(conditions),
+    ]);
+
+    let formatted = deals
+      .filter((d) => d.repId != null)
+      .map((d) =>
+        formatDeal(d, (d.repId as any).name ?? "Unknown"),
+      );
+
+    // Filter by rep name client-side when search is used (after populate)
+    if (query.search !== undefined && query.search.trim() !== "") {
+      const searchRegex = new RegExp(query.search.trim(), "i");
+      formatted = formatted.filter(
+        (d) =>
+          searchRegex.test(d.name) ||
+          (d.repName && searchRegex.test(d.repName)),
+      );
+    }
+
+    res.json({
+      data: formatted,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
   },
 );
 
@@ -152,6 +180,11 @@ router.post(
         skipped++;
       }
     }
+
+    logAudit("bulk_create", "deal", {
+      workspaceId: req.workspaceId,
+      metadata: { imported, skipped, errors: errors.length },
+    }).catch(() => {});
 
     res.json({ imported, skipped, errors });
   },

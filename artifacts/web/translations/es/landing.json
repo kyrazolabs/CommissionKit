@@ -1,0 +1,14 @@
+{
+  "navbar": {
+    "login": "Iniciar Sesión",
+    "signUp": "Registrarse — Es Gratis",
+    "getStarted": "Comenzar"
+  },
+  "hero": {
+    "title": "Automatiza Comisiones de Ventas. Enfócate en Crecer.",
+    "description": "CommissionKit simplifica la gestión de comisiones. Rastrea negocios, calcula ganancias y genera pagos.",
+    "startFreeTrial": "Comienza Tu Prueba Gratuita",
+    "noCreditCard": "Sin tarjeta de crédito. Prueba gratuita de 14 días.",
+    "trustedBy": "Confiado por equipos de ventas en crecimiento"
+  }
+}

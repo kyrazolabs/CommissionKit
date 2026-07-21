@@ -358,7 +358,18 @@ export interface ReportData {
   topDeals?: ReportDataTopDealsItem[];
 }
 
+export type ListRepsParams = {
+/**
+ * Search by rep name or email
+ */
+search?: string;
+};
+
 export type ListDealsParams = {
+/**
+ * Search by deal name or rep name
+ */
+search?: string;
 repId?: string;
 /**
  * Filter by period (YYYY-MM)

@@ -453,7 +453,7 @@ export function CareersJobPage() {
                       <div className="text-[13px] text-muted-foreground space-y-1">
                         <p className="font-medium text-foreground">Independent Contractor Terms</p>
                         <p>
-                          This is an independent contractor engagement, not employment. You'll earn 30% first-month + 10% lifetime commission on every deal you close. Payouts arrive within 15 days, no minimum thresholds. By applying, you confirm you understand and agree to these terms.
+                          This is an independent contractor engagement, not employment. You'll earn 40% on the first 3 months' revenue + 10% residual on months 4-12, with multipliers for annual prepay (2x) and self-sourced deals (1.25x). Payouts arrive within 15 days, no minimum thresholds. Clawback applies to the residual portion only — full details in the job description above.
                         </p>
                       </div>
                     </div>

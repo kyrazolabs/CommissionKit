@@ -4,7 +4,7 @@ import { Mail, MessageCircle, Clock, MapPin } from "lucide-react";
 import { usePageMeta } from "@/hooks/use-page-meta";
 
 export function ContactPage() {
-  usePageMeta({ title: "Contact", description: "Get in touch with the CommissionKit team for sales, support, or general inquiries.", robots: "index, follow" });
+  usePageMeta({ title: "Contact", description: "Get in touch with the CommissionKit team for sales, support, or general inquiries.", keywords: "contact sales commission software, commission management support, sales comp help, get commission software demo", robots: "index, follow" });
 
   return (
     <>

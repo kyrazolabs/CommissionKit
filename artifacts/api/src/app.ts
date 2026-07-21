@@ -7,6 +7,7 @@ import router from "./routes";
 import { logger } from "./lib/logger";
 import { auth } from "./lib/auth";
 import { defaultRateLimit } from "./middleware/rate-limiter";
+import { auditContextMiddleware } from "./middleware/audit-context";
 
 const app: Express = express();
 
@@ -46,6 +47,7 @@ app.use("/api/billing/webhook", express.raw({ type: "application/json" }));
 app.all(/\/api\/auth\/.*/, toNodeHandler(auth));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(auditContextMiddleware);
 app.use("/api", router);
 
 // Sentry error handler registered after all controllers and before other error middleware

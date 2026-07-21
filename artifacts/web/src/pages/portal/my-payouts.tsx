@@ -153,18 +153,19 @@ export function MyPayoutsPage() {
 
   const [disputeTarget, setDisputeTarget] = useState<Payout | null>(null);
 
-  const { data: payouts = [], isLoading } = useQuery<Payout[]>({
+  const { data: payoutsRaw = {} as any, isLoading } = useQuery<any>({
     queryKey: ["my-payouts", workspaceId],
     queryFn: async () => {
-      return apiFetch(`/api/payouts`);
+      return apiFetch(`/api/payouts?limit=500`);
     },
     enabled: Boolean(workspaceId),
   });
+  const payouts = payoutsRaw?.data ?? (Array.isArray(payoutsRaw) ? payoutsRaw : []);
 
   // ── Summary calculations ──
   const now = new Date();
   const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const currentPeriodPayout = payouts.find(p => {
+  const currentPeriodPayout = payouts.find((p: any) => {
     const ps = new Date(p.periodStart);
     const pe = new Date(p.periodEnd);
     return ps <= now && pe >= now;
@@ -175,8 +176,8 @@ export function MyPayoutsPage() {
     .sort((a, b) => new Date(b.actualPaymentDate!).getTime() - new Date(a.actualPaymentDate!).getTime())[0];
 
   const ytdPaid = payouts
-    .filter(p => p.status === "paid" && p.actualPaymentDate && new Date(p.actualPaymentDate).getFullYear() === now.getFullYear())
-    .reduce((s, p) => s + p.finalAmount, 0);
+    .filter((p: any) => p.status === "paid" && p.actualPaymentDate && new Date(p.actualPaymentDate).getFullYear() === now.getFullYear())
+    .reduce((s: number, p: any) => s + p.finalAmount, 0);
 
   // Gating: show upgrade prompt for non-Growth plans
   if (!isGrowthPlus) {
@@ -282,7 +283,7 @@ export function MyPayoutsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {payouts.map(payout => (
+                {payouts.map((payout: any) => (
                   <TableRow key={payout.id}>
                     <TableCell className="text-sm text-muted-foreground">
                       {format(new Date(payout.periodStart), "MMM d")}–{format(new Date(payout.periodEnd), "MMM d, yyyy")}

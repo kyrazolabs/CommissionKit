@@ -1,0 +1,18 @@
+{
+  "selectLanguage": "भाषा चुनें",
+  "filterByLanguage": "भाषा के अनुसार फ़िल्टर करें",
+  "all": "सभी",
+  "justNow": "अभी-अभी",
+  "oneMinuteAgo": "1 मिनट पहले",
+  "minutesAgo": "{count} मिनट पहले",
+  "oneHourAgo": "1 घंटे पहले",
+  "hoursAgo": "{count} घंटे पहले",
+  "yesterday": "कल",
+  "daysAgo": "{count} दिन पहले",
+  "oneWeekAgo": "1 हफ्ते पहले",
+  "weeksAgo": "{count} हफ्ते पहले",
+  "oneMonthAgo": "1 महीने पहले",
+  "monthsAgo": "{count} महीने पहले",
+  "oneYearAgo": "1 साल पहले",
+  "yearsAgo": "{count} साल पहले"
+}

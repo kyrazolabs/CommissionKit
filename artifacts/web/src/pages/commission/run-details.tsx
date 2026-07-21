@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams } from "wouter";
 import { useTranslation } from "react-i18next";
 import { useGetRun, getGetRunQueryKey } from "@workspace/api-client-react";
@@ -7,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { formatCurrency, formatPercent } from "@/lib/format";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DataPagination } from "@/components/ui/data-pagination";
 import { Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { CurrencyCell } from "@/components/currency-cell";
@@ -33,6 +35,9 @@ export function RunDetailsPage() {
       }
     }
   });
+
+  const [page, setPage] = useState(1);
+  const LIMIT = 50;
 
   if (roleLoading) {
     return (
@@ -75,6 +80,10 @@ export function RunDetailsPage() {
   if (!run || (run as any).error) return <div>{t("runs.runDetails.notFound")}</div>;
 
   const runData = run as any;
+  const totalResults = runData.results?.length ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalResults / LIMIT));
+  const startIndex = (page - 1) * LIMIT;
+  const paginatedResults = runData.results?.slice(startIndex, startIndex + LIMIT) ?? [];
 
   // Group results by rep for the summary view
   const repGroups = new Map<string, { repName: string; results: any[] }>();
@@ -170,7 +179,7 @@ export function RunDetailsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {runData.results?.map((result: any) => {
+              {paginatedResults.map((result: any) => {
                 const dealCurrency = result.dealCurrency || currency;
                 return (
                   <TableRow key={result.id}>
@@ -219,7 +228,7 @@ export function RunDetailsPage() {
                   </TableRow>
                 );
               })}
-              {(!runData.results || runData.results.length === 0) && (
+              {(!paginatedResults || paginatedResults.length === 0) && (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
                     No results found for this run.
@@ -228,6 +237,17 @@ export function RunDetailsPage() {
               )}
             </TableBody>
           </Table>
+          {totalResults > LIMIT && (
+            <div className="border-t px-4 py-3">
+              <DataPagination
+                page={page}
+                totalPages={totalPages}
+                total={totalResults}
+                limit={LIMIT}
+                onPageChange={setPage}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
