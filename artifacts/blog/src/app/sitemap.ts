@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getAllSlugs, getAllLanguages } from "@/lib/posts";
-
-const baseUrl = "https://commissionk.it";
+import { baseUrl } from "@/lib/baseUrl";
 
 function buildAlternates(
   languages: string[],

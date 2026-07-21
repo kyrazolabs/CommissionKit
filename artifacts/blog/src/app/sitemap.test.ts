@@ -8,6 +8,8 @@ process.env.BLOG_ARTICLES_DIR = fs.existsSync(workspaceArticles)
   : path.join(process.cwd(), "artifacts", "blog", "articles");
 
 const { getAllLanguages } = await import("../lib/posts");
+// Use the same default as baseUrl.ts (HOSTNAME not set in test → "commissionk.it")
+const baseUrl = "https://commissionk.it";
 
 async function loadSitemap() {
   const { default: sitemap } = await import("../app/sitemap");
@@ -18,7 +20,7 @@ describe("blog sitemap", () => {
   test("does not include redirecting /blog root", async () => {
     const entries = await loadSitemap();
     const urls = entries.map((e) => e.url);
-    expect(urls).not.toContain("https://commissionk.it/blog");
+    expect(urls).not.toContain(`${baseUrl}/blog`);
   });
 
   test("includes all language index pages", async () => {
@@ -26,7 +28,7 @@ describe("blog sitemap", () => {
     const entries = await loadSitemap();
     const urls = entries.map((e) => e.url);
     for (const lang of languages) {
-      expect(urls).toContain(`https://commissionk.it/blog/${lang}`);
+      expect(urls).toContain(`${baseUrl}/blog/${lang}`);
     }
   });
 

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { baseUrl } from "@/lib/baseUrl";
 
 export const viewport: Viewport = {
   themeColor: "#0D9488",
@@ -7,7 +8,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://commissionk.it"),
+  metadataBase: new URL(baseUrl),
   title: {
     default: "CommissionKit Blog | Sales Commission Management Guides",
     template: "%s | CommissionKit Blog",
@@ -30,14 +31,14 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "CommissionKit",
     locale: "en_US",
-    url: "https://commissionk.it/blog",
-      images: [{ url: "/blog/og.png", width: 1600, height: 630 }],
+    url: `${baseUrl}/blog`,
+      images: [{ url: `${baseUrl}/blog/og.png`, width: 1600, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
     site: "@commissionkit",
     creator: "@commissionkit",
-    images: ["/blog/og.png"],
+    images: [`${baseUrl}/blog/og.png`],
   },
   icons: {
     icon: [

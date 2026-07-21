@@ -11,6 +11,7 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import { LanguagePills } from "@/components/language-pills";
 import { FallbackBanner } from "@/components/fallback-banner";
 import { BlogLeadCapture } from "@/components/blog-lead-capture";
+import { baseUrl, makeAbsolute } from "@/lib/baseUrl";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -39,21 +40,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!post) return { title: dict.postNotFound };
 
   const availableLanguages = getAvailableLanguages(slug);
-  // posts.ts always returns an OG image URL (API route with fallback to og.png)
-  const ogImage = post.ogImage || post.coverImage || post.image;
+  const ogImageRaw = post.ogImage || post.coverImage || post.image;
+  const ogImage = ogImageRaw ? makeAbsolute(ogImageRaw) : undefined;
+  const canonicalUrl = `${baseUrl}/blog/${lang}/${slug}`;
 
   const hreflangLanguages: Record<string, string> = {};
   for (const l of availableLanguages) {
-    hreflangLanguages[l] = `/blog/${l}/${slug}`;
+    hreflangLanguages[l] = `${baseUrl}/blog/${l}/${slug}`;
   }
-  hreflangLanguages["x-default"] = `/blog/en/${slug}`;
+  hreflangLanguages["x-default"] = `${baseUrl}/blog/en/${slug}`;
 
   return {
-    metadataBase: new URL("https://commissionk.it"),
+    metadataBase: new URL(baseUrl),
     title: post.title,
     description: post.description || "",
     alternates: {
-      canonical: `/blog/${lang}/${slug}`,
+      canonical: canonicalUrl,
       languages: hreflangLanguages,
     },
     openGraph: {
@@ -62,7 +64,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       locale: lang === "ar" ? "ar_AR" : lang,
       title: `${post.title} — Blog`,
       description: post.description || "",
-      url: `/blog/${lang}/${slug}`,
+      url: canonicalUrl,
       publishedTime: post.date,
       images: ogImage
         ? [{ url: ogImage, width: 1200, height: 630 }]
@@ -100,8 +102,9 @@ export default async function BlogPost({ params }: Props) {
   const availableLanguages = getAvailableLanguages(slug);
   const isRtl = lang === "ar";
   const fallbackUrl = `/blog/en/${slug}`;
-  const ogImage = post.ogImage || post.coverImage || post.image;
-  const canonicalUrl = `https://commissionk.it/blog/${lang}/${slug}`;
+  const ogImageRaw = post.ogImage || post.coverImage || post.image;
+  const ogImage = ogImageRaw ? makeAbsolute(ogImageRaw) : undefined;
+  const canonicalUrl = `${baseUrl}/blog/${lang}/${slug}`;
 
   return (
     <>
@@ -124,10 +127,10 @@ export default async function BlogPost({ params }: Props) {
             publisher: {
               "@type": "Organization",
               name: "CommissionKit",
-              url: "https://commissionk.it",
+              url: baseUrl,
               logo: {
                 "@type": "ImageObject",
-                url: "https://commissionk.it/brand/logo-full.svg",
+                url: `${baseUrl}/brand/logo-full.svg`,
               },
             },
             mainEntityOfPage: {

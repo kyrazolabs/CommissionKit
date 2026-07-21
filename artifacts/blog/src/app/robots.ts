@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { baseUrl } from "@/lib/baseUrl";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -54,6 +55,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/blog/_next/", "/blog/api/"],
       },
     ],
-    sitemap: "https://commissionk.it/blog/sitemap.xml",
+    sitemap: `${baseUrl}/blog/sitemap.xml`,
   };
 }

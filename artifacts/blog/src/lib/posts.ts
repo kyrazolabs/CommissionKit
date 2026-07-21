@@ -59,9 +59,8 @@ function readPostFile(slugDir: string, filePath: string, slug: string, lang: str
     .find((p) => fs.existsSync(p));
   const coverImage = coverPath ? `/blog/api/cover/${slug}` : undefined;
 
-  // OG image always returns a URL — the API route serves the per-article
-  // image if it exists in opengraphimages/, or falls back to the generic og.png
-  const ogImage = `/blog/api/og/${slug}/${lang}`;
+  // OG image: use the article cover, or fall back to the generic og.png
+  const ogImage = coverImage || "/blog/og.png";
 
   return {
     slug,
