@@ -373,7 +373,6 @@ function App() {
                 </AuthProvider>
               )} />
               <Route path="/calculator" component={CommissionCalculator} />
-              <Route path="/commission-calculator" component={CommissionCalculator} />
               <Route path="/privacy" component={PrivacyPage} />
               <Route path="/terms" component={TermsPage} />
               <Route path="/security" component={SecurityPage} />

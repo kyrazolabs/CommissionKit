@@ -27,28 +27,21 @@ const routeMeta: Record<string, PageMeta> = {
     title: APP_NAME,
     description: DEFAULT_DESCRIPTION,
     robots: "index, follow",
-    keywords: "sales commission software, commission tracking, commission management, sales comp, commission calculator, payout automation",
+    keywords: "commissions systems, commission systems, commission software, commissions software, software for commission sales, commission sales software, sales rep commission software, sales commission management software",
     canonical: `${BASE_URL}/`,
   },
   "/home": {
     title: APP_NAME,
     description: DEFAULT_DESCRIPTION,
     robots: "index, follow",
-    keywords: "sales commission software, commission tracking, commission management, sales comp, commission calculator, payout automation",
+    keywords: "commissions systems, commission systems, commission software, commissions software, software for commission sales, commission sales software, sales rep commission software, sales commission management software",
     canonical: `${BASE_URL}/`,
   },
   "/calculator": {
     title: "Commission Calculator — CommissionKit",
     description: "Calculate sales commissions instantly. Try flat, tiered, and accelerator commission structures for free. No login required.",
     robots: "index, follow",
-    keywords: "commission calculator, sales commission calculator, tiered commission, accelerator commission, flat commission, comp plan, quota",
-    canonical: `${BASE_URL}/calculator`,
-  },
-  "/commission-calculator": {
-    title: "Commission Calculator — CommissionKit",
-    description: "Calculate sales commissions instantly. Try flat, tiered, and accelerator commission structures for free. No login required.",
-    robots: "index, follow",
-    keywords: "commission calculator, sales commission calculator, tiered commission, accelerator commission, flat commission, comp plan, quota",
+    keywords: "commission pay calculator, calculating commissions, calculator commission, commissions calculator, payroll commission calculator, commission on sales calculator, sales commission calculator, sales and commission calculator",
     canonical: `${BASE_URL}/calculator`,
   },
   "/privacy": {
@@ -83,14 +76,14 @@ const routeMeta: Record<string, PageMeta> = {
     title: "Features — CommissionKit",
     description: "Everything you need to manage sales commissions — from plan modeling to final payout.",
     robots: "index, follow",
-    keywords: "sales commission features, commission tracking software, rep portal, commission automation, payout management, deal tracking",
+    keywords: "commission calculation software, sales commission tracking, sales commission tracking software, commission sales software, commission software, sales rep commission software, commissions systems, software for commission sales",
     canonical: `${BASE_URL}/features`,
   },
   "/solutions": {
     title: "Solutions — CommissionKit",
     description: "Commission management solutions for finance teams, sales ops, startups, and enterprises. Automate commissions at any scale.",
     robots: "index, follow",
-    keywords: "sales commission solution, commission management for teams, SaaS commission software, sales comp automation, B2B commission tool",
+    keywords: "sales performance management software, manage sales performance, sales performance management, commission software, sales commission management software",
     canonical: `${BASE_URL}/solutions`,
   },
   "/pricing": {
@@ -106,7 +99,7 @@ export function render(url?: string) {
   const path = url ?? "/";
 
   let element: React.ReactElement;
-  if (path === "/calculator" || path.startsWith("/commission-calculator")) {
+  if (path === "/calculator") {
     element = <CommissionCalculator />;
   } else if (path === "/privacy") {
     element = <PrivacyPage />;

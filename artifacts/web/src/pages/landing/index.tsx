@@ -14,8 +14,16 @@ import { FAQ } from "./FAQ";
 import { FinalCTA } from "./FinalCTA";
 import { Footer } from "./Footer";
 import { Analytics } from "@/lib/analytics";
+import { usePageMeta } from "@/hooks/use-page-meta";
 
 export function LandingPage() {
+  usePageMeta({
+    title: "CommissionKit — Sales Commission Platform",
+    description: "Automate sales commissions for your team. Track reps, deals, and payouts — all in one place.",
+    keywords: "commissions systems, commission systems, commission software, commissions software, software for commission sales, commission sales software, sales rep commission software, sales commission management software",
+    robots: "index, follow",
+  });
+
   useEffect(() => {
     Analytics.landingView();
     document.documentElement.style.scrollBehavior = "smooth";
