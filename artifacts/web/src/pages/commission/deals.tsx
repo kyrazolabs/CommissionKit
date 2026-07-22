@@ -9,7 +9,7 @@ import {
   useDeleteDeal,
   useUpdateDeal,
   useListReps, getListRepsQueryKey,
-  useImportDeals, getListDealsQueryKey
+  useCreateDeal, useImportDeals, getListDealsQueryKey
 } from "@workspace/api-client-react";
 import { DataPagination } from "@/components/ui/data-pagination";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -83,9 +83,6 @@ export function DealsPage() {
     },
     enabled: Boolean(activeWorkspace?.id),
   });
-
-  // Debug: log the actual response shape
-  console.log("[deals] dealsResult:", dealsResult, "error:", error);
 
   const deals = dealsResult?.data ?? [];
   const pagination = dealsResult?.pagination;
@@ -347,9 +344,9 @@ function UpdateDealDialog({ deal, queryParams, workspaceCurrency }: { deal: any,
         const rep = searchReps?.find((r) => r.id === String(data.repId));
         const repName = rep ? rep.name : (formData.repName ?? t("deals.creator.title"));
 
-        queryClient.setQueriesData<any[]>({ queryKey: ['/api/deals'] }, (old) => {
-          if (!old) return [];
-          return old.map(dealItem => {
+        queryClient.setQueriesData<any>({ queryKey: ['/api/deals'] }, (old: any) => {
+          if (!old?.data) return old;
+          return { ...old, data: old.data.map((dealItem: any) => {
             if (dealItem.id === id) {
               return {
                 ...dealItem,
@@ -358,7 +355,7 @@ function UpdateDealDialog({ deal, queryParams, workspaceCurrency }: { deal: any,
               };
             }
             return dealItem;
-          });
+          }) };
         });
 
         return { previousDealsQueries };
@@ -372,7 +369,7 @@ function UpdateDealDialog({ deal, queryParams, workspaceCurrency }: { deal: any,
         useSyncStore.getState().setSyncError(true);
         toast({
           title: t("deals.dealUpdateFailed"),
-          description: t("deals.dealUpdateFailedDescription"),
+          description: err instanceof Error ? err.message : t("deals.dealUpdateFailedDescription"),
           variant: "destructive",
         });
       },
@@ -605,9 +602,9 @@ function DealDeleteAction({ deal, queryParams, currency }: { deal: any, queryPar
         await queryClient.cancelQueries({ queryKey: ['/api/deals'] });
         const previousDealsQueries = queryClient.getQueriesData<any[]>({ queryKey: ['/api/deals'] });
 
-        queryClient.setQueriesData<any[]>({ queryKey: ['/api/deals'] }, (old) => {
-          if (!old) return [];
-          return old.filter(dealItem => dealItem.id !== id);
+        queryClient.setQueriesData<any>({ queryKey: ['/api/deals'] }, (old: any) => {
+          if (!old?.data) return old;
+          return { ...old, data: old.data.filter((dealItem: any) => dealItem.id !== id) };
         });
 
         return { previousDealsQueries };
@@ -621,7 +618,7 @@ function DealDeleteAction({ deal, queryParams, currency }: { deal: any, queryPar
         useSyncStore.getState().setSyncError(true);
         toast({
           title: t("deals.syncError"),
-          description: t("deals.dealDeleteFailedDescription"),
+          description: err instanceof Error ? err.message : t("deals.dealDeleteFailedDescription"),
           variant: "destructive",
         });
       },
@@ -783,7 +780,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
     const dealsToImport = parsedData.map(({ id, ...deal }) => deal);
     
     importMutation.mutate({ data: { period, deals: dealsToImport } }, {
-      onSuccess: (res) => {
+      onSuccess: (res: any) => {
         queryClient.invalidateQueries({ queryKey: getListDealsQueryKey({ period }) });
         toast({ 
           title: res.skipped > 0 ? t("deals.importPartial") : t("deals.importComplete"), 
@@ -982,16 +979,13 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const createMutation = useImportDeals({
+  const createMutation = useCreateDeal({
     mutation: {
       onMutate: async (variables) => {
-        const dealsToImport = variables.data.deals;
-        if (dealsToImport.length !== 1) return;
-
-        const newDeal = dealsToImport[0];
         await queryClient.cancelQueries({ queryKey: ['/api/deals'] });
         const previousDealsQueries = queryClient.getQueriesData<any[]>({ queryKey: ['/api/deals'] });
 
+        const newDeal = variables.data;
         const rep = searchReps?.find((r: any) => String(r.id || r._id) === String(newDeal.repId));
         const repName = rep ? rep.name : t("deals.unknownRep");
 
@@ -1010,9 +1004,9 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
           notes: newDeal.notes || null,
         };
 
-        queryClient.setQueriesData<any[]>({ queryKey: ['/api/deals'] }, (old) => {
-          if (!old) return [optimisticDeal];
-          return [optimisticDeal, ...old];
+        queryClient.setQueriesData<any>({ queryKey: ['/api/deals'] }, (old: any) => {
+          if (!old?.data) return { data: [optimisticDeal], pagination: { page: 1, limit: 50, total: 1, totalPages: 1 } };
+          return { ...old, data: [optimisticDeal, ...old.data], pagination: { ...old.pagination, total: (old.pagination?.total || 0) + 1 } };
         });
 
         return { previousDealsQueries };
@@ -1026,7 +1020,7 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
         useSyncStore.getState().setSyncError(true);
         toast({
           title: t("deals.dealCreateFailed"),
-          description: t("deals.recoveringInput"),
+          description: err instanceof Error ? err.message : t("deals.recoveringInput"),
           variant: "destructive",
         });
         setOpen(true);
@@ -1034,12 +1028,10 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
       onSuccess: () => {
         useSyncStore.getState().setSyncError(false);
         toast({ title: t("deals.dealCreated") });
+        setOpen(false);
       },
-      onSettled: (data, error, variables) => {
-        const dealsToImport = variables.data.deals;
-        if (dealsToImport.length === 1) {
-          queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
-        }
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
       }
     }
   });
@@ -1058,7 +1050,14 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.repId || !formData.name) return;
+    if (!formData.repId || !formData.name) {
+      toast({
+        title: t("deals.validationError"),
+        description: "Sales Rep and Deal Name are required.",
+        variant: "destructive",
+      });
+      return;
+    }
     const stageIsClosed = ["closed_won", "closed_lost"].includes(formData.stage);
     if (stageIsClosed && !formData.closeDate) {
       toast({
@@ -1069,7 +1068,7 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
       return;
     }
 
-    createMutation.mutate({ data: { period, deals: [formData] } }, {
+    createMutation.mutate({ data: formData }, {
       onSuccess: () => {
         setFormData({
           repId: "",
@@ -1084,7 +1083,6 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
         });
       }
     });
-    setOpen(false);
   };
 
   return (
@@ -1170,7 +1168,10 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit">Save Deal</Button>
+            <Button type="submit" disabled={createMutation.isPending}>
+              {createMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+              Save Deal
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
