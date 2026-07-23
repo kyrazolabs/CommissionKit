@@ -8,6 +8,10 @@ import { ContactPage } from "./pages/contact";
 import { FeaturesPage } from "./pages/features";
 import { SolutionsPage } from "./pages/solutions";
 import { PricingPage } from "./pages/pricing";
+import { OdooIntegrationPage } from "./pages/integrations/odoo";
+import { HubspotIntegrationPage } from "./pages/integrations/hubspot";
+import { SalesforceIntegrationPage } from "./pages/integrations/salesforce";
+import { CustomIntegrationPage } from "./pages/integrations/custom";
 
 interface PageMeta {
   title: string;
@@ -93,6 +97,34 @@ const routeMeta: Record<string, PageMeta> = {
     keywords: "commission software pricing, sales commission cost, commission management plans, team pricing, rep commission software",
     canonical: `${BASE_URL}/pricing`,
   },
+  "/integrations/odoo": {
+    title: "Odoo Commission Tracking Integration — CommissionKit",
+    description: "Connect Odoo ERP to CommissionKit and automate your sales commission tracking. Sync sales orders, reps, and invoices automatically. No more manual spreadsheets or commission disputes. Start your free trial.",
+    robots: "index, follow",
+    keywords: "odoo commission integration, odoo sales commission tracking, connect odoo to commission software, odoo commission management, odoo erp commission, automate odoo commission calculation, odoo sales order commission sync",
+    canonical: `${BASE_URL}/integrations/odoo`,
+  },
+  "/integrations/hubspot": {
+    title: "HubSpot Commission Integration — CommissionKit",
+    description: "Connect HubSpot CRM to CommissionKit and automate your sales commission tracking. Sync HubSpot deals, owners, and pipelines automatically. No more CSV exports or manual commission calculations. Start your free trial.",
+    robots: "index, follow",
+    keywords: "hubspot commission integration, hubspot sales commission software, sync hubspot to commission tracking, hubspot CRM commission management, automate hubspot commission calculation, hubspot deal commission sync",
+    canonical: `${BASE_URL}/integrations/hubspot`,
+  },
+  "/integrations/salesforce": {
+    title: "Salesforce Commission Integration — CommissionKit",
+    description: "Connect Salesforce Sales Cloud to CommissionKit and automate your commission tracking. Sync Salesforce opportunities, users, and pipeline stages automatically. Eliminate manual spreadsheets and commission disputes. Start your free trial.",
+    robots: "index, follow",
+    keywords: "salesforce commission integration, salesforce sales commission tracking, connect salesforce to commission software, salesforce opportunity commission sync, salesforce commission management, automate salesforce commission calculation, salesforce sales cloud commission",
+    canonical: `${BASE_URL}/integrations/salesforce`,
+  },
+  "/integrations/custom": {
+    title: "Custom REST API Integration — CommissionKit",
+    description: "Connect any ERP or CRM to CommissionKit via REST API. Configure field mappings with JSONPath, choose your auth method, and sync reps and deals automatically. No code needed. Start your free trial.",
+    robots: "index, follow",
+    keywords: "custom commission integration, REST API commission tracking, connect any CRM to commission software, custom commission software integration, no-code commission connector, JSONPath commission mapping",
+    canonical: `${BASE_URL}/integrations/custom`,
+  },
 };
 
 export function render(url?: string) {
@@ -115,6 +147,14 @@ export function render(url?: string) {
     element = <SolutionsPage />;
   } else if (path === "/pricing") {
     element = <PricingPage />;
+  } else if (path === "/integrations/odoo") {
+    element = <OdooIntegrationPage />;
+  } else if (path === "/integrations/hubspot") {
+    element = <HubspotIntegrationPage />;
+  } else if (path === "/integrations/salesforce") {
+    element = <SalesforceIntegrationPage />;
+  } else if (path === "/integrations/custom") {
+    element = <CustomIntegrationPage />;
   } else {
     element = <LandingPage />;
   }
