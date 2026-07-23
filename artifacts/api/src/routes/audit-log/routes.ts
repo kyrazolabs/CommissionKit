@@ -287,7 +287,6 @@ router.get(
           const event: any = eventsWithChanges[i];
           const ts = event.timestamp ? new Date(event.timestamp).toISOString().replace("T", " ").substring(0, 16) : "";
           const user = event.userName || event.userEmail || "system";
-          const rsc = `${event.action} / ${event.resourceType}`;
           const name = event.resourceName || event.resourceId?.toString() || "";
 
           // Check if we need a new page (leave 60px margin at bottom)
@@ -297,7 +296,7 @@ router.get(
             dy = 20;
           }
 
-          // Event header block
+          // Event header block — action / resourceType / resourceName as separate columns
           doc.setFillColor(245, 247, 250);
           doc.roundedRect(14, dy, pageWidth - 28, 12, 2, 2, "F");
           doc.setFontSize(7.5);
@@ -305,9 +304,10 @@ router.get(
           doc.text(`#${i + 1}`, 18, dy + 8);
           doc.setTextColor(60, 60, 60);
           doc.text(`${ts}`, 28, dy + 8);
-          doc.text(`${user}`, 90, dy + 8);
+          doc.text(`${user}`, 88, dy + 8);
           doc.setTextColor(100, 100, 100);
-          doc.text(rsc, 160, dy + 8);
+          doc.text(event.action, 142, dy + 8);
+          doc.text(event.resourceType, 160, dy + 8);
           if (name) {
             doc.setTextColor(60, 60, 60);
             doc.text(`${name.substring(0, 50)}`, pageWidth - 14, dy + 8, { align: "right" });
