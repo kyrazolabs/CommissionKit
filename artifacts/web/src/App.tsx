@@ -58,6 +58,10 @@ import { SolutionsPage } from "@/pages/solutions";
 import { PricingPage } from "@/pages/pricing";
 import { CareersPage } from "@/pages/careers";
 import { CareersJobPage } from "@/pages/careers-job";
+import { OdooIntegrationPage } from "@/pages/integrations/odoo";
+import { HubspotIntegrationPage } from "@/pages/integrations/hubspot";
+import { SalesforceIntegrationPage } from "@/pages/integrations/salesforce";
+import { CustomIntegrationPage } from "@/pages/integrations/custom";
 
 import { ThemeProvider } from "@/hooks/use-theme";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -380,6 +384,10 @@ function App() {
               <Route path="/features" component={FeaturesPage} />
               <Route path="/solutions" component={SolutionsPage} />
               <Route path="/pricing" component={PricingPage} />
+              <Route path="/integrations/odoo" component={OdooIntegrationPage} />
+              <Route path="/integrations/hubspot" component={HubspotIntegrationPage} />
+              <Route path="/integrations/salesforce" component={SalesforceIntegrationPage} />
+              <Route path="/integrations/custom" component={CustomIntegrationPage} />
               <Route path="/careers/:slug" component={CareersJobPage} />
               <Route path="/careers" component={CareersPage} />
               <Route path="/forgot-password" component={() => (
