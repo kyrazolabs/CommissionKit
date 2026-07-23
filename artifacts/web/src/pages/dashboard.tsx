@@ -23,6 +23,7 @@ import { useTableSort } from "@/hooks/use-table-sort";
 import { StatCard } from "@/components/stat-card";
 import { SortableTableHead } from "@/components/sortable-table-head";
 import { RevenueTrendChart } from "@/components/revenue-trend-chart";
+import { useFeedbackPrompt } from "@/components/feedback-dialog";
 
 export function Dashboard() {
   const { t } = useTranslation();
@@ -34,6 +35,7 @@ export function Dashboard() {
   });
   const { activeWorkspace } = useWorkspace();
   const { hasPermission, isLoading: roleLoading } = useRole();
+  const { banner: feedbackBanner, dialog: feedbackDialog } = useFeedbackPrompt();
 
   const currency = activeWorkspace?.currency || "USD";
   const currentPeriod = format(new Date(), "yyyy-MM");
@@ -90,6 +92,9 @@ export function Dashboard() {
       {/* Setup checklist for new workspaces */}
       <SetupChecklist />
 
+      {/* Feedback prompt */}
+      {feedbackBanner}
+
       {/* Stat cards */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <StatCard
@@ -122,21 +127,19 @@ export function Dashboard() {
         />
       </div>
 
-      {/* Revenue trend chart (6 months) */}
-      {monthlyTrends.length > 0 && (
-        <div className="bg-card border border-card-border rounded-xl px-5 py-5" style={{ boxShadow: "var(--shadow-card)" }}>
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="flex items-center gap-1.5">
-                <p className="text-[14.5px] font-semibold text-foreground">{t("dashboard.revenueTrend")}</p>
-                <HelpTooltip content={t("dashboard.revenueTrendTooltip")} />
-              </div>
-              <p className="text-[12px] text-muted-foreground mt-0.5">{t("dashboard.last6Months")}</p>
+      {/* Revenue trend chart (last 6 months) */}
+      <div className="bg-card border border-card-border rounded-xl px-5 py-5" style={{ boxShadow: "var(--shadow-card)" }}>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <div className="flex items-center gap-1.5">
+              <p className="text-[14.5px] font-semibold text-foreground">{t("dashboard.revenueTrend")}</p>
+              <HelpTooltip content={t("dashboard.revenueTrendTooltip")} />
             </div>
+            <p className="text-[12px] text-muted-foreground mt-0.5">{t("dashboard.last6Months")}</p>
           </div>
-          <RevenueTrendChart data={monthlyTrends} currency={currency} />
         </div>
-      )}
+        <RevenueTrendChart data={monthlyTrends} currency={currency} />
+      </div>
 
       {/* Lower grid: earners table (3fr) + right column (2fr) */}
       <div className="grid gap-5" style={{ gridTemplateColumns: "3fr 2fr" }}>
@@ -347,6 +350,7 @@ export function Dashboard() {
             )}
           </div>
         </div>
+        {feedbackDialog}
       </div>
     </div>
   );

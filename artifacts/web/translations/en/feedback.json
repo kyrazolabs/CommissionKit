@@ -1,0 +1,12 @@
+{
+  "title": "Send Feedback",
+  "description": "We'd love to hear your thoughts. Your feedback helps us improve CommissionKit.",
+  "promptBanner": "How's your experience? We'd love your feedback.",
+  "placeholder": "Tell us what you think...",
+  "ratingRequired": "Please select a rating",
+  "submitting": "Sending...",
+  "submit": "Send Feedback",
+  "thanks": "Thanks for your feedback!",
+  "submitFailed": "Failed to send feedback. Please try again.",
+  "stars": "stars"
+}
