@@ -212,45 +212,37 @@ router.get(
         y += 2;
       }
 
-      // --- Events Table ---
+      // --- Events Summary Table ---
       if (events.length === 0) {
         doc.setFontSize(11);
         doc.setTextColor(100, 100, 100);
         doc.text("No audit events found for this period.", pageWidth / 2, y + 10, { align: "center" });
       } else {
-        const formatChanges = (changes: any[]): string => {
-          if (!changes || changes.length === 0) return "";
-          return changes.map(c => {
-            const from = c.from !== undefined ? JSON.stringify(c.from) : "(empty)";
-            const to = c.to !== undefined ? JSON.stringify(c.to) : "(empty)";
-            return `${c.field}: ${from} \u2192 ${to}`;
-          }).join("\n");
-        };
-
-        const rows = events.map((event: any) => [
+        // Summary table — compact, no overflowing Changes column
+        const summaryRows = events.map((event: any, i: number) => [
+          String(i + 1),
           event.timestamp ? new Date(event.timestamp).toISOString().replace("T", " ").substring(0, 16) : "",
-          (event.userName || event.userEmail || "").substring(0, 35),
+          (event.userName || event.userEmail || "").substring(0, 32),
           event.action,
           event.resourceType,
-          (event.resourceName || "").substring(0, 40),
-          formatChanges(event.changes ?? []),
+          (event.resourceName || event.resourceId?.toString() || "").substring(0, 38),
         ]);
 
         autoTable(doc, {
-          head: [["Timestamp", "User", "Action", "Resource", "Name", "Changes"]],
-          body: rows,
+          head: [["#", "Timestamp", "User", "Action", "Resource", "Name"]],
+          body: summaryRows,
           startY: y,
           theme: "grid",
           headStyles: { fillColor: [13, 148, 136], textColor: [255, 255, 255], fontSize: 7.5, cellPadding: 2 },
           bodyStyles: { fontSize: 7, cellPadding: { top: 1.5, right: 2, bottom: 1.5, left: 2 } },
           alternateRowStyles: { fillColor: [245, 247, 250] },
           columnStyles: {
-            0: { cellWidth: 34 },
+            0: { cellWidth: 8, halign: "right" },
             1: { cellWidth: 32 },
-            2: { cellWidth: 16 },
-            3: { cellWidth: 20 },
-            4: { cellWidth: 28 },
-            5: { cellWidth: "wrap" },
+            2: { cellWidth: 32 },
+            3: { cellWidth: 16 },
+            4: { cellWidth: 20 },
+            5: { cellWidth: 40 },
           },
           didDrawPage: (data: any) => {
             const pc = doc.getNumberOfPages();
@@ -259,7 +251,87 @@ router.get(
             doc.text(`Page ${data.pageNumber} of ${pc}`, pageWidth - 20, pageHeight - 8, { align: "right" });
             doc.text(`Generated: ${generatedAt}`, 14, pageHeight - 8);
           },
+          didParseCell: (data: any) => {
+            // Color-code action column
+            if (data.column.index === 3) {
+              const action = data.cell.raw;
+              if (action === "create") data.cell.styles.textColor = [13, 148, 136];
+              else if (action === "update") data.cell.styles.textColor = [59, 130, 246];
+              else if (action === "delete") data.cell.styles.textColor = [239, 68, 68];
+            }
+          },
         });
+      }
+
+      // --- Detailed Changes Section ---
+      const eventsWithChanges = events.filter((e: any) => e.changes && e.changes.length > 0);
+      if (eventsWithChanges.length > 0) {
+        doc.addPage();
+        let dy = 25;
+
+        doc.setFontSize(14);
+        doc.setTextColor(13, 148, 136);
+        doc.text("Detailed Changes", 14, dy);
+        dy += 8;
+        doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`${eventsWithChanges.length} event(s) with changes recorded`, 14, dy);
+        dy += 4;
+
+        doc.setDrawColor(13, 148, 136);
+        doc.setLineWidth(0.5);
+        doc.line(14, dy, pageWidth - 14, dy);
+        dy += 8;
+
+        for (let i = 0; i < eventsWithChanges.length; i++) {
+          const event: any = eventsWithChanges[i];
+          const ts = event.timestamp ? new Date(event.timestamp).toISOString().replace("T", " ").substring(0, 16) : "";
+          const user = event.userName || event.userEmail || "system";
+          const rsc = `${event.action} / ${event.resourceType}`;
+          const name = event.resourceName || event.resourceId?.toString() || "";
+
+          // Check if we need a new page (leave 60px margin at bottom)
+          const estimatedHeight = 20 + (event.changes.length * 6);
+          if (dy + estimatedHeight > pageHeight - 20) {
+            doc.addPage();
+            dy = 20;
+          }
+
+          // Event header block
+          doc.setFillColor(245, 247, 250);
+          doc.roundedRect(14, dy, pageWidth - 28, 12, 2, 2, "F");
+          doc.setFontSize(7.5);
+          doc.setTextColor(13, 148, 136);
+          doc.text(`#${i + 1}`, 18, dy + 8);
+          doc.setTextColor(60, 60, 60);
+          doc.text(`${ts}`, 28, dy + 8);
+          doc.text(`${user}`, 90, dy + 8);
+          doc.setTextColor(100, 100, 100);
+          doc.text(rsc, 160, dy + 8);
+          if (name) {
+            doc.setTextColor(60, 60, 60);
+            doc.text(`${name.substring(0, 50)}`, pageWidth - 14, dy + 8, { align: "right" });
+          }
+          dy += 14;
+
+          // Change rows
+          for (const ch of event.changes) {
+            if (dy + 6 > pageHeight - 20) { doc.addPage(); dy = 20; }
+            doc.setFontSize(7);
+            doc.setTextColor(100, 100, 100);
+            doc.text(ch.field, 18, dy + 4);
+            doc.setTextColor(239, 68, 68);
+            const fromVal = ch.from !== undefined ? JSON.stringify(ch.from) : "(empty)";
+            doc.text(fromVal.substring(0, 40), 70, dy + 4);
+            doc.setTextColor(60, 60, 60);
+            doc.text("\u2192", 116, dy + 4);
+            doc.setTextColor(13, 148, 136);
+            const toVal = ch.to !== undefined ? JSON.stringify(ch.to) : "(empty)";
+            doc.text(toVal.substring(0, 40), 126, dy + 4);
+            dy += 5;
+          }
+          dy += 5;
+        }
       }
 
       const pdfBuffer = Buffer.from(doc.output("arraybuffer"));
