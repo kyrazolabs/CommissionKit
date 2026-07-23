@@ -41,6 +41,10 @@ Allow: /pricing
 Allow: /calculator
 Allow: /blog/
 Allow: /blog
+Allow: /integrations/odoo
+Allow: /integrations/hubspot
+Allow: /integrations/salesforce
+Allow: /integrations/custom
 Allow: /login
 Allow: /register
 Allow: /forgot-password
@@ -89,6 +93,7 @@ User-agent: OAI-SearchBot
 Content-Signal: search=yes,ai-input=yes,ai-train=no
 Allow: /
 Allow: /blog/
+Allow: /integrations/
 
 Disallow: /api/
 Disallow: /dash/
@@ -103,6 +108,7 @@ User-agent: anthropic-ai
 Content-Signal: search=yes,ai-input=yes,ai-train=no
 Allow: /
 Allow: /blog/
+Allow: /integrations/
 
 Disallow: /api/
 Disallow: /dash/
@@ -116,6 +122,7 @@ User-agent: PerplexityBot
 Content-Signal: search=yes,ai-input=yes,ai-train=no
 Allow: /
 Allow: /blog/
+Allow: /integrations/
 
 Disallow: /api/
 Disallow: /dash/
@@ -129,6 +136,7 @@ User-agent: Google-Extended
 Content-Signal: search=yes,ai-input=yes,ai-train=no
 Allow: /
 Allow: /blog/
+Allow: /integrations/
 
 Disallow: /api/
 Disallow: /dash/
@@ -140,6 +148,7 @@ Crawl-delay: 2
 # ── Google Search (standard SEO) ──────────────────────────────
 User-agent: Googlebot
 Allow: /
+Allow: /integrations/
 Disallow: /api/
 Disallow: /dash/
 Disallow: /dash
@@ -150,6 +159,7 @@ Crawl-delay: 1
 # ── Bing / Microsoft Copilot ──────────────────────────────────
 User-agent: Bingbot
 Allow: /
+Allow: /integrations/
 Disallow: /api/
 Disallow: /dash/
 Disallow: /dash
@@ -167,6 +177,7 @@ Disallow: /portal/
 Disallow: /app/
 Allow: /
 Allow: /blog/
+Allow: /integrations/
 
 Crawl-delay: 10
 
@@ -174,6 +185,7 @@ Crawl-delay: 10
 User-agent: Applebot-Extended
 Content-Signal: search=yes,ai-input=yes,ai-train=no
 Allow: /
+Allow: /integrations/
 Disallow: /api/
 Disallow: /dash/
 Disallow: /dash
@@ -203,6 +215,7 @@ User-agent: cohere-ai
 Content-Signal: search=yes,ai-input=yes,ai-train=no
 Allow: /
 Allow: /blog/
+Allow: /integrations/
 
 Disallow: /api/
 Disallow: /dash/
@@ -217,6 +230,7 @@ User-agent: meta-externalagent
 Content-Signal: search=yes,ai-input=yes,ai-train=no
 Allow: /
 Allow: /blog/
+Allow: /integrations/
 
 Disallow: /api/
 Disallow: /dash/
@@ -230,6 +244,7 @@ User-agent: YouBot
 Content-Signal: search=yes,ai-input=yes,ai-train=no
 Allow: /
 Allow: /blog/
+Allow: /integrations/
 
 Disallow: /api/
 Disallow: /dash/
