@@ -132,7 +132,8 @@ router.post("/portal/:accessCode/login", async (req, res): Promise<void> => {
     return;
   }
 
-  // Build the portal's virtual email from the username or accessCode
+  // Build the portal's virtual email from the rep's portalUsername (or fall back to accessCode).
+  // portalUsername is the canonical login identity; portalAccessCode is the URL identifier.
   const expectedEmailPrefix = rep.portalUsername || rep.portalAccessCode;
   const expectedEmail = `${expectedEmailPrefix}@portal.commissionkit.io`;
   const providedEmail = `${username.trim().toLowerCase()}@portal.commissionkit.io`;

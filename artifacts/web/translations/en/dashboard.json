@@ -33,5 +33,12 @@
   "recentRunsTooltip": "Historical calculation snapshots. Each run locks the commission data for that period.",
   "previousCalculationJobs": "Previous calculation jobs",
   "noRunsYet": "No runs yet.",
-  "completed": "Completed"
+  "completed": "Completed",
+  "revenueTrend": "Revenue Trend",
+  "revenueTrendTooltip": "Monthly revenue and commission for the last 6 months.",
+  "last6Months": "Last 6 months",
+  "chart": {
+    "revenue": "Revenue",
+    "commission": "Commission"
+  }
 }
