@@ -15,6 +15,9 @@ import {
   DollarSign,
   TrendingUp,
   Wallet,
+  Layers,
+  Clock,
+  ArrowDownToLine,
 } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
@@ -165,6 +168,17 @@ export function PortalDashboard({
     return months;
   })();
 
+  // Financial metrics from payouts
+  const totalOwed = payouts
+    .filter((p) => p.status === "pending" || p.status === "approved")
+    .reduce((s, p) => s + (p.finalAmount || p.commissionAmount || 0), 0);
+  const totalPaidLifetime = payouts
+    .filter((p) => p.status === "paid")
+    .reduce((s, p) => s + (p.finalAmount || p.commissionAmount || 0), 0);
+  const ytdPaid = payouts
+    .filter((p) => p.status === "paid" && p.paymentDate && new Date(p.paymentDate).getFullYear() === new Date().getFullYear())
+    .reduce((s, p) => s + (p.finalAmount || p.commissionAmount || 0), 0);
+
   return (
     <div className="space-y-6">
       {/* 3 Stat Cards */}
@@ -191,6 +205,40 @@ export function PortalDashboard({
           tooltip={t("portal.dealsWonTooltip", "Number of deals closed this period")}
         />
       </div>
+
+      {/* Financial Summary — Plan, Owed, Paid, YTD */}
+      <Card className="rounded-xl border border-card-border bg-card">
+        <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-border">
+          <div className="px-5 py-4">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Layers className="size-3.5 text-muted-foreground" />
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t("portal.plan", "Plan")}</p>
+            </div>
+            <p className="text-sm font-medium text-foreground">{summary.planName || "—"}</p>
+          </div>
+          <div className="px-5 py-4">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Clock className="size-3.5 text-amber-500" />
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t("portal.outstanding", "Outstanding")}</p>
+            </div>
+            <p className="text-sm font-semibold text-foreground tabular-nums">{formatCurrency(totalOwed, summary.currency)}</p>
+          </div>
+          <div className="px-5 py-4">
+            <div className="flex items-center gap-1.5 mb-1">
+              <ArrowDownToLine className="size-3.5 text-green-500" />
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t("portal.totalPaid", "Total Paid")}</p>
+            </div>
+            <p className="text-sm font-semibold text-foreground tabular-nums">{formatCurrency(totalPaidLifetime, summary.currency)}</p>
+          </div>
+          <div className="px-5 py-4">
+            <div className="flex items-center gap-1.5 mb-1">
+              <TrendingUp className="size-3.5 text-primary" />
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t("portal.ytdPaid", "YTD Paid")}</p>
+            </div>
+            <p className="text-sm font-semibold text-foreground tabular-nums">{formatCurrency(ytdPaid, summary.currency)}</p>
+          </div>
+        </div>
+      </Card>
 
       {/* Currency Breakdown */}
       {showCurrencyBreakdown && (
@@ -237,7 +285,7 @@ export function PortalDashboard({
           </h2>
         </div>
         <div className="px-5  pb-4">
-          <div className="h-45">
+          <div className="h-55">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={last6Months} margin={{ top: 4, right: 16, bottom: 0, left: -16 }}>
                 <defs>

@@ -282,7 +282,7 @@ export function Dashboard() {
               <RunCalculationDialog
                 isProcessing={recentRuns.some((r: any) => r.status === "pending" || r.status === "processing")}
                 trigger={
-                  <Button className="w-full rounded-xl text-[13px] font-semibold">
+                  <Button className="w-full  font-semibold">
                     {t("dashboard.run", { period: format(new Date(currentPeriod + "-01"), "MMM yyyy") })}
                   </Button>
                 }

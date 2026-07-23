@@ -238,7 +238,7 @@ router.get(
           alternateRowStyles: { fillColor: [245, 247, 250] },
           columnStyles: {
             0: { cellWidth: 8, halign: "right" },
-            1: { cellWidth: 32 },
+            1: { cellWidth: 28 },
             2: { cellWidth: 32 },
             3: { cellWidth: 16 },
             4: { cellWidth: 20 },
@@ -263,74 +263,162 @@ router.get(
         });
       }
 
+      
       // --- Detailed Changes Section ---
       const eventsWithChanges = events.filter((e: any) => e.changes && e.changes.length > 0);
       if (eventsWithChanges.length > 0) {
         doc.addPage();
-        let dy = 25;
+        let dy = 22;
 
-        doc.setFontSize(14);
-        doc.setTextColor(13, 148, 136);
-        doc.text("Detailed Changes", 14, dy);
-        dy += 8;
-        doc.setFontSize(8);
-        doc.setTextColor(100, 100, 100);
-        doc.text(`${eventsWithChanges.length} event(s) with changes recorded`, 14, dy);
-        dy += 4;
+        const marginX = 14;
+        const contentWidth = pageWidth - marginX * 2;
 
-        doc.setDrawColor(13, 148, 136);
-        doc.setLineWidth(0.5);
-        doc.line(14, dy, pageWidth - 14, dy);
-        dy += 8;
+        // Column layout for change rows (relative to marginX)
+        const col: any = {
+          field: marginX + 6,
+          fieldW: 34,
+        };
+        col.from = col.field + 36;
+        col.fromW = (contentWidth - 36 - 14 - 20) / 2;
+        col.arrow = col.from + col.fromW + 4;
+        col.to = col.arrow + 10;
+        col.toW = col.fromW;
+
+        const drawSectionHeader = (continued: boolean) => {
+          doc.setFontSize(14);
+          doc.setTextColor(13, 148, 136);
+          doc.text(`Detailed Changes${continued ? " (cont'd)" : ""}`, marginX, dy);
+          dy += 7;
+          doc.setFontSize(8);
+          doc.setTextColor(100, 100, 100);
+          doc.text(`${eventsWithChanges.length} event(s) with changes recorded`, marginX, dy);
+          dy += 5;
+          doc.setDrawColor(13, 148, 136);
+          doc.setLineWidth(0.5);
+          doc.line(marginX, dy, pageWidth - marginX, dy);
+          dy += 8;
+        };
+
+        const drawChangeColumnHeaders = () => {
+          doc.setFontSize(7);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(120, 120, 120);
+          doc.text("FIELD", col.field, dy);
+          doc.text("FROM", col.from, dy);
+          doc.text("TO", col.to, dy);
+          doc.setFont("helvetica", "normal");
+          dy += 2;
+          doc.setDrawColor(225, 228, 232);
+          doc.setLineWidth(0.2);
+          doc.line(marginX, dy, pageWidth - marginX, dy);
+          dy += 4;
+        };
+
+        drawSectionHeader(false);
 
         for (let i = 0; i < eventsWithChanges.length; i++) {
           const event: any = eventsWithChanges[i];
-          const ts = event.timestamp ? new Date(event.timestamp).toISOString().replace("T", " ").substring(0, 16) : "";
-          const user = event.userName || event.userEmail || "system";
+          const ts = event.timestamp
+            ? new Date(event.timestamp).toUTCString()
+            : "";
+          const user = `${event.userName} (${event.userEmail})` || event.userName || event.userEmail || "system";
           const name = event.resourceName || event.resourceId?.toString() || "";
 
-          // Check if we need a new page (leave 60px margin at bottom)
-          const estimatedHeight = 20 + (event.changes.length * 6);
-          if (dy + estimatedHeight > pageHeight - 20) {
+          // Pre-wrap every change value so we can measure the real card height
+          // (no more silent truncation — the full audit trail survives on paper)
+          const wrappedChanges = event.changes.map((ch: any) => {
+            const fromVal = ch.from !== undefined ? JSON.stringify(ch.from) : "(empty)";
+            const toVal = ch.to !== undefined ? JSON.stringify(ch.to) : "(empty)";
+            const fromLines = doc.splitTextToSize(fromVal, col.fromW);
+            const toLines = doc.splitTextToSize(toVal, col.toW);
+            const fieldLines = doc.splitTextToSize(ch.field, col.fieldW);
+            const lineCount = Math.max(fromLines.length, toLines.length, fieldLines.length);
+            return { field: fieldLines, from: fromLines, to: toLines, lineCount };
+          });
+
+          const headerHeight = 16;
+          const rowsHeight = wrappedChanges.reduce(
+            (sum: number, c: any) => sum + c.lineCount * 4.2 + 2.5,
+            0
+          );
+          const cardHeight = headerHeight + 14 + rowsHeight + 6;
+
+          // Start the whole card on a fresh page rather than splitting it awkwardly
+          if (dy + Math.min(cardHeight, pageHeight - 42) > pageHeight - 18) {
             doc.addPage();
-            dy = 20;
+            dy = 22;
+            drawSectionHeader(true);
           }
 
-          // Event header block — action / resourceType / resourceName as separate columns
+          // --- Event header card ---
           doc.setFillColor(245, 247, 250);
-          doc.roundedRect(14, dy, pageWidth - 28, 12, 2, 2, "F");
-          doc.setFontSize(7.5);
+          doc.setDrawColor(225, 228, 232);
+          doc.setLineWidth(0.3);
+          doc.roundedRect(marginX - 6, dy, contentWidth + 12, headerHeight, 2, 2, "FD");
+
+          doc.setFontSize(8);
+          doc.setFont("helvetica", "bold");
           doc.setTextColor(13, 148, 136);
-          doc.text(`#${i + 1}`, 18, dy + 8);
+          doc.text(`#${i + 1}`, marginX, dy + 6);
+          doc.setFont("helvetica", "normal");
           doc.setTextColor(60, 60, 60);
-          doc.text(`${ts}`, 28, dy + 8);
-          doc.text(`${user}`, 88, dy + 8);
+          doc.text(ts, marginX + 12, dy + 6);
+          doc.text(user, marginX + 60, dy + 6);
+
+          let actionColor = [100, 100, 100];
+          if (event.action === "create") actionColor = [13, 148, 136];
+          else if (event.action === "update") actionColor = [59, 130, 246];
+          else if (event.action === "delete") actionColor = [239, 68, 68];
+          doc.setTextColor(actionColor[0], actionColor[1], actionColor[2]);
+          doc.setFont("helvetica", "bold");
+          doc.text(event.action.toUpperCase(), marginX, dy + 12);
+          doc.setFont("helvetica", "normal");
           doc.setTextColor(100, 100, 100);
-          doc.text(event.action, 142, dy + 8);
-          doc.text(event.resourceType, 160, dy + 8);
+          doc.text(event.resourceType, marginX + 22, dy + 12);
           if (name) {
             doc.setTextColor(60, 60, 60);
-            doc.text(`${name.substring(0, 50)}`, pageWidth - 14, dy + 8, { align: "right" });
+            doc.text(name.substring(0, 60), marginX + contentWidth - 4, dy + 12, { align: "right" });
           }
-          dy += 14;
+          dy += headerHeight + 4;
 
-          // Change rows
-          for (const ch of event.changes) {
-            if (dy + 6 > pageHeight - 20) { doc.addPage(); dy = 20; }
+          // --- Column headers for this event's changes ---
+          drawChangeColumnHeaders();
+
+          // --- Change rows: alternating shading, fully wrapped text (nothing cut) ---
+          wrappedChanges.forEach((c: any, idx: number) => {
+            const rowH = c.lineCount * 4.2 + 2.5;
+
+            if (dy + rowH > pageHeight - 18) {
+              doc.addPage();
+              dy = 22;
+              drawSectionHeader(true);
+              drawChangeColumnHeaders();
+            }
+
+            if (idx % 2 === 1) {
+              doc.setFillColor(249, 250, 251);
+              doc.rect(marginX - 6, dy - 3, contentWidth + 12, rowH, "F");
+            }
+
             doc.setFontSize(7);
-            doc.setTextColor(100, 100, 100);
-            doc.text(ch.field, 18, dy + 4);
+            doc.setTextColor(80, 80, 80);
+            doc.text(c.field, col.field, dy + 1);
             doc.setTextColor(239, 68, 68);
-            const fromVal = ch.from !== undefined ? JSON.stringify(ch.from) : "(empty)";
-            doc.text(fromVal.substring(0, 40), 70, dy + 4);
-            doc.setTextColor(60, 60, 60);
-            doc.text("\u2192", 116, dy + 4);
+            doc.text(c.from, col.from, dy + 1);
+            doc.setTextColor(160, 160, 160);
+            doc.text("\u2192", col.arrow, dy + 1);
             doc.setTextColor(13, 148, 136);
-            const toVal = ch.to !== undefined ? JSON.stringify(ch.to) : "(empty)";
-            doc.text(toVal.substring(0, 40), 126, dy + 4);
-            dy += 5;
-          }
-          dy += 5;
+            doc.text(c.to, col.to, dy + 1);
+
+            dy += rowH;
+          });
+
+          // Divider between event cards
+          dy += 3;
+          doc.setDrawColor(235, 237, 240);
+          doc.setLineWidth(0.2);
+          doc.line(marginX, dy, pageWidth - marginX, dy);
+          dy += 7;
         }
       }
 

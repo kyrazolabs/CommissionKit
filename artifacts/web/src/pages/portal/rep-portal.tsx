@@ -291,7 +291,7 @@ export function RepPortal() {
           <CardDescription>{t("portal.rep.pastSixMonths")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-[180px]">
+          <div className="h-55">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={last6Months} margin={{ top: 4, right: 4, bottom: 0, left: -16 }}>
                 <defs>
