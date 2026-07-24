@@ -104,6 +104,14 @@ const FAQ = [
     q: "Can I map custom opportunity stages?",
     a: "Yes. Configure stage mapping in the connection settings. Any Salesforce StageName can map to pending, closed_won, or closed_lost. You can also filter which stages sync at all.",
   },
+  {
+    q: "Is my data secure?",
+    a: "All data is encrypted in transit (TLS 1.3) and at rest. We never store your CRM credentials — only encrypted API tokens. You can revoke access from your CRM settings at any time.",
+  },
+  {
+    q: "What happens if the sync fails?",
+    a: "Failed syncs are retried automatically with exponential backoff. You get an email notification if a sync fails three times in a row. No data is lost — the next successful sync picks up where it left off.",
+  },
 ];
 
 export function SalesforceIntegrationPage() {
@@ -111,6 +119,7 @@ export function SalesforceIntegrationPage() {
     title: "Salesforce Commission Integration — CommissionKit",
     description:
       "Connect Salesforce Sales Cloud to CommissionKit and automate your commission tracking. Sync Salesforce opportunities, users, and pipeline stages automatically. Eliminate manual spreadsheets and commission disputes. Start your free trial.",
+    robots: "index, follow",
     keywords:
       "salesforce commission integration, salesforce sales commission tracking, connect salesforce to commission software, salesforce opportunity commission sync, salesforce commission management, automate salesforce commission calculation, salesforce sales cloud commission",
   });
@@ -134,6 +143,9 @@ export function SalesforceIntegrationPage() {
             </p>
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
               Sync your Salesforce opportunities, users, and pipeline stages automatically. Eliminate manual commission spreadsheets and give your reps real-time earnings visibility.
+            </p>
+            <p className="text-sm mx-auto text-muted-foreground max-w-xl mb-4">
+              Unlike tools that bolt on a generic Salesforce connector, CommissionKit reads Opportunities, custom fields, and sandbox environments natively. your Salesforce configuration drives the commission engine, not the other way around.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild className="font-semibold shadow-sm">
@@ -354,10 +366,24 @@ export function SalesforceIntegrationPage() {
               ))}
             </div>
             <p className="text-center text-sm text-muted-foreground">
-              A typical 20-rep team saves{" "}
+              A typical 20-rep team can save{" "}
               <span className="font-semibold text-foreground">$1,500–$3,000/month</span>{" "}
               in finance team labor. Plus the cost of errors caught too late.
             </p>
+            <p className="text-xs text-muted-foreground mt-4">
+              Savings are estimated based on typical finance ops labor costs and time studies from spreadsheet-based commission processes. Actual results vary by team size and process complexity.
+            </p>
+          </div>
+        </section>
+
+        {/* Technical Credibility */}
+        <section className="py-4 px-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="bg-primary/5 border border-primary/10 rounded-lg p-4 text-sm">
+              <p className="text-muted-foreground">
+                <span className="font-medium text-foreground">Built on Salesforce standards.</span> OAuth 2.0 Client Credentials flow with no user login prompts during sync. Reads Opportunities, Users, and custom fields via SOQL. Works with any Salesforce edition that includes API access. Sandbox support included.
+              </p>
+            </div>
           </div>
         </section>
 
@@ -381,6 +407,15 @@ export function SalesforceIntegrationPage() {
                 </AccordionItem>
               ))}
             </Accordion>
+          </div>
+        </section>
+
+        {/* Built by */}
+        <section className="py-12 px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <p className="text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">CommissionKit</span> is built by a small, self-funded team focused exclusively on commission management. No venture capital, no growth-at-all-costs pressure. We build what customers need and we answer support messages ourselves.
+            </p>
           </div>
         </section>
 

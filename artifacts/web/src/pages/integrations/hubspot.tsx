@@ -102,6 +102,14 @@ const FAQ = [
     q: "Which HubSpot plans are supported?",
     a: "All HubSpot plans that include the CRM API. The connector works with Sales Hub Professional, Enterprise, and Starter editions.",
   },
+  {
+    q: "Is my data secure?",
+    a: "All data is encrypted in transit (TLS 1.3) and at rest. We never store your CRM credentials — only encrypted API tokens. You can revoke access from your CRM settings at any time.",
+  },
+  {
+    q: "What happens if the sync fails?",
+    a: "Failed syncs are retried automatically with exponential backoff. You get an email notification if a sync fails three times in a row. No data is lost — the next successful sync picks up where it left off.",
+  },
 ];
 
 export function HubspotIntegrationPage() {
@@ -109,6 +117,7 @@ export function HubspotIntegrationPage() {
     title: "HubSpot Commission Integration — CommissionKit",
     description:
       "Connect HubSpot CRM to CommissionKit and automate your sales commission tracking. Sync HubSpot deals, owners, and pipelines automatically. No more CSV exports or manual commission calculations. Start your free trial.",
+    robots: "index, follow",
     keywords:
       "hubspot commission integration, hubspot sales commission software, sync hubspot to commission tracking, hubspot CRM commission management, automate hubspot commission calculation, hubspot deal commission sync",
   });
@@ -132,6 +141,9 @@ export function HubspotIntegrationPage() {
             </p>
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
               Sync your HubSpot deals, owners, and pipelines automatically. Eliminate manual CSV exports and give your reps real-time commission visibility. Deals close in HubSpot — commissions update in CommissionKit.
+            </p>
+            <p className="text-sm mx-auto text-muted-foreground max-w-xl mb-4">
+              Unlike generic commission tools, CommissionKit reads your actual HubSpot pipeline. deal stages, owner assignments, and close dates, without requiring you to remap your CRM to fit a commission model.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild className="font-semibold shadow-sm">
@@ -352,10 +364,24 @@ export function HubspotIntegrationPage() {
               ))}
             </div>
             <p className="text-center text-sm text-muted-foreground">
-              A typical 20-rep team saves{" "}
-              <span className="font-semibold text-foreground">$1,700–$3,100/year</span>{" "}
+              A typical 20-rep team can save{" "}
+              <span className="font-semibold text-foreground">$1,500–$3,000/month</span>{" "}
               in recovered ops labor alone. Plus eliminated errors and dispute time.
             </p>
+            <p className="text-xs text-muted-foreground mt-4">
+              Savings are estimated based on typical finance ops labor costs and time studies from spreadsheet-based commission processes. Actual results vary by team size and process complexity.
+            </p>
+          </div>
+        </section>
+
+        {/* Technical Credibility */}
+        <section className="py-4 px-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="bg-primary/5 border border-primary/10 rounded-lg p-4 text-sm">
+              <p className="text-muted-foreground">
+                <span className="font-medium text-foreground">Built on HubSpot standards.</span> Auth via Private App tokens with no OAuth redirect complexity. Uses HubSpot's CRM v3 API (current generation). Pipeline stage auto-discovery reads your actual pipelines configuration — no hardcoded stage names.
+              </p>
+            </div>
           </div>
         </section>
 
@@ -379,6 +405,15 @@ export function HubspotIntegrationPage() {
                 </AccordionItem>
               ))}
             </Accordion>
+          </div>
+        </section>
+
+        {/* Built by */}
+        <section className="py-12 px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <p className="text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">CommissionKit</span> is built by a small, self-funded team focused exclusively on commission management. No venture capital, no growth-at-all-costs pressure. We build what customers need and we answer support messages ourselves.
+            </p>
           </div>
         </section>
 

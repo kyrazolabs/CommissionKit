@@ -103,8 +103,12 @@ const FAQ = [
     a: "Yes. The connector preserves the original Odoo currency on each deal. CommissionKit handles conversion at calculation time using exchange-rate snapshots for auditability.",
   },
   {
-    q: "Is my Odoo data secure?",
-    a: "The connector authenticates via Odoo API keys. You can revoke access at any time from your Odoo user settings. Data is encrypted in transit and at rest.",
+    q: "Is my data secure?",
+    a: "All data is encrypted in transit (TLS 1.3) and at rest. We never store your CRM credentials — only encrypted API tokens. You can revoke access from your CRM settings at any time.",
+  },
+  {
+    q: "What happens if the sync fails?",
+    a: "Failed syncs are retried automatically with exponential backoff. You get an email notification if a sync fails three times in a row. No data is lost — the next successful sync picks up where it left off.",
   },
 ];
 
@@ -137,6 +141,9 @@ export function OdooIntegrationPage() {
             </p>
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
               Sync your Odoo sales orders, reps, and invoices automatically. Eliminate manual spreadsheets, calculation errors, and commission disputes. Your reps see their earnings update in real time.
+            </p>
+            <p className="text-sm mx-auto text-muted-foreground max-w-xl mb-4">
+              Unlike generic commission tools that treat Odoo like any other CRM, CommissionKit understands Odoo-specific concepts. sales orders, invoice payment states, and multi-currency that maps to your Odoo configuration.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild className="font-semibold shadow-sm">
@@ -357,10 +364,24 @@ export function OdooIntegrationPage() {
               ))}
             </div>
             <p className="text-center text-sm text-muted-foreground">
-              A typical 20-rep team saves{" "}
+              A typical 20-rep team can save{" "}
               <span className="font-semibold text-foreground">$1,500–$3,000/month</span>{" "}
               in finance team labor alone.
             </p>
+            <p className="text-xs text-muted-foreground mt-4">
+              Savings are estimated based on typical finance ops labor costs and time studies from spreadsheet-based commission processes. Actual results vary by team size and process complexity.
+            </p>
+          </div>
+        </section>
+
+        {/* Technical Credibility */}
+        <section className="py-4 px-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="bg-primary/5 border border-primary/10 rounded-lg p-4 text-sm">
+              <p className="text-muted-foreground">
+                <span className="font-medium text-foreground">Built on Odoo standards.</span> The connector reads <code className="text-xs bg-muted px-1 py-0.5 rounded">sale.order</code>, <code className="text-xs bg-muted px-1 py-0.5 rounded">res.users</code>, and <code className="text-xs bg-muted px-1 py-0.5 rounded">account.move</code> via Odoo's JSON-RPC API (stable across v15–v18). No custom Odoo modules required. Invoice payment states are derived from actual accounting records, not order status guesses.
+              </p>
+            </div>
           </div>
         </section>
 
@@ -384,6 +405,15 @@ export function OdooIntegrationPage() {
                 </AccordionItem>
               ))}
             </Accordion>
+          </div>
+        </section>
+
+        {/* Built by */}
+        <section className="py-12 px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <p className="text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">CommissionKit</span> is built by a small, self-funded team focused exclusively on commission management. No venture capital, no growth-at-all-costs pressure. We build what customers need and we answer support messages ourselves.
+            </p>
           </div>
         </section>
 

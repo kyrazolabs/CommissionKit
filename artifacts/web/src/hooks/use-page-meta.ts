@@ -16,7 +16,12 @@ const DEFAULT_DESCRIPTION = "Automate sales commissions for your team. Track rep
  * Imperatively updates <title>, meta description, and robots tag for
  * client-rendered pages. Use this in every page component.
  */
-export function usePageMeta({ title, description, robots = "noindex, nofollow", keywords }: PageMeta) {
+export function usePageMeta({ title, description, robots, keywords }: PageMeta) {
+  const isStaging = import.meta.env.VITE_STAGING === "true";
+  const defaultRobots = isStaging ? "noindex, nofollow" : "noindex, nofollow";
+  const resolvedRobots = robots ?? defaultRobots;
+  const finalRobots = isStaging ? resolvedRobots.replace(/index/g, "noindex") : resolvedRobots;
+
   useEffect(() => {
     // Title
     const fullTitle = title === APP_NAME ? APP_NAME : `${title} — ${APP_NAME}`;
@@ -38,7 +43,7 @@ export function usePageMeta({ title, description, robots = "noindex, nofollow", 
       robotsEl.setAttribute("name", "robots");
       document.head.appendChild(robotsEl);
     }
-    robotsEl.setAttribute("content", robots);
+    robotsEl.setAttribute("content", finalRobots);
 
     // OG title
     let ogTitleEl = document.querySelector<HTMLMetaElement>('meta[property="og:title"]');
@@ -79,5 +84,5 @@ export function usePageMeta({ title, description, robots = "noindex, nofollow", 
       }
       twKwEl.setAttribute("content", keywords);
     }
-  }, [title, description, robots, keywords]);
+  }, [title, description, finalRobots, keywords]);
 }
