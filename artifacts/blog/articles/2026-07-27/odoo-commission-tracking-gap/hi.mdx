@@ -1,0 +1,92 @@
+---
+title: "Odoo में कमीशन ट्रैकिंग क्यों नहीं है (और फाइनेंस टीमें actually क्या करती हैं)"
+date: "2026-07-27"
+author: "CommissionKit Team"
+tags: ["Odoo", "कमीशन मैनेजमेंट", "सेल्स ऑपरेशंस", "फाइनेंस"]
+keywords: ["odoo commission tracking", "odoo sales commission", "odoo erp commission management", "odoo sales performance tracking", "odoo finance automation", "odoo spreadsheet export commissions"]
+description: "Odoo कोट्स, इनवॉइसिंग, और CRM अच्छे से हैंडल करता है। लेकिन कोई इनबिल्ट कमीशन ट्रैकिंग नहीं है। यहां बताया गया है कि फाइनेंस टीमें actually उस गैप को भरने के लिए क्या करती हैं।"
+cover: cover.jpg
+summary: "Odoo सेल्स ऑर्डर्स और इनवॉइसिंग में अच्छा है, लेकिन यह कमीशन ट्रैक नहीं करता। फाइनेंस टीमें monthly Excel exports, मैन्युअल कैलकुलेशन, और reps के साथ बहुत आने-जाने से उस गैप को भरती हैं।"
+---
+
+**क्विक समरी:** Odoo का सेल्स मॉड्यूल कोट्स, ऑर्डर्स, और इनवॉइसिंग हैंडल करता है, लेकिन इस बात का कोई तरीका नहीं है कि आप ट्रैक करें कि reps उन deals से क्या कमाते हैं। फाइनेंस टीमें monthly CSV exports और स्प्रेडशीट्स से इस गैप को भरती हैं, एक प्रोसेस जो 20 reps की टीम के लिए monthly चार से छह घंटे लेती है। आप उसे डेटा कॉपी करने, कॉलम्स फिक्स करने, और अप्रूवल्स के पीछे भागने में बिताते हैं जबकि reps अपने own shadow records रखते हैं क्योंकि किसी ने उन्हें नहीं बताया कि उन्होंने कितना कमाया। यह आर्टिकल बताता है कि वह वर्कफ्लो actually कैसा दिखता है, क्या cost करता है, और आपके options क्या हैं।
+
+---
+
+Odoo बहुत सी चीजें अच्छे से करता है। सेल्स मॉड्यूल आपको कोट से कन्फर्म ऑर्डर से इनवॉइस तक बिना ज्यादा friction के ले जाता है। CRM opportunities ट्रैक करता है। अकाउंटिंग मॉड्यूल इनवॉइसिंग और पेमेंट्स हैंडल करता है। उन कंपनियों के लिए जिन्हें एक ही जगह पर सेल्स, इन्वेंटरी, और फाइनेंस मैनेज करने के लिए ERP चाहिए, Odoo एक solid choice है।
+
+लेकिन एक चीज है जो Odoo नहीं करता: सेल्स कमीशन ट्रैक करना।
+
+कोई कमीशन मॉड्यूल नहीं है। कमीशन प्लान्स डिफाइन करने, reps की deals पर कमाई कैलकुलेट करने, या पेआउट्स मैनेज करने की कोई जगह नहीं है। सेल्स मॉड्यूल इनवॉइस पर रुक जाता है। उसके बाद क्या होता है, reps को उनके बेचे गए सामान के लिए कैसे pay किया जाता है, वह कहीं और रहता है।
+
+यह कोई bug नहीं है। Odoo कमीशन मैनेजमेंट हैंडल करने के लिए बना ही नहीं था। यह एक ERP है, कमीशन प्लेटफॉर्म नहीं। लेकिन Odoo-based सेल्स टीमों के लिए कमीशन चलाने वाली फाइनेंस टीमों के लिए, वह गैप एक real problem बनाता है।
+
+## Odoo क्या सही करता है
+
+इससे पहले कि हम जो missing है उसमें जाएं, यह acknowledge करना worth है जो काम करता है।
+
+Odoo का सेल्स मॉड्यूल full quote-to-cash flow हैंडल करता है। आप कोट्स बना सकते हैं, उन्हें सेल्स ऑर्डर्स में convert कर सकते हैं, इनवॉइसेस generate कर सकते हैं, और पेमेंट्स ट्रैक कर सकते हैं। CRM integration का मतलब है कि आप lead से closed deal तक full pipeline देख सकते हैं। रिपोर्टिंग आपको rep द्वारा, team द्वारा, product द्वारा सेल्स परफॉर्मेंस में visibility देती है।
+
+इनवॉइसिंग मॉड्यूल पेमेंट स्टेटस ट्रैक करता है। आप जानते हैं कौन से इनवॉइस पेड हैं, कौन से आउटस्टैंडिंग हैं, कौन से ओवरड्यू हैं। यह कमीशन कैलकुलेशन के लिए matter करता है, क्योंकि ज्यादातर टीमें कमीशन collected revenue पर देती हैं, booked revenue पर नहीं।
+
+Odoo multi-currency, multi-company, और multi-warehouse setups भी हैंडल करता है। अगर आप borders के across sell कर रहे हैं या complex inventory manage कर रहे हैं, Odoo आपको cover करता है।
+
+जो यह करने के लिए बना था, उसके लिए Odoo काम करता है। Problem यह है कि कमीशन ट्रैकिंग उस list में नहीं है।
+
+## कमीशन गैप: जहां Odoo खत्म होता है और स्प्रेडशीट शुरू होती है
+
+यहां बताया गया है जो मैं Odoo को सेल्स के लिए use करने वाली कंपनियों में देखता हूं।
+
+डील Odoo में close होती है। सेल्स ऑर्डर confirm होता है। इनवॉइस generate होता है। Rep अगली opportunity पर चला जाता है। कोई कमीशन सिस्टम को कुछ नहीं बताता, क्योंकि Odoo में कोई कमीशन सिस्टम नहीं है।
+
+कमीशन डेटा एक स्प्रेडशीट में रहता है। कभी-कभी यह Google Sheet होता है। कभी-कभी यह shared drive पर Excel file होती है। कभी-कभी यह दोनों का combination होता है, different versions इधर-उधर float कर रहे होते हैं।
+
+स्प्रेडशीट Odoo के साथ sync नहीं होती। यह नहीं जानती कि export run होने के बाद कौन सी deals cancel हुईं। नहीं जानती कि एक rep ने mid-quarter में territories बदलीं। नहीं जानती कि सेल्स मैनेजर ने एक specific deal के लिए special rate approve किया। वह सारी जानकारी Odoo के बाहर communicate होनी चाहिए, usually email या Slack के through, और फिर manually स्प्रेडशीट में enter की जानी चाहिए।
+
+वही gap है। Odoo सेल track करता है। स्प्रेडशीट कमीशन track करती है। वे एक दूसरे से बात नहीं करते।
+
+## असली वर्कफ्लो: फाइनेंस टीमें actually हर महीने क्या करती हैं
+
+यहां वह वर्कफ्लो है जो मैंने Odoo को सेल्स के लिए use करने वाली दर्जनों कंपनियों में देखा है।
+
+Month-end पर, फाइनेंस में कोई Odoo खोलता है और Sales > Orders में जाता है। वह पिछले महीने के confirmed orders को filter करता है और CSV में export करता है। Export में ऑर्डर अमाउंट, partner का नाम, सेल्सपर्सन फील्ड (जिसे Odoo user ID के रूप में store करता है), और ऑर्डर डेट होती है।
+
+इसमें कमीशन रेट नहीं होती। इसमें rep का पूरा नाम नहीं होता। इसमें यह नहीं होता कि इनवॉइस actually paid हुआ है या नहीं।
+
+तो स्प्रेडशीट वाला व्यक्ति उन कॉलम्स को manually add करता है। वह देखता है कि कौन सा user ID किस rep का है। वह इनवॉइसिंग मॉड्यूल check करता है कि किन ऑर्डर्स के paid invoices हैं। वह उस प्लान डॉक्यूमेंट से कमीशन रेट apply करता है जो कहीं shared drive पर रहता है। वह हर deal का कमीशन calculate करता है।
+
+फिर वह रिजल्ट्स सेल्स मैनेजर को approval के लिए email करता है। सेल्स मैनेजर को दो deals मिलती हैं जो count नहीं होनी चाहिए क्योंकि वे internal transfers थीं। उसे एक rep मिलता है जिसे quota accelerator की वजह से higher rate मिलना चाहिए था। स्प्रेडशीट वाला व्यक्ति corrections करता है, recalculate करता है, और फाइल को payout के लिए accounting को भेजता है।
+
+यह 20 reps की टीम के लिए हर महीने चार से छह घंटे लेता है। कभी-कभी ज्यादा अगर currency conversions हों या अगर rep roster mid-month में बदला हो।
+
+## यह practice में क्या cost करता है
+
+स्प्रेडशीट वर्कफ्लो तब काम करता है जब आपके तीन reps हों और महीने में 30 deals। उसके बाद यह टूट जाता है।
+
+**टाइम।** 20 reps की टीम के लिए monthly चार से छह घंटे। यह yearly 50 से 70 घंटे हैं। फाइनेंस स्टाफ के लिए $50/घंटे loaded cost पर, यह labor में $2,500 से $3,500 है। लेकिन real cost यह है कि फाइनेंस का व्यक्ति जो यह काम कर रहा है, वह कुछ ज्यादा valuable कर सकता था। वह हर महीने एक हफ्ता analysis की जगह manual data entry पर बिता रहा है।
+
+**एरर्स।** Manual calculations में error rates होती हैं। मैंने ऐसी स्प्रेडशीट्स देखी हैं जहां एक फॉर्मूला गलत row को reference कर रहा था, जहां एक rep को overpay किया गया क्योंकि स्प्रेडशीट ने clawback account नहीं किया था, जहां एक rep को underpay किया गया क्योंकि plan change के बाद कमीशन रेट update नहीं हुआ था। Errors होती हैं। जब होती हैं, तो correction होता है, apology होता है, और "अगली month ज्यादा careful" का note होता है।
+
+**Rep trust।** यह वह part है जो सबसे ज्यादा friction cause करता है। एक rep 15 तारीख को एक बड़ी deal close करता है। वह जानना चाहता है कि उसने कितना कमाया। जवाब है "फाइनेंस से पूछो," क्योंकि कमीशन डेटा एक स्प्रेडशीट में रहता है जिस तक सिर्फ एक व्यक्ति की access है।
+
+कुछ reps अपने own records रखना शुरू कर देते हैं। वे shadow spreadsheets बनाते हैं जहां वे अपनी deals track करते हैं और अपनी commissions estimate करते हैं। जब official numbers आते हैं और match नहीं करते (क्योंकि rep ने गलत rate use किया, या ऐसी deal count की जो अभी pay नहीं हुई थी), तो dispute होता है। फाइनेंस वाले व्यक्ति को explain करना पड़ता है कि rep के numbers official numbers से match क्यों नहीं करते। इसमें time लगता है। और यह trust erode करता है।
+
+## तो टीमें क्या करती हैं?
+
+तीन approaches हैं जो मैं टीमें adopt करते देखता हूं।
+
+**स्प्रेडशीट्स use करना जारी रखना।** यह छोटी टीमों के लिए काम करता है। अगर आपके तीन reps हैं और महीने में 30 deals, तो स्प्रेडशीट वर्कफ्लो fine है। यह free है, यह flexible है, और हर कोई समझता है कि यह कैसे काम करता है। Pain 5 reps पर शुरू होता है, 10 पर worse होता है, और 15 के बाद unmanageable हो जाता है।
+
+**Custom Odoo modules बनाना।** Odoo extensible है। आप कमीशन ट्रैकिंग add करने के लिए custom modules बना सकते हैं। कुछ टीमें यह करती हैं। Basic कमीशन module बनाने में $5,000 से $15,000 cost आता है, plus ongoing maintenance। हर बार जब Odoo update release करता है, risk होता है कि आपका custom module break हो जाए। और आपको तब तक rep portal या dispute management नहीं मिलता जब तक आप उन्हें भी build न करें।
+
+**Dedicated कमीशन software use करना।** ऐसे tools हैं जो specifically कमीशन management के लिए built हैं। वे Odoo के साथ sync होते हैं, calculations handle करते हैं, rep portals provide करते हैं, disputes manage करते हैं। वे money cost करते हैं, लेकिन वे इस problem के लिए built हैं।
+
+हर approach के tradeoffs हैं। Right choice आपकी team size, आपके budget, और आप कितना pain tolerate करने को तैयार हैं उस पर depend करता है।
+
+## अगला: इस problem को fix करने के लिए आपके options
+
+अगर आप Odoo use कर रहे हैं और कमीशन ट्रैकिंग से struggle कर रहे हैं, आपके पास options हैं। स्प्रेडशीट वर्कफ्लो छोटी टीमों के लिए काम करता है। Custom modules काम करते हैं अगर आपके पास budget है और maintenance के लिए tolerance है। Dedicated कमीशन software काम करता है अगर आप कुछ चाहते हैं जो इस problem के लिए बना हो।
+
+अगले article में, हम हर option को detail में break down करेंगे: क्या cost आता है, क्या मिलता है, कहां break होता है, और कौन सी team sizes के लिए हर approach best काम करता है।
+
+[पढ़ें: Odoo के लिए सेल्स कमीशन ट्रैकिंग: स्प्रेडशीट्स बनाम कस्टम मॉड्यूल्स बनाम डेडिकेटेड सॉफ्टवेयर](/blog/hi/odoo-commission-options-compared)

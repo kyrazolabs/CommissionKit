@@ -1,0 +1,115 @@
+---
+title: "Odoo के लिए सेल्स कमीशन ट्रैकिंग: स्प्रेडशीट्स बनाम कस्टम मॉड्यूल्स बनाम डेडिकेटेड सॉफ्टवेयर"
+date: "2026-07-27"
+author: "CommissionKit Team"
+tags: ["Odoo", "कमीशन मैनेजमेंट", "सेल्स ऑपरेशंस", "तुलना"]
+keywords: ["odoo commission structure", "odoo sales commission calculation", "how to track commissions in odoo", "odoo commission formula", "odoo sales rep commission", "odoo commission management"]
+description: "Odoo use करते समय comissions handle करने के तीन तरीके: स्प्रेडशीट्स, कस्टम मॉड्यूल्स, या डेडिकेटेड सॉफ्टवेयर। costs, tradeoffs, और आपकी team size के लिए क्या काम करता है, इसकी ईमानदार तुलना।"
+cover: cover.jpg
+summary: "Odoo के साथ commissions track करने के तीन तरीके: स्प्रेडशीट्स (free लेकिन manual), कस्टम मॉड्यूल्स (build और maintain करने में expensive), या डेडिकेटेड सॉफ्टवेयर (इसके लिए built)। यहां बताया गया है कि वे कैसे compare करते हैं।"
+---
+
+**क्विक समरी:** अगर आप Odoo use करते हैं और sales commissions track करने की जरूरत है, आपके पास तीन रास्ते हैं। स्प्रेडशीट्स free और familiar हैं लेकिन पांच reps के बाद scale नहीं होतीं। Custom Odoo modules सब कुछ एक system में रखते हैं लेकिन build करने में $5,000 से $15,000 cost आते हैं और Odoo updates पर break होते हैं। Dedicated commission software महीने के $200 से $500 cost करता है लेकिन calculations, rep portals, और disputes ready-made handle करता है। यह article तीनों को compare करता है ताकि आप decide कर सकें कि आपकी team size और budget के लिए क्या fit बैठता है।
+
+---
+
+अगर आप Odoo को sales के लिए use कर रहे हैं और commissions track करने की जरूरत है, आपके पास तीन options हैं। आप spreadsheets use करना जारी रख सकते हैं। आप custom Odoo modules बना सकते हैं। या आप dedicated commission software use कर सकते हैं।
+
+हर approach अलग-अलग teams के लिए काम करता है। Spreadsheet workflow तब ठीक है जब आपके तीन reps हों और महीने में 30 deals। Custom modules तब sense करते हैं जब आपके पास development budget हो और specific requirements हों जो off-the-shelf tools cover नहीं करते। Dedicated software सही choice है जब आप कुछ चाहते हैं जो commission management के लिए built हो और आपकी team grow करने पर scale हो।
+
+यहां बताया गया है कि वे कैसे compare करते हैं।
+
+## Option 1: स्प्रेडशीट्स use करना जारी रखना
+
+ज्यादातर Odoo teams यहां से start करती हैं। आप sales orders को CSV में export करते हैं, spreadsheet में paste करते हैं, commission rates और rep names के लिए columns add करते हैं, और calculate करते हैं कि हर rep क्या कमाता है।
+
+**क्या काम करता है:**
+यह free है। आप पहले से spreadsheets use करना जानते हैं। आप कोई भी logic बना सकते हैं जो आपको चाहिए, जैसे आपको चाहिए। कोई vendor lock-in नहीं, कोई monthly fees नहीं, कोई maintain करने के लिए integration नहीं।
+
+एक छोटी team (एक से तीन reps, महीने में 50 से कम deals) के लिए, spreadsheet workflow बिल्कुल ठीक है। Finance person जिसने इसे बनाया है, वह इसे समझता है। Sales manager इसे review कर सकता है। Reps को उनके numbers मिलते हैं, भले ही उन्हें मांगने पड़ें।
+
+**क्या काम नहीं करता:**
+Spreadsheet Odoo के साथ sync नहीं होती। हर महीने, किसी को data export करना पड़ता है, paste करना पड़ता है, और उन columns को fix करना पड़ता है जहां Odoo ने rep names की जगह user IDs दिए। इसमें time लगता है। 20 की team के लिए, यह महीने में चार से छह घंटे है।
+
+Manual calculations में error rates होती हैं। एक formula गलत row को reference करता है। Plan change के बाद commission rate update नहीं होता। Rep को ज्यादा या कम pay हो जाता है। जब errors होते हैं, तो correction होता है, apology होता है, और "अगले महीने ज्यादा careful" का note होता है।
+
+Reps finance से पूछे बिना अपनी earnings नहीं देख सकते। Spreadsheet shared drive पर या Google Sheets में रहती है, और सिर्फ एक या दो लोगों की access होती है। Reps अपने own records रखना शुरू कर देते हैं। जब official numbers rep के estimates से match नहीं करते, तो dispute होता है।
+
+Spreadsheet scale भी नहीं होती। पांच reps के बाद, manual work एक real burden बन जाता है। 10 reps के बाद, यह लगभग unmanageable हो जाता है। 15 के बाद, हर महीने कुछ break होता है।
+
+**किसके लिए काम करता है:** एक से तीन reps और महीने में 50 से कम deals वाली teams। अगर आप छोटे हैं और spreadsheet workflow अभी pain cause नहीं कर रहा है, तो इसे change करने का कोई reason नहीं है।
+
+## Option 2: Custom Odoo modules बनाना
+
+Odoo extensible है। आप Odoo में directly commission tracking add करने के लिए custom modules बना सकते हैं। Commission data आपके sales orders और invoices के साथ same database में रहता है। सब कुछ एक system में रहता है।
+
+**क्या काम करता है:**
+Data Odoo में रहता है। आपको spreadsheet में export करके manually reconcile नहीं करना पड़ता। Commission module sales orders पढ़ सकता है, invoice payment status check कर सकता है, और commissions automatically calculate कर सकता है।
+
+आप exactly बना सकते हैं जो आपको चाहिए। अगर आपके commission plans complex हैं (tiered rates, accelerators, team splits, multi-currency), तो आप इसे custom module में model कर सकते हैं। आप rep-facing views भी बना सकते हैं ताकि reps finance से पूछे बिना अपनी earnings देख सकें।
+
+**क्या काम नहीं करता:**
+इसे build करने में money cost आता है। Basic commission module में $5,000 से $15,000 development time का cost आता है। Rep portals, dispute management, और payout tracking वाला more complex module $20,000 या ज्यादा cost कर सकता है।
+
+इसे maintain करने में money cost आता है। हर बार जब Odoo update release करता है (जो regularly होता है), risk होता है कि आपका custom module break हो जाए। आपको ऐसा developer चाहिए जो Odoo की architecture और आपकी commission logic दोनों को समझता हो। वह developer available होना चाहिए जब things break हों, जो आमतौर पर month-end पर होता है जब आप commissions run करने की कोशिश कर रहे होते हैं।
+
+आप कुछ बना रहे हैं जो पहले से exist करता है। Commission management एक solved problem है। इसके लिए specifically built tools हैं। जब आप custom module बनाते हैं, आप उन tools को reinvent कर रहे हैं, लेकिन सिर्फ अपने specific use case के लिए। आपको उन features का benefit नहीं मिलता जो दूसरी teams ने request किए हैं, जैसे dispute workflows, audit trails, या self-service password resets वाले rep portals।
+
+**किसके लिए काम करता है:** Specific commission requirements वाली teams जो off-the-shelf tools cover नहीं करते, और custom module build और maintain करने का budget। अगर आपके commission plans highly unusual हैं (complex multi-level overrides, industry-specific logic), तो custom module sense कर सकता है। लेकिन ज्यादातर teams के लिए, cost और maintenance burden benefits से ज्यादा हैं।
+
+## Option 3: Dedicated commission software
+
+ऐसे tools हैं जो specifically commission management के लिए built हैं। वे Odoo के साथ sync होते हैं, calculations handle करते हैं, rep portals provide करते हैं, disputes manage करते हैं, और reports generate करते हैं।
+
+**क्या काम करता है:**
+यह इस problem के लिए built है। Tool commission plan modeling, automatic calculations, rep portals, dispute management, payout tracking, और reporting handle करता है। आपको इसमें से कुछ भी build नहीं करना पड़ता।
+
+यह Odoo के साथ sync होता है। Commission tool Odoo से sales order data automatically pull करता है। आपको CSV में export करके spreadsheet में paste नहीं करना पड़ता। Sync schedule पर चलता है (daily, weekly, या monthly), और commission calculations latest data use करते हैं।
+
+Reps को portal मिलता है। वे log in करके अपनी earnings, deal breakdowns, और commission history देख सकते हैं। उन्हें finance से पूछना नहीं पड़ता। उन्हें अपने own records रखने नहीं पड़ते। जब उन्हें specific deal के बारे में question हो, वे calculation वहीं देख सकते हैं।
+
+Disputes manage होते हैं। अगर rep को लगता है कि उनकी commission गलत है, वे portal के through dispute submit कर सकते हैं। Dispute सही person को route होता है, review होता है, और resolve होता है। Audit trail होता है ताकि आप देख सकें कि क्या change हुआ और क्यों।
+
+यह scale होता है। चाहे आपके पांच reps हों या 50, tool handle करता है। जब आपकी team grow हो तो आपको कुछ rebuild नहीं करना पड़ता।
+
+**क्या काम नहीं करता:**
+यह एक अलग tool है। आप अपने stack में another system add कर रहे हैं। Commission tool Odoo को replace नहीं करता। यह इसके साथ काम करता है।
+
+यह money cost करता है। Dedicated commission software free नहीं है। Pricing vendor और team size के हिसाब से vary करती है, लेकिन monthly subscription pay करने की expectation रखें। 20 reps की team के लिए, यह आमतौर पर महीने के $200 से $500 है।
+
+Setup cost है। आपको tool में अपने commission plans configure करने पड़ते हैं, Odoo integration set up करना पड़ता है, और अपनी team को train करना पड़ता है। इसमें time लगता है। ज्यादातर tools आपको कुछ दिनों से कुछ हफ्तों में up and running कर सकते हैं, depend करता है कि आपके plans कितने complex हैं।
+
+**किसके लिए काम करता है:** पांच या ज्यादा reps वाली teams जो commission management के लिए built कुछ चाहती हैं। अगर आप उस point से आगे निकल गए हैं जहां spreadsheets काम करती हैं लेकिन custom module नहीं बनाना चाहते, dedicated software सही choice है।
+
+## Side-by-side comparison
+
+| | स्प्रेडशीट्स | Custom Odoo modules | Dedicated software |
+|---|---|---|---|
+| Setup time | घंटे | हफ्तों से महीनों | दिनों से हफ्तों |
+| Monthly cost | Free | सिर्फ maintenance | 20 reps के लिए $200-$500/मो |
+| Rep visibility | कोई नहीं (finance से पूछना पड़ता है) | Rep views बना सकते हैं | Built-in rep portal |
+| Error rate | High (manual calculations) | Low (automated) | Low (automated) |
+| 10+ reps पर scale | नहीं | हां | हां |
+| Odoo upgrade resilience | N/A | Updates पर break होता है | Vendor integration maintain करता है |
+| Dispute management | Manual (email/Slack) | बना सकते हैं | Built-in |
+| Audit trail | कोई नहीं | बना सकते हैं | Built-in |
+
+## अलग-अलग team sizes पर क्या बदलता है
+
+**एक से तीन reps:** स्प्रेडशीट्स ठीक काम करती हैं। Manual effort manageable है। Errors का risk low है क्योंकि ज्यादा deals नहीं हैं। इसे over-engineer मत करो।
+
+**पांच से 10 reps:** Pain शुरू होता है। Spreadsheet maintain करने में ज्यादा time लेती है। Errors ज्यादा होते हैं। Reps अपनी commissions के बारे में ज्यादा frequently पूछते हैं। यहां teams alternatives देखना शुरू करती हैं।
+
+**15+ reps:** स्प्रेडशीट्स break हो जाती हैं। Manual work full-time job बन जाता है। Errors frequent और expensive होते हैं। Rep trust erode होता है क्योंकि numbers हमेशा late होते हैं और कभी-कभी wrong होते हैं। यहां dedicated software अपने आप को pay करता है।
+
+Custom modules किसी भी size पर काम कर सकते हैं, लेकिन cost और maintenance burden उन्हें justify करना मुश्किल बनाते हैं जब तक कि आपकी commission requirements highly unusual न हों।
+
+## आगे क्या करें
+
+अगर आप अभी भी spreadsheets use कर रहे हैं और pain शुरू हो रहा है, तो next step यह देखना है कि automation कैसा दिखता है। Manual Odoo-to-Excel cycle को manual नहीं होना पड़ता। अपने sales orders को directly commission system से sync करने, calculations automatically run करने, और reps को portal देने का तरीका है जहां वे अपनी earnings देख सकें।
+
+[पढ़ें: Odoo commission calculations को automate कैसे करें (स्प्रेडशीट्स के बिना)](/blog/hi/odoo-commission-automation)
+
+अगर आप Odoo integration कैसे काम करता है देखने के लिए ready हैं, तो आप इसे लगभग 15 मिनट में set up कर सकते हैं। अपनी Odoo instance connect करें, अपने salesperson fields map करें, अपने commission plans configure करें, और अपना पहला calculation run करें।
+
+[Odoo integration देखें](https://commissionk.it/integrations/odoo)
