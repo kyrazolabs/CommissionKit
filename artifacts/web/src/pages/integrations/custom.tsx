@@ -104,6 +104,14 @@ const FAQ = [
     q: "Can I sync both reps and deals?",
     a: "Yes. Configure separate endpoints, field mappings, and sync schedules for each entity type. Enable or disable either entity independently — sync only deals if you manage reps manually.",
   },
+  {
+    q: "Is my data secure?",
+    a: "All data is encrypted in transit (TLS 1.3) and at rest. We never store your API credentials — only encrypted tokens that you can revoke at any time.",
+  },
+  {
+    q: "What happens if the sync fails?",
+    a: "Failed syncs are retried automatically with exponential backoff. You get an email notification if a sync fails three times in a row. No data is lost — the next successful sync picks up where it left off.",
+  },
 ];
 
 export function CustomIntegrationPage() {
@@ -135,6 +143,9 @@ export function CustomIntegrationPage() {
             </p>
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
               CommissionKit's custom connector connects to any ERP or CRM that exposes a REST API. Configure authentication, map fields with JSONPath, set up pagination — all without writing a line of code.
+            </p>
+            <p className="text-sm text-muted-foreground max-w-xl">
+              Unlike commission tools locked to specific CRMs, the Custom REST connector works with any system that has an API — internal tools, legacy ERPs, or niche CRMs that other platforms ignore.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild className="font-semibold shadow-sm">
@@ -351,10 +362,24 @@ export function CustomIntegrationPage() {
               ))}
             </div>
             <p className="text-center text-sm text-muted-foreground">
-              Skip the{" "}
-              <span className="font-semibold text-foreground">$10,000+</span>{" "}
-              custom integration project. Configure your connector in under 30 minutes with no developers required.
+              A typical 20-rep team can save{" "}
+              <span className="font-semibold text-foreground">$1,500–$3,000/month</span>{" "}
+              in finance team labor. That can pay for the tool twice over.
             </p>
+            <p className="text-xs text-muted-foreground mt-4">
+              Savings are estimated based on typical finance ops labor costs and time studies from spreadsheet-based commission processes. Actual results vary by team size and process complexity.
+            </p>
+          </div>
+        </section>
+
+        {/* Technical Credibility */}
+        <section className="py-4 px-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="bg-primary/5 border border-primary/10 rounded-lg p-4 text-sm">
+              <p className="text-muted-foreground">
+                <span className="font-medium text-foreground">Works with any REST API.</span> The connector supports Bearer tokens, API keys, and Basic Auth. JSONPath mappings let you pull from any response structure. Pagination handles offset, cursor, and page-based APIs. $div compute fields convert microservices to dollars automatically.
+              </p>
+            </div>
           </div>
         </section>
 
@@ -378,6 +403,15 @@ export function CustomIntegrationPage() {
                 </AccordionItem>
               ))}
             </Accordion>
+          </div>
+        </section>
+
+        {/* Built by */}
+        <section className="py-12 px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <p className="text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">CommissionKit</span> is built by a small, self-funded team focused exclusively on commission management. No venture capital, no growth-at-all-costs pressure. We build what customers need and we answer support messages ourselves.
+            </p>
           </div>
         </section>
 

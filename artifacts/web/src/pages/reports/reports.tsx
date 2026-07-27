@@ -191,7 +191,7 @@ export function ReportsPage() {
           <Skeleton className="h-8 w-56" />
           <Skeleton className="h-4 w-64" />
         </div>
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
           {[1, 2, 3, 4, 5].map((i) => (
             <Skeleton key={i} className="h-28 rounded-2xl" />
           ))}
@@ -320,7 +320,7 @@ export function ReportsPage() {
         </div>
 
         {isLoading ? (
-          <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
             {[1, 2, 3, 4, 5].map((i) => (
               <Skeleton key={i} className="h-32 rounded-2xl" />
             ))}
@@ -339,7 +339,7 @@ export function ReportsPage() {
           <div className="space-y-6">
 
             {/* KPI Cards — 5 cards */}
-            <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
               <KpiCard
                 label="Commissions Paid"
                 value={formatCurrency(exec.totalCommission, currency)}

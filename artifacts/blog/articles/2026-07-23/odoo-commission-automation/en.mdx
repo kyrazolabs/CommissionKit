@@ -7,6 +7,10 @@ keywords: ["odoo commission calculation", "automate odoo commissions", "odoo sal
 description: "Stop exporting Odoo sales orders to Excel for commission calculations. Learn how to automate the entire workflow from sale.order to rep payout."
 ---
 
+**Quick Summary:** Odoo tracks sales orders, invoices, and payments, but it has no commission module. That means finance exports CSV files every month, cleans the data in a spreadsheet, manually looks up rep names and payment statuses, and calculates commissions by hand. This guide walks through that workflow, explains why it breaks past 10-15 reps, and shows how to connect Odoo directly to CommissionKit so deals sync automatically, reps see earnings in real time, and nobody spends the first week of the month in Excel.
+
+---
+
 I watched a finance manager spend every first week of the month doing the same thing. She'd open Odoo, go to Sales > Orders, filter by last month's confirmed orders, and export to CSV. Then she'd open the spreadsheet where she tracked commissions. She'd delete the old data, paste in the new export, spend an hour fixing columns where Odoo gave her partner IDs instead of rep names, and start calculating.
 
 By the time she finished, it was usually the 10th. The reps had already asked about their commissions three times. The sales manager had already sent two "still working on it" messages. And somewhere in the spreadsheet, a formula was referencing the wrong row, which meant one rep was going to get overpaid and another was going to get shortchanged.

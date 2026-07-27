@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useInView } from "./hooks";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Star, ShieldCheck, Mail } from "lucide-react";
+import { ArrowRight, ShieldCheck, Mail } from "lucide-react";
 import { Analytics } from "@/lib/analytics";
 import { AnimatedWords, AnimatedBlock } from "./AnimatedText";
 
 const TRUST_METRICS = [
-  { value: "8 days", label: "→ 4 hours", sub: "per cycle" },
-  { value: "99%", label: "fewer disputes", sub: "vs. sheets" },
-  { value: "<30 min", label: "to go live", sub: "no consultants" },
+  { value: "Spreadsheets", label: "→ automation", sub: "rule-based runs" },
+  { value: "Disputes", label: "→ visibility", sub: "real-time earnings" },
+  { value: "CSV wrangling", label: "→ smart import", sub: "column mapping" },
 ];
 
 export function Hero() {
@@ -61,15 +61,10 @@ export function Hero() {
       />
 
       <div ref={inViewRef} className="max-w-4xl mx-auto text-center relative z-10 py-20">
-        {/* Rating + trust pill */}
+        {/* Positioning pill */}
         <AnimatedBlock inView={inView} delay={0} className="inline-flex">
           <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white/60 dark:bg-white/5 backdrop-blur-sm border border-border/60 text-xs font-medium text-foreground mb-6">
-            <div className="flex">
-              {[0, 1, 2, 3, 4].map((i) => (
-                <Star key={i} className="size-3 fill-primary text-primary" />
-              ))}
-            </div>
-            <span className="text-muted-foreground">Loved by finance & RevOps teams</span>
+            <span className="text-muted-foreground">Built for finance & RevOps teams</span>
             <span className="h-3 w-px bg-border" />
             <span className="text-primary font-semibold">14-day free trial</span>
           </div>
@@ -84,8 +79,7 @@ export function Hero() {
           <p
             className="text-base md:text-lg text-muted-foreground mt-6 mb-8 leading-relaxed max-w-xl mx-auto"
           >
-            One click processes every rep, every deal, every plan. The commission runs
-            that used to swallow 8 days now finish in 4 hours — flawlessly, every time.
+            One click processes every rep, every deal, every plan — no spreadsheets, no consultants, no surprises.
           </p>
         </AnimatedBlock>
 
@@ -124,17 +118,17 @@ export function Hero() {
         </AnimatedBlock>
 
         {/* Trust metrics bar */}
-        <AnimatedBlock inView={inView} delay={1.7} y={20} className="mt-12 grid grid-cols-3 gap-3 max-w-lg mx-auto">
+        <AnimatedBlock inView={inView} delay={1.7} y={20} className="mt-12 grid grid-cols-3 gap-3 max-w-2xl mx-auto">
           {TRUST_METRICS.map((m) => (
             <div
               key={m.label}
               className="rounded-lg bg-white/50 dark:bg-white/5 backdrop-blur-sm border border-border/60 px-3 py-3.5 text-center"
             >
-              <div className="text-xl md:text-2xl font-bold text-foreground tracking-tight font-display tabular-nums">
+              <div className="text-lg sm:text-xl md:text-2xl font-bold text-foreground tracking-tight font-display tabular-nums">
                 {m.value}
               </div>
-              <div className="text-[11px] font-semibold text-primary mt-0.5">{m.label}</div>
-              <div className="text-[10px] text-muted-foreground mt-0.5">{m.sub}</div>
+              <div className="text-sm font-semibold text-primary mt-0.5">{m.label}</div>
+              <div className="text-xs text-muted-foreground mt-0.5">{m.sub}</div>
             </div>
           ))}
         </AnimatedBlock>

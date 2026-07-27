@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
-import { CheckCircle, Circle, Zap, X, Minus, ChevronUp, ChevronDown } from "lucide-react";
+import { CheckCircle, Circle, Zap, X, Minus, ChevronUp, ChevronDown, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useSetupChecklist } from "@/hooks/use-setup-checklist";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { useRole } from "@/hooks/use-role";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
@@ -81,6 +82,7 @@ export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
   } = useSetupChecklist();
 
   const { activeWorkspace } = useWorkspace();
+  const { hasPermission } = useRole();
   const workspaceId = activeWorkspace?.id;
 
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -122,8 +124,8 @@ export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
   }, [completedCount, isCompleted, complete]);
 
   // ── Derived state ─────────────────────────────────────────────────────────
-  const shouldRender = isVisible && !isCompleted && !isExiting;
-  const showSetupGuideButton = isDismissed && !allComplete && !isCompleted && !isVisible;
+  const shouldRender = true; // Always show on dashboard
+  const showSetupGuideButton = false; // Never show just a button — always render the card
   const progressPercent = (completedCount / 3) * 100;
 
   // ── Handlers ─────────────────────────────────────────────────────────────
@@ -149,19 +151,6 @@ export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
   const handleToggleCollapse = () => setIsCollapsed((p) => !p);
   const [, setLocation] = useLocation();
 
-  // ── Early return: Setup Guide button only ────────────────────────────────
-  if (showSetupGuideButton) {
-    return (
-      <Button variant="ghost" size="sm" onClick={show} className="gap-2">
-        <Zap className="size-4" />
-        <span>Setup Guide</span>
-      </Button>
-    );
-  }
-
-  // ── Don't render at all ──────────────────────────────────────────────────
-  if (!shouldRender) return null;
-
   // ═══════════════════════════════════════════════════════════════════════════
   // Render — single element, collapsed/expanded transition on border-radius
   // ═══════════════════════════════════════════════════════════════════════════
@@ -169,8 +158,8 @@ export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
     <>
       <div
         className={cn(
-          "fixed -bottom-1 right-6 z-50 w-full max-w-[420px] border border-card-border bg-card shadow-lg overflow-hidden",
-          "transition-all duration-300 rounded-xl",
+          "fixed bottom-0 right-0 sm:-bottom-1 sm:right-6 z-50 w-full sm:max-w-[420px] border border-card-border bg-card shadow-lg overflow-hidden",
+          "transition-all duration-300 rounded-t-xl sm:rounded-xl",
           isExiting && "animate-[ckExit_200ms_ease-in_forwards]"
         )}
         style={{ boxShadow: "var(--shadow-card)" }}
@@ -185,57 +174,48 @@ export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
           )}
         >
           <div className="flex items-center gap-2">
-            <CheckCircle className={cn("text-primary shrink-0", isCollapsed ? "size-3.5" : "size-4")} />
+            <CheckCircle className={cn("text-primary shrink-0", isCollapsed ? "size-3.5" : "size-4", allComplete && "text-emerald-500")} />
             {isCollapsed ? (
               <>
                 <span className="text-[12px] font-semibold tabular-nums text-foreground">{completedCount}/3</span>
-                {(() => {
+                {allComplete ? (
+                  <span className="text-[12px] font-semibold text-emerald-600 dark:text-emerald-400">All done!</span>
+                ) : completedCount === 0 ? (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowConfirmDialog(true); }}
+                    className="flex items-center gap-1 text-[12px] font-semibold text-foreground rounded-full px-2 py-0.5 ring-1 ring-primary/30 hover:bg-accent/30"
+                    aria-label="Load sample data"
+                  >
+                    <Zap className="size-3" />
+                    <span>Load Sample Data</span>
+                  </button>
+                ) : (() => {
                   const firstIncomplete = steps.find((s) => !stepStatus[s.key]);
-                  return (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        {completedCount === 0 ? (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setShowConfirmDialog(true); }}
-                            className="flex items-center gap-1 text-[12px] font-semibold text-foreground rounded-full px-2 py-0.5 ring-1 ring-primary/30 hover:bg-accent/30"
-                            aria-label="Load sample data"
-                          >
-                            <Zap className="size-3" />
-                            <span className="hidden sm:inline">Load Sample Data</span>
-                          </button>
-                        ) : firstIncomplete ? (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setLocation(firstIncomplete.href); }}
-                            className="flex items-center gap-1 text-sm font-semibold text-foreground rounded-full px-2 py-0.5 hover:bg-accent/30"
-                            aria-label={firstIncomplete.title}
-                          >
-                            <Zap className="size-3" />
-                            <span className="hidden sm:inline">{firstIncomplete.title}</span>
-                          </button>
-                        ) : (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setShowConfirmDialog(true); }}
-                            className="flex items-center gap-1 text-[12px] font-semibold text-foreground rounded-full px-2 py-0.5 ring-1 ring-primary/30 hover:bg-accent/30"
-                            aria-label="Load sample data"
-                          >
-                            <Zap className="size-3" />
-                            <span className="hidden sm:inline">Load Sample Data</span>
-                          </button>
-                        )}
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {completedCount === 0
-                          ? "See the product in action with demo data"
-                          : firstIncomplete
-                          ? `Go to: ${firstIncomplete.title}`
-                          : "See the product in action with demo data"}
-                      </TooltipContent>
-                    </Tooltip>
+                  return firstIncomplete ? (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setLocation(firstIncomplete.href); }}
+                      className="flex items-center gap-1 text-sm font-semibold text-foreground rounded-full px-2 py-0.5 hover:bg-accent/30"
+                      aria-label={firstIncomplete.title}
+                    >
+                      <Zap className="size-3" />
+                      {firstIncomplete.title}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setShowConfirmDialog(true); }}
+                      className="flex items-center gap-1 text-[12px] font-semibold text-foreground rounded-full px-2 py-0.5 ring-1 ring-primary/30 hover:bg-accent/30"
+                      aria-label="Load sample data"
+                    >
+                      <Zap className="size-3" />
+                      <span>Load Sample Data</span>
+                    </button>
                   );
                 })()}
               </>
             ) : (
-              <h2 className="text-[15px] font-bold tracking-tight text-foreground ">Get Started</h2>
+              <h2 className="text-[15px] font-bold tracking-tight text-foreground">
+                {allComplete ? "Setup Complete" : "Get Started"}
+              </h2>
             )}
           </div>
           {!isCollapsed && (
@@ -264,6 +244,24 @@ export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
           "transition-all duration-300 overflow-hidden",
           isCollapsed ? "max-h-0 opacity-0" : "max-h-[500px] opacity-100"
         )}>
+          {allComplete ? (
+            <div className="px-4 py-5 text-center">
+              <div className="flex items-center justify-center size-10 rounded-full bg-emerald-100 dark:bg-emerald-900/20 mx-auto mb-3">
+                <CheckCircle className="size-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <p className="text-[13px] font-semibold text-foreground mb-2">You are all set!</p>
+              <p className="text-[12px] text-muted-foreground">
+                Your workspace is ready. Start managing commissions, running calculations, and tracking payouts.
+              </p>
+              {hasPermission("calculations", "create") && (
+                <Button variant="default" size="sm" className="mt-3 gap-2" onClick={() => setLocation("/dash/runs")}>
+                  <Play className="size-3.5" />
+                  Run Your First Commission
+                </Button>
+              )}
+            </div>
+          ) : (
+            <>
           {/* Progress */}
           <div className="px-4 pb-2">
             <div className="flex items-center justify-between mb-1.5">
@@ -323,9 +321,11 @@ export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
           {/* Footer */}
           <div className="px-4 py-2 flex items-center">
             <Button variant="ghost" size="sm" onClick={handleDismiss} className="text-xs text-muted-foreground font-medium">
-              Skip for now
+              {allComplete ? "Dismiss" : "Skip for now"}
             </Button>
           </div>
+            </>
+          )}
         </div>
       </div>
 

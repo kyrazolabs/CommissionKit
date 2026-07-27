@@ -17,24 +17,13 @@ export function SocialProof() {
   const { ref, inView } = useInView(0.15);
 
   return (
-    <section className="border-y border-border/60 bg-muted/30">
-      <div ref={ref} className="max-w-[1200px] mx-auto px-6 py-10">
-        {/* Metrics row */}
-        <div
-          className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border/60 rounded-xl overflow-hidden"
-          style={fadeIn(inView)}
-        >
-          {STATS.map((s) => (
-            <div key={s.label} className="bg-background px-5 py-6 text-center">
-              <div className="text-2xl md:text-3xl font-bold text-foreground tracking-tight font-display tabular-nums">
-                {s.value}
-              </div>
-              <div className="text-xs font-semibold text-primary mt-1 uppercase tracking-wide">
-                {s.label}
-              </div>
-              <div className="text-[11px] text-muted-foreground mt-0.5">{s.desc}</div>
-            </div>
-          ))}
+    <section className="border-t border-border/60">
+      <div ref={ref} className="max-w-[1200px] mx-auto px-6 py-8">
+        {/* What the product does */}
+        <div className="text-center" style={fadeIn(inView)}>
+          <p className="text-sm text-muted-foreground font-medium">
+            Designed to replace manual spreadsheet workflows with automated commission runs, real-time rep visibility, and one-click processing across every plan.
+          </p>
         </div>
 
         {/* Integrations strip */}

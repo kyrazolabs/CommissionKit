@@ -219,7 +219,7 @@ function BillingUsageCard({
   return (
     <Card className="border-border bg-card/50 shadow-sm">
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <CardTitle className="text-base font-semibold">{t("billing.usageAndLimits")}</CardTitle>
             <CardDescription className="text-xs">
@@ -236,7 +236,7 @@ function BillingUsageCard({
       <CardContent className="space-y-5">
         {/* Sales Reps */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs">
             <div className="flex items-center gap-1.5 font-medium text-foreground">
               <UserRound className="size-3.5 text-muted-foreground" />
               {t("billing.salesReps")}
@@ -263,7 +263,7 @@ function BillingUsageCard({
 
         {/* Commission Plans */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs">
             <div className="flex items-center gap-1.5 font-medium text-foreground">
               <FileText className="size-3.5 text-muted-foreground" />
               {t("billing.commissionPlans")}
@@ -285,7 +285,7 @@ function BillingUsageCard({
 
         {/* Members */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs">
             <div className="flex items-center gap-1.5 font-medium text-foreground">
               <Users className="size-3.5 text-muted-foreground" />
               {t("billing.workspaceMembers")}
@@ -403,7 +403,7 @@ export function BillingPage() {
           <Skeleton className="h-4 w-72" />
         </div>
         <Skeleton className="h-32 w-full rounded-2xl" />
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map(i => <Skeleton key={i} className="h-72 w-full rounded-2xl" />)}
         </div>
       </div>
@@ -613,7 +613,7 @@ export function BillingPage() {
 
       {/* Manage subscription button (for paying customers) */}
       {sub && sub.plan !== "free" && (
-        <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-xl border border-border bg-muted/30 p-4">
           <div>
             <p className="text-sm font-semibold text-foreground capitalize">{sub.plan} {t("billing.plan")}</p>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -684,7 +684,7 @@ export function BillingPage() {
       )}
 
       {/* Plan cards */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h2 className="text-lg font-semibold text-foreground">{t("billing.choosePlan")}</h2>
         {workspaceCurrency !== "USD" && (
           <div className="flex items-center gap-2">
@@ -705,7 +705,7 @@ export function BillingPage() {
 
       <div
         className={cn(
-          "grid gap-6 md:grid-cols-2 lg:grid-cols-3",
+          "grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
           alreadySubscribed && "opacity-75",
         )}
       >

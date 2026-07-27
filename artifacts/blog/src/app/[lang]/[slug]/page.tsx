@@ -8,6 +8,7 @@ import { getPost, getAvailableLanguages, getAllSlugs } from "@/lib/posts";
 import { t, formatFallbackBanner, formatReadIn } from "@/lib/translations";
 import { formatRelativeDate } from "@/lib/format";
 import { MDXRemote } from "next-mdx-remote/rsc";
+import remarkGfm from "remark-gfm";
 import { LanguagePills } from "@/components/language-pills";
 import { FallbackBanner } from "@/components/fallback-banner";
 import { BlogLeadCapture } from "@/components/blog-lead-capture";
@@ -213,7 +214,7 @@ export default async function BlogPost({ params }: Props) {
         )}
 
         <div className="blog-content" dir={isRtl ? "rtl" : "ltr"}>
-          <MDXRemote source={post.content} />
+          <MDXRemote source={post.content} options={{ remarkPlugins: [remarkGfm] }} />
         </div>
 
         <BlogLeadCapture lang={lang} />

@@ -237,7 +237,7 @@ export function RepPortal() {
       </Card>
 
       {/* Stat Cards — Current Period */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <StatCard
           label={t("portal.rep.estimatedCommission")}
           value={formatCurrency(summary.totalCommission, currency)}
@@ -383,7 +383,7 @@ function RepPortalSkeleton() {
         <Skeleton className="h-9 w-40" />
       </div>
       <Skeleton className="h-20 w-full rounded-xl" />
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <Skeleton className="h-28 w-full rounded-xl" />
         <Skeleton className="h-28 w-full rounded-xl" />
         <Skeleton className="h-28 w-full rounded-xl" />

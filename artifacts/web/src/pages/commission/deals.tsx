@@ -197,6 +197,7 @@ export function DealsPage() {
             </div>
           ) : (
             <>
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -308,6 +309,7 @@ export function DealsPage() {
                 })}
               </TableBody>
             </Table>
+            </div>
             {pagination && (
               <div className="border-t px-4 py-3">
                 <DataPagination

@@ -39,7 +39,7 @@ export function Navbar() {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50">
-        <div className={`mx-2 md:mx-auto px-4 transition-all duration-300 ${containerClasses}`}>
+        <div className={`mx-2 xl:mx-auto px-4 transition-all duration-300 ${containerClasses}`}>
 
           {/* Top bar */}
           <div className="flex justify-between items-center w-full py-3">

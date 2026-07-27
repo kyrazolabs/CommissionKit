@@ -121,6 +121,7 @@ export function RunsPage() {
             </div>
           ) : (
             <>
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -212,6 +213,7 @@ export function RunsPage() {
                 />
               </div>
             ) : null}
+            </div>
             </>
           )}
         </CardContent>

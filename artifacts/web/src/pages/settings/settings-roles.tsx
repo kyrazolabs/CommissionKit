@@ -106,7 +106,7 @@ export default function SettingsRoles() {
         )}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {roles.map((role: any) => (
           <Card key={role.id} className="relative flex flex-col">
             <CardHeader>
@@ -313,7 +313,7 @@ function RoleDialog({ role, open, onOpenChange }: any) {
         )}
 
         <form id="role-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto pr-2 space-y-6 py-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">{t("roles.roleName")}</Label>
               <Input

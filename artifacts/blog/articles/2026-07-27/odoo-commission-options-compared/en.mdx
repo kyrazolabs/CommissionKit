@@ -1,0 +1,115 @@
+---
+title: "Sales commission tracking for Odoo: spreadsheets vs. custom modules vs. dedicated software"
+date: "2026-07-27"
+author: "CommissionKit Team"
+tags: ["Odoo", "Commission Management", "Sales Operations", "Comparison"]
+keywords: ["odoo commission structure", "odoo sales commission calculation", "how to track commissions in odoo", "odoo commission formula", "odoo sales rep commission", "odoo commission management"]
+description: "Three ways to handle commissions when you use Odoo: spreadsheets, custom modules, or dedicated software. Honest comparison of costs, tradeoffs, and which works for your team size."
+cover: cover.jpg
+summary: "Three ways to track commissions with Odoo: spreadsheets (free but manual), custom modules (expensive to build and maintain), or dedicated software (built for this). Here's how they compare."
+---
+
+**Quick Summary:** If you use Odoo and need to track sales commissions, you have three paths. Spreadsheets are free and familiar but don't scale past five reps. Custom Odoo modules keep everything in one system but cost $5,000 to $15,000 to build and break on Odoo updates. Dedicated commission software costs $200 to $500 a month but handles calculations, rep portals, and disputes out of the box. This article compares all three so you can decide what fits your team size and budget.
+
+---
+
+If you're using Odoo for sales and need to track commissions, you have three options. You can keep using spreadsheets. You can build custom Odoo modules. Or you can use dedicated commission software.
+
+Each approach works for different teams. The spreadsheet workflow is fine if you have three reps and 30 deals a month. Custom modules make sense if you have a development budget and specific requirements that off-the-shelf tools don't cover. Dedicated software is the right choice if you want something built for commission management that scales as your team grows.
+
+Here's how they compare.
+
+## Option 1: Keep using spreadsheets
+
+Most Odoo teams start here. You export sales orders to CSV, paste them into a spreadsheet, add columns for commission rates and rep names, and calculate what each rep earns.
+
+**What works:**
+It's free. You already know how to use spreadsheets. You can build whatever logic you need, however you need it. There's no vendor lock-in, no monthly fees, no integration to maintain.
+
+For a small team (one to three reps, under 50 deals a month), the spreadsheet workflow is perfectly fine. The finance person who built it understands it. The sales manager can review it. The reps get their numbers, even if they have to ask for them.
+
+**What doesn't work:**
+The spreadsheet doesn't sync with Odoo. Every month, somebody has to export the data, paste it in, and fix the columns where Odoo gave user IDs instead of rep names. That takes time. For a 20-rep team, it's four to six hours per month.
+
+Manual calculations have error rates. A formula references the wrong row. A commission rate doesn't get updated after a plan change. A rep gets overpaid or underpaid. When errors happen, there's a correction, an apology, and a note to "be more careful next month."
+
+Reps can't see their earnings without asking finance. The spreadsheet lives on a shared drive or in Google Sheets, and only one or two people have access to it. Reps start keeping their own records. When the official numbers don't match the rep's estimates, there's a dispute.
+
+The spreadsheet also doesn't scale. Past five reps, the manual work becomes a real burden. Past 10 reps, it's almost unmanageable. Past 15, something breaks every month.
+
+**Who this works for:** Teams with one to three reps and under 50 deals a month. If you're small and the spreadsheet workflow isn't causing pain yet, there's no reason to change it.
+
+## Option 2: Build Odoo custom modules
+
+Odoo is extensible. You can build custom modules to add commission tracking directly into Odoo. The commission data lives in the same database as your sales orders and invoices. Everything stays in one system.
+
+**What works:**
+The data stays in Odoo. You don't have to export to a spreadsheet and manually reconcile. The commission module can read sales orders, check invoice payment status, and calculate commissions automatically.
+
+You can build exactly what you need. If your commission plans are complex (tiered rates, accelerators, team splits, multi-currency), you can model that in a custom module. You can also build rep-facing views so reps can see their earnings without asking finance.
+
+**What doesn't work:**
+It costs money to build. A basic commission module runs $5,000 to $15,000 in development time. A more complex module with rep portals, dispute management, and payout tracking can cost $20,000 or more.
+
+It costs money to maintain. Every time Odoo releases an update (which happens regularly), there's a risk that your custom module breaks. You need a developer who understands both Odoo's architecture and your commission logic. That developer needs to be available when things break, which is usually at month-end when you're trying to run commissions.
+
+You're building something that already exists. Commission management is a solved problem. There are tools built specifically for this. When you build a custom module, you're reinventing those tools, but only for your specific use case. You don't get the benefit of features that other teams have requested, like dispute workflows, audit trails, or rep portals with self-service password resets.
+
+**Who this works for:** Teams with specific commission requirements that off-the-shelf tools don't cover, and the budget to build and maintain a custom module. If your commission plans are highly unusual (complex multi-level overrides, industry-specific logic), a custom module might make sense. But for most teams, the cost and maintenance burden outweigh the benefits.
+
+## Option 3: Dedicated commission software
+
+There are tools built specifically for commission management. They sync with Odoo, handle the calculations, provide rep portals, manage disputes, and generate reports.
+
+**What works:**
+It's built for this problem. The tool handles commission plan modeling, automatic calculations, rep portals, dispute management, payout tracking, and reporting. You don't have to build any of it.
+
+It syncs with Odoo. The commission tool pulls sales order data from Odoo automatically. You don't have to export to CSV and paste into a spreadsheet. The sync runs on a schedule (daily, weekly, or monthly), and the commission calculations use the latest data.
+
+Reps get a portal. They can log in and see their earnings, deal breakdowns, and commission history. They don't have to ask finance. They don't have to keep their own records. When they have a question about a specific deal, they can see the calculation right there.
+
+Disputes get managed. If a rep thinks their commission is wrong, they can submit a dispute through the portal. The dispute gets routed to the right person, gets reviewed, and gets resolved. There's an audit trail so you can see what changed and why.
+
+It scales. Whether you have five reps or 50, the tool handles it. You don't have to rebuild anything when your team grows.
+
+**What doesn't work:**
+It's a separate tool. You're adding another system to your stack. The commission tool doesn't replace Odoo. It works alongside it.
+
+It costs money. Dedicated commission software isn't free. Pricing varies by vendor and team size, but expect to pay a monthly subscription. For a 20-rep team, that's typically $200 to $500 per month.
+
+There's a setup cost. You have to configure your commission plans in the tool, set up the Odoo integration, and train your team. That takes time. Most tools can get you up and running in a few days to a couple weeks, depending on how complex your plans are.
+
+**Who this works for:** Teams with five or more reps who want something built for commission management. If you're past the point where spreadsheets work but don't want to build a custom module, dedicated software is the right choice.
+
+## Side-by-side comparison
+
+| | Spreadsheets | Custom Odoo modules | Dedicated software |
+|---|---|---|---|
+| Setup time | Hours | Weeks to months | Days to weeks |
+| Monthly cost | Free | Maintenance only | $200-$500/mo for 20 reps |
+| Rep visibility | None (have to ask finance) | Can build rep views | Built-in rep portal |
+| Error rate | High (manual calculations) | Low (automated) | Low (automated) |
+| Scales to 10+ reps | No | Yes | Yes |
+| Odoo upgrade resilience | N/A | Breaks on updates | Vendor maintains integration |
+| Dispute management | Manual (email/Slack) | Can build | Built-in |
+| Audit trail | None | Can build | Built-in |
+
+## What changes at different team sizes
+
+**One to three reps:** Spreadsheets work fine. The manual effort is manageable. The risk of errors is low because there aren't many deals. Don't over-engineer this.
+
+**Five to 10 reps:** Pain starts. The spreadsheet takes longer to maintain. Errors happen more often. Reps ask about their commissions more frequently. This is where teams start looking at alternatives.
+
+**15+ reps:** Spreadsheets break. The manual work becomes a full-time job. Errors are frequent and expensive. Rep trust erodes because the numbers are always late and sometimes wrong. This is where dedicated software pays for itself.
+
+Custom modules can work at any size, but the cost and maintenance burden make them hard to justify unless your commission requirements are highly unusual.
+
+## What to do next
+
+If you're still using spreadsheets and the pain is starting, the next step is to see what automation looks like. The manual Odoo-to-Excel cycle doesn't have to be manual. There's a way to sync your sales orders directly to a commission system, run the calculations automatically, and give reps a portal where they can see their earnings.
+
+[Read: How to automate Odoo commission calculations (without spreadsheets)](/blog/en/odoo-commission-automation)
+
+If you're ready to see how the Odoo integration works, you can set it up in about 15 minutes. Connect your Odoo instance, map your salesperson fields, configure your commission plans, and run your first calculation.
+
+[See the Odoo integration](https://commissionk.it/integrations/odoo)

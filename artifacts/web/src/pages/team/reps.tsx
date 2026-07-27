@@ -149,6 +149,7 @@ export function RepsPage() {
             </div>
           ) : (
             <>
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -248,6 +249,7 @@ export function RepsPage() {
                 />
               </div>
             ) : null}
+            </div>
             </>
           )}
         </CardContent>
