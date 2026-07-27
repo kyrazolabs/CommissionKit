@@ -13,6 +13,7 @@ import { HubspotIntegrationPage } from "./pages/integrations/hubspot";
 import { SalesforceIntegrationPage } from "./pages/integrations/salesforce";
 import { CustomIntegrationPage } from "./pages/integrations/custom";
 import { RepPortalLanding } from "./pages/rep-portal-landing";
+import { CareersPage } from "./pages/careers";
 
 interface PageMeta {
   title: string;
@@ -135,6 +136,13 @@ const routeMeta: Record<string, PageMeta> = {
     keywords: "rep portal, sales rep portal, commission portal, rep commission tracking, sales rep earnings portal, commission transparency",
     canonical: `${BASE_URL}/portal`,
   },
+  "/careers": {
+    title: "Careers — CommissionKit",
+    description: "Join the CommissionKit team. Explore open positions in sales, engineering, and marketing at a self-funded B2B SaaS company.",
+    robots: ROBOTS_DIRECTIVE,
+    keywords: "commissionkit careers, saas jobs, sales jobs, engineering jobs, remote jobs, startup careers",
+    canonical: `${BASE_URL}/careers`,
+  },
 };
 
 export function render(url?: string) {
@@ -167,6 +175,8 @@ export function render(url?: string) {
     element = <CustomIntegrationPage />;
   } else if (path === "/portal") {
     element = <RepPortalLanding />;
+  } else if (path === "/careers") {
+    element = <CareersPage />;
   } else {
     element = <LandingPage />;
   }
