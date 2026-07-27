@@ -392,3 +392,10 @@
     transition-timing-function: ease-out;
   }
 }
+
+/* ── Navbar Rep Portal screenshot auto-scroll ── */
+@keyframes scroll-screenshot {
+  0%, 12%   { transform: translateY(0); }
+  42%, 58%  { transform: translateY(-52%); }
+  88%, 100% { transform: translateY(0); }
+}

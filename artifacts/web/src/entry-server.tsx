@@ -12,6 +12,7 @@ import { OdooIntegrationPage } from "./pages/integrations/odoo";
 import { HubspotIntegrationPage } from "./pages/integrations/hubspot";
 import { SalesforceIntegrationPage } from "./pages/integrations/salesforce";
 import { CustomIntegrationPage } from "./pages/integrations/custom";
+import { RepPortalLanding } from "./pages/rep-portal-landing";
 
 interface PageMeta {
   title: string;
@@ -127,6 +128,13 @@ const routeMeta: Record<string, PageMeta> = {
     keywords: "custom commission integration, REST API commission tracking, connect any CRM to commission software, custom commission software integration, no-code commission connector, JSONPath commission mapping",
     canonical: `${BASE_URL}/integrations/custom`,
   },
+  "/portal": {
+    title: "Sales Rep Portal — CommissionKit",
+    description: "Give your sales team real-time visibility into their commissions. Secure rep portal for tracking earnings, deal breakdowns, and payout history.",
+    robots: ROBOTS_DIRECTIVE,
+    keywords: "rep portal, sales rep portal, commission portal, rep commission tracking, sales rep earnings portal, commission transparency",
+    canonical: `${BASE_URL}/portal`,
+  },
 };
 
 export function render(url?: string) {
@@ -157,6 +165,8 @@ export function render(url?: string) {
     element = <SalesforceIntegrationPage />;
   } else if (path === "/integrations/custom") {
     element = <CustomIntegrationPage />;
+  } else if (path === "/portal") {
+    element = <RepPortalLanding />;
   } else {
     element = <LandingPage />;
   }

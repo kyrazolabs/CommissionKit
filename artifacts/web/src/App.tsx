@@ -24,6 +24,7 @@ import { RunDetailsPage } from "@/pages/commission/run-details";
 
 import { RepPortal } from "@/pages/portal/rep-portal";
 import { PublicRepPortal } from "@/pages/portal/public-portal";
+import { RepPortalLanding } from "@/pages/rep-portal-landing";
 
 import { SettingsPage } from "@/pages/settings/settings";
 import { BillingPage } from "@/pages/settings/billing";
@@ -398,6 +399,7 @@ function App() {
                 }
                 return engine !== "standard" ? <EnterprisePublicRepPortal /> : <PublicRepPortal />;
               }} />
+              <Route path="/portal" component={RepPortalLanding} />
               <Route path="/accept-invite" component={AcceptInvite} />
               <Route path="/home" component={() => (
                 <AuthProvider>
