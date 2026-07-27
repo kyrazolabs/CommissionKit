@@ -2,7 +2,6 @@ import { Footer } from "./landing/Footer";
 import { Navbar } from "./landing/Navbar";
 import { usePageMeta } from "@/hooks/use-page-meta";
 import { getActiveJobs } from "@/lib/jobs";
-import { Link } from "wouter";
 import { MapPin, Clock, ArrowRight, Briefcase } from "lucide-react";
 
 export function CareersPage() {
@@ -95,7 +94,7 @@ export function CareersPage() {
             ) : (
               <div className="space-y-4">
                 {jobs.map((job) => (
-                  <Link
+                  <a
                     key={job.slug}
                     href={`/careers/${job.slug}`}
                     className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-xl border border-border bg-card hover:border-primary/30 hover:shadow-sm transition-all"
@@ -132,7 +131,7 @@ export function CareersPage() {
                       View & Apply
                       <ArrowRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
                     </div>
-                  </Link>
+                  </a>
                 ))}
               </div>
             )}
