@@ -1,0 +1,92 @@
+---
+title: "Why Odoo doesn't have commission tracking (and what finance teams actually do)"
+date: "2026-07-27"
+author: "CommissionKit Team"
+tags: ["Odoo", "Commission Management", "Sales Operations", "Finance"]
+keywords: ["odoo commission tracking", "odoo sales commission", "odoo erp commission management", "odoo sales performance tracking", "odoo finance automation", "odoo spreadsheet export commissions"]
+description: "Odoo handles quotes, invoicing, and CRM well. But there's no commission tracking built in. Here's what finance teams actually do to fill that gap."
+cover: cover.jpg
+summary: "Odoo is great at sales orders and invoicing, but it doesn't track commissions. Finance teams fill the gap with monthly Excel exports, manual calculations, and a lot of back-and-forth with reps."
+---
+
+**Quick Summary:** Odoo's Sales module handles quotes, orders, and invoicing, but there's no way to track what reps earn from those deals. Finance teams bridge this gap with monthly CSV exports and spreadsheets, a process that takes four to six hours per month for a 20-rep team. You spend it copying data, fixing columns, and chasing approvals while reps keep their own shadow records because nobody told them what they earned. This article walks through what that workflow actually looks like, what it costs, and what your options are.
+
+---
+
+Odoo does a lot of things well. The Sales module takes you from quote to confirmed order to invoice without much friction. The CRM tracks opportunities. The accounting module handles invoicing and payments. For companies that need an ERP to manage sales, inventory, and finance in one place, Odoo is a solid choice.
+
+But there's one thing Odoo doesn't do: track sales commissions.
+
+There's no commission module. No place to define commission plans, calculate what reps earn on deals, or manage payouts. The Sales module stops at the invoice. What happens after that, how reps get paid for what they sold, lives somewhere else.
+
+This isn't a bug. Odoo wasn't built to handle commission management. It's an ERP, not a commission platform. But for finance teams running commissions for Odoo-based sales teams, that gap creates a real problem.
+
+## What Odoo gets right
+
+Before we get into what's missing, it's worth acknowledging what works.
+
+Odoo's Sales module handles the full quote-to-cash flow. You can create quotes, convert them to sales orders, generate invoices, and track payments. The CRM integration means you can see the full pipeline from lead to closed deal. The reporting gives you visibility into sales performance by rep, by team, by product.
+
+The invoicing module tracks payment status. You know which invoices are paid, which are outstanding, which are overdue. That matters for commission calculations, because most teams pay commissions on collected revenue, not booked revenue.
+
+Odoo also handles multi-currency, multi-company, and multi-warehouse setups. If you're selling across borders or managing complex inventory, Odoo has you covered.
+
+For what it was built to do, Odoo works. The problem is that commission tracking isn't in that list.
+
+## The commission gap: where Odoo stops and the spreadsheet begins
+
+Here's what I see at companies using Odoo for sales.
+
+The deal closes in Odoo. The sales order gets confirmed. The invoice gets generated. The rep moves on to the next opportunity. Nobody tells the commission system anything, because there is no commission system in Odoo.
+
+The commission data lives in a spreadsheet. Sometimes it's a Google Sheet. Sometimes it's an Excel file on a shared drive. Sometimes it's a combination of both, with different versions floating around.
+
+The spreadsheet doesn't sync with Odoo. It doesn't know about deals that got cancelled after the export ran. It doesn't know that a rep changed territories mid-quarter. It doesn't know that the sales manager approved a special rate for one specific deal. All of that information has to get communicated outside of Odoo, usually through email or Slack, and then manually entered into the spreadsheet.
+
+That's the gap. Odoo tracks the sale. The spreadsheet tracks the commission. They don't talk to each other.
+
+## The real workflow: what finance teams actually do every month
+
+Here's the workflow I've seen at dozens of companies using Odoo for sales.
+
+At month-end, somebody in finance opens Odoo and goes to Sales > Orders. They filter by last month's confirmed orders and export to CSV. The export includes the order amount, the partner name, the salesperson field (which Odoo stores as a user ID), and the order date.
+
+It doesn't include the commission rate. It doesn't include the rep's full name. It doesn't include whether the invoice has actually been paid yet.
+
+So the spreadsheet person adds those columns manually. They look up which user ID belongs to which rep. They check the invoicing module to see which orders have paid invoices. They apply the commission rate from the plan document that lives in a shared drive somewhere. They calculate the commission for each deal.
+
+Then they email the results to the sales manager for approval. The sales manager finds two deals that shouldn't count because they were internal transfers. They find one rep who should have gotten a higher rate because of a quota accelerator. The spreadsheet person makes the corrections, recalculates, and sends the file to accounting for payout.
+
+This takes four to six hours every month for a 20-rep team. Sometimes more if there are currency conversions or if the rep roster changed mid-month.
+
+## What this costs in practice
+
+The spreadsheet workflow works when you have three reps and 30 deals a month. It falls apart past that point.
+
+**Time.** Four to six hours per month for a 20-rep team. That's 50 to 70 hours per year. At $50/hour loaded cost for finance staff, that's $2,500 to $3,500 in labor. But the real cost is that the finance person doing this work could be doing something more valuable. They're spending a week every month on manual data entry instead of analysis.
+
+**Errors.** Manual calculations have error rates. I've seen spreadsheets where a formula referenced the wrong row, where a rep got overpaid because the spreadsheet didn't account for a clawback, where a rep got underpaid because the commission rate wasn't updated after a plan change. Errors happen. When they do, there's a correction, an apology, and a note to "be more careful next month."
+
+**Rep trust.** This is the part that causes the most friction. A rep closes a big deal on the 15th. They want to know what they earned. The answer is "check with finance," because the commission data lives in a spreadsheet that only one person has access to.
+
+Some reps start keeping their own records. They build shadow spreadsheets where they track their deals and estimate their commissions. When the official numbers come out and don't match (because the rep used the wrong rate, or counted a deal that hadn't been paid yet), there's a dispute. The finance person has to explain why the rep's numbers don't match the official numbers. This takes time. It also erodes trust.
+
+## So what do teams do?
+
+There are three approaches I see teams take.
+
+**Keep using spreadsheets.** This works for small teams. If you have three reps and 30 deals a month, the spreadsheet workflow is fine. It's free, it's flexible, and everybody understands how it works. The pain starts when you hit 5 reps, gets worse at 10, and becomes unmanageable past 15.
+
+**Build custom Odoo modules.** Odoo is extensible. You can build custom modules to add commission tracking. Some teams do this. It costs $5,000 to $15,000 to build a basic commission module, plus ongoing maintenance. Every time Odoo releases an update, there's a risk that the custom module breaks. And you still don't get a rep portal or dispute management unless you build those too.
+
+**Use dedicated commission software.** There are tools built specifically for commission management. They sync with Odoo, handle the calculations, provide rep portals, manage disputes. They cost money, but they're built for this problem.
+
+Each approach has tradeoffs. The right choice depends on your team size, your budget, and how much pain you're willing to tolerate.
+
+## Next: your options for fixing this problem
+
+If you're using Odoo and struggling with commission tracking, you have options. The spreadsheet workflow works for small teams. Custom modules work if you have the budget and the tolerance for maintenance. Dedicated commission software works if you want something built for this problem.
+
+In the next article, we'll break down each option in detail: what it costs, what it gets you, where it breaks down, and which team sizes each approach works best for.
+
+[Read: Sales commission tracking for Odoo: spreadsheets vs. custom modules vs. dedicated software](/blog/en/odoo-commission-options-compared)
