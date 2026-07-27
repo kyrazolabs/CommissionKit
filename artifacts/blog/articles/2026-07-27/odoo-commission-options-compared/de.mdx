@@ -1,0 +1,115 @@
+---
+title: "Verkaufsprovisionsverfolgung für Odoo: Tabellenkalkulationen vs. benutzerdefinierte Module vs. dedizierte Software"
+date: "2026-07-27"
+author: "CommissionKit Team"
+tags: ["Odoo", "Provisionsmanagement", "Vertriebsprozesse", "Vergleich"]
+keywords: ["odoo commission structure", "odoo sales commission calculation", "how to track commissions in odoo", "odoo commission formula", "odoo sales rep commission", "odoo commission management"]
+description: "Drei Wege, Provisionen mit Odoo zu verwalten: Tabellenkalkulationen, benutzerdefinierte Module oder dedizierte Software. Ehrlicher Vergleich von Kosten, Kompromissen und was für Ihre Teamgröße funktioniert."
+cover: cover.jpg
+summary: "Drei Wege, Provisionen mit Odoo zu verfolgen: Tabellenkalkulationen (kostenlos aber manuell), benutzerdefinierte Module (teuer im Bau und Unterhalt), oder dedizierte Software (dafür gebaut). Hier der Vergleich."
+---
+
+**Kurzfassung:** Wenn Sie Odoo nutzen und Verkaufsprovisionen verfolgen müssen, haben Sie drei Wege. Tabellenkalkulationen sind kostenlos und vertraut, skalieren aber nicht über fünf Vertreter hinaus. Benutzerdefinierte Odoo-Module halten alles in einem System, kosten aber $5.000 bis $15.000 im Bau und brechen bei Odoo-Updates. Dedizierte Provisionssoftware kostet $200 bis $500 im Monat, wickelt aber Berechnungen, Vertreter-Portale und Streitigkeiten direkt ab. Dieser Artikel vergleicht alle drei, damit Sie entscheiden können, was zu Ihrer Teamgröße und Ihrem Budget passt.
+
+---
+
+Wenn Sie Odoo für den Vertrieb nutzen und Provisionen verfolgen müssen, haben Sie drei Optionen. Sie können weiter Tabellenkalkulationen verwenden. Sie können benutzerdefinierte Odoo-Module bauen. Oder Sie können dedizierte Provisionssoftware nutzen.
+
+Jeder Ansatz funktioniert für verschiedene Teams. Der Tabellenkalkulations-Workflow ist in Ordnung, wenn Sie drei Vertreter und 30 Deals im Monat haben. Benutzerdefinierte Module sind sinnvoll, wenn Sie ein Entwicklungsbudget haben und spezifische Anforderungen, die Standard-Tools nicht abdecken. Dedizierte Software ist die richtige Wahl, wenn Sie etwas wollen, das für Provisionsmanagement gebaut ist und mit Ihrem Team skaliert.
+
+Hier der Vergleich.
+
+## Option 1: Weiter Tabellenkalkulationen verwenden
+
+Die meisten Odoo-Teams fangen hier an. Sie exportieren Verkaufsaufträge als CSV, fügen sie in eine Tabellenkalkulation ein, fügen Spalten für Provisionssätze und Vertreternamen hinzu und berechnen, was jeder Vertreter verdient.
+
+**Was funktioniert:**
+Es ist kostenlos. Sie wissen bereits, wie man Tabellenkalkulationen benutzt. Sie können jede Logik bauen, die Sie brauchen, wie auch immer Sie sie brauchen. Es gibt keine Vendor-Lock-in, keine monatlichen Gebühren, keine Integration, die gepflegt werden muss.
+
+Für ein kleines Team (ein bis drei Vertreter, unter 50 Deals im Monat) ist der Tabellenkalkulations-Workflow völlig in Ordnung. Die Finanzperson, die ihn gebaut hat, versteht ihn. Der Vertriebsleiter kann ihn prüfen. Die Vertreter bekommen ihre Zahlen, auch wenn sie danach fragen müssen.
+
+**Was nicht funktioniert:**
+Die Tabellenkalkulation synchronisiert sich nicht mit Odoo. Jeden Monat muss jemand die Daten exportieren, sie einfügen und die Spalten korrigieren, in denen Odoo Benutzer-IDs statt Vertreternamen geliefert hat. Das kostet Zeit. Für ein 20-köpfiges Team sind es vier bis sechs Stunden pro Monat.
+
+Manuelle Berechnungen haben Fehlerraten. Eine Formel referenziert die falsche Zeile. Ein Provisionssatz wird nach einer Planänderung nicht aktualisiert. Ein Vertreter wird über- oder unterbezahlt. Wenn Fehler passieren, gibt es eine Korrektur, eine Entschuldigung und einen Vermerk, „nächsten Monat genauer zu sein."
+
+Vertreter können ihre Verdienste nicht sehen, ohne die Finanzabteilung zu fragen. Die Tabellenkalkulation lebt auf einem gemeinsamen Laufwerk oder in Google Sheets, und nur ein oder zwei Leute haben Zugriff darauf. Vertreter fangen an, ihre eigenen Aufzeichnungen zu führen. Wenn die offiziellen Zahlen nicht den Schätzungen des Vertreters entsprechen, gibt es einen Streit.
+
+Die Tabellenkalkulation skaliert auch nicht. Nach fünf Vertretern wird die manuelle Arbeit zu einer echten Belastung. Nach 10 Vertretern ist sie fast nicht mehr zu bewältigen. Nach 15 bricht jeden Monat etwas zusammen.
+
+**Für wen das funktioniert:** Teams mit ein bis drei Vertretern und unter 50 Deals im Monat. Wenn Sie klein sind und der Tabellenkalkulations-Workflow noch keine Schmerzen verursacht, gibt es keinen Grund, ihn zu ändern.
+
+## Option 2: Benutzerdefinierte Odoo-Module bauen
+
+Odoo ist erweiterbar. Sie können benutzerdefinierte Module bauen, um Provisionsverfolgung direkt in Odoo hinzuzufügen. Die Provisionsdaten leben in derselben Datenbank wie Ihre Verkaufsaufträge und Rechnungen. Alles bleibt in einem System.
+
+**Was funktioniert:**
+Die Daten bleiben in Odoo. Sie müssen nicht in eine Tabellenkalkulation exportieren und manuell abgleichen. Das Provisionsmodul kann Verkaufsaufträge lesen, den Zahlungsstatus von Rechnungen prüfen und Provisionen automatisch berechnen.
+
+Sie können genau das bauen, was Sie brauchen. Wenn Ihre Provisionspläne komplex sind (gestaffelte Sätze, Beschleuniger, Team-Splits, Multi-Währung), können Sie das in einem benutzerdefinierten Modul modellieren. Sie können auch vertreterorientierte Ansichten bauen, damit Vertreter ihre Verdienste sehen können, ohne die Finanzabteilung zu fragen.
+
+**Was nicht funktioniert:**
+Es kostet Geld, es zu bauen. Ein grundlegendes Provisionsmodul läuft auf $5.000 bis $15.000 Entwicklungszeit. Ein komplexeres Modul mit Vertreter-Portalen, Streitbeilegung und Auszahlungsverfolgung kann $20.000 oder mehr kosten.
+
+Es kostet Geld, es zu warten. Jedes Mal, wenn Odoo ein Update veröffentlicht (was regelmäßig passiert), besteht das Risiko, dass Ihr benutzerdefiniertes Modul bricht. Sie brauchen einen Entwickler, der sowohl Odoo's Architektur als auch Ihre Provisionslogik versteht. Dieser Entwickler muss verfügbar sein, wenn Dinge brechen, was normalerweise am Monatsende ist, wenn Sie Provisionen berechnen wollen.
+
+Sie bauen etwas, das bereits existiert. Provisionsmanagement ist ein gelöstes Problem. Es gibt Tools, die speziell dafür gebaut sind. Wenn Sie ein benutzerdefiniertes Modul bauen, erfinden Sie diese Tools neu, aber nur für Ihren spezifischen Anwendungsfall. Sie bekommen nicht den Vorteil von Funktionen, die andere Teams angefragt haben, wie Streit-Workflows, Audit-Trails oder Vertreter-Portale mit Self-Service-Passwort-Resets.
+
+**Für wen das funktioniert:** Teams mit spezifischen Provisionsanforderungen, die Standard-Tools nicht abdecken, und dem Budget, ein benutzerdefiniertes Modul zu bauen und zu warten. Wenn Ihre Provisionspläne höchst ungewöhnlich sind (komplexe mehrstufige Overrides, branchenspezifische Logik), könnte ein benutzerdefiniertes Modul sinnvoll sein. Aber für die meisten Teams überwiegen die Kosten und der Wartungsaufwand die Vorteile.
+
+## Option 3: Dedizierte Provisionssoftware
+
+Es gibt Tools, die speziell für Provisionsmanagement gebaut sind. Sie synchronisieren sich mit Odoo, wickeln die Berechnungen ab, bieten Vertreter-Portale, verwalten Streitigkeiten und generieren Berichte.
+
+**Was funktioniert:**
+Es ist für dieses Problem gebaut. Das Tool wickelt Provisionsplan-Modellierung, automatische Berechnungen, Vertreter-Portale, Streitbeilegung, Auszahlungsverfolgung und Reporting ab. Sie müssen nichts davon bauen.
+
+Es synchronisiert sich mit Odoo. Das Provisionstool zieht automatisch Verkaufsauftragsdaten aus Odoo. Sie müssen nicht als CSV exportieren und in eine Tabellenkalkulation einfügen. Die Synchronisierung läuft nach Zeitplan (täglich, wöchentlich oder monatlich), und die Provisionsberechnungen verwenden die neuesten Daten.
+
+Vertreter bekommen ein Portal. Sie können sich einloggen und ihre Verdienste, Deal-Aufschlüsselungen und Provisionshistorie sehen. Sie müssen die Finanzabteilung nicht fragen. Sie müssen keine eigenen Aufzeichnungen führen. Wenn sie eine Frage zu einem bestimmten Deal haben, können sie die Berechnung direkt dort sehen.
+
+Streitigkeiten werden verwaltet. Wenn ein Vertreter denkt, seine Provision sei falsch, kann er einen Streit über das Portal einreichen. Der Streit wird an die richtige Person weitergeleitet, geprüft und gelöst. Es gibt einen Audit-Trail, damit Sie sehen können, was sich geändert hat und warum.
+
+Es skaliert. Ob Sie fünf oder 50 Vertreter haben, das Tool bewältigt das. Sie müssen nichts neu bauen, wenn Ihr Team wächst.
+
+**Was nicht funktioniert:**
+Es ist ein separates Tool. Sie fügen ein weiteres System zu Ihrem Stack hinzu. Das Provisionstool ersetzt Odoo nicht. Es arbeitet daneben.
+
+Es kostet Geld. Dedizierte Provisionssoftware ist nicht kostenlos. Die Preise variieren je nach Anbieter und Teamgröße, aber erwarten Sie, ein monatliches Abo zu zahlen. Für ein 20-köpfiges Team sind das typischerweise $200 bis $500 pro Monat.
+
+Es gibt Einrichtungskosten. Sie müssen Ihre Provisionspläne im Tool konfigurieren, die Odoo-Integration einrichten und Ihr Team schulen. Das kostet Zeit. Die meisten Tools können Sie in wenigen Tagen bis zu ein paar Wochen zum Laufen bringen, abhängig davon, wie komplex Ihre Pläne sind.
+
+**Für wen das funktioniert:** Teams mit fünf oder mehr Vertretern, die etwas wollen, das für Provisionsmanagement gebaut ist. Wenn Sie über den Punkt hinaus sind, wo Tabellenkalkulationen funktionieren, aber kein benutzerdefiniertes Modul bauen wollen, ist dedizierte Software die richtige Wahl.
+
+## Vergleich nebeneinander
+
+| | Tabellenkalkulationen | Benutzerdefinierte Odoo-Module | Dedizierte Software |
+|---|---|---|---|
+| Einrichtungszeit | Stunden | Wochen bis Monate | Tage bis Wochen |
+| Monatliche Kosten | Kostenlos | Nur Wartung | $200-$500/Mo für 20 Vertreter |
+| Vertreter-Sichtbarkeit | Keine (müssen Finanz fragen) | Kann Vertreter-Ansichten bauen | Eingebautes Vertreter-Portal |
+| Fehlerrate | Hoch (manuelle Berechnungen) | Niedrig (automatisiert) | Niedrig (automatisiert) |
+| Skaliert auf 10+ Vertreter | Nein | Ja | Ja |
+| Odoo-Upgrade-Resilienz | N/A | Bricht bei Updates | Anbieter wartet Integration |
+| Streitbeilegung | Manuell (E-Mail/Slack) | Kann gebaut werden | Eingebaut |
+| Audit-Trail | Keine | Kann gebaut werden | Eingebaut |
+
+## Was sich bei verschiedenen Teamgrößen ändert
+
+**Ein bis drei Vertreter:** Tabellenkalkulationen funktionieren gut. Der manuelle Aufwand ist bewältigbar. Das Fehlerrisiko ist niedrig, weil es nicht viele Deals gibt. Überkomplizieren Sie das nicht.
+
+**Fünf bis 10 Vertreter:** Schmerz beginnt. Die Tabellenkalkulation braucht länger zur Pflege. Fehler passieren häufiger. Vertreter fragen häufiger nach ihren Provisionen. Hier fangen Teams an, nach Alternativen zu suchen.
+
+**15+ Vertreter:** Tabellenkalkulationen brechen zusammen. Die manuelle Arbeit wird zu einem Vollzeitjob. Fehler sind häufig und teuer. Das Vertrauen der Vertreter schwindet, weil die Zahlen immer spät und manchmal falsch sind. Hier zahlt sich dedizierte Software aus.
+
+Benutzerdefinierte Module können in jeder Größe funktionieren, aber die Kosten und der Wartungsaufwand machen sie schwer zu rechtfertigen, es sei denn, Ihre Provisionsanforderungen sind höchst ungewöhnlich.
+
+## Was als Nächstes tun
+
+Wenn Sie noch Tabellenkalkulationen verwenden und der Schmerz beginnt, ist der nächste Schritt zu sehen, wie Automatisierung aussieht. Der manuelle Odoo-zu-Excel-Zyklus muss nicht manuell sein. Es gibt einen Weg, Ihre Verkaufsaufträge direkt mit einem Provisionssystem zu synchronisieren, die Berechnungen automatisch durchzuführen und Vertretern ein Portal zu geben, wo sie ihre Verdienste sehen können.
+
+[Lesen: Wie man Odoo-Provisionsberechnungen automatisiert (ohne Tabellenkalkulationen)](/blog/de/odoo-commission-automation)
+
+Wenn Sie bereit sind zu sehen, wie die Odoo-Integration funktioniert, können Sie sie in etwa 15 Minuten einrichten. Verbinden Sie Ihre Odoo-Instanz, mappen Sie Ihre Vertriebsmitarbeiter-Felder, konfigurieren Sie Ihre Provisionspläne und führen Sie Ihre erste Berechnung durch.
+
+[Sehen Sie die Odoo-Integration](https://commissionk.it/integrations/odoo)

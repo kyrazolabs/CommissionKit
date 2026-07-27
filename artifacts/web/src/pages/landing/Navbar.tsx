@@ -1,17 +1,19 @@
 import { useState, useEffect } from "react";
-import { Menu, X, ChevronDown, LayoutGrid, Cable, Plug } from "lucide-react";
+import { Menu, X, ChevronDown, LayoutGrid, Cable, Plug, ArrowRight, Bot, Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Analytics } from "@/lib/analytics";
 
 const FEATURES_LINKS = [
   { name: "Features", desc: "Commission plans, deals, payouts", href: "/features" },
   { name: "Solutions", desc: "By role and team size", href: "/solutions" },
+  { name: "CGent", desc: "AI Agent — Telegram, Slack, WhatsApp", href: "#", badge: "Soon", icon: "bot" as const },
+  { name: "MCP Integration", desc: "Connect your AI tools via MCP", href: "#", badge: "Soon", icon: "terminal" as const },
 ];
 
 const INTEGRATIONS = [
-  { name: "Odoo ERP", desc: "Sales orders, reps, invoices", href: "/integrations/odoo", badge: "ERP", img: "/plugins/odoo.webp" },
-  { name: "HubSpot CRM", desc: "Pipeline & contact sync", href: "/integrations/hubspot", badge: "CRM", img: "/plugins/hubspot.webp" },
-  { name: "Salesforce CRM", desc: "Opportunities & owners", href: "/integrations/salesforce", badge: "CRM", img: "/plugins/salesforce.webp" },
+  { name: "Odoo", desc: "Sales orders, reps, invoices", href: "/integrations/odoo", badge: "ERP", img: "/plugins/odoo.webp" },
+  { name: "HubSpot", desc: "Pipeline & contact sync", href: "/integrations/hubspot", badge: "CRM", img: "/plugins/hubspot.webp" },
+  { name: "Salesforce", desc: "Opportunities & owners", href: "/integrations/salesforce", badge: "CRM", img: "/plugins/salesforce.webp" },
   { name: "Custom REST API", desc: "Any REST endpoint", href: "/integrations/custom", badge: "API", icon: true },
 ];
 
@@ -89,7 +91,7 @@ export function Navbar() {
                 className="py-6"
                 onMouseLeave={() => setProductOpen(false)}
               >
-                <div className="grid grid-cols-2 gap-8 max-w-lg">
+                <div className="grid grid-cols-5 gap-6 max-w-7xl">
                   <div>
                     <div className="flex items-center gap-2 mb-3">
                       <LayoutGrid className="size-4 text-primary" />
@@ -97,10 +99,17 @@ export function Navbar() {
                     </div>
                     <div className="space-y-1">
                       {FEATURES_LINKS.map((item) => (
-                        <a key={item.href} href={item.href} className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted transition-colors"
-                          onClick={() => setProductOpen(false)}>
+                        <a key={item.name} href={item.href} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${item.badge ? "cursor-default" : "hover:bg-muted"}`}
+                          onClick={item.badge ? (e) => e.preventDefault() : () => setProductOpen(false)}>
                           <div className="min-w-0">
-                            <span className="text-sm font-medium text-foreground">{item.name}</span>
+                            <div className="flex items-center gap-2">
+                              <span className={`text-base font-medium ${item.badge ? "text-muted-foreground" : "text-foreground"}`}>{item.name}</span>
+                              {item.badge && (
+                                <span className="text-xs font-medium px-1.5 text-amber-600">
+                                  {item.badge}
+                                </span>
+                              )}
+                            </div>
                             <p className="text-xs text-muted-foreground">{item.desc}</p>
                           </div>
                         </a>
@@ -126,8 +135,8 @@ export function Navbar() {
                           )}
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-foreground">{item.name}</span>
-                              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border">
+                              <span className="text-base font-medium text-foreground">{item.name}</span>
+                              <span className="text-xs font-medium px-1.5 rounded text-muted-foreground">
                                 {item.badge}
                               </span>
                             </div>
@@ -136,6 +145,65 @@ export function Navbar() {
                         </a>
                       ))}
                     </div>
+                  </div>
+
+                  {/* ── 3rd column: Rep Portal visual card ── */}
+                  <div className="col-span-3">
+                    <a
+                      href="/portal"
+                      className="group flex items-center gap-6 rounded-xl border border-card-border bg-white p-3 hover:border-primary/30 transition-all duration-300 hover:shadow-sm"
+                      onClick={() => setProductOpen(false)}
+                    >
+                      {/* Image frame — fixed aspect-ratio, 3D frame with internal scroll */}
+                      <div
+                        className="relative w-[45%] aspect-video shrink-0 rounded-lg overflow-hidden bg-sidebar mx-0.5"
+                        style={{
+                          transform: 'perspective(900px) rotateY(-1deg) scale(1.06)',
+                          transition: 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                        }}
+                      >
+                        <div className="absolute inset-x-0 top-0" style={{ animation: 'scroll-screenshot 7s ease-in-out infinite' }}>
+                          <img
+                            src="/screenshots/rep-portal-dashboard.png"
+                            alt="Rep Portal dashboard preview"
+                            className="w-full rounded-lg"
+                          />
+                        </div>
+                        {/* Glow on hover via group */}
+                        <div className="absolute inset-0 rounded-lg bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                      </div>
+
+                      {/* Text area — right side */}
+                      <div className="flex-1 flex flex-col justify-center py-1 space-y-2.5">
+                        <div>
+                          <h4 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">
+                            Transparent earnings. Zero questions.
+                          </h4>
+                          <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                            Self-serve commission dashboard for your reps. No corporate login, no IT tickets - just a unique access code.
+                          </p>
+                        </div>
+
+                        {/* Feature pills */}
+                        <div className="flex flex-wrap gap-1">
+                          <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground bg-muted/60 rounded-md px-1.5 py-0.5">
+                            Real-time earnings
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground bg-muted/60 rounded-md px-1.5 py-0.5">
+                            Deal breakdowns
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground bg-muted/60 rounded-md px-1.5 py-0.5">
+                            Payout history
+                          </span>
+                        </div>
+
+                        {/* CTA */}
+                        <div className="flex items-center gap-1 text-xs font-semibold text-primary group-hover:gap-2 transition-all">
+                          See the Rep Portal
+                          <ArrowRight className="size-3" />
+                        </div>
+                      </div>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -151,6 +219,15 @@ export function Navbar() {
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Product</span>
             <a href="/features" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-muted-foreground hover:text-primary">Features</a>
             <a href="/solutions" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-muted-foreground hover:text-primary">Solutions</a>
+            <span className="text-sm font-medium text-muted-foreground/60 flex items-center gap-2">
+              CGent
+              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 border border-amber-500/20">Soon</span>
+            </span>
+            <span className="text-sm font-medium text-muted-foreground/60 flex items-center gap-2">
+              MCP Integration
+              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 border border-amber-500/20">Soon</span>
+            </span>
+            <a href="/portal" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-muted-foreground hover:text-primary">CKit Portal</a>
             <div className="mt-2 pt-2 border-t border-border/60">
               <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Integrations</span>
               <div className="flex flex-col gap-3 mt-3">

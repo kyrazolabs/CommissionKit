@@ -214,7 +214,7 @@ export default async function BlogPost({ params }: Props) {
         )}
 
         <div className="blog-content" dir={isRtl ? "rtl" : "ltr"}>
-          <MDXRemote source={post.content} options={{ remarkPlugins: [remarkGfm] }} />
+          <MDXRemote source={post.content} options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }} />
         </div>
 
         <BlogLeadCapture lang={lang} />

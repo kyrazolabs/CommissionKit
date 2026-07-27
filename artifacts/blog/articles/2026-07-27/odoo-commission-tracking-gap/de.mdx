@@ -1,0 +1,92 @@
+---
+title: "Warum Odoo kein Provisionstracking hat (und was Finanzteams tatsächlich tun)"
+date: "2026-07-27"
+author: "CommissionKit Team"
+tags: ["Odoo", "Provisionsmanagement", "Vertriebsprozesse", "Finanzen"]
+keywords: ["odoo commission tracking", "odoo sales commission", "odoo erp commission management", "odoo sales performance tracking", "odoo finance automation", "odoo spreadsheet export commissions"]
+description: "Odoo kann Angebote, Rechnungsstellung und CRM gut. Aber es gibt kein eingebautes Provisionstracking. Hier ist, was Finanzteams tatsächlich tun, um diese Lücke zu schließen."
+cover: cover.jpg
+summary: "Odoo ist stark bei Verkaufsaufträgen und Rechnungen, verfolgt aber keine Provisionen. Finanzteams schließen die Lücke mit monatlichen Excel-Exporten, manuellen Berechnungen und viel Hin und Her mit Vertretern."
+---
+
+**Kurzfassung:** Die Vertriebsmodul von Odoo wickelt Angebote, Aufträge und Rechnungen ab, aber es gibt keine Möglichkeit zu verfolgen, was Vertreter an diesen Deals verdienen. Finanzteams überbrücken diese Lücke mit monatlichen CSV-Exporten und Tabellenkalkulationen, ein Prozess, der für ein 20-köpfiges Team vier bis sechs Stunden pro Monat dauert. Sie verbringen sie mit dem Kopieren von Daten, dem Korrigieren von Spalten und dem Einholen von Genehmigungen, während Vertreter ihre eigenen Schatten-Aufzeichnungen führen, weil niemand ihnen gesagt hat, was sie verdient haben. Dieser Artikel zeigt, wie dieser Workflow tatsächlich aussieht, was er kostet und welche Optionen Sie haben.
+
+---
+
+Odoo kann eine Menge Dinge gut. Die Vertriebsmodul führt Sie ohne viel Reibung vom Angebot zum bestätigten Auftrag zur Rechnung. Das CRM verfolgt Opportunities. Das Buchhaltungsmodul wickelt Rechnungsstellung und Zahlungen ab. Für Unternehmen, die ein ERP brauchen, um Vertrieb, Lager und Finanzen an einem Ort zu verwalten, ist Odoo eine solide Wahl.
+
+Aber es gibt eine Sache, die Odoo nicht tut: Verkaufsprovisionen verfolgen.
+
+Es gibt kein Provisionsmodul. Keinen Ort, um Provisionspläne zu definieren, zu berechnen, was Vertreter an Deals verdienen, oder Auszahlungen zu verwalten. Die Vertriebsmodul hört bei der Rechnung auf. Was danach passiert, wie Vertreter für das bezahlt werden, was sie verkauft haben, lebt woanders.
+
+Das ist kein Fehler. Odoo wurde nicht gebaut, um Provisionsmanagement zu übernehmen. Es ist ein ERP, keine Provisionsplattform. Aber für Finanzteams, die Provisionen für Odoo-basierte Vertriebsteams verwalten, schafft diese Lücke ein echtes Problem.
+
+## Was Odoo richtig macht
+
+Bevor wir uns ansehen, was fehlt, lohnt es sich anzuerkennen, was funktioniert.
+
+Odoo Vertriebsmodul wickelt den vollständigen Angebots-zu-Zahlungs-Fluss ab. Sie können Angebote erstellen, sie in Verkaufsaufträge umwandeln, Rechnungen erstellen und Zahlungen verfolgen. Die CRM-Integration bedeutet, dass Sie die vollständige Pipeline von Lead bis abgeschlossenem Deal sehen können. Die Berichte geben Ihnen Einblick in die Vertriebsleistung nach Vertreter, nach Team, nach Produkt.
+
+Das Rechnungsmodul verfolgt den Zahlungsstatus. Sie wissen, welche Rechnungen bezahlt sind, welche ausstehen, welche überfällig sind. Das ist wichtig für Provisionsberechnungen, weil die meisten Teams Provisionen auf eingenommene Umsätze zahlen, nicht auf gebuchte.
+
+Odoo verarbeitet auch Multi-Währungs-, Multi-Unternehmen- und Multi-Lager-Setups. Wenn Sie über Grenzen verkaufen oder komplexes Inventar verwalten, deckt Odoo das ab.
+
+Für das, wofür es gebaut wurde, funktioniert Odoo. Das Problem ist, dass Provisionsverfolgung nicht auf dieser Liste steht.
+
+## Die Provisionslücke: Wo Odoo aufhört und die Tabellenkalkulation beginnt
+
+Das ist, was ich bei Unternehmen sehe, die Odoo für den Vertrieb nutzen.
+
+Der Deal wird in Odoo abgeschlossen. Der Verkaufsauftrag wird bestätigt. Die Rechnung wird erstellt. Der Vertreter wechselt zur nächsten Opportunity. Niemand sagt dem Provisionssystem etwas, denn es gibt kein Provisionssystem in Odoo.
+
+Die Provisionsdaten leben in einer Tabellenkalkulation. Manchmal ist es ein Google Sheet. Manchmal eine Excel-Datei auf einem gemeinsamen Laufwerk. Manchmal eine Kombination aus beidem, mit verschiedenen Versionen, die herumliegen.
+
+Die Tabellenkalkulation synchronisiert sich nicht mit Odoo. Sie weiß nichts von Deals, die nach dem Export storniert wurden. Sie weiß nicht, dass ein Vertreter mitten im Quartal die Region gewechselt hat. Sie weiß nicht, dass der Vertriebsleiter einen Sonderpreis für einen bestimmten Deal genehmigt hat. All diese Informationen müssen außerhalb von Odoo kommuniziert werden, normalerweise per E-Mail oder Slack, und dann manuell in die Tabellenkalkulation eingetragen werden.
+
+Das ist die Lücke. Odoo verfolgt den Verkauf. Die Tabellenkalkulation verfolgt die Provision. Sie sprechen nicht miteinander.
+
+## Der echte Workflow: Was Finanzteams tatsächlich jeden Monat tun
+
+Das ist der Workflow, den ich bei Dutzenden von Unternehmen gesehen habe, die Odoo für den Vertrieb nutzen.
+
+Am Monatsende öffnet jemand in der Finanzabteilung Odoo und geht zu Vertrieb > Aufträge. Er filtert nach den bestätigten Aufträgen des Vormonats und exportiert sie als CSV. Der Export enthält den Auftragsbetrag, den Partnername, das Vertriebsmitarbeiter-Feld (das Odoo als Benutzer-ID speichert) und das Auftragsdatum.
+
+Er enthält nicht den Provisionssatz. Er enthält nicht den vollständigen Namen des Vertreters. Er enthält nicht, ob die Rechnung tatsächlich bereits bezahlt wurde.
+
+Also fügt die Tabellenkalkulationsperson diese Spalten manuell hinzu. Sie schlägt nach, welche Benutzer-ID zu welchem Vertreter gehört. Sie prüft das Rechnungsmodul, um zu sehen, welche Aufträge bezahlte Rechnungen haben. Sie wendet den Provisionssatz aus dem Planungs­dokument an, das irgendwo auf einem gemeinsamen Laufwerk liegt. Sie berechnet die Provision für jeden Deal.
+
+Dann schickt sie die Ergebnisse per E-Mail an den Vertriebsleiter zur Genehmigung. Der Vertriebsleiter findet zwei Deals, die nicht zählen sollten, weil es interne Transfers waren. Er findet einen Vertreter, der wegen eines Quotenbeschleunigers einen höheren Satz hätte bekommen sollen. Die Tabellenkalkulationsperson korrigiert, rechnet neu und schickt die Datei an die Buchhaltung zur Auszahlung.
+
+Das dauert vier bis sechs Stunden jeden Monat für ein 20-köpfiges Team. Manchmal mehr, wenn Währungsumrechnungen nötig sind oder sich die Vertreterliste mitten im Monat geändert hat.
+
+## Was das in der Praxis kostet
+
+Der Tabellenkalkulations-Workflow funktioniert bei drei Vertretern und 30 Deals im Monat. Danach bricht er zusammen.
+
+**Zeit.** Vier bis sechs Stunden pro Monat für ein 20-köpfiges Team. Das sind 50 bis 70 Stunden pro Jahr. Bei 50 $/Stunde belasteten Kosten für Finanzmitarbeiter sind das 2.500 bis 3.500 $ an Arbeit. Aber die echten Kosten sind, dass die Finanzperson, die diese Arbeit macht, etwas Wertvolleres tun könnte. Sie verbringt jede Woche eines Monats mit manueller Dateneingabe statt mit Analyse.
+
+**Fehler.** Manuelle Berechnungen haben Fehlerraten. Ich habe Tabellenkalkulationen gesehen, wo eine Formel die falsche Zeile referenzierte, wo ein Vertreter zu viel bezahlt wurde, weil die Tabellenkalkulation einen Rückforderung nicht berücksichtigt hatte, wo ein Vertreter zu wenig bezahlt wurde, weil der Provisionssatz nach einer Planänderung nicht aktualisiert wurde. Fehler passieren. Wenn sie passieren, gibt es eine Korrektur, eine Entschuldigung und einen Vermerk, „nächsten Monat genauer zu sein."
+
+**Vertretervertrauen.** Das ist der Teil, der die meisten Reibungen verursacht. Ein Vertreter schließt am 15. einen großen Deal ab. Er will wissen, was er verdient hat. Die Antwort lautet: „Frag die Finanzabteilung", denn die Provisionsdaten leben in einer Tabellenkalkulation, auf die nur eine Person Zugriff hat.
+
+Manche Vertreter fangen an, ihre eigenen Aufzeichnungen zu führen. Sie bauen Schatten-Tabellen, in denen sie ihre Deals verfolgen und ihre Provisionen schätzen. Wenn die offiziellen Zahlen herauskommen und nicht übereinstimmen (weil der Vertreter den falschen Satz verwendet oder einen Deal gezählt hat, der noch nicht bezahlt war), gibt es einen Streit. Die Finanzperson muss erklären, warum die Zahlen des Vertreters nicht mit den offiziellen Zahlen übereinstimmen. Das kostet Zeit. Und es untergräbt das Vertrauen.
+
+## Was machen Teams also?
+
+Es gibt drei Ansätze, die ich bei Teams sehe.
+
+**Weiter Tabellenkalkulationen verwenden.** Das funktioniert für kleine Teams. Wenn Sie drei Vertreter und 30 Deals im Monat haben, ist der Tabellenkalkulations-Workflow in Ordnung. Er ist kostenlos, flexibel, und jeder versteht, wie er funktioniert. Der Schmerz beginnt bei 5 Vertretern, wird schlimmer bei 10, und wird nach 15 unhandhabbar.
+
+**Benutzerdefinierte Odoo-Module bauen.** Odoo ist erweiterbar. Sie können benutzerdefinierte Module bauen, um Provisionsverfolgung hinzuzufügen. Manche Teams tun das. Es kostet 5.000 bis 15.000 $, ein grundlegendes Provisionsmodul zu bauen, plus laufende Wartung. Jedes Mal, wenn Odoo ein Update veröffentlicht, besteht das Risiko, dass das benutzerdefinierte Modul bricht. Und Sie bekommen immer noch keine Vertreter-Portal oder Streitbeilegung, es sei denn, Sie bauen die auch.
+
+**Dedizierte Provisionssoftware verwenden.** Es gibt Tools, die speziell für Provisionsmanagement gebaut sind. Sie synchronisieren sich mit Odoo, wickeln die Berechnungen ab, bieten Vertreter-Portale, verwalten Streitigkeiten. Sie kosten Geld, aber sie sind für dieses Problem gebaut.
+
+Jeder Ansatz hat Kompromisse. Die richtige Wahl hängt von Ihrer Teamgröße, Ihrem Budget und davon ab, wie viel Schmerz Sie bereit sind zu tolerieren.
+
+## Als Nächstes: Ihre Optionen, um dieses Problem zu beheben
+
+Wenn Sie Odoo verwenden und mit Provisionsverfolgung zu kämpfen haben, haben Sie Optionen. Der Tabellenkalkulations-Workflow funktioniert für kleine Teams. Benutzerdefinierte Module funktionieren, wenn Sie das Budget und die Toleranz für Wartung haben. Dedizierte Provisionssoftware funktioniert, wenn Sie etwas wollen, das für dieses Problem gebaut ist.
+
+Im nächsten Artikel breakdownen wir jede Option im Detail: was sie kostet, was Sie dafür bekommen, wo sie zusammenbricht, und für welche Teamgrößen jeder Ansatz am besten funktioniert.
+
+[Lesen: Verkaufsprovisionsverfolgung für Odoo: Tabellenkalkulationen vs. benutzerdefinierte Module vs. dedizierte Software](/blog/de/odoo-commission-options-compared)
