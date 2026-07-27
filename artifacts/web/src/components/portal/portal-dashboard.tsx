@@ -182,7 +182,7 @@ export function PortalDashboard({
   return (
     <div className="space-y-6">
       {/* 3 Stat Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <StatCard
           label={t("portal.commission", "Commission")}
           trendLabel="This period"

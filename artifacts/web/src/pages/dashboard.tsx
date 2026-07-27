@@ -96,7 +96,7 @@ export function Dashboard() {
       {feedbackBanner}
 
       {/* Stat cards */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label={t("dashboard.totalCommissions")}
           value={formatCurrency(summary.totalCommission, currency)}
@@ -142,7 +142,7 @@ export function Dashboard() {
       </div>
 
       {/* Lower grid: earners table (3fr) + right column (2fr) */}
-      <div className="grid gap-5" style={{ gridTemplateColumns: "3fr 2fr" }}>
+      <div className="grid gap-5 grid-cols-1 lg:grid-cols-2">
 
         {/* Top Earners : sortable table */}
         <div className="bg-card border border-card-border rounded-xl overflow-auto" style={{ boxShadow: "var(--shadow-card)" }}>
@@ -364,19 +364,19 @@ function DashboardSkeleton() {
         <Skeleton className="h-8 w-40" />
         <Skeleton className="h-4 w-72" />
       </div>
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="bg-card border border-card-border rounded-2xl px-[22px] py-5">
-            <div className="flex items-start justify-between mb-3.5">
-              <Skeleton className="h-3.5 w-28" />
-              <Skeleton className="h-7 w-7 rounded-[10px]" />
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((_, i) => (
+            <div key={i} className="bg-card border border-card-border rounded-2xl px-[22px] py-5">
+              <div className="flex items-start justify-between mb-3.5">
+                <Skeleton className="h-3.5 w-28" />
+                <Skeleton className="h-7 w-7 rounded-[10px]" />
+              </div>
+              <Skeleton className="h-7 w-24 mb-1.5" />
+              <Skeleton className="h-3 w-20" />
             </div>
-            <Skeleton className="h-7 w-24 mb-1.5" />
-            <Skeleton className="h-3 w-20" />
-          </div>
-        ))}
-      </div>
-      <div className="grid gap-5" style={{ gridTemplateColumns: "3fr 2fr" }}>
+          ))}
+        </div>
+        <div className="grid gap-5 grid-cols-1 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <Skeleton className="h-5 w-28" />

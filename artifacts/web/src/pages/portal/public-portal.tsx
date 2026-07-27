@@ -35,7 +35,7 @@ function PortalSkeleton() {
         </div>
         <Skeleton className="size-10 w-40" />
       </div>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <Skeleton className="h-28 w-full" />
         <Skeleton className="h-28 w-full" />
         <Skeleton className="h-28 w-full" />

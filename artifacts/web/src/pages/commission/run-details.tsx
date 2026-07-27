@@ -46,7 +46,7 @@ export function RunDetailsPage() {
           <Skeleton className="h-4 w-20" />
           <Skeleton className="h-8 w-52" />
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
           {[1, 2, 3].map(i => <Skeleton key={i} className="h-32 w-full rounded-2xl" />)}
         </div>
         <Skeleton className="h-96 w-full rounded-2xl" />
@@ -67,7 +67,7 @@ export function RunDetailsPage() {
     return (
       <div className="space-y-6">
         <Skeleton className="h-10 w-64" />
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
           <Skeleton className="h-32 w-full" />
           <Skeleton className="h-32 w-full" />
           <Skeleton className="h-32 w-full" />
@@ -123,7 +123,7 @@ export function RunDetailsPage() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">{t("runs.runDetails.totalPayout")}</CardTitle>
@@ -167,6 +167,7 @@ export function RunDetailsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -237,6 +238,7 @@ export function RunDetailsPage() {
               )}
             </TableBody>
           </Table>
+          </div>
           {totalResults > LIMIT && (
             <div className="border-t px-4 py-3">
               <DataPagination

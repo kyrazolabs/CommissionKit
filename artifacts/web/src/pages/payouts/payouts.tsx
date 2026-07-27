@@ -642,6 +642,7 @@ export function PayoutsPage() {
             </div>
           ) : (
             <>
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -784,6 +785,7 @@ export function PayoutsPage() {
                 />
               </div>
             ) : null}
+            </div>
             </>
           )}
         </CardContent>

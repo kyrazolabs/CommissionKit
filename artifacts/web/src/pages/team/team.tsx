@@ -22,15 +22,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HelpTooltip } from "@/components/help-tooltip";
+import { RepAvatar } from "@/components/rep-avatar";
 import { useBillingStatus } from "@/hooks/use-billing-status";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { usePageMeta } from "@/hooks/use-page-meta";
-
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type MemberStatus = "active" | "pending";
 type MemberRole = "owner" | "admin" | "member";
@@ -98,19 +97,23 @@ function RoleBadge({ member, rolesList }: { member: Member, rolesList: any[] }) 
 }
 
 function MemberAvatar({ email, status }: { email: string; status: MemberStatus }) {
-  const initials = email.slice(0, 2).toUpperCase();
   return (
     <div className="relative shrink-0">
-      <div className={cn(
-        "flex size-9 items-center justify-center rounded-full text-[12px] font-semibold",
-        status === "active"
-          ? "bg-primary text-primary-foreground"
-          : "bg-muted text-muted-foreground border border-dashed border-border",
-      )}>
-        {status === "pending" ? <Clock className="size-4" /> : initials}
-      </div>
+      <RepAvatar
+        name={email}
+        size={32}
+        className={cn(
+          "size-8 shrink-0 rounded-full",
+          status === "pending" && "opacity-50",
+        )}
+      />
       {status === "active" && (
         <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-green-500 border-2 border-card" />
+      )}
+      {status === "pending" && (
+        <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-amber-400 border-2 border-card flex items-center justify-center">
+          <Clock className="size-1.5 text-white" />
+        </span>
       )}
     </div>
   );
@@ -244,9 +247,10 @@ function InviteMemberDialog({
 // ─── Member Row ────────────────────────────────────────────────────────────────
 
 function MemberRow({
-  member, currentUserId, workspaceId, canManage, isOwner, onChanged, rolesList
+  member, index, currentUserId, workspaceId, canManage, isOwner, onChanged, rolesList
 }: {
   member: Member;
+  index: number;
   currentUserId: string | null;
   workspaceId: string;
   canManage: boolean;
@@ -258,7 +262,7 @@ function MemberRow({
   const { toast } = useToast();
   const [updating, setUpdating] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const { hasPermission } = useRole()
+  const { hasPermission } = useRole();
   const isSelf = member.userId === currentUserId;
   const isProtected = member.role === "owner";
 
@@ -296,7 +300,8 @@ function MemberRow({
 
   return (
     <div className={cn(
-      "flex items-center gap-4 p-5 border-b border-border last:border-0 transition-colors",
+      "flex items-center gap-4 px-5 py-3.5 border-b border-border last:border-0 transition-colors",
+      index % 2 === 1 && "bg-muted/10",
       updating && "opacity-50 pointer-events-none",
     )}>
       <MemberAvatar email={member.email} status={member.status} />
@@ -475,15 +480,34 @@ export function TeamPage() {
 
   useEffect(() => { fetchMembers(); }, [fetchMembers]);
 
-  if (roleLoading) {
+  if (roleLoading || loading) {
     return (
       <div className="space-y-6">
+        {/* Header skeleton */}
         <div className="space-y-2">
           <Skeleton className="h-4 w-20" />
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-4 w-64" />
         </div>
-        <Skeleton className="h-96 w-full rounded-2xl" />
+        {/* Card skeleton */}
+        <div className="rounded-xl border border-card-border bg-card overflow-hidden">
+          <div className="px-5 py-4 border-b border-border">
+            <Skeleton className="h-4 w-24" />
+          </div>
+          <div className="divide-y divide-border">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex items-center gap-4 px-5 py-3.5">
+                <Skeleton className="size-8 rounded-full shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                  <Skeleton className="h-3.5 w-48" />
+                  <Skeleton className="h-3 w-28" />
+                </div>
+                <Skeleton className="h-6 w-16 rounded-full" />
+                <Skeleton className="size-6 rounded-full" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -504,114 +528,71 @@ export function TeamPage() {
   const pendingMembers = members.filter((m) => m.status === "pending");
 
   return (
-    <div className="space-y-7 max-w-4xl">
+    <div className="space-y-6 max-w-4xl">
       {/* Page header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <p className="text-[12px] font-semibold text-primary mb-1">{t("team.organization")}</p>
           <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">{t("team.title")}</h1>
-          <p className="text-[14px] text-muted-foreground mt-1">
-            {t("team.description", { workspace: activeWorkspace.name })}
-          </p>
+          <p className="text-[14px] text-muted-foreground mt-1">{t("team.description", { workspace: activeWorkspace.name })}</p>
         </div>
         {hasPermission("team", "create") && (
-            <InviteMemberDialog 
-              workspaceId={activeWorkspace.id} 
-              onInvited={fetchMembers} 
-              isLimitReached={limits.members !== -1 && members.length >= limits.members}
-              limit={limits.members}
-              rolesList={roles}
-            />
+          <InviteMemberDialog
+            workspaceId={activeWorkspace.id}
+            onInvited={fetchMembers}
+            isLimitReached={limits.members !== -1 && members.length >= limits.members}
+            limit={limits.members}
+            rolesList={roles}
+          />
         )}
-      </div>
-
-      {/* Role banner for current user */}
-      <div className={cn(
-        "flex items-center gap-3 rounded-xl border p-4",
-        is("owner") && "bg-amber-50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-800/30",
-        is("admin") && "bg-blue-50 border-blue-200 dark:bg-blue-900/10 dark:border-blue-800/30",
-        is("member") && "bg-muted border-border",
-      )}>
-        {(() => {
-          const meta = ROLE_META[role];
-          return (
-            <>
-              <div className={cn("flex size-8 shrink-0 items-center justify-center rounded-full border", meta.color)}>
-                <meta.Icon className="size-4" />
-              </div>
-              <div>
-                <p className="text-[13px] font-semibold text-foreground">
-                  You are a <span className="capitalize">{meta.label}</span> in this workspace
-                </p>
-                <p className="text-[12px] text-muted-foreground">{meta.description}</p>
-              </div>
-            </>
-          );
-        })()}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Members list */}
-        <div className="lg:col-span-2 bg-card border border-card-border rounded-2xl overflow-hidden">
-          {/* Header */}
-          <div className="flex items-center justify-between p-5 border-b border-border">
-            <div>
+        <Card className="lg:col-span-2 rounded-xl border border-card-border bg-card overflow-hidden">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-[15px] font-semibold leading-snug tracking-tight">Members</CardTitle>
               <div className="flex items-center gap-2">
-                <p className="text-[14.5px] font-semibold text-foreground">Members</p>
                 <span className="text-[11px] font-semibold text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
                   {activeMembers.length} active
                   {pendingMembers.length > 0 && ` · ${pendingMembers.length} pending`}
                   {limits.members !== -1 && ` / ${limits.members} total`}
                 </span>
+                <Button variant="ghost" size="icon" className="size-8 text-muted-foreground" onClick={fetchMembers}>
+                  <RefreshCw className="size-3.5" />
+                </Button>
               </div>
-              <p className="text-[12px] text-muted-foreground mt-0.5">
-                {activeWorkspace.name} workspace
-              </p>
             </div>
-            <Button variant="ghost" size="icon" className="size-8 text-muted-foreground" onClick={fetchMembers}>
-              <RefreshCw className="size-3.5" />
-            </Button>
-          </div>
-
-          {/* Member rows */}
-          {loading ? (
-            <div className="divide-y divide-border">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center gap-4 p-5">
-                  <Skeleton className="size-9 rounded-full shrink-0" />
-                  <div className="flex-1 space-y-1.5">
-                    <Skeleton className="size-3.5" />
-                    <Skeleton className="size-3" />
-                  </div>
-                  <Skeleton className="size-6 rounded-full" />
-                </div>
-              ))}
-            </div>
-          ) : members.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center px-6">
-              <Users className="size-10 text-muted-foreground mb-3" />
-              <p className="text-[14px] font-semibold text-foreground">No members yet</p>
-              <p className="text-[12.5px] text-muted-foreground mt-1">
-                Invite your team to start collaborating.
-              </p>
-            </div>
-          ) : (
-            <div>
-              {members.map((m) => (
-                <MemberRow
-                  key={m.id}
-                  member={m}
-                  currentUserId={user?.id ?? null}
-                  workspaceId={activeWorkspace.id}
-                  canManage={hasPermission("team", "edit")}
-                  isOwner={is("owner")}
-                  onChanged={fetchMembers}
-                  rolesList={roles}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            {members.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center px-6">
+                <Users className="size-10 text-muted-foreground mb-3" />
+                <p className="text-[14px] font-semibold text-foreground">No members yet</p>
+                <p className="text-[12.5px] text-muted-foreground mt-1">
+                  Invite your team to start collaborating.
+                </p>
+              </div>
+            ) : (
+              <div>
+                {members.map((m, index) => (
+                  <MemberRow
+                    key={m.id}
+                    member={m}
+                    index={index}
+                    currentUserId={user?.id ?? null}
+                    workspaceId={activeWorkspace.id}
+                    canManage={hasPermission("team", "edit")}
+                    isOwner={is("owner")}
+                    onChanged={fetchMembers}
+                    rolesList={roles}
+                  />
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Role reference sidebar */}
         <RoleReference />

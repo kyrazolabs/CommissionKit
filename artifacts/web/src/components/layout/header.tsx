@@ -1,4 +1,4 @@
-import { Sun, Moon, Cloud, LifeBuoy, LoaderCircle } from "lucide-react";
+import { Sun, Moon, Cloud, LifeBuoy, LoaderCircle, PanelLeftOpen } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/hooks/use-auth";
 import { NotificationBell } from "@/components/notification-bell";
@@ -46,7 +46,7 @@ function SyncIndicator() {
   return null;
 }
 
-export function Header() {
+export function Header({ onToggleMobileSidebar, isMobile }: { onToggleMobileSidebar?: () => void; isMobile?: boolean }) {
   const { theme, toggle } = useTheme();
   const { user } = useAuth();
 
@@ -63,6 +63,16 @@ export function Header() {
 
   return (
     <header className="flex h-14 shrink-0 items-center bg-header px-5 z-10">
+      {/* Mobile sidebar toggle */}
+      {isMobile && (
+        <button
+          onClick={onToggleMobileSidebar}
+          className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors mr-2 -ml-2"
+        >
+          <PanelLeftOpen className="size-4" />
+        </button>
+      )}
+
       {/* Logo : width matches sidebar */}
       <a href="/dash" className="flex items-center gap-2">
         <img src="/brand/logo-symbol.svg" alt="CommissionKit Logo" className="h-6" />
