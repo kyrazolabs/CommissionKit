@@ -19,6 +19,7 @@ type ConfirmDialogProps = {
   confirmLabel?: string;
   cancelLabel?: string;
   variant?: "destructive" | "default";
+  size?: "default" |"md" |"sm" |"lg" |"icon";
   onConfirm: () => void;
   loading?: boolean;
 };
@@ -31,6 +32,7 @@ export function ConfirmDialog({
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
   variant = "destructive",
+  size = 'sm',
   onConfirm,
   loading = false,
 }: ConfirmDialogProps) {
@@ -50,9 +52,9 @@ export function ConfirmDialog({
           <AlertDialogAction
             onClick={onConfirm}
             disabled={loading}
-            className={variant === "destructive" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+            variant={variant === "destructive" ? "destructive" : "outline"}
+            
           >
-            {loading ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
             {confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>

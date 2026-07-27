@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, FileText, Briefcase, PlayCircle,
   Settings, CreditCard, LogOut, ChevronsUpDown, Check, Plus,
   Building2, Shield, Crown, PieChart, Wallet, AlertOctagon, FolderKanban, Grid3X3, Plug,
-  ScrollText,
+  ScrollText, PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -23,13 +23,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { apiFetch } from "@/lib/api";
 import { Analytics } from "@/lib/analytics";
 
 const ICON_MAP: Record<string, any> = {
   LayoutDashboard, Users, FileText, Briefcase, PlayCircle,
-  Settings, CreditCard, PieChart, Wallet, AlertOctagon, FolderKanban, Building2, Grid3X3,
-  Plug,
+  Settings, CreditCard, PieChart, Wallet, AlertOctagon, FolderKanban, Building2, Grid3X3, ScrollText, Plug,
 };
 
 const ROLE_ICONS = {
@@ -38,7 +42,7 @@ const ROLE_ICONS = {
   member: Users,
 };
 
-function WorkspaceSwitcher() {
+function WorkspaceSwitcher({ collapsed }: { collapsed: boolean }) {
   const { t } = useTranslation();
   const { workspaces, activeWorkspace, setActiveWorkspace, createWorkspace } = useWorkspace();
   const [open, setOpen] = useState(false);
@@ -63,7 +67,7 @@ function WorkspaceSwitcher() {
   if (!activeWorkspace) return null;
 
   return (
-    <div className="px-3 pt-3 pb-2">
+    <div className={cn("pt-3 pb-2", collapsed ? "px-1.5" : "px-3")}>
       <Popover open={open} onOpenChange={(isOpen) => {
         setOpen(isOpen);
         if (!isOpen) {
@@ -72,22 +76,29 @@ function WorkspaceSwitcher() {
         }
       }}>
         <PopoverTrigger asChild>
-          <button className="w-full flex items-center gap-2 p-2 rounded-[10px] hover:bg-muted text-left transition-colors group outline-none click">
+          <button className={cn(
+            "flex items-center gap-2 p-2 rounded-[10px] hover:bg-muted text-left transition-colors group outline-none click",
+            collapsed ? "w-full justify-center" : "w-full",
+          )}>
             <WorkspaceAvatar name={activeWorkspace.name} size={28} className="size-7 shrink-0 rounded-md" />
-            <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold text-foreground truncate leading-none">{activeWorkspace.name}</p>
-              <div className="flex items-center gap-1 mt-0.5">
-                {(() => {
-                  const RoleIcon = ROLE_ICONS[activeWorkspace.role] ?? Users;
-                  return <RoleIcon className="size-2.5 text-muted-foreground" />;
-                })()}
-                <p className="text-[10px] text-muted-foreground capitalize">{activeWorkspace.role}</p>
-              </div>
-            </div>
-            <ChevronsUpDown className="size-3.5 text-muted-foreground shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
+            {!collapsed && (
+              <>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-semibold text-foreground truncate leading-none">{activeWorkspace.name}</p>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    {(() => {
+                      const RoleIcon = ROLE_ICONS[activeWorkspace.role] ?? Users;
+                      return <RoleIcon className="size-2.5 text-muted-foreground" />;
+                    })()}
+                    <p className="text-[10px] text-muted-foreground capitalize">{activeWorkspace.role}</p>
+                  </div>
+                </div>
+                <ChevronsUpDown className="size-3.5 text-muted-foreground shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
+              </>
+            )}
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-[196px] p-0 rounded-xl overflow-hidden" align="start" sideOffset={8}>
+        <PopoverContent className="w-49 p-0 rounded-xl overflow-hidden" align="start" sideOffset={8}>
           <AnimatePresence mode="wait">
             {!showCreate ? (
               <motion.div
@@ -174,12 +185,24 @@ function WorkspaceSwitcher() {
   );
 }
 
-export function Sidebar() {
+export function Sidebar({ onCloseMobile, isMobile }: { onCloseMobile?: () => void; isMobile?: boolean }) {
   const { t } = useTranslation();
   const [location] = useLocation();
   const { user, signOut } = useAuth();
   const { activeWorkspace, engineNavItems, loading: wsLoading } = useWorkspace();
   const { can, hasPermission } = useRole();
+
+  const [collapsed, setCollapsed] = useState(() => {
+    try { return localStorage.getItem("ck_sidebar_collapsed") === "true"; } catch { return false; }
+  });
+
+  const toggleCollapsed = () => {
+    setCollapsed(prev => {
+      const next = !prev;
+      try { localStorage.setItem("ck_sidebar_collapsed", String(next)); } catch {}
+      return next;
+    });
+  };
 
   const initials = user?.email
     ? user.email.slice(0, 2).toUpperCase()
@@ -196,30 +219,28 @@ export function Sidebar() {
     {
       label: t("sidebar.main"),
       items: [
-        { name: t("layout.dashboard"), href: "/dash",          icon: "LayoutDashboard" },
-        { name: t("layout.reports"),   href: "/dash/reports",  icon: "PieChart" },
-        { name: t("layout.reps"),      href: "/dash/reps",     icon: "Users" },
-        { name: t("layout.plans"),     href: "/dash/plans",    icon: "FileText" },
+        { name: t("layout.dashboard"), href: "/dash",             icon: "LayoutDashboard",     permission: { resource: "dashboard", action: "read" } },
+        { name: t("layout.reports"),   href: "/dash/reports",     icon: "PieChart",     permission: { resource: "reports", action: "read" } },
+        { name: t("layout.reps"),      href: "/dash/reps",        icon: "Users",     permission: { resource: "reps", action: "read" } },
+        { name: t("layout.plans"),     href: "/dash/plans",       icon: "FileText",     permission: { resource: "plans", action: "read" } },
       ],
     },
     {
       label: t("sidebar.operations"),
       items: [
-        { name: t("layout.deals"),    href: "/dash/deals",    icon: "Briefcase" },
-        { name: t("layout.runs"),     href: "/dash/runs",     icon: "PlayCircle" },
-        { name: t("layout.payouts"),  href: "/dash/payouts",  icon: "Wallet" },
-        { name: t("layout.disputes"), href: "/dash/disputes", icon: "AlertOctagon" },
-        ...(hasPermission("audit_log", "read")
-          ? [{ name: "Audit Log", href: "/dash/audit-log", icon: "ScrollText" }]
-          : []),
+        { name: t("layout.deals"),    href: "/dash/deals",         icon: "Briefcase",     permission: { resource: "deals", action: "read" } },
+        { name: t("layout.runs"),     href: "/dash/runs",          icon: "PlayCircle",     permission: { resource: "calculations", action: "read" } },
+        { name: t("layout.payouts"), href: "/dash/payouts",       icon: "Wallet",     permission: { resource: "payouts", action: "read" } },
+        { name: t("layout.disputes"), href: "/dash/disputes",       icon: "AlertOctagon",     permission: { resource: "disputes", action: "read" } },
+        { name: "Audit Log",          href: "/dash/audit-log",      icon: "ScrollText",    permission: { resource: "audit_log", action: "read" } },
       ],
     },
     {
       label: t("sidebar.account"),
       items: [
-        { name: t("layout.team"),     href: "/dash/team",     icon: "Users" },
-        { name: t("layout.billing"),  href: "/dash/billing",  icon: "CreditCard" },
-        { name: t("layout.integrations"), href: "/dash/integrations", icon: "Plug" },
+        { name: t("layout.team"),     href: "/dash/team",     icon: "Users",   permission: { resource: "team", action: "read" }  },
+        { name: t("layout.billing"),        href: "/dash/billing",        icon: "CreditCard",   permission: { resource: "billing", action: "read" } },
+        { name: t("layout.integrations"),   href: "/dash/integrations",   icon: "Plug",   permission: { resource: "workspace", action: "read" } },
         { name: t("layout.settings"), href: "/dash/settings", icon: "Settings" },
       ],
     },
@@ -230,31 +251,50 @@ export function Sidebar() {
     items: g.items.map(item => replaceMap.get(item.href) ?? item),
   }));
 
+  const filteredGroups = allGroups
+    .map(g => ({
+      ...g,
+      items: g.items.filter(item => {
+        if (!(item as any).permission) return true;
+        return hasPermission((item as any).permission.resource, (item as any).permission.action);
+      }),
+    }))
+    .filter(g => g.items.length > 0);
+
+  const effectiveCollapsed = isMobile ? false : collapsed;
+
   return (
-    <div className="flex h-full w-[220px] shrink-0 flex-col bg-sidebar">
+    <div className={cn(
+      "flex h-full shrink-0 flex-col bg-sidebar transition-all duration-200",
+      isMobile ? "w-55" : collapsed ? "w-14" : "w-55",
+    )}>
 
       {/* Workspace switcher */}
-      <WorkspaceSwitcher />
+      <WorkspaceSwitcher collapsed={effectiveCollapsed} />
 
       {/* Nav groups */}
-      <div className="flex-1 overflow-y-auto px-3 pt-4 space-y-6">
-        {allGroups.map((group) => (
+      <div className={cn("flex-1 overflow-y-auto", effectiveCollapsed ? "px-1.5 pt-4 space-y-4" : "px-3 pt-4 space-y-6")}>
+        {filteredGroups.map((group) => (
           <div key={group.label}>
-            <p className="px-2 mb-1.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-sidebar-muted-foreground select-none">
-              {group.label}
-            </p>
-            <nav className="space-y-0.5">
+            {!effectiveCollapsed && (
+              <p className="px-2 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-sidebar-muted-foreground select-none">
+                {group.label}
+              </p>
+            )}
+            <nav className={effectiveCollapsed ? "space-y-1" : "space-y-0.5"}>
               {group.items.map((item: any) => {
                 const IconComponent = typeof item.icon === "string" ? ICON_MAP[item.icon] : item.icon;
                 const isActive =
                   location === item.href ||
                   (item.href !== "/dash" && location.startsWith(item.href));
-                return (
+
+                const linkContent = (
                   <Link
                     key={item.name}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-2.5 rounded-[10px] px-2.5 py-[7px] text-sm transition-colors click",
+                      "flex items-center gap-2.5 rounded-[10px] text-sm transition-colors click",
+                      effectiveCollapsed ? "justify-center size-9 p-0" : "px-2.5 py-1.75",
                       isActive
                         ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold border border-transparent"
                         : "text-sidebar-foreground font-normal border border-transparent hover:bg-muted hover:text-foreground"
@@ -264,28 +304,64 @@ export function Sidebar() {
                     {IconComponent && (
                       <IconComponent
                         className={cn(
-                          "h-[15px] w-[15px] shrink-0",
+                          effectiveCollapsed ? "size-4" : "h-[15px] w-[15px]",
+                          "shrink-0",
                           isActive
                             ? "text-sidebar-primary"
                             : "text-sidebar-muted-foreground opacity-70"
                         )}
                       />
                     )}
-                    {item.name}
+                    {!effectiveCollapsed && item.name}
                   </Link>
                 );
+
+                if (effectiveCollapsed) {
+                  return (
+                    <Tooltip key={item.name} delayDuration={0}>
+                      <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
+                      <TooltipContent side="right" sideOffset={12} className="text-xs">
+                        {item.name}
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                }
+                return linkContent;
               })}
             </nav>
           </div>
         ))}
       </div>
 
+      {/* Toggle button */}
+      <div className={cn("flex", effectiveCollapsed ? "justify-center pt-2" : "px-3 pt-2")}>
+        <button
+          onClick={isMobile ? onCloseMobile : toggleCollapsed}
+          className={cn(
+            "flex items-center gap-2.5 rounded-[10px] text-sm text-sidebar-muted-foreground hover:bg-muted hover:text-foreground transition-colors click",
+            effectiveCollapsed ? "justify-center size-9 p-0" : "w-full px-2.5 py-1.75",
+          )}
+        >
+          {effectiveCollapsed ? (
+            <PanelLeftOpen className="size-4 shrink-0" />
+          ) : (
+            <>
+              <PanelLeftClose className="size-3.75 shrink-0 opacity-70" />
+              {isMobile ? "Close" : "Collapse"}
+            </>
+          )}
+        </button>
+      </div>
+
       {/* Bottom: user profile menu */}
-      <div className="p-3 border-t border-border mt-2">
+      <div className={cn("border-t border-border", effectiveCollapsed ? "p-1.5 mt-2" : "p-3 mt-2")}>
         {user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="w-full flex items-center gap-2 p-2 rounded-md hover:bg-sidebar-accent text-left transition-colors outline-none group">
+              <button className={cn(
+                "flex items-center justify-start gap-2 p-2 rounded-md hover:bg-sidebar-accent text-left transition-colors outline-none group",
+                effectiveCollapsed ? "w-full justify-center" : "w-full",
+              )}>
                 <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-semibold overflow-hidden">
                   {user.image ? (
                     <img src={user.image} alt="Avatar" className="w-full h-full object-cover" />
@@ -293,15 +369,19 @@ export function Sidebar() {
                     initials
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-semibold text-foreground truncate leading-none">
-                    {user.name || user.email.split("@")[0]}
-                  </p>
-                </div>
-                <ChevronsUpDown className="size-3.5 text-muted-foreground shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
+                {!effectiveCollapsed && (
+                  <>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[13px] font-semibold text-foreground truncate leading-none">
+                        {user.name || user.email.split("@")[0]}
+                      </p>
+                    </div>
+                    <ChevronsUpDown className="size-3.5 text-muted-foreground shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
+                  </>
+                )}
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-[200px] rounded-xl" align="start" side="top" sideOffset={8}>
+            <DropdownMenuContent className="w-50 rounded-xl" align="start" side="top" sideOffset={8}>
               <div className="flex items-center gap-2.5 p-2">
                 <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary text-[12px] font-semibold shrink-0 overflow-hidden">
                   {user.image ? (
@@ -322,12 +402,12 @@ export function Sidebar() {
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link href="/dash/settings" className="w-full cursor-pointer flex items-center gap-2.5 rounded-lg py-2">
-                  <Settings className="size-[15px] opacity-70" />
+                  <Settings className="size-3.75 opacity-70" />
                   {t("sidebar.accountSettings")}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={handleSignOut}
                 className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer flex items-center gap-2.5 rounded-lg py-2"
               >

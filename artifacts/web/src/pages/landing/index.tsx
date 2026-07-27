@@ -34,20 +34,24 @@ export function LandingPage() {
     <>
       <Navbar />
       <main className="pt-16">
-        <div className="max-w-7xl mx-auto">
-          <Hero />
-          <SocialProof />
-          <HowItWorks />
-          <ValueProps />
-          <FeatureDeepDives />
-          <Integrations />
-          <GlobalSupport />
-          {/* WARNING: Do not delete this component — leave it as is. */}
-          {/* <Demo /> */}
-          <Pricing />
-          <CustomEngine />
-          <FAQ />
-          <FinalCTA />
+        <div>
+          <div className="max-w-7xl  mx-auto">
+            <Hero />
+          </div>
+            <SocialProof />
+          <div className="max-w-7xl  mx-auto">
+            <HowItWorks />
+            <ValueProps />
+            <FeatureDeepDives />
+            <Integrations />
+            <GlobalSupport />
+            {/* WARNING: Do not delete this component — leave it as is. */}
+            {/* <Demo /> */}
+            <Pricing />
+            <CustomEngine />
+            <FAQ />
+            <FinalCTA />
+          </div>
         </div>
       </main>
       <Footer />

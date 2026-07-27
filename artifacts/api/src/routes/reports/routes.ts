@@ -233,14 +233,11 @@ router.get(
       const monthlyGrowth = (() => {
         if (monthlyTrends.length < 2) return { revenueGrowth: 0, commissionGrowth: 0, dealGrowth: 0 };
         const last = monthlyTrends[monthlyTrends.length - 1];
-        const priorPeriods = monthlyTrends.slice(0, -1);
-        const avgRevenue = priorPeriods.reduce((s, p) => s + p.revenue, 0) / priorPeriods.length;
-        const avgCommission = priorPeriods.reduce((s, p) => s + p.commission, 0) / priorPeriods.length;
-        const avgDeals = priorPeriods.reduce((s, p) => s + p.deals, 0) / priorPeriods.length;
+        const prev = monthlyTrends[monthlyTrends.length - 2];
         return {
-          revenueGrowth: avgRevenue > 0 ? ((last.revenue - avgRevenue) / avgRevenue) * 100 : 0,
-          commissionGrowth: avgCommission > 0 ? ((last.commission - avgCommission) / avgCommission) * 100 : 0,
-          dealGrowth: avgDeals > 0 ? ((last.deals - avgDeals) / avgDeals) * 100 : 0
+          revenueGrowth: prev.revenue > 0 ? ((last.revenue - prev.revenue) / prev.revenue) * 100 : 0,
+          commissionGrowth: prev.commission > 0 ? ((last.commission - prev.commission) / prev.commission) * 100 : 0,
+          dealGrowth: prev.deals > 0 ? ((last.deals - prev.deals) / prev.deals) * 100 : 0
         };
       })();
 

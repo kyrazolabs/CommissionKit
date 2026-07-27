@@ -452,6 +452,7 @@ export function DisputesPage() {
           {showResolved && (
             <Card className="border-border opacity-80">
               <CardContent className="p-0">
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -471,6 +472,7 @@ export function DisputesPage() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               </CardContent>
             </Card>
           )}

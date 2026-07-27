@@ -1,0 +1,110 @@
+---
+title: "How to Automate Odoo Commission Calculations (Without Spreadsheets)"
+date: "2026-07-23"
+author: "CommissionKit Team"
+tags: ["Integrations", "Odoo", "Commission Management", "Sales Operations"]
+keywords: ["odoo commission calculation", "automate odoo commissions", "odoo sales commission software", "odoo commission tracking", "odoo commission integration", "odoo sales commission management"]
+description: "Stop exporting Odoo sales orders to Excel for commission calculations. Learn how to automate the entire workflow from sale.order to rep payout."
+---
+
+**Quick Summary:** Odoo tracks sales orders, invoices, and payments, but it has no commission module. That means finance exports CSV files every month, cleans the data in a spreadsheet, manually looks up rep names and payment statuses, and calculates commissions by hand. This guide walks through that workflow, explains why it breaks past 10-15 reps, and shows how to connect Odoo directly to CommissionKit so deals sync automatically, reps see earnings in real time, and nobody spends the first week of the month in Excel.
+
+---
+
+I watched a finance manager spend every first week of the month doing the same thing. She'd open Odoo, go to Sales > Orders, filter by last month's confirmed orders, and export to CSV. Then she'd open the spreadsheet where she tracked commissions. She'd delete the old data, paste in the new export, spend an hour fixing columns where Odoo gave her partner IDs instead of rep names, and start calculating.
+
+By the time she finished, it was usually the 10th. The reps had already asked about their commissions three times. The sales manager had already sent two "still working on it" messages. And somewhere in the spreadsheet, a formula was referencing the wrong row, which meant one rep was going to get overpaid and another was going to get shortchanged.
+
+She'd catch it eventually. Or the rep would catch it. Either way, there'd be a correction, an apology, and a note to "be more careful next month."
+
+If you run commissions for an Odoo-based sales team, this probably sounds familiar.
+
+## The Odoo exports-to-Excel cycle
+
+Here's the workflow I've seen at dozens of companies using Odoo for sales:
+
+The deal closes in Odoo. The sales order gets confirmed, the invoice gets generated, and the rep moves on to the next opportunity. Nobody tells the commission system anything, because there is no commission system. There's just the spreadsheet.
+
+At month-end (or whenever finance has bandwidth), somebody exports the sales orders. The CSV includes the order amount, the partner name, the salesperson field (which Odoo stores as a user ID), and the order date. It doesn't include the commission rate, the rep's full name, or whether the invoice has actually been paid yet.
+
+So the spreadsheet person adds those columns manually. They look up which user ID belongs to which rep. They check the invoicing module to see which orders have paid invoices. They apply the commission rate from the plan document that lives in a shared drive somewhere. They calculate the commission for each deal.
+
+Then they email the results to the sales manager for approval. The sales manager finds two deals that shouldn't count because they were internal transfers. They find one rep who should have gotten a higher rate because of a quota accelerator. The spreadsheet person makes the corrections, recalculates, and sends the file to accounting for payout.
+
+This takes four to six hours every month for a 20-rep team. Sometimes more if there are currency conversions or if the rep roster changed mid-month.
+
+## Why manual commission tracking breaks for Odoo teams
+
+The spreadsheet workflow works when you have three reps and 30 deals a month. It falls apart past that point, and it falls apart in specific ways.
+
+**Sales orders exist in Odoo but commissions don't.** Odoo tracks everything about the sale: the order, the invoice, the delivery, the payment. But it has no commission module. There's no place in Odoo to define a commission plan, calculate what a rep earns on a deal, or track what's been paid out. The commission data lives entirely outside the system of record, in a disconnected spreadsheet.
+
+That disconnect is where things go wrong. The spreadsheet doesn't know about deals that got cancelled after the export ran. It doesn't know that a rep changed territories mid-quarter. It doesn't know that the sales manager approved a special rate for one specific deal. Every one of those facts has to get communicated outside of Odoo, usually through email or Slack, and then manually entered into the spreadsheet.
+
+**Invoice payment states are disconnected from commission calculations.** Most teams don't pay commissions on booked revenue. They pay on collected revenue, which means they need to know when the invoice actually gets paid. Odoo tracks this in the invoicing module, but the commission spreadsheet doesn't.
+
+So the spreadsheet person has to go back into Odoo, check the payment status of each invoice, and update the spreadsheet accordingly. Some deals from three months ago might have just gotten paid. Some deals from last month might still be outstanding. The commission calculation depends on data from two different Odoo modules, and the spreadsheet bridges them by hand.
+
+**Reps can't see their earnings without asking finance.** This is the part that causes the most friction. A rep closes a big deal on the 15th. They want to know what they earned. The answer is "check with finance," because the commission data lives in a spreadsheet that only one person has access to.
+
+Some reps start keeping their own records. They build shadow spreadsheets where they track their deals and estimate their commissions. When the official numbers come out and don't match (because the rep used the wrong rate, or counted a deal that hadn't been paid yet), there's a dispute. The finance person has to explain why the rep's numbers don't match the official numbers. This takes time. It also erodes trust.
+
+## What automating Odoo commissions looks like
+
+The fix is to connect Odoo directly to a commission system so the data flows automatically. No exports, no manual reconciliation, no shadow spreadsheets.
+
+Here's what that looks like in practice:
+
+Reps sync from `res.users` in Odoo. Every salesperson in Odoo becomes a rep in the commission system. When you hire a new rep and add them to Odoo, they show up in commission calculations on the next sync cycle. When somebody leaves, you deactivate them in the commission system while their historical deals stay intact for reporting.
+
+Sales orders sync with their amounts, dates, stages, and assigned reps. The connector reads `sale.order` records from Odoo, pulls the relevant fields, and normalizes them into the commission system's format. You don't need to map columns or fix date formats. The connector handles that.
+
+Invoice payment states determine what's ready for payout. The connector reads the actual payment status from Odoo's invoicing module, not just the order status. A deal that's confirmed but not yet invoiced shows up differently from a deal that's invoiced and paid. You can set your commission rules to pay on booking, on invoicing, or on cash collection, and the system applies those rules based on the real data from Odoo.
+
+Commission plans run against the synced data automatically. You define your plans, tiers, accelerators, and overrides in the commission system. When new deals arrive from Odoo, the engine calculates what each rep earns based on the active plan. No formulas to maintain, no manual lookups.
+
+Reps see their earnings in a portal. Each rep gets a login where they can see their deals, their commission breakdowns, and their payout history. They don't need to email finance. They don't need to maintain a shadow spreadsheet. The information is there whenever they want to check it.
+
+## Setting up the Odoo connection
+
+The integration takes about twenty minutes to configure. You need your Odoo instance URL, database name, and an API key with read access to sales orders, invoices, and users.
+
+**Step 1: Connect.** Go to Settings > Integrations in CommissionKit. Click the Odoo card. Enter your Odoo URL (something like `yourcompany.odoo.com`), your database name, and the API key. Click "Test Connection." The connector confirms it can reach your Odoo instance and pulls basic account info.
+
+**Step 2: Configure.** The connector lists all users in your Odoo `res.users` table. You confirm which ones are commissionable reps. Some users might be administrators or support staff who shouldn't earn commissions. You also map your Odoo sales stages to commission triggers. Most teams pay on "Sales Order" confirmation. Some teams wait until the invoice is paid.
+
+**Step 3: Set the sync schedule.** Choose how often CommissionKit pulls data from Odoo. Options range from every 15 minutes to once daily. Teams with high deal volume usually pick hourly. Teams with longer sales cycles can go daily without missing anything.
+
+**Step 4: Enable auto-calculation.** When this is on, every deal that arrives from Odoo gets evaluated against your commission plan immediately. The rep sees their estimated earnings update without anybody running a manual calculation.
+
+The connector uses hash-based change detection, so it doesn't reprocess orders that haven't moved since the last sync. If a deal amount changes in Odoo after it was already synced, the connector catches that on the next cycle and updates the record. If a rep reassigns a deal to a different salesperson, that change propagates too.
+
+## The cost of not automating
+
+Let me put some numbers to this.
+
+A 20-rep team closing around 200 deals per month spends four to six hours on manual commission work. That's the export, the cleanup, the calculation, the reconciliation, and the dispute resolution. At $50 per hour for finance labor (a conservative number for a fully loaded sales ops or finance person), that's $200 to $300 per month in direct labor cost.
+
+Over a year, you're looking at $2,400 to $3,600 in time that could be spent on something else. The commission software costs less than one month of that manual work.
+
+But the direct labor cost is the small part. The bigger costs are hidden.
+
+Late commissions. When the spreadsheet takes a week to put together, reps get paid late. Late paychecks make reps distrust the process. They start keeping their own records. They start questioning every payout.
+
+Disputes. Manual calculations introduce errors. A formula references the wrong row. A rep's name gets misspelled in the export, so their deals don't match. A currency conversion uses the wrong rate. Each error creates a dispute that takes 30 to 60 minutes to investigate and resolve.
+
+Shadow accounting. When reps can't see their commissions in real time, they build their own tracking systems. Those systems use different assumptions than the official process. When the official numbers come out and don't match the rep's expectations, there's a conversation. Sometimes that conversation is quick. Sometimes it isn't.
+
+The people cost matters too. Your finance person spends the first week of every month doing data entry instead of doing analysis. Your sales manager spends time mediating disputes instead of coaching reps. Your reps spend energy worrying about whether they're getting paid correctly instead of selling.
+
+## Connect Odoo and stop the cycle
+
+If you're ready to stop exporting CSV files and recalculating commissions in spreadsheets, the Odoo connector is available on CommissionKit's Growth plan and above.
+
+Go to Settings > Integrations in your CommissionKit workspace, click Odoo, and follow the setup steps. You'll need your Odoo instance URL, database name, and an API key.
+
+Full documentation is at [docs.commissionk.it/integrations/odoo](https://docs.commissionk.it/integrations/odoo).
+
+If you're not yet a CommissionKit customer, start a 14-day free trial. You can connect your Odoo instance during onboarding and watch deals flow in within the first hour.
+
+[Start your free trial](https://commissionk.it/register)

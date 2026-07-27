@@ -1,0 +1,110 @@
+---
+title: "Automatizar cálculos de comissão no Odoo (sem planilhas)"
+date: "2026-07-23"
+author: "CommissionKit Team"
+tags: ["Integrações", "Odoo", "Gestão de Comissões", "Operações de Vendas"]
+keywords: ["odoo commission calculation", "automate odoo commissions", "odoo sales commission software", "odoo commission tracking", "odoo commission integration", "odoo sales commission management"]
+description: "Pare de exportar pedidos de venda do Odoo para Excel para calcular comissões. Aprenda a automatizar todo o fluxo do sale.order ao pagamento do representante."
+---
+
+**Resumo rápido:** O Odoo rastreia pedidos de venda, faturas e pagamentos, mas não tem módulo de comissões. Isso significa que o financeiro exporta arquivos CSV todo mês, limpa os dados em uma planilha, busca manualmente os nomes dos representantes e status de pagamento, e calcula comissões à mão. Este guia mostra esse fluxo de trabalho, explica por que ele quebra com mais de 10-15 representantes, e mostra como conectar o Odoo diretamente ao CommissionKit para que deals sincronizem automaticamente, representantes vejam ganhos em tempo real, e ninguém passe a primeira semana do mês no Excel.
+
+---
+
+Eu vi uma gerente de finanças fazer a mesma coisa toda primeira semana do mês. Ela abria o Odoo, ia em Vendas > Pedidos, filtrava pelos pedidos confirmados do mês anterior e exportava para CSV. Depois abria a planilha onde rastreava comissões. Deletava os dados antigos, colava o novo export, passava uma hora corrigindo colunas onde o Odoo dava IDs de parceiro em vez de nomes de representantes, e começava a calcular.
+
+Quando terminava, geralmente era dia 10. Os representantes já tinham perguntado sobre comissões três vezes. O gerente de vendas já tinha mandado dois "ainda estamos trabalhando nisso". E em algum lugar da planilha, uma fórmula referenciava a linha errada, o que significava que um representante ia receber a mais e outro ia receber a menos.
+
+Ela acabava descobrindo. Ou o representante descobria. De qualquer jeito, tinha correção, pedido de desculpas, e nota para "ter mais cuidado mês que vem".
+
+Se você roda comissões para um time de vendas baseado em Odoo, isso provavelmente soa familiar.
+
+## O ciclo de exportar do Odoo para Excel
+
+Aqui está o fluxo que tenho visto em dezenas de empresas usando Odoo para vendas:
+
+O deal fecha no Odoo. O pedido de venda é confirmado, a fatura é gerada, e o representante vai para a próxima oportunidade. Ninguém avisa o sistema de comissões, porque não existe sistema de comissões. Só existe a planilha.
+
+No fim do mês (ou quando o financeiro tem tempo), alguém exporta os pedidos de venda. O CSV inclui o valor do pedido, o nome do parceiro, o campo de vendedor (que o Odoo guarda como ID de usuário), e a data do pedido. Não inclui a taxa de comissão, o nome completo do representante, ou se a fatura foi realmente paga.
+
+Então a pessoa da planilha adiciona essas colunas manualmente. Ela pesquisa qual ID de usuário pertence a qual representante. Checa o módulo de faturamento para ver quais pedidos têm faturas pagas. Aplica a taxa de comissão do documento do plano que vive em algum drive compartilhado. Calcula a comissão de cada deal.
+
+Depois manda os resultados por email para o gerente de vendas aprovar. O gerente de vendas acha dois deals que não deveriam contar porque eram transferências internas. Acha um representante que deveria ter ganhado taxa maior por causa de acelerador de meta. A pessoa da planilha faz as correções, recalcula, e manda o arquivo para o financeiro pagar.
+
+Isso leva de quatro a seis horas por mês para um time de 20 representantes. Às vezes mais se tiver conversão de moeda ou se a lista de representantes mudou no meio do mês.
+
+## Por que o rastreamento manual de comissões quebra para times com Odoo
+
+A planilha funciona quando você tem três representantes e 30 deals por mês. Desmorona depois disso, e desmorona de formas específicas.
+
+**Pedidos de venda existem no Odoo mas comissões não.** O Odoo rastreia tudo sobre a venda: o pedido, a fatura, a entrega, o pagamento. Mas não tem módulo de comissões. Não tem onde no Odoo definir plano de comissão, calcular o que o representante ganha num deal, ou rastrear o que foi pago. Os dados de comissão vivem totalmente fora do sistema de registro, numa planilha desconectada.
+
+Essa desconexão é onde as coisas dão errado. A planilha não sabe sobre deals que foram canceladas depois do export. Não sabe que um representante mudou de território no meio do trimestre. Não sabe que o gerente de vendas aprovou taxa especial para um deal específico. Cada um desses fatos tem que ser comunicado fora do Odoo, geralmente por email ou Slack, e depois inserido manualmente na planilha.
+
+**Status de pagamento de faturas estão desconectados dos cálculos de comissão.** A maioria dos times não paga comissão sobre receita contabilizada. Pagam sobre receita recebida, o que significa que precisam saber quando a fatura é realmente paga. O Odoo rastreia isso no módulo de faturamento, mas a planilha de comissões não.
+
+Então a pessoa da planilha tem que voltar no Odoo, checar o status de pagamento de cada fatura, e atualizar a planilha. Alguns deals de três meses atrás podem ter sido pagos agora. Alguns deals do mês passado podem estar pendentes. O cálculo de comissão depende de dados de dois módulos diferentes do Odoo, e a planilha faz a ponte manualmente.
+
+**Representantes não conseguem ver seus ganhos sem perguntar para o financeiro.** Essa é a parte que causa mais atrito. Um representante fecha um deal grande no dia 15. Quer saber quanto ganhou. A resposta é "pergunta para o financeiro", porque os dados de comissão vivem numa planilha que só uma pessoa tem acesso.
+
+Alguns representantes começam a manter seus próprios registros. Fazem planilhas paralelas onde rastreiam seus deals e estimam suas comissões. Quando os números oficiais saem e não batem (porque o representante usou a taxa errada, ou contou um deal que ainda não tinha sido pago), tem disputa. A pessoa do financeiro tem que explicar por que os números do representante não batem com os oficiais. Isso leva tempo. E corrói a confiança.
+
+## Como é automatizar comissões do Odoo
+
+A solução é conectar o Odoo diretamente a um sistema de comissões para os dados fluírem automaticamente. Sem exports, sem reconciliação manual, sem planilhas paralelas.
+
+Aqui está como funciona na prática:
+
+Representantes sincronizam do `res.users` no Odoo. Cada vendedor no Odoo vira um representante no sistema de comissões. Quando você contrata um novo representante e adiciona no Odoo, ele aparece nos cálculos de comissão no próximo ciclo de sincronização. Quando alguém sai, você desativa no sistema de comissões enquanto os deals históricos ficam intactos para relatórios.
+
+Pedidos de venda sincronizam com seus valores, datas, estágios, e representantes atribuídos. O conector lê registros `sale.order` do Odoo, puxa os campos relevantes, e normaliza no formato do sistema de comissões. Você não precisa mapear colunas ou corrigir formatos de data. O conector cuida disso.
+
+Status de pagamento de faturas determinam o que está pronto para pagamento. O conector lê o status de pagamento real do módulo de faturamento do Odoo, não só o status do pedido. Um deal confirmado mas ainda não faturado aparece diferente de um deal faturado e pago. Você pode configurar suas regras de comissão para pagar no booking, na fatura, ou no recebimento de dinheiro, e o sistema aplica essas regras baseado nos dados reais do Odoo.
+
+Planos de comissão rodam automaticamente contra os dados sincronizados. Você define seus planos, tiers, aceleradores, e overrides no sistema de comissões. Quando novos deals chegam do Odoo, o motor calcula o que cada representante ganha baseado no plano ativo. Sem fórmulas para manter, sem buscas manuais.
+
+Representantes veem seus ganhos num portal. Cada representante tem um login onde pode ver seus deals, seus detalhes de comissão, e seu histórico de pagamentos. Não precisam mandar email para o financeiro. Não precisam manter uma planilha paralela. A informação está lá quando quiserem consultar.
+
+## Configurando a conexão com o Odoo
+
+A integração leva uns vinte minutos para configurar. Você precisa da URL da sua instância Odoo, nome do banco de dados, e uma chave de API com acesso de leitura a pedidos de venda, faturas, e usuários.
+
+**Passo 1: Conectar.** Vá em Settings > Integrations no CommissionKit. Clique no card do Odoo. Coloque sua URL do Odoo (algo como `yourcompany.odoo.com`), seu nome de banco de dados, e a chave de API. Clique em "Test Connection." O conector confirma que consegue acessar sua instância Odoo e puxa informações básicas da conta.
+
+**Passo 2: Configurar.** O conector lista todos os usuários na sua tabela `res.users` do Odoo. Você confirma quais são representantes comissionáveis. Alguns usuários podem ser administradores ou pessoal de suporte que não devem ganhar comissões. Você também mapeia seus estágios de venda do Odoo para gatilhos de comissão. A maioria dos times paga na confirmação do "Pedido de Venda". Alguns times esperam até a fatura estar paga.
+
+**Passo 3: Definir o cronograma de sincronização.** Escolha com que frequência o CommissionKit puxa dados do Odoo. As opções vão de 15 em 15 minutos a uma vez por dia. Times com alto volume de deals geralmente escolhem a cada hora. Times com ciclos de venda mais longos podem ir diariamente sem perder nada.
+
+**Passo 4: Ativar o cálculo automático.** Quando isso está ligado, cada deal que chega do Odoo é avaliado contra seu plano de comissão imediatamente. O representante vê seus ganhos estimados atualizarem sem ninguém rodar um cálculo manual.
+
+O conector usa detecção de mudança baseada em hash, então não reprocessa pedidos que não mudaram desde a última sincronização. Se um valor de deal muda no Odoo depois de já ter sido sincronizado, o conector pega isso no próximo ciclo e atualiza o registro. Se um representante reatribui um deal para um vendedor diferente, essa mudança também se propaga.
+
+## O custo de não automatizar
+
+Deixa eu colocar números nisso.
+
+Um time de 20 representantes fechando cerca de 200 deals por mês gasta de quatro a seis horas em trabalho manual de comissão. Isso é o export, a limpeza, o cálculo, a reconciliação, e a resolução de disputas. A $50 por hora de trabalho financeiro (um número conservador para uma pessoa de operações de vendas ou financeiro com carga completa), isso é $200 a $300 por mês em custo direto de trabalho.
+
+Ao longo de um ano, você está olhando para $2.400 a $3.600 em tempo que poderia ser gasto em outra coisa. O software de comissão custa menos que um mês desse trabalho manual.
+
+Mas o custo direto de trabalho é a parte pequena. Os custos maiores estão escondidos.
+
+Comissões atrasadas. Quando a planilha leva uma semana para ficar pronta, representantes recebem atrasado. Pagamentos atrasados fazem representantes desconfiarem do processo. Começam a manter seus próprios registros. Começam a questionar cada pagamento.
+
+Disputas. Cálculos manuais introduzem erros. Uma fórmula referencia a linha errada. O nome de um representante é escrito errado no export, então seus deals não batem. Uma conversão de moeda usa a taxa errada. Cada erro cria uma disputa que leva de 30 a 60 minutos para investigar e resolver.
+
+Contabilidade paralela. Quando representantes não conseguem ver suas comissões em tempo real, constroem seus próprios sistemas de rastreamento. Esses sistemas usam premissas diferentes do processo oficial. Quando os números oficiais saem e não batem com as expectativas do representante, tem uma conversa. Às vezes essa conversa é rápida. Às vezes não é.
+
+O custo humano também importa. Sua pessoa de finanças gasta a primeira semana de todo mês fazendo entrada de dados em vez de fazer análise. Seu gerente de vendas gasta tempo mediando disputas em vez de treinando representantes. Seus representantes gastam energia se preocupando se estão sendo pagos corretamente em vez de vendendo.
+
+## Conecte o Odoo e pare o ciclo
+
+Se você está pronto para parar de exportar arquivos CSV e recalcular comissões em planilhas, o conector Odoo está disponível no plano Growth do CommissionKit e acima.
+
+Vá em Settings > Integrations no seu workspace CommissionKit, clique no Odoo, e siga os passos de configuração. Você vai precisar da URL da sua instância Odoo, nome do banco de dados, e uma chave de API.
+
+Documentação completa está em [docs.commissionk.it/integrations/odoo](https://docs.commissionk.it/integrations/odoo).
+
+Se você ainda não é cliente CommissionKit, comece um teste gratuito de 14 dias. Você pode conectar sua instância Odoo durante o onboarding e ver deals chegando na primeira hora.
+
+[Comece seu teste gratuito](https://commissionk.it/register)

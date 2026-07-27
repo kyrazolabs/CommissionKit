@@ -1,0 +1,92 @@
+---
+title: "Pourquoi Odoo n'a pas de suivi des commissions (et ce que font réellement les équipes financières)"
+date: "2026-07-27"
+author: "CommissionKit Team"
+tags: ["Odoo", "Gestion des commissions", "Opérations commerciales", "Finance"]
+keywords: ["odoo commission tracking", "odoo sales commission", "odoo erp commission management", "odoo sales performance tracking", "odoo finance automation", "odoo spreadsheet export commissions"]
+description: "Odoo gère bien les devis, la facturation et le CRM. Mais il n'y a pas de suivi des commissions intégré. Voici ce que font réellement les équipes financières pour combler ce manque."
+cover: cover.jpg
+summary: "Odoo est solide sur les commandes de vente et la facturation, mais il ne suit pas les commissions. Les équipes financières comblent le vide avec des exports Excel mensuels, des calculs manuels et beaucoup d'allers-retours avec les commerciaux."
+---
+
+**Résumé rapide :** Le module Ventes d'Odoo gère les devis, commandes et factures, mais il n'y a aucun moyen de suivre ce que gagnent les commerciaux sur ces deals. Les équipes financières comblent ce vide avec des exports CSV mensuels et des tableurs, un processus qui prend quatre à six heures par mois pour une équipe de 20 commerciaux. Vous les passez à copier des données, corriger des colonnes et courir après les approbations pendant que les commerciaux tiennent leurs propres registres parallèles parce que personne ne leur a dit ce qu'ils avaient gagné. Cet article montre à quoi ressemble vraiment ce flux de travail, ce qu'il coûte, et quelles sont vos options.
+
+---
+
+Odoo fait beaucoup de choses bien. Le module Ventes vous emmène du devis à la commande confirmée à la facture sans beaucoup de friction. Le CRM suit les opportunités. Le module comptabilité gère la facturation et les paiements. Pour les entreprises qui ont besoin d'un ERP pour gérer les ventes, le stock et la finance en un seul endroit, Odoo est un choix solide.
+
+Mais il y a une chose qu'Odoo ne fait pas : suivre les commissions de vente.
+
+Il n'y a pas de module de commissions. Nul part pour définir des plans de commissions, calculer ce que gagnent les commerciaux sur les deals, ou gérer les paiements. Le module Ventes s'arrête à la facture. Ce qui se passe après, comment les commerciaux sont payés pour ce qu'ils ont vendu, vit ailleurs.
+
+Ce n'est pas un bug. Odoo n'a pas été construit pour gérer les commissions. C'est un ERP, pas une plateforme de commissions. Mais pour les équipes financières qui gèrent les commissions d'équipes commerciales basées sur Odoo, ce vide crée un vrai problème.
+
+## Ce qu'Odoo fait bien
+
+Avant d'entrer dans ce qui manque, il vaut la peine de reconnaître ce qui fonctionne.
+
+Le module Ventes d'Odoo gère le flux complet de devis à encaissement. Vous pouvez créer des devis, les convertir en commandes de vente, générer des factures et suivre les paiements. L'intégration CRM signifie que vous pouvez voir le pipeline complet du lead au deal closé. Les rapports vous donnent de la visibilité sur la performance commerciale par commercial, par équipe, par produit.
+
+Le module facturation suit le statut de paiement. Vous savez quelles factures sont payées, lesquelles sont en attente, lesquelles sont en retard. C'est important pour les calculs de commissions, parce que la plupart des équipes paient les commissions sur le chiffre d'affaires encaissé, pas sur le chiffre d'affaires comptabilisé.
+
+Odoo gère aussi les configurations multi-devises, multi-sociétés et multi-entrepôts. Si vous vendez au-delà des frontières ou gérez un stock complexe, Odoo vous couvre.
+
+Pour ce qu'il a été construit à faire, Odoo fonctionne. Le problème est que le suivi des commissions n'est pas dans cette liste.
+
+## Le vide des commissions : où Odoo s'arrête et où le tableur commence
+
+Voici ce que je vois dans les entreprises qui utilisent Odoo pour la vente.
+
+Le deal se conclut dans Odoo. La commande de vente est confirmée. La facture est générée. Le commercial passe à l'opportunité suivante. Personne ne dit quoi que ce soit au système de commissions, parce qu'il n'y a pas de système de commissions dans Odoo.
+
+Les données de commissions vivent dans un tableur. Parfois c'est un Google Sheet. Parfois un fichier Excel sur un lecteur partagé. Parfois une combinaison des deux, avec différentes versions qui circulent.
+
+Le tableur ne se synchronise pas avec Odoo. Il ne sait pas que des deals ont été annulés après l'export. Il ne sait pas qu'un commercial a changé de territoire en cours de trimestre. Il ne sait pas que le directeur commercial a approuvé un taux spécial pour un deal précis. Toutes ces informations doivent être communiquées en dehors d'Odoo, généralement par email ou Slack, puis saisies manuellement dans le tableur.
+
+C'est ça le vide. Odoo suit la vente. Le tableur suit la commission. Ils ne se parlent pas.
+
+## Le vrai flux de travail : ce que font réellement les équipes financières chaque mois
+
+Voici le flux de travail que j'ai vu dans des dizaines d'entreprises utilisant Odoo pour la vente.
+
+À la fin du mois, quelqu'un dans la finance ouvre Odoo et va dans Ventes > Commandes. Il filtre par les commandes confirmées du mois précédent et exporte en CSV. L'export inclut le montant de la commande, le nom du partenaire, le champ vendeur (qu'Odoo stocke comme un ID utilisateur) et la date de commande.
+
+Il n'inclut pas le taux de commission. Il n'inclut pas le nom complet du commercial. Il n'inclut pas si la facture a réellement été payée.
+
+Donc la personne du tableur ajoute ces colonnes manuellement. Elle cherche quel ID utilisateur correspond à quel commercial. Elle vérifie le module facturation pour voir quelles commandes ont des factures payées. Elle applique le taux de commission du document de plan qui se trouve quelque part sur un lecteur partagé. Elle calcule la commission pour chaque deal.
+
+Puis elle envoie les résultats par email au directeur commercial pour approbation. Le directeur trouve deux deals qui ne devraient pas compter parce que c'étaient des transferts internes. Il trouve un commercial qui aurait dû avoir un taux plus élevé à cause d'un accélérateur de quota. La personne du tableur fait les corrections, recalcule et envoie le fichier à la comptabilité pour paiement.
+
+Cela prend quatre à six heures chaque mois pour une équipe de 20 commerciaux. Parfois plus s'il y a des conversions de devises ou si l'équipe a changé en cours de mois.
+
+## Ce que cela coûte en pratique
+
+Le flux du tableur fonctionne avec trois commerciaux et 30 deals par mois. Il s'effondre au-delà.
+
+**Temps.** Quatre à six heures par mois pour une équipe de 20 commerciaux. C'est 50 à 70 heures par an. À 50 $/heure de coût chargé pour le personnel financier, c'est 2 500 à 3 500 $ de travail. Mais le vrai coût est que la personne finance qui fait ce travail pourrait faire quelque chose de plus valuable. Elle passe une semaine par mois sur de la saisie manuelle de données au lieu d'analyse.
+
+**Erreurs.** Les calculs manuels ont des taux d'erreur. J'ai vu des tableurs où une formule pointait vers la mauvaise ligne, où un commercial a été surpayé parce que le tableur n'a pas pris en compte un clawback, où un commercial a été sous-payé parce que le taux de commission n'a pas été mis à jour après un changement de plan. Des erreurs arrivent. Quand elles arrivent, il y a une correction, une excuse, et une note pour « faire plus attention le mois prochain. »
+
+**Confiance des commerciaux.** C'est la partie qui crée le plus de friction. Un commercial conclut un gros deal le 15. Il veut savoir ce qu'il a gagné. La réponse est « demande à la finance », parce que les données de commissions vivent dans un tableur auquel une seule personne a accès.
+
+Certains commerciaux commencent à tenir leurs propres registres. Ils construisent des tableurs parallèles où ils suivent leurs deals et estiment leurs commissions. Quand les chiffres officiels sortent et ne correspondent pas (parce que le commercial a utilisé le mauvais taux, ou compté un deal qui n'avait pas encore été payé), il y a un litige. La personne de la finance doit expliquer pourquoi les chiffres du commercial ne correspondent pas aux chiffres officiels. Cela prend du temps. Et cela érode la confiance.
+
+## Alors que font les équipes ?
+
+Il y a trois approches que je vois les équipes adopter.
+
+**Continuer avec les tableurs.** Ça marche pour les petites équipes. Si vous avez trois commerciaux et 30 deals par mois, le flux tableur est très bien. C'est gratuit, c'est flexible, et tout le monde comprend comment ça marche. La douleur commence à 5 commerciaux, empire à 10, et devient ingérable au-delà de 15.
+
+**Construire des modules Odoo personnalisés.** Odoo est extensible. Vous pouvez construire des modules personnalisés pour ajouter le suivi des commissions. Certaines équipes le font. Ça coûte de 5 000 à 15 000 $ de construire un module de commissions basique, plus la maintenance continue. Chaque fois qu'Odoo publie une mise à jour, il y a un risque que votre module personnalisé casse. Et vous n'obtenez toujours pas un portail commercial ou une gestion des litiges à moins de les construire aussi.
+
+**Utiliser un logiciel dédié aux commissions.** Il y a des outils construits spécifiquement pour la gestion des commissions. Ils se synchronisent avec Odoo, gèrent les calculs, fournissent des portails commerciaux, gèrent les litiges. Ils coûtent de l'argent, mais ils sont construits pour ce problème.
+
+Chaque approche a des compromis. Le bon choix dépend de la taille de votre équipe, de votre budget, et de combien de douleur vous êtes prêt à tolérer.
+
+## Ensuite : vos options pour résoudre ce problème
+
+Si vous utilisez Odoo et que vous luttez avec le suivi des commissions, vous avez des options. Le flux tableur fonctionne pour les petites équipes. Les modules personnalisés fonctionnent si vous avez le budget et la tolérance pour la maintenance. Le logiciel dédié aux commissions fonctionne si vous voulez quelque chose de construit pour ce problème.
+
+Dans le prochain article, nous détaillerons chaque option : ce que ça coûte, ce que vous obtenez, où ça casse, et pour quelles tailles d'équipe chaque approche fonctionne le mieux.
+
+[Lire : Suivi des commissions de vente pour Odoo : tableurs vs. modules personnalisés vs. logiciel dédié](/blog/fr/odoo-commission-options-compared)

@@ -14,7 +14,7 @@ import { format, startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, su
 import { DateRange } from "react-day-picker";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
-  ResponsiveContainer, PieChart, Pie, Cell
+  ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line
 } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DateRangePicker } from "@/components/ui/date-picker";
@@ -36,9 +36,9 @@ function ChartTooltip({ active, payload, label, currency }: {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border border-card-border bg-card px-3 py-2 shadow-sm">
-      <p className="text-[11px] font-semibold text-foreground mb-1">{label}</p>
+      <p className="text-xs font-semibold text-foreground mb-1">{label}</p>
       {payload.map((p, i) => (
-        <p key={i} className="text-[11px] text-muted-foreground">
+        <p key={i} className="text-xs text-muted-foreground">
           {p.name}: <span className="font-medium text-foreground tabular-nums">
             {typeof p.value === "number" ? formatCurrency(p.value, currency ?? "USD") : p.value}
           </span>
@@ -83,7 +83,7 @@ function KpiCard({
   return (
     <Card className="p-5">
       <div className="flex items-center justify-between mb-3.5">
-        <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{label}</span>
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</span>
         <div className="flex size-7 items-center justify-center rounded-[10px] bg-secondary">
           <Icon className="size-3.5 text-primary" />
         </div>
@@ -92,14 +92,14 @@ function KpiCard({
         {value}
       </div>
       {trend !== undefined && (
-        <div className={cn("flex items-center gap-1 mt-2 text-[11px]", trend > 0 ? "text-[hsl(var(--chart-2))]" : trend < 0 ? "text-destructive" : "text-muted-foreground")}>
+        <div className={cn("flex items-center gap-1 mt-2 text-xs", trend > 0 ? "text-[hsl(var(--chart-2))]" : trend < 0 ? "text-destructive" : "text-muted-foreground")}>
           {trend > 0 ? <TrendingUp className="size-3" /> : trend < 0 ? <TrendingDown className="size-3" /> : <Minus className="size-3" />}
           <span className="font-medium tabular-nums">{Math.abs(trend).toFixed(1)}%</span>
           <span className="text-muted-foreground">{sub}</span>
         </div>
       )}
       {sub && trend === undefined && (
-        <div className="mt-2 text-[11px] text-muted-foreground">{sub}</div>
+        <div className="mt-2 text-xs text-muted-foreground">{sub}</div>
       )}
     </Card>
   );
@@ -191,7 +191,7 @@ export function ReportsPage() {
           <Skeleton className="h-8 w-56" />
           <Skeleton className="h-4 w-64" />
         </div>
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
           {[1, 2, 3, 4, 5].map((i) => (
             <Skeleton key={i} className="h-28 rounded-2xl" />
           ))}
@@ -241,6 +241,27 @@ export function ReportsPage() {
 
   const revenueTrend = growth?.revenueGrowth ?? 0;
 
+  const trendLabel = interval === "day" ? "vs prior day" : "vs prior month";
+
+  // Fill missing periods with zeros for the trends chart
+  const filledTrends = (() => {
+    if (!reportData?.monthlyTrends) return [];
+    if (!dateRange?.from || !dateRange?.to) return reportData.monthlyTrends;
+    const periods: Array<{ period: string; revenue: number; commission: number }> = [];
+    const cursor = new Date(dateRange.from);
+    const end = new Date(dateRange.to);
+    while (cursor <= end) {
+      const key = interval === "month"
+        ? format(cursor, "yyyy-MM")
+        : format(cursor, "yyyy-MM-dd");
+      const existing = (reportData.monthlyTrends as any[]).find((d: any) => d.period === key);
+      periods.push(existing ?? { period: key, revenue: 0, commission: 0 });
+      if (interval === "month") cursor.setMonth(cursor.getMonth() + 1);
+      else cursor.setDate(cursor.getDate() + 1);
+    }
+    return periods;
+  })();
+
   return (
     <>
       <div className="space-y-7">
@@ -249,7 +270,7 @@ export function ReportsPage() {
           <div>
             <p className="text-[12px] font-semibold text-primary mb-1">Analytics</p>
             <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">Executive Report</h1>
-            <p className="text-[14px] text-muted-foreground mt-1 leading-relaxed">
+            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
               Data-driven insights for compensation and revenue decisions.
             </p>
           </div>
@@ -299,7 +320,7 @@ export function ReportsPage() {
         </div>
 
         {isLoading ? (
-          <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
             {[1, 2, 3, 4, 5].map((i) => (
               <Skeleton key={i} className="h-32 rounded-2xl" />
             ))}
@@ -318,18 +339,18 @@ export function ReportsPage() {
           <div className="space-y-6">
 
             {/* KPI Cards — 5 cards */}
-            <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
               <KpiCard
                 label="Commissions Paid"
                 value={formatCurrency(exec.totalCommission, currency)}
-                sub={t("reports.ofRevenue")}
+                sub={trendLabel}
                 trend={growth?.commissionGrowth}
                 icon={DollarSign}
               />
               <KpiCard
                 label="Commission Ratio"
                 value={`${exec.commissionRatio.toFixed(1)}%`}
-                sub={t("reports.ofRevenue")}
+                sub={trendLabel}
                 trend={growth?.commissionGrowth}
                 icon={Target}
               />
@@ -337,13 +358,13 @@ export function ReportsPage() {
                 label="Total Revenue"
                 value={formatCurrency(exec.totalRevenue, currency)}
                 trend={revenueTrend}
-                sub={t("reports.vsPriorPeriod")}
+                sub={trendLabel}
                 icon={TrendingUp}
               />
               <KpiCard
                 label="Win Rate"
                 value={`${exec.winRate.toFixed(1)}%`}
-                sub={t("reports.vsPriorPeriod")}
+                sub={trendLabel}
                 icon={Medal}
               />
               <KpiCard
@@ -358,12 +379,12 @@ export function ReportsPage() {
             {reportData.repCommissionBreakdown && reportData.repCommissionBreakdown.length > 0 && (
               <Card className="p-5">
                 <div className="mb-1">
-                  <h3 className="text-[14px] font-semibold text-foreground">{t("reports.commissionByRep")}</h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                  <h3 className="text-sm font-semibold text-foreground">{t("reports.commissionByRep")}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {top3Percent > 0 ? `Top 3 reps earned ${top3Percent.toFixed(0)}% of total commissions` : t("reports.topEarnersRanked")}
                   </p>
                 </div>
-                <div className="h-[220px] w-full">
+                <div className="h-55 w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={reportData.repCommissionBreakdown}
@@ -403,15 +424,15 @@ export function ReportsPage() {
             )}
 
             {/* Revenue & Margin Trends */}
-            {reportData.monthlyTrends && reportData.monthlyTrends.length > 0 && (
+            {filledTrends.length > 0 && (
               <Card className="p-5">
                 <div className="mb-1">
-                  <h3 className="text-[14px] font-semibold text-foreground">{t("reports.revenueMarginTrends")}</h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">{t("reports.trackingPipelineImpact")}</p>
+                  <h3 className="text-sm font-semibold text-foreground">{t("reports.revenueMarginTrends")}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t("reports.trackingPipelineImpact")}</p>
                 </div>
-                <div className="h-[280px] w-full">
+                <div className="h-55 w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={reportData.monthlyTrends} margin={{ top: 4, right: 10, bottom: 0, left: 0 }}>
+                    <LineChart data={filledTrends} margin={{ top: 4, right: 4, bottom: 0, left: -16 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                       <XAxis
                         dataKey="period"
@@ -419,8 +440,11 @@ export function ReportsPage() {
                         fontSize={11}
                         tickLine={false}
                         axisLine={false}
-                        tickFormatter={(val) => {
-                          if (interval === "month") return format(new Date(val + "-01"), "MMM yyyy");
+                        tickFormatter={(val: string) => {
+                          if (interval === "month") {
+                            const [y, m] = val.split("-");
+                            return format(new Date(+y, +m - 1, 1), "MMM yyyy");
+                          }
                           return format(new Date(val), "MMM d");
                         }}
                       />
@@ -432,20 +456,29 @@ export function ReportsPage() {
                         tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
                       />
                       <RechartsTooltip
-                        content={<ChartTooltip currency={currency} />}
+                        content={({ active, payload, label }) => {
+                          if (!active || !payload?.length) return null;
+                          return (
+                            <div className="rounded-lg border border-card-border bg-card px-3 py-2 shadow-sm">
+                              <p className="text-xs font-semibold text-foreground mb-1">{label}</p>
+                              {payload.map((p: any) => (
+                                <p key={p.name} className="text-xs">
+                                  <span style={{ color: p.name === "revenue" ? "hsl(var(--chart-4))" : "hsl(var(--chart-1))" }}>
+                                    {p.name === "revenue" ? "Revenue" : "Commission"}:{" "}
+                                  </span>
+                                  <span className="font-medium text-foreground tabular-nums">{formatCurrency(p.value, currency)}</span>
+                                </p>
+                              ))}
+                            </div>
+                          );
+                        }}
                         cursor={{ fill: "hsl(var(--muted) / 0.3)" }}
                       />
-                      <Bar dataKey="revenue" name="Revenue" fill="hsl(var(--muted))" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="commission" name="Commission" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                    </BarChart>
+                      <Line type="monotone" dataKey="revenue" stroke="hsl(var(--chart-4))" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "hsl(var(--chart-4))" }} />
+                      <Line type="monotone" dataKey="commission" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "hsl(var(--chart-1))" }} />
+                    </LineChart>
                   </ResponsiveContainer>
                 </div>
-                <ChartLegend
-                  items={[
-                    { label: "Revenue", color: "bg-muted" },
-                    { label: "Commission", color: "bg-primary" },
-                  ]}
-                />
               </Card>
             )}
 
@@ -453,8 +486,8 @@ export function ReportsPage() {
             {reportData.dealStages && reportData.dealStages.length > 0 ? (
               <Card className="p-5">
                 <div className="mb-1">
-                  <h3 className="text-[14px] font-semibold text-foreground">Deal Stage Funnel</h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Won, pending, and lost deals breakdown</p>
+                  <h3 className="text-sm font-semibold text-foreground">Deal Stage Funnel</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">Won, pending, and lost deals breakdown</p>
                 </div>
                 {/* Transform [{name, value}] → [{stage, won, pending, lost}] for grouped bar chart */}
                 {(() => {
@@ -490,9 +523,9 @@ export function ReportsPage() {
                                 if (!active || !payload?.length) return null;
                                 return (
                                   <div className="rounded-lg border border-card-border bg-card px-3 py-2 shadow-sm">
-                                    <p className="text-[11px] font-semibold text-foreground mb-1 capitalize">{label}</p>
+                                    <p className="text-xs font-semibold text-foreground mb-1 capitalize">{label}</p>
                                     {payload.map((p, i) => (
-                                      <p key={i} className="text-[11px] text-muted-foreground">
+                                      <p key={i} className="text-xs text-muted-foreground">
                                         {p.name}: <span className="font-medium text-foreground tabular-nums">{p.value}</span>
                                       </p>
                                     ))}
@@ -530,8 +563,8 @@ export function ReportsPage() {
               {reportData.paymentStatusBreakdown && reportData.paymentStatusBreakdown.length > 0 && (
                 <Card className="p-5">
                   <div className="mb-1">
-                    <h3 className="text-[14px] font-semibold text-foreground">{t("reports.paymentStatus")}</h3>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">{t("reports.paymentStatusDesc")}</p>
+                    <h3 className="text-sm font-semibold text-foreground">{t("reports.paymentStatus")}</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">{t("reports.paymentStatusDesc")}</p>
                   </div>
                   <div className="h-[200px] w-full flex items-center justify-center">
                     <ResponsiveContainer width="100%" height="100%">
@@ -557,14 +590,14 @@ export function ReportsPage() {
                             const idx = reportData.paymentStatusBreakdown.findIndex((d) => d.name === data.name);
                             return (
                               <div className="rounded-lg border border-card-border bg-card px-3 py-2 shadow-sm">
-                                <p className="text-[11px] text-muted-foreground">
+                                <p className="text-xs text-muted-foreground">
                                   <span
                                     className="inline-block size-2 rounded-sm mr-1.5"
                                     style={{ backgroundColor: `hsl(var(--chart-${(idx % 5) + 1}))` }}
                                   />
                                   {data.name}
                                 </p>
-                                <p className="text-[11px] font-medium text-foreground tabular-nums">{data.value} deals</p>
+                                <p className="text-xs font-medium text-foreground tabular-nums">{data.value} deals</p>
                               </div>
                             );
                           }}
@@ -585,18 +618,18 @@ export function ReportsPage() {
               {reportData.topDeals && reportData.topDeals.length > 0 && (
                 <Card className="overflow-hidden">
                   <div className="px-5 py-[18px] border-b border-border">
-                    <h3 className="text-[14px] font-semibold text-foreground">{t("reports.topWonDeals")}</h3>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">{t("reports.topWonDealsDesc")}</p>
+                    <h3 className="text-sm font-semibold text-foreground">{t("reports.topWonDeals")}</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">{t("reports.topWonDealsDesc")}</p>
                   </div>
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow className="hover:bg-transparent">
-                          <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">#</TableHead>
-                          <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t("deals.dealName")}</TableHead>
-                          <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t("deals.rep")}</TableHead>
-                          <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-right">{t("deals.amount")}</TableHead>
-                          <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t("deals.closeDate")}</TableHead>
+                          <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">#</TableHead>
+                          <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("deals.dealName")}</TableHead>
+                          <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("deals.rep")}</TableHead>
+                          <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">{t("deals.amount")}</TableHead>
+                          <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("deals.closeDate")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -605,13 +638,13 @@ export function ReportsPage() {
                             <TableCell className="py-3.5">
                               <span
                                 className={cn(
-                                  "inline-flex items-center justify-center size-6 rounded-full text-[11px] font-bold",
+                                  "inline-flex items-center justify-center size-6 rounded-full text-xs font-bold",
                                   i === 0
-                                    ? "bg-[hsl(var(--chart-3))]/20 text-[hsl(var(--chart-3))]"
+                                    ? "bg-[hsl(var(--chart-3))]/20 text-chart-3"
                                     : i === 1
                                       ? "bg-muted text-muted-foreground"
                                       : i === 2
-                                        ? "bg-[hsl(var(--chart-3))]/20 text-[hsl(var(--chart-3))]"
+                                        ? "bg-[hsl(var(--chart-3))]/20 text-chart-3"
                                         : "bg-muted text-muted-foreground",
                                 )}
                               >
@@ -639,19 +672,19 @@ export function ReportsPage() {
             {reportData.topPerformers && reportData.topPerformers.length > 0 && (
               <Card className="overflow-hidden">
                 <div className="px-5 py-[18px] border-b border-border">
-                  <h3 className="text-[14px] font-semibold text-foreground">{t("reports.repPerformanceMatrix")}</h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">{t("reports.decisionMetricsDesc")}</p>
+                  <h3 className="text-sm font-semibold text-foreground">{t("reports.repPerformanceMatrix")}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t("reports.decisionMetricsDesc")}</p>
                 </div>
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow className="hover:bg-transparent">
-                        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t("deals.rep")}</TableHead>
-                        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-right">{t("reports.dealsWon")}</TableHead>
-                        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-right">{t("reports.winRate")}</TableHead>
-                        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-right">{t("reports.revenueDriven")}</TableHead>
-                        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-right">{t("reports.commissionsPaid")}</TableHead>
-                        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-right">{t("reports.effectiveRate")}</TableHead>
+                        <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("deals.rep")}</TableHead>
+                        <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">{t("reports.dealsWon")}</TableHead>
+                        <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">{t("reports.winRate")}</TableHead>
+                        <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">{t("reports.revenueDriven")}</TableHead>
+                        <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">{t("reports.commissionsPaid")}</TableHead>
+                        <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">{t("reports.effectiveRate")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

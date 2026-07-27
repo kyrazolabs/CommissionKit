@@ -10,6 +10,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 import { Dashboard } from "@/pages/dashboard";
 import { ReportsPage } from "@/pages/reports/reports";
@@ -22,6 +24,7 @@ import { RunDetailsPage } from "@/pages/commission/run-details";
 
 import { RepPortal } from "@/pages/portal/rep-portal";
 import { PublicRepPortal } from "@/pages/portal/public-portal";
+import { RepPortalLanding } from "@/pages/rep-portal-landing";
 
 import { SettingsPage } from "@/pages/settings/settings";
 import { BillingPage } from "@/pages/settings/billing";
@@ -58,6 +61,10 @@ import { SolutionsPage } from "@/pages/solutions";
 import { PricingPage } from "@/pages/pricing";
 import { CareersPage } from "@/pages/careers";
 import { CareersJobPage } from "@/pages/careers-job";
+import { OdooIntegrationPage } from "@/pages/integrations/odoo";
+import { HubspotIntegrationPage } from "@/pages/integrations/hubspot";
+import { SalesforceIntegrationPage } from "@/pages/integrations/salesforce";
+import { CustomIntegrationPage } from "@/pages/integrations/custom";
 
 import { ThemeProvider } from "@/hooks/use-theme";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
@@ -83,15 +90,41 @@ const queryClient = new QueryClient({
 
 function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+  const isMobile = useIsMobile();
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // Close mobile sidebar on route change
+  useEffect(() => { setMobileSidebarOpen(false); }, [location]);
+
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-sidebar">
-      <Header />
+      <Header onToggleMobileSidebar={() => setMobileSidebarOpen(true)} isMobile={isMobile} />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
-        <div className="flex-1 flex flex-col pr-3 pb-3 overflow-hidden" style={{ background: "hsl(var(--sidebar))" }}>
+        {isMobile ? (
+          <>
+            {/* Backdrop — always rendered, transitions opacity */}
+            <div
+              className={cn(
+                "fixed inset-0 z-40 bg-black/50 transition-opacity duration-200",
+                mobileSidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none",
+              )}
+              onClick={() => setMobileSidebarOpen(false)}
+            />
+            {/* Sliding sidebar — always rendered, transitions transform */}
+            <div className={cn(
+              "fixed inset-y-0 left-0 z-50 w-55 transition-transform duration-200",
+              mobileSidebarOpen ? "translate-x-0" : "-translate-x-full",
+            )}>
+              <Sidebar onCloseMobile={() => setMobileSidebarOpen(false)} isMobile />
+            </div>
+          </>
+        ) : (
+          <Sidebar />
+        )}
+        <div className="flex-1 flex flex-col px-3 pb-3 overflow-hidden" style={{ background: "hsl(var(--sidebar))" }}>
           <div className="bg-card rounded-2xl border border-card-border flex-1 flex flex-col overflow-hidden shadow-xs">
             <div className="flex-1 overflow-y-auto custom-scrollbar">
-              <main className="mx-auto p-8 lg:px-10 max-w-6xl min-h-full">
+              <main className="mx-auto px-6 py-6 lg:px-10 lg:py-8 max-w-6xl min-h-full">
                 <motion.div
                   key={location}
                   initial={{ opacity: 0, y: 15 }}
@@ -366,6 +399,7 @@ function App() {
                 }
                 return engine !== "standard" ? <EnterprisePublicRepPortal /> : <PublicRepPortal />;
               }} />
+              <Route path="/portal" component={RepPortalLanding} />
               <Route path="/accept-invite" component={AcceptInvite} />
               <Route path="/home" component={() => (
                 <AuthProvider>
@@ -380,6 +414,10 @@ function App() {
               <Route path="/features" component={FeaturesPage} />
               <Route path="/solutions" component={SolutionsPage} />
               <Route path="/pricing" component={PricingPage} />
+              <Route path="/integrations/odoo" component={OdooIntegrationPage} />
+              <Route path="/integrations/hubspot" component={HubspotIntegrationPage} />
+              <Route path="/integrations/salesforce" component={SalesforceIntegrationPage} />
+              <Route path="/integrations/custom" component={CustomIntegrationPage} />
               <Route path="/careers/:slug" component={CareersJobPage} />
               <Route path="/careers" component={CareersPage} />
               <Route path="/forgot-password" component={() => (

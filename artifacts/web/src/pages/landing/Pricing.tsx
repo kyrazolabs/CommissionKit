@@ -1,5 +1,5 @@
 import { useInView, fadeIn } from "./hooks";
-import { Check, Plus, Clock } from "lucide-react";
+import { Check, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -82,16 +82,11 @@ export function Pricing() {
         {/* Limited-time launch offer */}
         <div className="mb-8 max-w-5xl mx-auto" style={fadeIn(inView)}>
           <div className="inline-flex w-full items-center justify-between gap-4 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/30 px-6 py-4">
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/20">
-                <Clock className="size-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">Limited-Time Launch Offer — 60% Off Forever</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Lock in 60% off forever — limited time for new customers. Applied automatically.</p>
-              </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">Launch pricing for early customers</p>
+              <p className="text-xs text-muted-foreground mt-0.5">All plans are 60% off during our public launch. No coupon needed.</p>
             </div>
-            <span className="shrink-0 rounded-full bg-primary/20 px-3 py-1.5 text-[11px] font-bold text-primary uppercase tracking-wider">60% OFF</span>
+            <span className="shrink-0 rounded-full bg-primary/20 px-3 py-1.5 text-[11px] font-bold text-primary uppercase tracking-wider">60% off</span>
           </div>
         </div>
 

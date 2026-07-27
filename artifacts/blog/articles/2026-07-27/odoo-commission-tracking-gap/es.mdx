@@ -1,0 +1,92 @@
+---
+title: "Por qué Odoo no tiene seguimiento de comisiones (y lo que realmente hacen los equipos de finanzas)"
+date: "2026-07-27"
+author: "CommissionKit Team"
+tags: ["Odoo", "Gestión de comisiones", "Operaciones de ventas", "Finanzas"]
+keywords: ["odoo commission tracking", "odoo sales commission", "odoo erp commission management", "odoo sales performance tracking", "odoo finance automation", "odoo spreadsheet export commissions"]
+description: "Odoo maneja bien cotizaciones, facturación y CRM. Pero no hay seguimiento de comisiones integrado. Esto es lo que realmente hacen los equipos de finanzas para cubrir ese vacío."
+cover: cover.jpg
+summary: "Odoo es bueno en pedidos de venta y facturación, pero no rastrea comisiones. Los equipos de finanzas cubren el vacío con exportaciones mensuales a Excel, cálculos manuales y mucho ir y venir con los representantes."
+---
+
+**Resumen rápido:** El módulo de ventas de Odoo maneja cotizaciones, pedidos y facturación, pero no hay forma de rastrear lo que ganan los representantes con esos deals. Los equipos de finanzas cubren esta brecha con exportaciones CSV mensuales y hojas de cálculo, un proceso que lleva de cuatro a seis horas al mes para un equipo de 20 representantes. La pasas copiando datos, arreglando columnas y persiguiendo aprobaciones mientras los representantes llevan sus propios registros paralelos porque nadie les dijo cuánto ganaron. Este artículo muestra cómo es realmente ese flujo de trabajo, cuánto cuesta y cuáles son tus opciones.
+
+---
+
+Odoo hace muchas cosas bien. El módulo de ventas te lleva de la cotización al pedido confirmado a la factura sin mucha fricción. El CRM rastrea oportunidades. El módulo de contabilidad maneja facturación y pagos. Para empresas que necesitan un ERP para gestionar ventas, inventario y finanzas en un solo lugar, Odoo es una opción sólida.
+
+Pero hay una cosa que Odoo no hace: rastrear comisiones de ventas.
+
+No hay módulo de comisiones. No hay lugar para definir planes de comisiones, calcular lo que ganan los representantes en los deals, o gestionar pagos. El módulo de ventas se detiene en la factura. Lo que pasa después, cómo se paga a los representantes por lo que vendieron, vive en otro lado.
+
+Esto no es un bug. Odoo no fue construido para manejar gestión de comisiones. Es un ERP, no una plataforma de comisiones. Pero para los equipos de finanzas que gestionan comisiones para equipos de ventas basados en Odoo, esa brecha crea un problema real.
+
+## Lo que Odoo hace bien
+
+Antes de entrar en lo que falta, vale la pena reconocer lo que funciona.
+
+El módulo de ventas de Odoo maneja el flujo completo de cotización a cobro. Puedes crear cotizaciones, convertirlas en pedidos de venta, generar facturas y rastrear pagos. La integración con CRM significa que puedes ver el pipeline completo desde lead hasta deal cerrado. Los reportes te dan visibilidad del rendimiento de ventas por representante, por equipo, por producto.
+
+El módulo de facturación rastrea el estado de pago. Sabes qué facturas están pagadas, cuáles pendientes, cuáles vencidas. Eso importa para los cálculos de comisiones, porque la mayoría de los equipos pagan comisiones sobre ingresos cobrados, no sobre ingresos registrados.
+
+Odoo también maneja configuraciones multi-moneda, multi-empresa y multi-almacén. Si vendes cruzando fronteras o gestionas inventario complejo, Odoo te cubre.
+
+Para lo que fue construido, Odoo funciona. El problema es que el seguimiento de comisiones no está en esa lista.
+
+## La brecha de comisiones: donde Odoo termina y empieza la hoja de cálculo
+
+Esto es lo que veo en empresas que usan Odoo para ventas.
+
+El deal se cierra en Odoo. El pedido de venta se confirma. La factura se genera. El representante pasa a la siguiente oportunidad. Nadie le dice nada al sistema de comisiones, porque no hay sistema de comisiones en Odoo.
+
+Los datos de comisiones viven en una hoja de cálculo. A veces es un Google Sheet. A veces un archivo Excel en un drive compartido. A veces una combinación de ambos, con diferentes versiones flotando por ahí.
+
+La hoja de cálculo no se sincroniza con Odoo. No sabe de deals que se cancelaron después de que corrió la exportación. No sabe que un representante cambió de territorio a mitad de trimestre. No sabe que el gerente de ventas aprobó una tasa especial para un deal específico. Toda esa información tiene que comunicarse fuera de Odoo, generalmente por email o Slack, y luego introducirse manualmente en la hoja de cálculo.
+
+Esa es la brecha. Odoo rastrea la venta. La hoja de cálculo rastrea la comisión. No se hablan entre sí.
+
+## El flujo real: lo que los equipos de finanzas realmente hacen cada mes
+
+Este es el flujo que he visto en decenas de empresas que usan Odoo para ventas.
+
+A fin de mes, alguien en finanzas abre Odoo y va a Ventas > Pedidos. Filtra por los pedidos confirmados del mes anterior y exporta a CSV. La exportación incluye el monto del pedido, el nombre del partner, el campo de vendedor (que Odoo guarda como ID de usuario), y la fecha del pedido.
+
+No incluye la tasa de comisión. No incluye el nombre completo del representante. No incluye si la factura ha sido realmente pagada.
+
+Así que la persona de la hoja de cálculo añade esas columnas manualmente. Busca qué ID de usuario pertenece a qué representante. Revisa el módulo de facturación para ver qué pedidos tienen facturas pagadas. Aplica la tasa de comisión del documento del plan que vive en algún drive compartido. Calcula la comisión de cada deal.
+
+Luego envía los resultados por email al gerente de ventas para aprobación. El gerente encuentra dos deals que no deberían contar porque eran transferencias internas. Encuentra un representante que debería haber tenido una tasa más alta por un acelerador de cuota. La persona de la hoja de cálculo hace las correcciones, recalcula y envía el archivo a contabilidad para pago.
+
+Esto lleva de cuatro a seis horas cada mes para un equipo de 20 representantes. A veces más si hay conversiones de divisa o si la lista de representantes cambió a mitad de mes.
+
+## Lo que esto cuesta en la práctica
+
+El flujo de la hoja de cálculo funciona con tres representantes y 30 deals al mes. Se desmorona después de eso.
+
+**Tiempo.** De cuatro a seis horas al mes para un equipo de 20 representantes. Son de 50 a 70 horas al año. A $50/hora de costo cargado para personal de finanzas, son de $2.500 a $3.500 en trabajo. Pero el costo real es que la persona de finanzas que hace este trabajo podría estar haciendo algo más valioso. Pasa una semana cada mes en entrada manual de datos en vez de análisis.
+
+**Errores.** Los cálculos manuales tienen tasas de error. He visto hojas de cálculo donde una fórmula referenciaba la fila equivocada, donde un representante fue sobre-pagado porque la hoja no consideró un clawback, donde un representante fue sub-pagado porque la tasa de comisión no se actualizó después de un cambio de plan. Los errores pasan. Cuando pasan, hay una corrección, una disculpa, y una nota de "tener más cuidado el próximo mes."
+
+**Confianza de los representantes.** Esta es la parte que causa más fricción. Un representante cierra un gran deal el día 15. Quiere saber cuánto ganó. La respuesta es "pregunta a finanzas", porque los datos de comisiones viven en una hoja de cálculo a la que solo una persona tiene acceso.
+
+Algunos representantes empiezan a llevar sus propios registros. Construyen hojas paralelas donde rastrean sus deals y estiman sus comisiones. Cuando los números oficiales salen y no coinciden (porque el representante usó la tasa incorrecta, o contó un deal que aún no se había pagado), hay una disputa. La persona de finanzas tiene que explicar por qué los números del representante no coinciden con los oficiales. Esto lleva tiempo. Y erosiona la confianza.
+
+## Entonces, ¿qué hacen los equipos?
+
+Hay tres enfoques que veo tomar a los equipos.
+
+**Seguir usando hojas de cálculo.** Esto funciona para equipos pequeños. Si tienes tres representantes y 30 deals al mes, el flujo de hoja de cálculo está bien. Es gratis, es flexible, y todos entienden cómo funciona. El dolor empieza con 5 representantes, empeora con 10, y se vuelve inmanejable con más de 15.
+
+**Construir módulos personalizados de Odoo.** Odoo es extensible. Puedes construir módulos personalizados para añadir seguimiento de comisiones. Algunos equipos hacen esto. Cuesta de $5.000 a $15.000 construir un módulo básico de comisiones, más mantenimiento continuo. Cada vez que Odoo lanza una actualización, hay riesgo de que el módulo personalizado se rompa. Y aún no obtienes un portal de representantes o gestión de disputas a menos que los construyas también.
+
+**Usar software dedicado de comisiones.** Hay herramientas construidas específicamente para gestión de comisiones. Se sincronizan con Odoo, manejan los cálculos, proporcionan portales de representantes, gestionan disputas. Cuestan dinero, pero están construidas para este problema.
+
+Cada enfoque tiene compensaciones. La elección correcta depende del tamaño de tu equipo, tu presupuesto, y cuánto dolor estás dispuesto a tolerar.
+
+## Siguiente: tus opciones para arreglar este problema
+
+Si estás usando Odoo y luchando con el seguimiento de comisiones, tienes opciones. El flujo de hoja de cálculo funciona para equipos pequeños. Los módulos personalizados funcionan si tienes el presupuesto y la tolerancia para el mantenimiento. El software dedicado de comisiones funciona si quieres algo construido para este problema.
+
+En el siguiente artículo, desglosamos cada opción en detalle: cuánto cuesta, qué obtienes, dónde se rompe, y para qué tamaños de equipo funciona mejor cada enfoque.
+
+[Leer: Seguimiento de comisiones de ventas para Odoo: hojas de cálculo vs. módulos personalizados vs. software dedicado](/blog/es/odoo-commission-options-compared)

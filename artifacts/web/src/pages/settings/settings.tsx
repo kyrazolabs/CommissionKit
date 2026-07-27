@@ -346,10 +346,12 @@ export function SettingsPage() {
       </div>
 
       <Tabs defaultValue="account" className="w-full">
-        <TabsList className="mb-6 bg-muted/50 w-full sm:w-auto overflow-x-auto justify-between flex">
+        <TabsList className="mb-6 bg-muted/50 w-full sm:w-auto overflow-x-auto justify-start gap-1 flex">
           <TabsTrigger value="account" className="min-w-fit px-4">{t("settings.tabs.account")}</TabsTrigger>
           <TabsTrigger value="appearance" className="min-w-fit px-4">{t("settings.tabs.appearance")}</TabsTrigger>
-          <TabsTrigger value="workspace" className="min-w-fit px-4">{t("settings.tabs.workspace")}</TabsTrigger>
+          {hasPermission("workspace", "edit") && (
+            <TabsTrigger value="workspace" className="min-w-fit px-4">{t("settings.tabs.workspace")}</TabsTrigger>
+          )}
           <TabsTrigger value="notifications" className="min-w-fit px-4">{t("settings.tabs.notifications")}</TabsTrigger>
           <TabsTrigger value="security" className="min-w-fit px-4">{t("settings.tabs.security")}</TabsTrigger>
           {hasPermission("roles", "read") && (
@@ -412,7 +414,7 @@ export function SettingsPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between py-1 border-t border-border mt-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-1 border-t border-border mt-4">
             <div>
               <p className="text-sm font-medium">{t("settings.account.yourRole")}</p>
               <p className="text-sm text-muted-foreground mt-0.5">{t("settings.account.accessLevelIn", { workspace: activeWorkspace?.name })}</p>
@@ -421,7 +423,7 @@ export function SettingsPage() {
               <RoleIcon className="size-3.5" />{t(`settings.roles.${role}`)}
             </span>
           </div>
-          <div className="flex items-center justify-between py-1 border-t border-border">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-1 border-t border-border">
             <div>
               <p className="text-sm font-medium">{t("settings.account.language")}</p>
               <p className="text-sm text-muted-foreground mt-0.5">{t("settings.account.languageDescription")}</p>
@@ -439,7 +441,7 @@ export function SettingsPage() {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-center justify-between py-1 border-t border-border">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-1 border-t border-border">
             <div>
               <p className="text-sm font-medium">{t("settings.account.teamMembers")}</p>
               <p className="text-sm text-muted-foreground mt-0.5">{t("settings.account.teamMembersDescription")}</p>
@@ -463,7 +465,7 @@ export function SettingsPage() {
           <CardDescription>{t("settings.account.connectedAccountsDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between py-1">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-1">
             <div className="flex items-center gap-3">
               <svg className="w-5 h-5 text-foreground/80" viewBox="0 0 24 24">
                 <path
@@ -532,7 +534,7 @@ export function SettingsPage() {
           <CardDescription>{t("settings.appearance.description")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <Label className="text-sm font-medium">{t("settings.appearance.theme")}</Label>
               <p className="text-sm text-muted-foreground mt-0.5">{t("settings.appearance.currentlyUsing", { mode: theme === "dark" ? t("settings.appearance.darkMode") : t("settings.appearance.lightMode") })}</p>
@@ -546,6 +548,7 @@ export function SettingsPage() {
           </motion.div>
         </TabsContent>
 
+        {hasPermission("workspace", "edit") && (
         <TabsContent value="workspace" className="outline-none">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-7">
       {/* Workspace settings */}
@@ -555,7 +558,7 @@ export function SettingsPage() {
           <CardDescription>{t("settings.workspace.description")}{!isAdmin && ` ${t("settings.workspace.adminRequired")}`}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-sm font-medium">{t("settings.workspace.currency")}</Label>
               <div className="flex h-9 items-center rounded-md border bg-muted/50 px-3 text-sm text-muted-foreground">
@@ -590,6 +593,7 @@ export function SettingsPage() {
       </Card>
           </motion.div>
         </TabsContent>
+        )}
 
         <TabsContent value="notifications" className="outline-none">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-7">
@@ -652,7 +656,7 @@ export function SettingsPage() {
           <CardDescription>{t("settings.security.description")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <p className="text-sm font-medium">{t("settings.security.sessionTimeout")}</p>
               <p className="text-sm text-muted-foreground">{t("settings.security.sessionTimeoutDescription")}</p>

@@ -2,889 +2,23 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "wouter";
 import { format } from "date-fns";
-import { formatCurrency, formatPercent } from "@/lib/format";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
+import { LogOut, Loader2, ShieldAlert, User, KeyRound, ChevronDown } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
-import {
-  DollarSign,
-  Activity,
-  Briefcase,
-  ShieldAlert,
-  Wallet,
-  Lock,
-  MessageSquare,
-  Loader2,
-  LogOut,
-  User,
-} from "lucide-react";
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip as RechartsTooltip,
-} from "recharts";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { MonthPicker } from "@/components/ui/month-picker";
-import { CurrencyCell } from "@/components/currency-cell";
+import { useToast } from "@/hooks/use-toast";
+import { portalFetch, clearPortalToken } from "@/lib/portal-fetch";
+import { cn } from "@/lib/utils";
 
-// Note: authClient is NOT used in this file.
-// Portal auth is completely isolated via a custom JWT stored in localStorage.
-
-// ─── Types ─────────────────────────────────────────────────────────────────
-
-interface DealBreakdown {
-  dealId: string;
-  dealName: string;
-  dealAmount: number;
-  closeDate: string;
-  rateApplied: number;
-  commissionAmount: number;
-  currency: string;
-  calculationNote: string;
-  wsCurrency?: string;
-  convertedDealAmount?: number;
-  convertedCommission?: number;
-  exchangeRateSnapshot?: Record<string, number>;
-  rateSnapshotDate?: Date | string;
-}
-
-interface CurrencySummary {
-  currency: string;
-  totalCommission: number;
-  totalRevenue: number;
-  totalDeals: number;
-}
-
-interface MonthlyHistory {
-  period: string;
-  totalCommission: number;
-  totalDeals: number;
-}
-
-interface PortalSummary {
-  repId: string;
-  repName: string;
-  email: string;
-  planName: string | null;
-  period: string;
-  totalCommission: number;
-  totalRevenue: number;
-  totalDeals: number;
-  dealBreakdown: DealBreakdown[];
-  monthlyHistory: MonthlyHistory[];
-  currencySummaries?: CurrencySummary[];
-  currency: string;
-}
-
-// ─── Portal Auth Helpers ─────────────────────────────────────────────────────
-
-function getPortalToken(accessCode: string): string | null {
-  return localStorage.getItem(`portal_token_${accessCode}`);
-}
-
-function setPortalToken(accessCode: string, token: string): void {
-  localStorage.setItem(`portal_token_${accessCode}`, token);
-}
-
-function clearPortalToken(accessCode: string): void {
-  localStorage.removeItem(`portal_token_${accessCode}`);
-}
-
-function portalFetch(url: string, accessCode: string, init: RequestInit = {}): Promise<Response> {
-  const token = getPortalToken(accessCode);
-  return fetch(url, {
-    ...init,
-    headers: {
-      ...init.headers,
-      ...(token ? { "Authorization": `Bearer ${token}` } : {}),
-    },
-  });
-}
-
-// ─── Login View ─────────────────────────────────────────────────────────────
-
-function PortalLogin({ accessCode, onLogin }: { accessCode: string; onLogin: (password: string, mustChangePassword: boolean, workspaceName: string) => void }) {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const base = import.meta.env.VITE_API_URL ?? "";
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`${base}/api/portal/${encodeURIComponent(accessCode)}/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: username.trim().toLowerCase(), password }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Login failed");
-
-      // Store the portal-scoped JWT in localStorage : NOT a cookie.
-      // This never conflicts with the dashboard admin session.
-      setPortalToken(accessCode, data.token);
-      onLogin(password, data.mustChangePassword, data.workspaceName || "Workspace");
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="flex items-center justify-center p-20">
-      <Card className="w-full max-w-md shadow-lg border-primary/10">
-        <CardHeader className="space-y-1 text-center">
-          <div className="mx-auto bg-primary/10 size-12 rounded-full flex items-center justify-center mb-2">
-            <Lock className="size-6 text-primary" />
-          </div>
-          <CardTitle className="text-2xl font-semibold">Secure Portal</CardTitle>
-          <CardDescription>
-            This portal is password-protected. Please enter your portal password to continue.
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                type="text"
-                placeholder="e.g. john.doe"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            {error && (
-              <div className="text-sm font-medium text-destructive bg-destructive/10 p-3 rounded-md flex items-center gap-2">
-                <ShieldAlert className="size-4" />
-                {error}
-              </div>
-            )}
-          </CardContent>
-          <CardFooter>
-            <Button className="w-full" type="submit" disabled={loading}>
-              {loading ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
-              Access Portal
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
-    </div>
-  );
-}
-
-function ForcePasswordChange({
-  accessCode,
-  currentPassword: initialCurrentPassword,
-  onComplete,
-}: {
-  accessCode: string;
-  currentPassword?: string;
-  onComplete: (newToken: string) => void;
-}) {
-  const [currentPassword, setCurrentPassword] = useState(initialCurrentPassword || "");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const base = import.meta.env.VITE_API_URL ?? "";
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentPassword) {
-      setError("Current password is required");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-    if (newPassword.length < 8) {
-      setError("Password must be at least 8 characters");
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    try {
-      // Call our own isolated endpoint : no Better Auth session needed
-      const res = await portalFetch(
-        `${base}/api/portal/${encodeURIComponent(accessCode)}/change-password`,
-        accessCode,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ currentPassword, newPassword }),
-        }
-      );
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to update password");
-
-      // Replace the stored token with the new one that has mustChangePassword: false
-      setPortalToken(accessCode, data.token);
-      onComplete(data.token);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="flex items-center justify-center p-20">
-      <Card className="w-full max-w-md shadow-lg border-primary/10">
-        <CardHeader className="space-y-1 text-center">
-          <div className="mx-auto bg-primary/10 size-12 rounded-full flex items-center justify-center mb-2">
-            <Lock className="size-6 text-primary" />
-          </div>
-          <CardTitle className="text-2xl font-semibold">Secure Your Account</CardTitle>
-          <CardDescription>
-            {initialCurrentPassword 
-              ? "You are using a temporary password. Please set a new, secure password to continue."
-              : "Please confirm your temporary password and set a new, secure password."}
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            {!initialCurrentPassword && (
-              <div className="space-y-2">
-                <Label htmlFor="current-password">Current (Temporary) Password</Label>
-                <Input
-                  id="current-password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  required
-                />
-              </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="new-password">New Password</Label>
-              <Input
-                id="new-password"
-                type="password"
-                placeholder="••••••••"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm Password</Label>
-              <Input
-                id="confirm-password"
-                type="password"
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-            </div>
-            {error && (
-              <div className="text-sm font-medium text-destructive bg-destructive/10 p-3 rounded-md flex items-center gap-2">
-                <ShieldAlert className="size-4" />
-                {error}
-              </div>
-            )}
-          </CardContent>
-          <CardFooter>
-            <Button className="w-full" type="submit" disabled={loading}>
-              {loading ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
-              Update Password & Enter
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
-    </div>
-  );
-}
-
-// ─── Dispute Modal ──────────────────────────────────────────────────────────
-
-function DisputeModal({ 
-  payout, 
-  accessCode, 
-  onClose, 
-  onSuccess 
-}: { 
-  payout: any; 
-  accessCode: string; 
-  onClose: () => void;
-  onSuccess: () => void;
-}) {
-  const [reason, setReason] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
-  const base = import.meta.env.VITE_API_URL ?? "";
-
-  const handleSubmit = async () => {
-    if (!reason.trim()) return;
-    setLoading(true);
-    try {
-      const res = await portalFetch(`${base}/api/portal/${encodeURIComponent(accessCode)}/disputes`, accessCode, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ payoutId: payout.id, reason }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to submit dispute");
-      toast({ title: "Dispute submitted", description: "Your manager has been notified." });
-      onSuccess();
-      onClose();
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <DialogContent className="sm:max-w-[425px]">
-      <DialogHeader>
-        <DialogTitle>Dispute Payout</DialogTitle>
-        <DialogDescription>
-          Raising a dispute for period {format(new Date(payout.periodStart), "MMM d")} – {format(new Date(payout.periodEnd), "MMM d")}.
-        </DialogDescription>
-      </DialogHeader>
-      <div className="grid gap-4 py-4">
-        <div className="grid gap-2">
-          <Label htmlFor="reason">Reason for dispute</Label>
-          <Textarea
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="Explain why this payout seems incorrect…"
-            rows={4}
-          />
-        </div>
-      </div>
-      <DialogFooter>
-        <Button variant="outline" onClick={onClose} disabled={loading}>Cancel</Button>
-        <Button onClick={handleSubmit} disabled={loading || !reason.trim()}>
-          {loading ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
-          Submit Dispute
-        </Button>
-      </DialogFooter>
-    </DialogContent>
-  );
-}
-
-// ─── Page ───────────────────────────────────────────────────────────────────
-
-export function PublicRepPortal() {
-  const { t } = useTranslation();
-  const params = useParams<{ accessCode: string }>();
-  const accessCode = params.accessCode ?? "";
-  const [period, setPeriod] = useState<string>(format(new Date(), "yyyy-MM"));
-  const [summary, setSummary] = useState<PortalSummary | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [payouts, setPayouts] = useState<any[]>([]);
-  const [passwordRequired, setPasswordRequired] = useState(false);
-  const [tempPassword, setTempPassword] = useState<string>("");
-  const [mustChangePassword, setMustChangePassword] = useState(false);
-  const [disputeTarget, setDisputeTarget] = useState<any | null>(null);
-  const [workspaceName, setWsName] = useState("");
-  const { toast } = useToast();
-  const [showProfile, setShowProfile] = useState(false);
-  const [profileForm, setProfileForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
-  const [profileError, setProfileError] = useState("");
-  const [profileSaving, setProfileSaving] = useState(false);
-
-  const base = import.meta.env.VITE_API_URL ?? "";
-
-  const refreshData = () => {
-    if (!accessCode) return;
-    setLoading(true);
-    setError(null);
-    setPasswordRequired(false);
-
-    // Fetch summary : Bearer token attached automatically by portalFetch
-    portalFetch(`${base}/api/portal/${encodeURIComponent(accessCode)}?period=${period}`, accessCode)
-      .then(async (res) => {
-        const data = await res.json();
-        if (res.status === 401 && data.passwordRequired) {
-          // No valid portal token : show the login form
-          clearPortalToken(accessCode);
-          setPasswordRequired(true);
-          return null;
-        }
-        if (res.status === 403 && data.mustChangePassword) {
-          // Logged in but must set a new password
-          setMustChangePassword(true);
-          return null;
-        }
-        if (!res.ok) throw new Error(data.error || "Failed to load portal");
-        return data;
-      })
-      .then((data) => {
-        if (data) {
-        setSummary(data);
-        if (data.workspaceName) setWsName(data.workspaceName);
-      }
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-
-    // Fetch payouts : Bearer token attached automatically
-    portalFetch(`${base}/api/portal/${encodeURIComponent(accessCode)}/payouts`, accessCode)
-      .then(async (res) => {
-        if (res.status === 401) return [];
-        if (!res.ok) return [];
-        return res.json();
-      })
-      .then(setPayouts)
-      .catch(() => setPayouts([]));
-  };
-
-  useEffect(() => {
-    refreshData();
-  }, [accessCode, period]);
-
-  const handleLogout = () => {
-    clearPortalToken(accessCode);
-    setPasswordRequired(true);
-    setSummary(null);
-    setPayouts([]);
-  };
-
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setProfileError("");
-    if (profileForm.newPassword !== profileForm.confirmPassword) {
-      setProfileError("Passwords do not match");
-      return;
-    }
-    if (profileForm.newPassword.length < 8) {
-      setProfileError("Password must be at least 8 characters");
-      return;
-    }
-    setProfileSaving(true);
-    try {
-      const res = await portalFetch(`${base}/api/portal/${encodeURIComponent(accessCode)}/change-password`, accessCode, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ currentPassword: profileForm.currentPassword, newPassword: profileForm.newPassword }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to update password");
-      setPortalToken(accessCode, data.token);
-      toast({ title: "Password changed successfully" });
-      setShowProfile(false);
-      setProfileForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
-    } catch (err: any) {
-      setProfileError(err.message);
-    } finally {
-      setProfileSaving(false);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-sidebar">
-      {!loading && !passwordRequired && !mustChangePassword && !error && summary && (
-        <div className="max-w-5xl mx-auto px-6 pt-6 flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">
-            <span>{workspaceName || "Workspace"}</span>
-            <span className="mx-1">·</span>
-            <a href="https://commissionk.it" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">CommissionKit</a>
-          </p>
-          <div className="flex items-center gap-1">
-            <Button variant="ghost" size="sm" onClick={() => setShowProfile(true)} className="h-7 text-xs gap-1 text-muted-foreground"><User className="size-3" /> Password</Button>
-            <span className="text-muted-foreground/30">|</span>
-            <Button variant="ghost" size="sm" onClick={handleLogout} className="h-7 text-xs gap-1 text-muted-foreground"><LogOut className="size-3" /> Sign Out</Button>
-          </div>
-        </div>
-      )}
-
-      <main className="max-w-5xl mx-auto p-6">
-        {loading && <PortalSkeleton />}
-
-        {!loading && passwordRequired && !mustChangePassword && (
-          <PortalLogin accessCode={accessCode} onLogin={(pwd, mustChange, wsName) => {
-            setTempPassword(pwd);
-            setWsName(wsName);
-            if (mustChange) {
-              setPasswordRequired(false);
-              setMustChangePassword(true);
-            } else {
-              refreshData();
-            }
-          }} />
-        )}
-
-        {!loading && mustChangePassword && (
-          <ForcePasswordChange
-            accessCode={accessCode}
-            currentPassword={tempPassword}
-            onComplete={(_newToken) => {
-              setMustChangePassword(false);
-              refreshData();
-            }}
-          />
-        )}
-
-        {!loading && !passwordRequired && error && (
-          <div className="flex flex-col items-center justify-center py-24 text-center gap-4">
-            <div className="size-16 rounded-full bg-destructive/10 flex items-center justify-center">
-              <ShieldAlert className="size-8 text-destructive" />
-            </div>
-            <h1 className="text-xl font-semibold text-foreground">Portal not found</h1>
-            <p className="text-muted-foreground max-w-sm">
-              {error}. Please check your link or contact your manager for a new one.
-            </p>
-          </div>
-        )}
-
-        {!loading && !passwordRequired && !error && summary && (
-          <div className="space-y-6">
-            <div className="flex flex-col md:flex-row justify-between md:items-end gap-4">
-              <div>
-                <div className="flex items-center gap-3 mb-1">
-                  <div className="size-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-semibold border border-primary/20">
-                    {summary.repName.charAt(0)}
-                  </div>
-                  <div>
-                    <h1 className="text-3xl font-semibold tracking-tight">{summary.repName}</h1>
-                    <p className="text-muted-foreground text-sm">{summary.email}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                {summary.planName && (
-                  <Badge variant="outline" className="bg-secondary/50 text-secondary-foreground text-sm py-1">
-                    Plan: {summary.planName}
-                  </Badge>
-                )}
-                <MonthPicker 
-                  value={period}
-                  onChange={setPeriod}
-                  placeholder={t("common.pickMonth")}
-                  className="w-40 h-9"
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-3">
-              <Card className="bg-primary text-primary-foreground border-primary-foreground/10">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-primary-foreground/80 flex items-center">
-                    <DollarSign className="size-4 mr-1" /> Estimated Commission
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-semibold">{formatCurrency(summary.totalCommission, summary.currency)}</div>
-                  <p className="text-xs text-primary-foreground/70 mt-1">
-                    For {format(new Date(period + "-01"), "MMMM yyyy")}
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-                    <Activity className="size-4 mr-1" /> Total Revenue Closed
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-semibold">{formatCurrency(summary.totalRevenue, summary.currency)}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-                    <Briefcase className="size-4 mr-1" /> Deals Won
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-semibold">{summary.totalDeals}</div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {summary.currencySummaries && summary.currencySummaries.length > 1 && (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {summary.currencySummaries.map((c) => (
-                  <Card key={c.currency} className="border-l-4 border-l-primary/50">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        {c.currency} Summary
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-2 gap-2">
-                      <div>
-                        <p className="text-[10px] text-muted-foreground">Commission</p>
-                        <p className="text-sm font-semibold">{formatCurrency(c.totalCommission, c.currency)}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[10px] text-muted-foreground">Deals</p>
-                        <p className="text-sm font-semibold">{c.totalDeals}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-
-            {summary.monthlyHistory && summary.monthlyHistory.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Earnings History</CardTitle>
-                  <CardDescription>Past 6 months of commission payouts.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-[250px] w-full mt-4">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={summary.monthlyHistory}
-                        margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
-                      >
-                        <XAxis
-                          dataKey="period"
-                          tickFormatter={(val) => format(new Date(val + "-01"), "MMM")}
-                          fontSize={12}
-                          tickLine={false}
-                          axisLine={false}
-                        />
-                        <YAxis
-                          tickFormatter={(val) => `$${val / 1000}k`}
-                          fontSize={12}
-                          tickLine={false}
-                          axisLine={false}
-                        />
-                        <RechartsTooltip
-                          formatter={(value: number) => [formatCurrency(value, summary.currency), "Commission"]}
-                          labelFormatter={(label) =>
-                            format(new Date(label + "-01"), "MMMM yyyy")
-                          }
-                          contentStyle={{
-                            borderRadius: "8px",
-                            border: "1px solid var(--border)",
-                            backgroundColor: "hsl(var(--background))",
-                          }}
-                        />
-                        <Bar
-                          dataKey="totalCommission"
-                          fill="hsl(var(--primary))"
-                          radius={[4, 4, 0, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Deal Breakdown</CardTitle>
-                <CardDescription>Individual deal commissions for this period.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {summary.dealBreakdown.length === 0 ? (
-                  <div className="text-center py-10 border border-dashed rounded-lg">
-                    <p className="text-muted-foreground">No deals found for this period.</p>
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Deal</TableHead>
-                        <TableHead>Close Date</TableHead>
-                        <TableHead className="text-right">Amount</TableHead>
-                        <TableHead className="text-right">Rate</TableHead>
-                        <TableHead className="text-right">Commission</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {summary.dealBreakdown.map((deal: any) => {
-                        const dealCurrency = deal.currency || summary.currency;
-                        return (
-                          <TableRow key={deal.dealId}>
-                            <TableCell>
-                              <div className="font-medium">{deal.dealName}</div>
-                              <div className="text-xs text-muted-foreground mt-0.5">
-                                {deal.calculationNote}
-                              </div>
-                              {dealCurrency !== summary.currency && (
-                                <Badge variant="outline" className="mt-0.5 text-[10px] p-1.5 h-4">
-                                  {dealCurrency}
-                                </Badge>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-muted-foreground text-sm">
-                              {deal.closeDate ? format(new Date(deal.closeDate), "MMM d") : ":"}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <CurrencyCell
-                                amount={deal.dealAmount}
-                                currency={dealCurrency}
-                                wsCurrency={deal.wsCurrency ?? summary.currency}
-                                convertedAmount={deal.convertedDealAmount}
-                                exchangeRateSnapshot={deal.exchangeRateSnapshot}
-                                rateSnapshotDate={deal.rateSnapshotDate}
-                              />
-                            </TableCell>
-                            <TableCell className="text-right font-medium">
-                              {formatPercent(deal.rateApplied)}
-                            </TableCell>
-                            <TableCell className="text-right font-semibold text-primary">
-                              <CurrencyCell
-                                amount={deal.commissionAmount}
-                                currency={dealCurrency}
-                                wsCurrency={deal.wsCurrency ?? summary.currency}
-                                convertedAmount={deal.convertedCommission}
-                                exchangeRateSnapshot={deal.exchangeRateSnapshot}
-                                rateSnapshotDate={deal.rateSnapshotDate}
-                              />
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
-
-            {payouts.length > 0 && (
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2">
-                    <Wallet className="size-4 text-primary" />
-                    <CardTitle className="text-base">Payout History</CardTitle>
-                  </div>
-                  <CardDescription className="text-xs">Your commission payouts managed by your organization.</CardDescription>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Period</TableHead>
-                        <TableHead className="text-right">Commission</TableHead>
-                        <TableHead className="text-right">Adjustments</TableHead>
-                        <TableHead className="text-right">Final</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Payment Date</TableHead>
-                        <TableHead className="text-right">Action</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {payouts.map((p: any) => {
-                        const STATUS_MAP: Record<string, { label: string; class: string }> = {
-                          pending:  { label: "Pending",  class: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200/50" },
-                          approved: { label: "Approved", class: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200/50" },
-                          paid:     { label: "Paid",     class: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200/50" },
-                          disputed: { label: "Disputed", class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200/50" },
-                          on_hold:  { label: "On Hold",  class: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 border-gray-200/50" },
-                        };
-                        const cfg = STATUS_MAP[p.status] ?? STATUS_MAP.pending;
-                        const canDispute = ["pending", "approved"].includes(p.status);
-
-                        return (
-                          <TableRow key={p.id}>
-                            <TableCell className="text-sm text-muted-foreground">
-                              {format(new Date(p.periodStart), "MMM d")}–{format(new Date(p.periodEnd), "MMM d, yyyy")}
-                            </TableCell>
-                            <TableCell className="text-right text-sm tabular-nums">
-                              {formatCurrency(p.commissionAmount, p.currency)}
-                            </TableCell>
-                            <TableCell className={`text-right text-sm tabular-nums ${p.adjustments < 0 ? "text-red-600" : p.adjustments > 0 ? "text-green-600" : "text-muted-foreground"}`}>
-                              {p.adjustments !== 0 ? (p.adjustments > 0 ? "+" : "") + formatCurrency(p.adjustments, p.currency) : ":"}
-                            </TableCell>
-                            <TableCell className="text-right text-sm font-semibold tabular-nums">
-                              {formatCurrency(p.finalAmount, p.currency)}
-                            </TableCell>
-                            <TableCell>
-                              <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${cfg.class}`}>
-                                {cfg.label}
-                              </span>
-                            </TableCell>
-                            <TableCell className="text-sm text-muted-foreground">
-                              {p.actualPaymentDate ? format(new Date(p.actualPaymentDate), "MMM d, yyyy") : ":"}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              {canDispute ? (
-                                <Button size="sm" variant="ghost" className="h-8 text-xs text-muted-foreground hover:text-foreground" onClick={() => setDisputeTarget(p)}>
-                                  <MessageSquare className="size-3 mr-1" />
-                                  Dispute
-                                </Button>
-                              ) : null}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            )}
-
-            <p className="text-center text-xs text-muted-foreground pb-4">
-              This is a read-only view of your commission data, provided by{" "}
-              <span className="font-medium text-foreground">CommissionKit</span>.
-            </p>
-          </div>
-        )}
-      </main>
-
-      <Dialog open={!!disputeTarget} onOpenChange={() => setDisputeTarget(null)}>
-        {disputeTarget && (
-          <DisputeModal 
-            payout={disputeTarget} 
-            accessCode={accessCode} 
-            onClose={() => setDisputeTarget(null)} 
-            onSuccess={refreshData}
-          />
-        )}
-      </Dialog>
-
-      <Dialog open={showProfile} onOpenChange={setShowProfile}>
-        <DialogContent className="sm:max-w-[400px]">
-          <DialogHeader>
-            <DialogTitle>Change Password</DialogTitle>
-            <DialogDescription>Update your portal password.</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleChangePassword} className="space-y-4 py-4">
-            <div className="space-y-2"><Label>Current Password</Label><Input type="password" value={profileForm.currentPassword} onChange={e => setProfileForm(p => ({...p, currentPassword: e.target.value}))} required /></div>
-            <div className="space-y-2"><Label>New Password</Label><Input type="password" value={profileForm.newPassword} onChange={e => setProfileForm(p => ({...p, newPassword: e.target.value}))} required /></div>
-            <div className="space-y-2"><Label>Confirm Password</Label><Input type="password" value={profileForm.confirmPassword} onChange={e => setProfileForm(p => ({...p, confirmPassword: e.target.value}))} required /></div>
-            {profileError && <p className="text-[12px] text-destructive">{profileError}</p>}
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowProfile(false)}>Cancel</Button>
-              <Button type="submit" disabled={profileSaving}>{profileSaving ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}Change Password</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
+import { PortalAuth } from "@/components/portal/portal-auth";
+import { PortalChangePassword } from "@/components/portal/portal-change-password";
+import { PortalDashboard, type PortalSummary, type Payout } from "@/components/portal/portal-dashboard";
+import { PortalDisputeDialog } from "@/components/portal/portal-dispute-dialog";
+import { RepAvatar } from "@/components/rep-avatar";
 
 // ─── Skeleton ───────────────────────────────────────────────────────────────
 
@@ -895,19 +29,359 @@ function PortalSkeleton() {
         <div className="flex gap-4 items-center">
           <Skeleton className="size-12 rounded-full" />
           <div className="space-y-2">
-            <Skeleton className="size-8" />
-            <Skeleton className="size-4" />
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-4 w-24" />
           </div>
         </div>
-        <Skeleton className="size-10" />
+        <Skeleton className="size-10 w-40" />
       </div>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <Skeleton className="h-28 w-full" />
         <Skeleton className="h-28 w-full" />
         <Skeleton className="h-28 w-full" />
       </div>
-      <Skeleton className="h-[300px] w-full" />
-      <Skeleton className="h-[400px] w-full" />
+      <Skeleton className="h-75 w-full" />
+      <Skeleton className="h-100 w-full" />
+    </div>
+  );
+}
+
+// ─── Change Password Dialog (inside orchestrator for profile access) ─────────
+
+function ChangePasswordDialog({
+  accessCode,
+  open,
+  onClose,
+}: {
+  accessCode: string;
+  open: boolean;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const [form, setForm] = useState({ current: "", next: "", confirm: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const base = import.meta.env.VITE_API_URL ?? "";
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (form.next !== form.confirm) { setError(t("portal.public.passwordsDoNotMatch")); return; }
+    if (form.next.length < 8) { setError(t("portal.public.passwordMinLength")); return; }
+    setLoading(true);
+    setError("");
+    try {
+      const res = await portalFetch(
+        `${base}/api/portal/${encodeURIComponent(accessCode)}/change-password`,
+        accessCode,
+        { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword: form.current, newPassword: form.next }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? t("portal.public.failedToUpdatePassword"));
+      toast({ title: t("portal.public.passwordChanged") });
+      setForm({ current: "", next: "", confirm: "" });
+      onClose();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={set => !set ? onClose() : null}>
+      <DialogContent className="w-[90vw] sm:max-w-100 rounded-lg">
+        <DialogHeader>
+          <DialogTitle>{t("portal.public.changePassword")}</DialogTitle>
+          <DialogDescription>{t("portal.public.changePasswordDescription")}</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="cp-current">{t("portal.public.currentPassword")}</Label>
+            <Input
+              id="cp-current"
+              type="password"
+              value={form.current}
+              onChange={e => setForm(f => ({ ...f, current: e.target.value }))}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="cp-next">{t("portal.public.newPassword")}</Label>
+            <Input
+              id="cp-next"
+              type="password"
+              value={form.next}
+              onChange={e => setForm(f => ({ ...f, next: e.target.value }))}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="cp-confirm">{t("portal.public.confirmPassword")}</Label>
+            <Input
+              id="cp-confirm"
+              type="password"
+              value={form.confirm}
+              onChange={e => setForm(f => ({ ...f, confirm: e.target.value }))}
+              required
+            />
+          </div>
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          <DialogFooter>
+            <div className="flex justify-between w-full!">
+            <Button type="button" variant="outline" className="w-fit" onClick={onClose}>{t("common.cancel")}</Button>
+            <Button type="submit" className="w-fit" disabled={loading}>
+              {loading ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+              {t("portal.public.updatePassword")}
+            </Button>
+            </div>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── Orchestrator ─────────────────────────────────────────────────────────
+
+export function PublicRepPortal() {
+  const { t } = useTranslation();
+  const params = useParams<{ accessCode: string }>();
+  const accessCode = params.accessCode ?? "";
+
+  const [period, setPeriod] = useState(() => format(new Date(), "yyyy-MM"));
+  const [summary, setSummary] = useState<PortalSummary | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [payouts, setPayouts] = useState<Payout[]>([]);
+  const [passwordRequired, setPasswordRequired] = useState(false);
+  const [tempPassword, setTempPassword] = useState("");
+  const [mustChangePassword, setMustChangePassword] = useState(false);
+  const [disputeTarget, setDisputeTarget] = useState<Payout | null>(null);
+  const [workspaceName, setWsName] = useState("");
+  const [showProfile, setShowProfile] = useState(false);
+  const [disputeLoading, setDisputeLoading] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const base = import.meta.env.VITE_API_URL ?? "";
+
+  const refreshData = () => {
+    if (!accessCode) return;
+    setLoading(true);
+    setError(null);
+    setPasswordRequired(false);
+
+    portalFetch(`${base}/api/portal/${encodeURIComponent(accessCode)}?period=${period}`, accessCode)
+      .then(async res => {
+        const data = await res.json();
+        if (res.status === 401 && data.passwordRequired) {
+          clearPortalToken(accessCode);
+          setPasswordRequired(true);
+          return null;
+        }
+        if (res.status === 403 && data.mustChangePassword) {
+          setMustChangePassword(true);
+          return null;
+        }
+        if (!res.ok) throw new Error(data.error ?? "Failed to load portal");
+        if (data.workspaceName) setWsName(data.workspaceName);
+        return data;
+      })
+      .then(data => { if (data) setSummary(data); })
+      .catch(err => setError(err instanceof Error ? err.message : String(err)))
+      .finally(() => setLoading(false));
+
+    portalFetch(`${base}/api/portal/${encodeURIComponent(accessCode)}/payouts`, accessCode)
+      .then(async res => { 
+        if (res.status === 401) return [];
+        if (!res.ok) return [];
+        const data = await res.json();
+        return data.map((item: Payout & { periodStart: string, periodEnd: string}) => ({
+          ...item,
+          period: `${new Date(item.periodStart).toLocaleDateString('en', {month: 'short', day: '2-digit'})} - ${new Date(item.periodEnd).toLocaleString('en', {month: 'short', day: '2-digit'})}`
+        }))
+      })
+      .then((data: Payout[]) => setPayouts(data ?? []))
+      .catch(() => setPayouts([]));
+  };
+
+  useEffect(() => { refreshData(); }, [accessCode, period]);
+
+  const handleLogout = () => {
+    clearPortalToken(accessCode);
+    setPasswordRequired(true);
+    setSummary(null);
+    setPayouts([]);
+  };
+
+  const handleLogin = (username: string, pwd: string, mustChange: boolean, wsName: string) => {
+    setTempPassword(pwd);
+    setWsName(wsName);
+    if (mustChange) {
+      setPasswordRequired(false);
+      setMustChangePassword(true);
+    } else {
+      refreshData();
+    }
+  };
+
+  const handlePasswordComplete = () => {
+    setMustChangePassword(false);
+    refreshData();
+  };
+
+  return (
+    <div className="min-h-screen bg-sidebar">
+      {/* Header — shown once authenticated */}
+      {!loading && !passwordRequired && !mustChangePassword && !error && summary && (
+        <header className="border-b border-sidebar-border bg-sidebar">
+          <div className="max-w-5xl mx-auto px-2 h-14 flex items-center gap-4">
+            {/* Logo + brand */}
+            <div className="flex items-center gap-2.5 shrink-0">
+              <img src="/brand/logo-symbol.svg" alt="CommissionKit" className="h-8" />
+                <span className="text-2xl font-semibold tracking-tight text-foreground">
+                CKit <span className="text-primary">Portal</span>
+              </span>
+            </div>
+
+            {/* Divider */}
+            <div className="flex-1 min-w-px max-w-px h-5 bg-sidebar-border" />
+
+            {/* Avatar + Welcome + workspace */}
+            <div className="flex-1 min-w-0 flex items-center gap-3">
+              <div className="min-w-0">
+                <p className="text-sm/tight font-medium text-foreground truncate">
+                  {t("portal.public.welcomeBack") ?? "Welcome back"}, {summary.repName.split(" ")[0]}
+                </p>
+                <p className="text-xs/tight text-muted-foreground truncate">
+                  {workspaceName || t("portal.public.workspace")}
+                </p>
+              </div>
+            </div>
+
+            {/* Period picker */}
+            <div className="hidden sm:block h-8 w-34 shrink-0">
+              <MonthPicker
+                value={period}
+                onChange={setPeriod}
+                className="h-8 shadow-none"
+              />
+            </div>
+
+            {/* User menu toggle */}
+            <Button
+              variant="ghost"
+              size="md"
+              className="h-8 gap-2 text-sm text-muted-foreground shrink-0 px-2"
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+            >
+              <RepAvatar name={summary.repName} size={24} className="rounded-full shrink-0" />
+              <ChevronDown className={cn("size-3 transition-transform", userMenuOpen && "rotate-180")} />
+            </Button>
+          </div>
+        </header>
+      )}
+
+      {/* Expandable user panel */}
+      <div
+        className="overflow-hidden transition-all duration-300 ease-in-out"
+        style={{ maxHeight: userMenuOpen && summary ? 300 : 0, opacity: userMenuOpen && summary ? 1 : 0 }}
+      >
+        <div className="bg-sidebar">
+          <div className="max-w-5xl mx-auto px-6 py-3 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+            {/* Avatar + info */}
+            <div className="flex items-center gap-3 sm:flex-1 min-w-0">
+              <RepAvatar name={summary?.repName ?? ""} size={45} className="rounded-full shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-foreground">{summary?.repName}</p>
+                <p className="text-xs text-muted-foreground truncate">{summary?.email}</p>
+                {summary?.planName && (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Plan: <span className="text-foreground font-medium">{summary.planName}</span>
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Period picker — only on small screens */}
+            <div className="sm:hidden">
+              <MonthPicker
+                value={period}
+                onChange={setPeriod}
+                className="h-8 shadow-none w-full"
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2 sm:shrink-0">
+              <Button variant="ghost" size="sm" onClick={() => setShowProfile(true)} className="h-8 gap-1.5 text-xs">
+                <KeyRound className="size-3.5" />
+                {t("portal.public.changePassword")}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleLogout} className="h-8 gap-1.5 text-xs text-destructive">
+                <LogOut className="size-3.5" />
+                {t("sidebar.signOut")}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <main className="max-w-5xl mx-auto p-6">
+        {loading && <PortalSkeleton />}
+
+        {!loading && passwordRequired && !mustChangePassword && (
+          <PortalAuth accessCode={accessCode} onLogin={handleLogin} />
+        )}
+
+        {!loading && mustChangePassword && (
+          <PortalChangePassword
+            accessCode={accessCode}
+            currentPassword={tempPassword}
+            onComplete={handlePasswordComplete}
+          />
+        )}
+
+        {!loading && !passwordRequired && error && !mustChangePassword && (
+          <div className="flex flex-col items-center justify-center py-24 text-center gap-4">
+            <div className="size-16 rounded-full bg-destructive/10 flex items-center justify-center">
+              <ShieldAlert className="size-8 text-destructive" />
+            </div>
+            <h1 className="text-xl font-semibold text-foreground">{t("portal.public.portalNotFoundTitle")}</h1>
+            <p className="text-muted-foreground max-w-sm">
+              {error}. {t("portal.public.portalNotFoundDescription")}
+            </p>
+          </div>
+        )}
+
+        {!loading && !passwordRequired && !error && !mustChangePassword && summary && (
+          <PortalDashboard
+            summary={summary}
+            payouts={payouts}
+            period={period}
+            onPeriodChange={setPeriod}
+            onDispute={p => setDisputeTarget(p)}
+          />
+        )}
+      </main>
+
+      {/* Dispute modal */}
+      {disputeTarget && (
+        <PortalDisputeDialog
+          payout={disputeTarget}
+          accessCode={accessCode}
+          onClose={() => setDisputeTarget(null)}
+          onSuccess={() => { setDisputeTarget(null); refreshData(); }}
+        />
+      )}
+
+      {/* Profile password change */}
+      <ChangePasswordDialog
+        accessCode={accessCode}
+        open={showProfile}
+        onClose={() => setShowProfile(false)}
+      />
     </div>
   );
 }

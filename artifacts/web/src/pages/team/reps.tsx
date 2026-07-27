@@ -10,6 +10,7 @@ import {
   useListPlans as orvalUseListPlans, getListPlansQueryKey
 } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { MonthPicker } from "@/components/ui/month-picker";
 import { Button } from "@/components/ui/button";
 import { DataPagination } from "@/components/ui/data-pagination";
 import { Input } from "@/components/ui/input";
@@ -20,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { RepAvatar } from "@/components/rep-avatar";
 import { HelpTooltip } from "@/components/help-tooltip";
-import { Plus, Search, MoreHorizontal, Edit, Trash, ChevronRight, Users, Mail } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Edit, Trash, ChevronRight, Users, Mail, FileDown, LoaderCircle } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,7 +29,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/hooks/use-role";
 import { useBillingStatus } from "@/hooks/use-billing-status";
 import { useWorkspace } from "@/hooks/use-workspace";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, rawFetch } from "@/lib/api";
 import { usePageMeta } from "@/hooks/use-page-meta";
 
 
@@ -148,6 +149,7 @@ export function RepsPage() {
             </div>
           ) : (
             <>
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -214,6 +216,12 @@ export function RepsPage() {
                               View Portal
                             </Link>
                           </DropdownMenuItem>
+                          {hasPermission("reps", "read") && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <RepExportAction rep={rep} />
+                            </>
+                          )}
                           {hasPermission("reps", "edit") && (
                             <>
                               <SendPortalLinkAction rep={rep} />
@@ -241,6 +249,7 @@ export function RepsPage() {
                 />
               </div>
             ) : null}
+            </div>
             </>
           )}
         </CardContent>
@@ -469,6 +478,86 @@ function SendPortalLinkAction({ rep }: { rep: any }) {
       <Mail className="mr-2 size-4" />
       {sending ? t("common.sending2") : t("reps.sendPortalLink")}
     </DropdownMenuItem>
+  );
+}
+
+function RepExportAction({ rep }: { rep: any }) {
+  const [open, setOpen] = useState(false);
+  const [month, setMonth] = useState<string>(new Date().toISOString().slice(0, 7));
+  const [loading, setLoading] = useState<string | null>(null);
+  const { t } = useTranslation();
+  const { toast } = useToast();
+
+  const handleExport = async (format: "csv" | "pdf") => {
+    setLoading(format);
+    try {
+      const res = await rawFetch(`/api/reps/${rep.id}/export?month=${month}&format=${format}`);
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err || "Export failed");
+      }
+      const blob = await res.blob();
+      const contentDisposition = res.headers.get("Content-Disposition");
+      const filename = contentDisposition
+        ? contentDisposition.split("filename=")[1]?.replace(/"/g, "")
+        : `${rep.name}-commissions-${month}.${format}`;
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(downloadUrl);
+      toast({ title: t("reps.exportSuccess", { format: format.toUpperCase() }) });
+      setOpen(false);
+    } catch (err: any) {
+      toast({ title: t("reps.exportFailed"), description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(null);
+    }
+  };
+
+  return (
+    <>
+      <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setOpen(true); }}>
+        <FileDown className="mr-2 size-4" />Export Commissions
+      </DropdownMenuItem>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Export Commissions for {rep.name}</DialogTitle>
+            <DialogDescription>
+              Select a month and format to export this rep&apos;s commission details.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label>Month</Label>
+              <MonthPicker value={month} onChange={setMonth} />
+            </div>
+          </div>
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button
+              variant="outline"
+              onClick={() => handleExport("csv")}
+              disabled={!!loading}
+            >
+              {loading === "csv" ? <LoaderCircle className="mr-2 size-4 animate-spin" /> : <FileDown className="mr-2 size-4" />}
+              Export CSV
+            </Button>
+            <Button
+              onClick={() => handleExport("pdf")}
+              disabled={!!loading}
+            >
+              {loading === "pdf" ? <LoaderCircle className="mr-2 size-4 animate-spin" /> : <FileDown className="mr-2 size-4" />}
+              Export PDF
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

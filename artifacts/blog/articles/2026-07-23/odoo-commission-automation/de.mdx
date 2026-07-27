@@ -1,0 +1,110 @@
+---
+title: "Odoo-Provisionsberechnungen automatisieren (ohne Tabellenkalkulation)"
+date: "2026-07-23"
+author: "CommissionKit Team"
+tags: ["Integrationen", "Odoo", "Provisionsmanagement", "Vertriebsprozesse"]
+keywords: ["odoo commission calculation", "automate odoo commissions", "odoo sales commission software", "odoo commission tracking", "odoo commission integration", "odoo sales commission management"]
+description: "Schluss mit dem Export von Odoo-Verkaufsaufträgen nach Excel für die Provisionsberechnung. So automatisieren Sie den gesamten Workflow von sale.order bis zur Vertreterauszahlung."
+---
+
+**Kurzfassung:** Odoo verwaltet Verkaufsaufträge, Rechnungen und Zahlungen, hat aber kein Provisionsmodul. Das bedeutet: Die Finanzabteilung exportiert jeden Monat CSV-Dateien, bereinigt die Daten in einer Tabellenkalkulation, schlägt Vertreternamen und Zahlungsstatus manuell nach und berechnet Provisionen von Hand. Dieser Leitfaden zeigt, wie dieser Arbeitsablauf funktioniert, warum er ab 10 bis 15 Vertretern zusammenbricht, und wie Sie Odoo direkt mit CommissionKit verbinden, sodass Deals automatisch synchronisiert werden, Vertreter ihre Verdienste in Echtzeit sehen und niemand mehr die erste Woche des Monats in Excel verbringt.
+
+---
+
+Ich habe einer Finanzmanagerin zugesehen, wie sie jede erste Woche im Monat dasselbe gemacht hat. Sie öffnete Odoo, ging zu Verkauf > Aufträge, filterte nach den bestätigten Aufträgen des Vormonats und exportierte sie als CSV. Dann öffnete sie die Tabellenkalkulation, in der sie die Provisionen verfolgte. Sie löschte die alten Daten, fügte den neuen Export ein, verbrachte eine Stunde damit, Spalten zu korrigieren, in denen Odoo ihr Partner-IDs statt Vertreternamen gab, und fing an zu rechnen.
+
+Bis sie fertig war, war es meistens der 10. Die Vertreter hatten schon dreimal nach ihren Provisionen gefragt. Der Vertriebsleiter hatte schon zwei „sind noch dran"-Nachrichten geschickt. Und irgendwo in der Tabelle referenzierte eine Formel die falsche Zeile, was bedeutete, dass ein Vertreter zu viel und ein anderer zu wenig bekommen würde.
+
+Sie würde es irgendwann merken. Oder der Vertreter merkt es. So oder so gab es eine Korrektur, eine Entschuldigung und den Vorsatz, „nächsten Monat genauer zu sein."
+
+Wenn Sie Provisionen für ein Odoo-basiertes Vertriebsteam verwalten, klingt das wahrscheinlich vertraut.
+
+## Der Odoo-Export-nach-Excel-Zyklus
+
+Hier ist der Arbeitsablauf, den ich bei Dutzenden von Unternehmen gesehen habe, die Odoo für den Vertrieb nutzen:
+
+Der Deal wird in Odoo abgeschlossen. Der Verkaufsauftrag wird bestätigt, die Rechnung erstellt, und der Vertreter kümmert sich um die nächste Gelegenheit. Niemand informiert das Provisionssystem, denn es gibt kein Provisionssystem. Es gibt nur die Tabellenkalkulation.
+
+Am Monatsende (oder wann immer die Finanzabteilung Kapazität hat) exportiert jemand die Verkaufsaufträge. Die CSV enthält den Auftragsbetrag, den Partnername, das Vertriebsmitarbeiter-Feld (das Odoo als Benutzer-ID speichert) und das Auftragsdatum. Sie enthält nicht den Provisionssatz, den vollständigen Namen des Vertreters oder ob die Rechnung tatsächlich bereits bezahlt wurde.
+
+Also fügt die Tabellenkalkulationsperson diese Spalten manuell hinzu. Sie schlägt nach, welche Benutzer-ID zu welchem Vertreter gehört. Sie prüft das Rechnungsmodul, um zu sehen, welche Aufträge bezahlte Rechnungen haben. Sie wendet den Provisionssatz aus dem Planungs­dokument an, das irgendwo auf einem gemeinsamen Laufwerk liegt. Sie berechnet die Provision für jeden Deal.
+
+Dann schickt sie die Ergebnisse per E-Mail an den Vertriebsleiter zur Genehmigung. Der Vertriebsleiter findet zwei Deals, die nicht zählen sollten, weil es interne Transfers waren. Er findet einen Vertreter, der wegen eines Quotenbeschleunigers einen höheren Satz hätte bekommen sollen. Die Tabellenkalkulationsperson korrigiert, rechnet neu und schickt die Datei an die Buchhaltung zur Auszahlung.
+
+Das dauert vier bis sechs Stunden jeden Monat für ein 20-köpfiges Team. Manchmal mehr, wenn Währungsumrechnungen nötig sind oder sich die Vertreterliste mitten im Monat geändert hat.
+
+## Warum manuelle Provisionsverfolgung bei Odoo-Teams zusammenbricht
+
+Der Tabellenkalkulations-Workflow funktioniert bei drei Vertretern und 30 Deals im Monat. Danach bricht er zusammen, und er bricht auf ganz bestimmte Weise zusammen.
+
+**Verkaufsaufträge existieren in Odoo, aber Provisionen nicht.** Odoo verfolgt alles am Verkauf: den Auftrag, die Rechnung, die Lieferung, die Zahlung. Aber es hat kein Provisionsmodul. Es gibt in Odoo keinen Ort, um einen Provisionsplan zu definieren, zu berechnen, was ein Vertreter an einem Deal verdient, oder nachzuvollziehen, was ausgezahlt wurde. Die Provisionsdaten leben vollständig außerhalb des führenden Systems, in einer isolierten Tabellenkalkulation.
+
+Genau dort gehen Dinge schief. Die Tabellenkalkulation weiß nichts von Deals, die nach dem Export storniert wurden. Sie weiß nicht, dass ein Vertreter mitten im Quartal die Region gewechselt hat. Sie weiß nicht, dass der Vertriebsleiter einen Sonderpreis für einen bestimmten Deal genehmigt hat. Jede dieser Informationen muss außerhalb von Odoo kommuniziert werden, normalerweise per E-Mail oder Slack, und dann manuell in die Tabellenkalkulation eingetragen werden.
+
+**Rechnungszahlungsstatus sind von den Provisionsberechnungen getrennt.** Die meisten Teams zahlen Provisionen nicht auf gebuchte Umsätze. Sie zahlen auf eingenommene Umsätze, was bedeutet, dass sie wissen müssen, wann die Rechnung tatsächlich bezahlt wird. Odoo verfolgt das im Rechnungsmodul, aber die Provisions-Tabellenkalkulation tut das nicht.
+
+Die Tabellenkalkulationsperson muss also zurück in Odoo, den Zahlungsstatus jeder Rechnung prüfen und die Tabellenkalkulation entsprechend aktualisieren. Manche Deals von vor drei Monaten könnten gerade bezahlt worden sein. Manche Deals vom letzten Monat könnten noch offen sein. Die Provisionsberechnung hängt von Daten aus zwei verschiedenen Odoo-Modulen ab, und die Tabellenkalkulation verbindet sie von Hand.
+
+**Vertreter können ihre Verdienste nicht sehen, ohne die Finanzabteilung zu fragen.** Das ist der Teil, der die meisten Reibungen verursacht. Ein Vertreter schließt am 15. einen großen Deal ab. Er will wissen, was er verdient hat. Die Antwort lautet: „Frag die Finanzabteilung", denn die Provisionsdaten leben in einer Tabellenkalkulation, auf die nur eine Person Zugriff hat.
+
+Manche Vertreter fangen an, ihre eigenen Aufzeichnungen zu führen. Sie bauen Schatten-Tabellen, in denen sie ihre Deals verfolgen und ihre Provisionen schätzen. Wenn die offiziellen Zahlen herauskommen und nicht übereinstimmen (weil der Vertreter den falschen Satz verwendet oder einen Deal gezählt hat, der noch nicht bezahlt war), gibt es einen Streit. Die Finanzperson muss erklären, warum die Zahlen des Vertreters nicht mit den offiziellen Zahlen übereinstimmen. Das kostet Zeit. Und es untergräbt das Vertrauen.
+
+## Wie automatisierte Odoo-Provisionen aussehen
+
+Die Lösung ist, Odoo direkt mit einem Provisionssystem zu verbinden, sodass die Daten automatisch fließen. Keine Exporte, kein manueller Abgleich, keine Schatten-Tabellen.
+
+So sieht das in der Praxis aus:
+
+Vertreter werden aus `res.users` in Odoo synchronisiert. Jeder Vertriebsmitarbeiter in Odoo wird zu einem Vertreter im Provisionssystem. Wenn Sie einen neuen Vertreter einstellen und in Odoo hinzufügen, erscheint er beim nächsten Synchronisierungszyklus in den Provisionsberechnungen. Wenn jemand das Unternehmen verlässt, deaktivieren Sie ihn im Provisionssystem, während seine historischen Deals für Berichte intakt bleiben.
+
+Verkaufsaufträge werden mit Beträgen, Daten, Stadien und zugewiesenen Vertretern synchronisiert. Der Connector liest `sale.order`-Datensätze aus Odoo, zieht die relevanten Felder und normalisiert sie in das Format des Provisionssystems. Sie müssen keine Spalten zuordnen oder Datumsformate korrigieren. Der Connector übernimmt das.
+
+Rechnungszahlungsstatus bestimmen, was zur Auszahlung bereit ist. Der Connector liest den tatsächlichen Zahlungsstatus aus dem Rechnungsmodul von Odoo, nicht nur den Auftragsstatus. Ein Deal, der bestätigt aber noch nicht abgerechnet ist, wird anders angezeigt als ein Deal, der abgerechnet und bezahlt ist. Sie können Ihre Provisionsregeln so einstellen, dass bei Buchung, bei Rechnungsstellung oder bei Geldeingang gezahlt wird, und das System wendet diese Regeln basierend auf den echten Daten aus Odoo an.
+
+Provisionspläne laufen automatisch mit den synchronisierten Daten. Sie definieren Ihre Pläne, Stufen, Beschleuniger und Ausnahmen im Provisionssystem. Wenn neue Deals aus Odoo eintreffen, berechnet die Engine, was jeder Vertreter basierend auf dem aktiven Plan verdient. Keine Formeln, die gepflegt werden müssen, keine manuellen Nachschlagungen.
+
+Vertreter sehen ihre Verdienste in einem Portal. Jeder Vertreter bekommt einen Login, wo er seine Deals, seine Provisionsaufschlüsselungen und seine Auszahlungshistorie sehen kann. Er muss die Finanzabteilung nicht fragen. Er muss keine Schatten-Tabellenkalkulation pflegen. Die Informationen sind da, wann immer er sie prüfen möchte.
+
+## Die Odoo-Verbindung einrichten
+
+Die Integration dauert etwa zwanzig Minuten. Sie benötigen Ihre Odoo-Instanz-URL, den Datenbanknamen und einen API-Schlüssel mit Lesezugriff auf Verkaufsaufträge, Rechnungen und Benutzer.
+
+**Schritt 1: Verbinden.** Gehen Sie zu Settings > Integrations in CommissionKit. Klicken Sie auf die Odoo-Karte. Geben Sie Ihre Odoo-URL ein (etwas wie `yourcompany.odoo.com`), Ihren Datenbanknamen und den API-Schlüssel. Klicken Sie auf „Test Connection." Der Connector bestätigt, dass er Ihre Odoo-Instanz erreichen kann, und zieht grundlegende Kontoinformationen.
+
+**Schritt 2: Konfigurieren.** Der Connector listet alle Benutzer in Ihrer Odoo `res.users`-Tabelle auf. Sie bestätigen, welche davon provisionsberechtigte Vertreter sind. Manche Benutzer könnten Administratoren oder Support-Mitarbeiter sein, die keine Provisionen verdienen sollen. Sie ordnen auch Ihre Odoo-Verkaufsphasen den Provisions-Triggern zu. Die meisten Teams zahlen bei Bestätigung des „Verkaufsauftrags." Manche Teams warten bis die Rechnung bezahlt ist.
+
+**Schritt 3: Synchronisierungszeitplan festlegen.** Wählen Sie, wie oft CommissionKit Daten aus Odoo abruft. Die Optionen reichen von alle 15 Minuten bis einmal täglich. Teams mit hohem Deal-Volumen wählen normalerweise stündlich. Teams mit längeren Verkaufszyklen können täglich arbeiten, ohne etwas zu verpassen.
+
+**Schritt 4: Automatische Berechnung aktivieren.** Wenn dies eingeschaltet ist, wird jeder Deal, der aus Odoo eintrifft, sofort gegen Ihren Provisionsplan geprüft. Der Vertreter sieht seine geschätzten Verdienste aktualisiert, ohne dass jemand eine manuelle Berechnung starten muss.
+
+Der Connector verwendet hash-basierte Änderungserkennung, sodass er Aufträge, die sich seit der letzten Synchronisierung nicht bewegt haben, nicht erneut verarbeitet. Wenn sich ein Deal-Betrag in Odoo nach der Synchronisierung ändert, erkennt der Connector das beim nächsten Zyklus und aktualisiert den Datensatz. Wenn ein Vertreter einen Deal einem anderen Vertriebsmitarbeiter zuweist, wird diese Änderung ebenfalls übernommen.
+
+## Die Kosten, wenn Sie nicht automatisieren
+
+Lassen Sie mich das mit Zahlen untermauern.
+
+Ein 20-köpfiges Team, das etwa 200 Deals pro Monat abschließt, verbringt vier bis sechs Stunden mit manueller Provisionsarbeit. Das ist der Export, die Bereinigung, die Berechnung, der Abgleich und die Streitbeilegung. Bei $50 pro Stunde für Finanzarbeitskraft (eine konservative Zahl für eine vollbelastete Vertriebs- oder Finanzperson) sind das $200 bis $300 pro Monat an direkten Arbeitskosten.
+
+Über ein Jahr gerechnet sprechen wir von $2.400 bis $3.600 an Zeit, die für etwas anderes genutzt werden könnte. Die Provisionierungssoftware kostet weniger als ein Monat dieser manuellen Arbeit.
+
+Aber die direkten Arbeitskosten sind der kleinere Teil. Die größeren Kosten sind versteckt.
+
+Verspätete Provisionen. Wenn die Tabellenkalkulation eine Woche zur Erstellung braucht, werden Vertreter spät bezahlt. Verspätete Gehaltsschecks führen dazu, dass Vertreter dem Prozess misstrauen. Sie fangen an, ihre eigenen Aufzeichnungen zu führen. Sie fangen an, jede Auszahlung in Frage zu stellen.
+
+Streitigkeiten. Manuelle Berechnungen führen Fehler ein. Eine Formel referenziert die falsche Zeile. Der Name eines Vertreters wird im Export falsch geschrieben, sodass seine Deals nicht übereinstimmen. Eine Währungsumrechnung verwendet den falschen Kurs. Jeder Fehler erzeugt einen Streit, der 30 bis 60 Minuten zur Untersuchung und Behebung braucht.
+
+Schatten-Buchhaltung. Wenn Vertreter ihre Provisionen nicht in Echtzeit sehen können, bauen sie ihre eigenen Verfolgungssysteme. Diese Systeme verwenden andere Annahmen als der offizielle Prozess. Wenn die offiziellen Zahlen herauskommen und nicht den Erwartungen des Vertreters entsprechen, gibt es ein Gespräch. Manchmal ist dieses Gespräch kurz. Manchmal ist es das nicht.
+
+Die Personalkosten zählen auch. Ihre Finanzperson verbringt die erste Woche jedes Monats mit Dateneingabe statt mit Analyse. Ihr Vertriebsleiter verbringt Zeit mit der Vermittlung von Streitigkeiten statt mit der Beratung von Vertretern. Ihre Vertreter verbringen Energie damit, sich Sorgen zu machen, ob sie korrekt bezahlt werden, statt zu verkaufen.
+
+## Odoo verbinden und den Zyklus beenden
+
+Wenn Sie bereit sind, aufzuhören CSV-Dateien zu exportieren und Provisionen in Tabellenkalkulationen neu zu berechnen, ist der Odoo-Connector auf dem Growth-Plan von CommissionKit und höher verfügbar.
+
+Gehen Sie zu Settings > Integrations in Ihrem CommissionKit-Workspace, klicken Sie auf Odoo und folgen Sie den Einrichtungsschritten. Sie benötigen Ihre Odoo-Instanz-URL, den Datenbanknamen und einen API-Schlüssel.
+
+Die vollständige Dokumentation finden Sie unter [docs.commissionk.it/integrations/odoo](https://docs.commissionk.it/integrations/odoo).
+
+Wenn Sie noch kein CommissionKit-Kunde sind, starten Sie eine 14-tägige kostenlose Testversion. Sie können Ihre Odoo-Instanz während des Onboardings verbinden und zusehen, wie die Deals innerhalb der ersten Stunde eintreffen.
+
+[Starten Sie Ihre kostenlose Testversion](https://commissionk.it/register)

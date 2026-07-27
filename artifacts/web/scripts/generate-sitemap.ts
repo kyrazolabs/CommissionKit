@@ -14,6 +14,10 @@ const urls = [
   { loc: "https://commissionk.it/privacy", changefreq: "monthly", priority: "0.5" },
   { loc: "https://commissionk.it/terms", changefreq: "monthly", priority: "0.5" },
   { loc: "https://commissionk.it/security", changefreq: "monthly", priority: "0.5" },
+  { loc: "https://commissionk.it/integrations/odoo", changefreq: "monthly", priority: "0.9" },
+  { loc: "https://commissionk.it/integrations/hubspot", changefreq: "monthly", priority: "0.9" },
+  { loc: "https://commissionk.it/integrations/salesforce", changefreq: "monthly", priority: "0.9" },
+  { loc: "https://commissionk.it/integrations/custom", changefreq: "monthly", priority: "0.8" },
 ];
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
