@@ -18,8 +18,6 @@ const urls = [
   { loc: "https://commissionk.it/integrations/hubspot", changefreq: "monthly", priority: "0.9" },
   { loc: "https://commissionk.it/integrations/salesforce", changefreq: "monthly", priority: "0.9" },
   { loc: "https://commissionk.it/integrations/custom", changefreq: "monthly", priority: "0.8" },
-  { loc: "https://commissionk.it/portal", changefreq: "monthly", priority: "0.9" },
-  { loc: "https://commissionk.it/careers", changefreq: "monthly", priority: "0.7" },
 ];
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
