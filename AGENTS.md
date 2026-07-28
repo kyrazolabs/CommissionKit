@@ -24,7 +24,7 @@ graph TD
     TECH --> C8[context/build-plan.md]
     TECH --> C9[context/progress-tracker.md]
 
-    BIZ --> AFFINE["AFFiNE OS<br/>affine.commissionk.it"]
+    BIZ --> AFFINE["AFFiNE OS<br/>affine.commissionkit.co"]
     BIZ --> O1[os/agents/]
     BIZ --> O2[.agents/skills/]
     BIZ --> O3[.opencode/skills/]
@@ -48,7 +48,7 @@ graph TD
 
 ### If you're writing content or doing sales:
 1. Read this file (AGENTS.md) — know the product
-2. Open AFFiNE OS (`https://affine.commissionk.it`) — company identity, sales system, marketing system
+2. Open AFFiNE OS (`https://affine.commissionkit.co`) — company identity, sales system, marketing system
 3. Do the work → update `os/STATUS.md`
 
 ### If you're planning a feature:
@@ -78,7 +78,7 @@ graph TD
 | **Library docs** | `context/library-docs.md` |
 | **Build & deploy** | `context/build-plan.md` |
 | **Progress tracker** | `context/progress-tracker.md` |
-| **Business Operating System** | **AFFiNE** (`https://affine.commissionk.it`) — company identity, strategy, revenue, product, operations, people, customer, tools, governance |
+| **Business Operating System** | **AFFiNE** (`https://affine.commissionkit.co`) — company identity, strategy, revenue, product, operations, people, customer, tools, governance |
 | **OS status** | `os/STATUS.md` |
 | **Agent models** | `os/agents/MODEL-ASSIGNMENTS.md` |
 | **How to use agents** | `os/agents/OPENCODE-GUIDE.md` |
@@ -110,7 +110,7 @@ Read in this exact order before any implementation:
 
 ## Business Operating System — Read Before Business Tasks
 
-The company OS lives in **AFFiNE** at `https://affine.commissionk.it` for live document management. The `os/` folder in this repo retains the agent workforce, skills, and status tracking:
+The company OS lives in **AFFiNE** at `https://affine.commissionkit.co` for live document management. The `os/` folder in this repo retains the agent workforce, skills, and status tracking:
 
 - **Agent teams** → `os/agents/` — Agent configurations, model assignments, team workflows
 - **Agent skills** → `.agents/skills/` — 27 specialized skills (content, research, outreach, SEO, documents, compliance, LinkedIn, and more)
@@ -358,6 +358,6 @@ For custom commission engines (e.g., AISSOL), see:
 ## Additional context
 
 - `docs/` has enterprise engine architecture docs.
-- `os/` retains the AI agent workforce (`os/agents/`), business skills (`.agents/skills/`), and status tracking (`os/STATUS.md`). All other company documents (identity, strategy, revenue, product, operations, people, customer, tools, governance) have been migrated to **AFFiNE** at `https://affine.commissionk.it`.
+- `os/` retains the AI agent workforce (`os/agents/`), business skills (`.agents/skills/`), and status tracking (`os/STATUS.md`). All other company documents (identity, strategy, revenue, product, operations, people, customer, tools, governance) have been migrated to **AFFiNE** at `https://affine.commissionkit.co`.
 - `context/` has technical context docs for the codebase.
 - No GitHub Actions CI is configured.

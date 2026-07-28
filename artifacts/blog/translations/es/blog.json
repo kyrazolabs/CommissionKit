@@ -17,5 +17,6 @@
   "leadSuccess": "¡Gracias! Nos pondremos en contacto pronto.",
   "leadFormError": "Algo salió mal. Por favor, inténtalo de nuevo.",
   "leadEmailRequired": "Por favor, introduce tu dirección de email.",
-  "leadNoSpam": "Sin spam. Cancela la suscripción cuando quieras."
+  "leadNoSpam": "Sin spam. Cancela la suscripción cuando quieras.",
+  "readAlso": "Lee también"
 }

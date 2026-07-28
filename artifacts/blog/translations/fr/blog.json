@@ -17,5 +17,6 @@
   "leadSuccess": "Merci ! Nous vous contacterons bientôt.",
   "leadFormError": "Une erreur s'est produite. Veuillez réessayer.",
   "leadEmailRequired": "Veuillez entrer votre adresse email.",
-  "leadNoSpam": "Pas de spam. Désabonnez-vous à tout moment."
+  "leadNoSpam": "Pas de spam. Désabonnez-vous à tout moment.",
+  "readAlso": "À lire aussi"
 }

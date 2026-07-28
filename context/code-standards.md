@@ -233,4 +233,4 @@ Inline per test file or shared helpers:
 
 - Back to entry point: `AGENTS.md`
 - Next in technical series: `context/library-docs.md`
-- Related business context: AFFiNE OS (`https://affine.commissionk.it`)
+- Related business context: AFFiNE OS (`https://affine.commissionkit.co`)

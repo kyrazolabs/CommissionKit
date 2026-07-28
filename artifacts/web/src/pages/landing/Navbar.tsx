@@ -66,7 +66,7 @@ export function Navbar() {
                 <a href="/careers" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Careers</a>
                 <a href="/blog" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Blog</a>
                 <a href="/calculator" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Calculator</a>
-                <a href="https://docs.commissionk.it" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Docs</a>
+                <a href="https://docs.commissionkit.co" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Docs</a>
               </nav>
             </div>
 
@@ -242,7 +242,7 @@ export function Navbar() {
           <a href="/careers" onClick={() => setMobileMenuOpen(false)} className="border-b border-border pb-4">Careers</a>
           <a href="/blog" onClick={() => setMobileMenuOpen(false)} className="border-b border-border pb-4">Blog</a>
           <a href="/calculator" onClick={() => setMobileMenuOpen(false)} className="border-b border-border pb-4">Calculator</a>
-          <a href="https://docs.commissionk.it" onClick={() => setMobileMenuOpen(false)} className="border-b border-border pb-4">Docs</a>
+          <a href="https://docs.commissionkit.co" onClick={() => setMobileMenuOpen(false)} className="border-b border-border pb-4">Docs</a>
         </div>
         <div className="mt-8 flex flex-col gap-3">
           <Button variant="outline" size="lg" asChild className="w-full justify-center">

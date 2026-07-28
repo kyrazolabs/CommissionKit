@@ -129,7 +129,7 @@ These rules govern how the frontend is built and maintained. All components and 
 ## 20. Page Metadata
 
 - Use `react-helmet-async` for `<title>`, `<meta>`, and canonical links.
-- Canonical URL: `https://commissionk.it{path}` with trailing slash normalized.
+- Canonical URL: `https://commissionkit.co{path}` with trailing slash normalized.
 - Page tracking handled by `usePageTrack`.
 
 ## 21. Code Style
@@ -145,4 +145,4 @@ These rules govern how the frontend is built and maintained. All components and 
 
 - Back to entry point: `AGENTS.md`
 - Next in technical series: `context/ui-registry.md`
-- Related business context: AFFiNE OS (`https://affine.commissionk.it`)
+- Related business context: AFFiNE OS (`https://affine.commissionkit.co`)

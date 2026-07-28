@@ -21,8 +21,8 @@ const ApplySchema = z.object({
 
 const router: IRouter = Router();
 
-const APPLY_NOTIFICATION_TO = process.env.APPLY_NOTIFICATION_TO ?? "abdullah@commissionk.it";
-const APPLY_NOTIFICATION_BCC = process.env.APPLY_NOTIFICATION_BCC ?? "sales@commissionk.it";
+const APPLY_NOTIFICATION_TO = process.env.APPLY_NOTIFICATION_TO ?? "abdullah@commissionkit.co";
+const APPLY_NOTIFICATION_BCC = process.env.APPLY_NOTIFICATION_BCC ?? "sales@commissionkit.co";
 
 router.post("/apply", applyRateLimit, async (req, res) => {
   const parsed = ApplySchema.safeParse(req.body);

@@ -209,7 +209,7 @@ export function Pricing() {
               </ul>
             </div>
             <Button size="md" className="font-bold shadow-sm shrink-0" asChild>
-              <a href="mailto:sales@commissionk.it" onClick={() => Analytics.landingPricingCTAClick("business")}>Contact Sales</a>
+              <a href="mailto:sales@commissionkit.co" onClick={() => Analytics.landingPricingCTAClick("business")}>Contact Sales</a>
             </Button>
           </div>
         </div>

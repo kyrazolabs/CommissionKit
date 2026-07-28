@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
   transpilePackages: [],
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "commissionk.it" },
+      { protocol: "https", hostname: "commissionkit.co" },
     ],
   },
   async headers() {

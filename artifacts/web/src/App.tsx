@@ -370,7 +370,7 @@ function CanonicalTag() {
   const canonicalPath = (location === "/home" ? "/" : location).replace(/\/$/, "");
   return (
     <Helmet>
-      <link rel="canonical" href={`https://commissionk.it${canonicalPath}`} />
+      <link rel="canonical" href={`https://commissionkit.co${canonicalPath}`} />
     </Helmet>
   );
 }

@@ -22,6 +22,7 @@ import {
   Settings,
   RefreshCw,
 } from "lucide-react";
+import { Analytics } from "@/lib/analytics";
 
 const FEATURES = [
   {
@@ -149,7 +150,7 @@ export function CustomIntegrationPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild className="font-semibold shadow-sm">
-                <a href="/register">
+                <a href="/register" onClick={() => Analytics.integrationCustomTrialClick("hero")}>
                   Start Free Trial
                   <ArrowRight className="size-4 ml-2" />
                 </a>
@@ -425,7 +426,7 @@ export function CustomIntegrationPage() {
               Configure your custom REST connector in under 30 minutes. Your first 14 days are free.
             </p>
             <Button asChild className="font-semibold shadow-sm">
-              <a href="/register">
+              <a href="/register" onClick={() => Analytics.integrationCustomTrialClick("bottom")}>
                 Start Free Trial
                 <ArrowRight className="size-4 ml-2" />
               </a>

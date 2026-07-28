@@ -1,6 +1,6 @@
 # ═══════════════════════════════════════════════════════════════
 # robots.txt — CommissionKit
-# https://commissionk.it
+# https://commissionkit.co
 # ═══════════════════════════════════════════════════════════════
 
 # As a condition of accessing this website, you agree to abide by the following
@@ -71,8 +71,8 @@ Disallow: /portal/
 Disallow: /app/
 Disallow: /_/
 
-Sitemap: https://commissionk.it/sitemap.xml
-Sitemap: https://commissionk.it/blog/sitemap.xml
+Sitemap: https://commissionkit.co/sitemap.xml
+Sitemap: https://commissionkit.co/blog/sitemap.xml
 
 # ═══════════════════════════════════════════════════════════════
 # AI Crawler Directives — GEO (Generative Engine Optimization)
@@ -83,7 +83,7 @@ Sitemap: https://commissionk.it/blog/sitemap.xml
 # rights against model training. Crawl-delay values are relaxed
 # for AI bots to avoid server load while maintaining discoverability.
 #
-# Structured content inventory for AI agents: https://commissionk.it/llms.txt
+# Structured content inventory for AI agents: https://commissionkit.co/llms.txt
 # ═══════════════════════════════════════════════════════════════
 
 # ── OpenAI ────────────────────────────────────────────────────
@@ -258,5 +258,5 @@ User-agent: CloudflareBrowserRenderingCrawler
 Disallow: /
 
 # ── llms.txt — AI-friendly structured content inventory ───────
-# https://commissionk.it/llms.txt
+# https://commissionkit.co/llms.txt
 # https://llmstxt.org
