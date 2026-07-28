@@ -86,7 +86,7 @@ export function FAQ() {
         <div className="text-center mt-12">
           <p className="text-sm text-muted-foreground font-medium">
             Still have questions?{" "}
-            <a href="mailto:hello@commissionk.it" className="text-primary hover:text-primary/80 underline underline-offset-4">
+            <a href="mailto:hello@commissionkit.co" className="text-primary hover:text-primary/80 underline underline-offset-4">
               We're here to help.
             </a>
           </p>

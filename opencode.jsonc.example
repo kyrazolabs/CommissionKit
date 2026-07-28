@@ -26,7 +26,7 @@
     },
     "twenty": {
       "type": "remote",
-      "url": "https://crm.commissionk.it/mcp"
+      "url": "https://crm.commissionkit.co/mcp"
     },
     "mintlify-docs": {
       "type": "remote",

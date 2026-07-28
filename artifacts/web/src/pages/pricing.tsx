@@ -89,7 +89,7 @@ const FAQ = [
   },
   {
     q: "Do you offer custom plans?",
-    a: "Yes. Our Business plan is fully customizable for larger organizations. Contact our sales team at sales@commissionk.it to discuss your requirements for custom commission engines, SSO, and dedicated infrastructure.",
+    a: "Yes. Our Business plan is fully customizable for larger organizations. Contact our sales team at sales@commissionkit.co to discuss your requirements for custom commission engines, SSO, and dedicated infrastructure.",
   },
   {
     q: "How does billing work?",
@@ -253,7 +253,7 @@ export function PricingPage() {
                 </ul>
               </div>
               <Button size="md" className="font-bold shadow-sm shrink-0" asChild>
-                <a href="mailto:sales@commissionk.it" onClick={() => Analytics.landingPricingCTAClick("business")}>Contact Sales</a>
+                <a href="mailto:sales@commissionkit.co" onClick={() => Analytics.landingPricingCTAClick("business")}>Contact Sales</a>
               </Button>
             </div>
           </div>

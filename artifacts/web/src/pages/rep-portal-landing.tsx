@@ -434,7 +434,7 @@ export function RepPortalLanding() {
         <title>Sales Rep Portal — CommissionKit</title>
         <meta name="description" content="Give every salesperson a login-free dashboard showing their commission earnings, deal-by-deal breakdowns, and payout history. They check it themselves. Your finance team stops answering the same question 40 times a month." />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://commissionk.it/portal" />
+        <link rel="canonical" href="https://commissionkit.co/portal" />
       </Helmet>
 
       <Navbar />
@@ -484,7 +484,7 @@ export function RepPortalLanding() {
                 <div className="size-3 rounded-full bg-amber-400" />
                 <div className="size-3 rounded-full bg-green-400" />
                 <div className="flex-1 mx-3 h-6 rounded bg-background border border-border text-xs text-muted-foreground flex items-center px-3">
-                  commissionk.it/portal/demo
+                  commissionkit.co/portal/demo
                 </div>
               </div>
               {/* Demo content */}

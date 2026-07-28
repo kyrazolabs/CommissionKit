@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { t } from "@/lib/translations";
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://commissionk.it";
+  process.env.NEXT_PUBLIC_API_URL || "https://commissionkit.co";
 
 interface Props {
   lang: string;

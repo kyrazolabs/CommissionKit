@@ -37,7 +37,7 @@ export function FinalCTA() {
             </a>
           </Button>
           <Button variant="outline" asChild className="font-bold bg-background/60 backdrop-blur-sm shadow-sm px-8 text-base h-9" size="md">
-            <a href="mailto:sales@commissionk.it" onClick={() => Analytics.landingCTAClick("final_cta_sales")}>
+            <a href="mailto:sales@commissionkit.co" onClick={() => Analytics.landingCTAClick("final_cta_sales")}>
               Talk to Sales
             </a>
           </Button>

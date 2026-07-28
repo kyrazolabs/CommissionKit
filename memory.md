@@ -23,7 +23,7 @@ Created 8 docs under `02 Revenue Strategy` in AFFiNE (`workspace: dd885096-c02d-
 ### Lead Capture Backend
 - `lib/db/src/schema/leads.ts` — Mongoose `Lead` model: email (unique, indexed), source (hero/calculator), name (optional), ip, userAgent, status (new/contacted/converted/disqualified), metadata, timestamps. Upserts on duplicate email.
 - `lib/db/src/schema/index.ts` — Exports leads schema
-- `artifacts/api/src/routes/leads/routes.ts` — `POST /api/leads`: Zod validation, `leadRateLimit` (5/hr/IP), saves to MongoDB via `findOneAndUpdate` with upsert, sends `leadNotificationTemplate` email via `sendMediumPriorityEmail` to sales@commissionk.it
+- `artifacts/api/src/routes/leads/routes.ts` — `POST /api/leads`: Zod validation, `leadRateLimit` (5/hr/IP), saves to MongoDB via `findOneAndUpdate` with upsert, sends `leadNotificationTemplate` email via `sendMediumPriorityEmail` to sales@commissionkit.co
 - `artifacts/api/src/middleware/rate-limiter.ts` — Added `leadRateLimit` function
 - `lib/email-templates/src/lead.ts` — `leadNotificationTemplate` HTML email
 - `lib/email-templates/src/index.ts` — Exports `leadNotificationTemplate`

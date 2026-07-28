@@ -44,7 +44,7 @@ export function CustomEngine() {
               </p>
             </div>
             <Button size="md" className="font-bold shadow-sm shrink-0" asChild>
-              <a href="mailto:sales@commissionk.it">Talk to Sales</a>
+              <a href="mailto:sales@commissionkit.co">Talk to Sales</a>
             </Button>
           </div>
         </div>

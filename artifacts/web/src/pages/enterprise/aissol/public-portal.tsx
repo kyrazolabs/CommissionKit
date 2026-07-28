@@ -161,7 +161,7 @@ export function EnterprisePublicRepPortal() {
           <p className="text-xs text-muted-foreground">
             <span>{workspaceName || repData?.workspaceName || "Workspace"}</span>
             <span className="mx-1">·</span>
-            <a href="https://commissionk.it" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">CommissionKit</a>
+            <a href="https://commissionkit.co" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">CommissionKit</a>
           </p>
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="sm" onClick={() => setShowProfile(true)} className="h-7 text-xs gap-1 text-muted-foreground"><User className="size-3" /> Password</Button>

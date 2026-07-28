@@ -10,7 +10,7 @@ The AI agent workforce is organized into 5 teams under a single command structur
 | **Development** | `development/` | @forge, @pixel, @vault | Code, UI, infrastructure |
 | **Product** | `product/` | @compass, @pulse, @craft | Roadmap, research, design |
 
-> **All company documentation (identity, strategy, revenue, product, operations, people, customer, tools, governance) has been migrated to AFFiNE OS at `https://affine.commissionk.it`.**
+> **All company documentation (identity, strategy, revenue, product, operations, people, customer, tools, governance) has been migrated to AFFiNE OS at `https://affine.commissionkit.co`.**
 
 ## Agent Configuration
 

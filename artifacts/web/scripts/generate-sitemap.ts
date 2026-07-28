@@ -4,22 +4,22 @@ import { resolve } from "node:path";
 const today = new Date().toISOString().split("T")[0];
 
 const urls = [
-  { loc: "https://commissionk.it/", changefreq: "weekly", priority: "1.0" },
-  { loc: "https://commissionk.it/home", changefreq: "weekly", priority: "0.9" },
-  { loc: "https://commissionk.it/features", changefreq: "monthly", priority: "0.9" },
-  { loc: "https://commissionk.it/solutions", changefreq: "monthly", priority: "0.8" },
-  { loc: "https://commissionk.it/pricing", changefreq: "weekly", priority: "0.9" },
-  { loc: "https://commissionk.it/calculator", changefreq: "monthly", priority: "0.9" },
-  { loc: "https://commissionk.it/contact", changefreq: "monthly", priority: "0.7" },
-  { loc: "https://commissionk.it/privacy", changefreq: "monthly", priority: "0.5" },
-  { loc: "https://commissionk.it/terms", changefreq: "monthly", priority: "0.5" },
-  { loc: "https://commissionk.it/security", changefreq: "monthly", priority: "0.5" },
-  { loc: "https://commissionk.it/integrations/odoo", changefreq: "monthly", priority: "0.9" },
-  { loc: "https://commissionk.it/integrations/hubspot", changefreq: "monthly", priority: "0.9" },
-  { loc: "https://commissionk.it/integrations/salesforce", changefreq: "monthly", priority: "0.9" },
-  { loc: "https://commissionk.it/integrations/custom", changefreq: "monthly", priority: "0.8" },
-  { loc: "https://commissionk.it/portal", changefreq: "monthly", priority: "0.9" },
-  { loc: "https://commissionk.it/careers", changefreq: "monthly", priority: "0.7" },
+  { loc: "https://commissionkit.co/", changefreq: "weekly", priority: "1.0" },
+  { loc: "https://commissionkit.co/home", changefreq: "weekly", priority: "0.9" },
+  { loc: "https://commissionkit.co/features", changefreq: "monthly", priority: "0.9" },
+  { loc: "https://commissionkit.co/solutions", changefreq: "monthly", priority: "0.8" },
+  { loc: "https://commissionkit.co/pricing", changefreq: "weekly", priority: "0.9" },
+  { loc: "https://commissionkit.co/calculator", changefreq: "monthly", priority: "0.9" },
+  { loc: "https://commissionkit.co/contact", changefreq: "monthly", priority: "0.7" },
+  { loc: "https://commissionkit.co/privacy", changefreq: "monthly", priority: "0.5" },
+  { loc: "https://commissionkit.co/terms", changefreq: "monthly", priority: "0.5" },
+  { loc: "https://commissionkit.co/security", changefreq: "monthly", priority: "0.5" },
+  { loc: "https://commissionkit.co/integrations/odoo", changefreq: "monthly", priority: "0.9" },
+  { loc: "https://commissionkit.co/integrations/hubspot", changefreq: "monthly", priority: "0.9" },
+  { loc: "https://commissionkit.co/integrations/salesforce", changefreq: "monthly", priority: "0.9" },
+  { loc: "https://commissionkit.co/integrations/custom", changefreq: "monthly", priority: "0.8" },
+  { loc: "https://commissionkit.co/portal", changefreq: "monthly", priority: "0.9" },
+  { loc: "https://commissionkit.co/careers", changefreq: "monthly", priority: "0.7" },
 ];
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

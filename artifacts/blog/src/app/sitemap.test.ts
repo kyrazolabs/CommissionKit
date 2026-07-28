@@ -8,8 +8,8 @@ process.env.BLOG_ARTICLES_DIR = fs.existsSync(workspaceArticles)
   : path.join(process.cwd(), "artifacts", "blog", "articles");
 
 const { getAllLanguages } = await import("../lib/posts");
-// Use the same default as baseUrl.ts (HOSTNAME not set in test → "commissionk.it")
-const baseUrl = "https://commissionk.it";
+// Use the same default as baseUrl.ts (HOSTNAME not set in test → "commissionkit.co")
+const baseUrl = "https://commissionkit.co";
 
 async function loadSitemap() {
   const { default: sitemap } = await import("../app/sitemap");

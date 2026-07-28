@@ -21,7 +21,7 @@ const PRACTICES = [
     icon: Mail,
     title: "Responsible Disclosure",
     content:
-      "If you believe you have found a security vulnerability in CommissionKit, please contact our security team immediately at security@commissionk.it. We appreciate your help in keeping our community safe.",
+      "If you believe you have found a security vulnerability in CommissionKit, please contact our security team immediately at security@commissionkit.co. We appreciate your help in keeping our community safe.",
   },
 ];
 

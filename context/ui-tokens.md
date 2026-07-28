@@ -171,4 +171,4 @@ Global scrollbar uses `scrollbar-width: thin` and `scrollbar-color: hsl(var(--pr
 
 - Back to entry point: `AGENTS.md`
 - Next in technical series: `context/ui-rules.md`
-- Related business context: AFFiNE OS (`https://affine.commissionk.it`)
+- Related business context: AFFiNE OS (`https://affine.commissionkit.co`)

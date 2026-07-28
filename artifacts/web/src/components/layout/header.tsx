@@ -90,7 +90,7 @@ export function Header({ onToggleMobileSidebar, isMobile }: { onToggleMobileSide
         <Tooltip>
           <TooltipTrigger asChild>
             <a
-              href="mailto:support@commissionk.it"
+              href="mailto:support@commissionkit.co"
               className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
               title="Contact support"
             >

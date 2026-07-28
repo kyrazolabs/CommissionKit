@@ -1,4 +1,4 @@
-export const hostname = process.env.HOSTNAME || "commissionk.it";
+export const hostname = process.env.HOSTNAME || "commissionkit.co";
 export const baseUrl = `https://${hostname}`;
 
 /** Only prefixes with baseUrl if the URL is not already absolute. */

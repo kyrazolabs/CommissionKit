@@ -336,15 +336,15 @@ For each article page, generate:
 
 ```html
 <!-- Self-referencing canonical -->
-<link rel="canonical" href="https://commissionk.it/blog/en/welcome-to-commissionkit" />
+<link rel="canonical" href="https://commissionkit.co/blog/en/welcome-to-commissionkit" />
 
 <!-- hreflang for each available translation -->
-<link rel="alternate" hreflang="en" href="https://commissionk.it/blog/en/welcome-to-commissionkit" />
-<link rel="alternate" hreflang="es" href="https://commissionk.it/blog/es/welcome-to-commissionkit" />
-<link rel="alternate" hreflang="ar" href="https://commissionk.it/blog/ar/welcome-to-commissionkit" />
+<link rel="alternate" hreflang="en" href="https://commissionkit.co/blog/en/welcome-to-commissionkit" />
+<link rel="alternate" hreflang="es" href="https://commissionkit.co/blog/es/welcome-to-commissionkit" />
+<link rel="alternate" hreflang="ar" href="https://commissionkit.co/blog/ar/welcome-to-commissionkit" />
 
 <!-- x-default: points to English version -->
-<link rel="alternate" hreflang="x-default" href="https://commissionk.it/blog/en/welcome-to-commissionkit" />
+<link rel="alternate" hreflang="x-default" href="https://commissionkit.co/blog/en/welcome-to-commissionkit" />
 ```
 
 ### Rules
@@ -361,9 +361,9 @@ For each article page, generate:
 The blog index page at `/blog` (or `/blog/en`):
 
 ```html
-<link rel="alternate" hreflang="en" href="https://commissionk.it/blog/en" />
-<link rel="alternate" hreflang="es" href="https://commissionk.it/blog/es" />
-<link rel="alternate" hreflang="x-default" href="https://commissionk.it/blog" />
+<link rel="alternate" hreflang="en" href="https://commissionkit.co/blog/en" />
+<link rel="alternate" hreflang="es" href="https://commissionkit.co/blog/es" />
+<link rel="alternate" hreflang="x-default" href="https://commissionkit.co/blog" />
 ```
 
 ---

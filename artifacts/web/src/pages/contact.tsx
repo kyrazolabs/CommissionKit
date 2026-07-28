@@ -18,7 +18,7 @@ export function ContactPage() {
 
           <div className="grid gap-6 md:grid-cols-2 mb-16">
             <a
-              href="mailto:sales@commissionk.it"
+              href="mailto:sales@commissionkit.co"
               className="flex items-start gap-4 p-6 rounded-xl border border-border bg-card hover:border-primary/30 transition-colors group"
             >
               <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary/15 transition-colors">
@@ -26,13 +26,13 @@ export function ContactPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Sales</h3>
-                <p className="text-sm text-muted-foreground">sales@commissionk.it</p>
+                <p className="text-sm text-muted-foreground">sales@commissionkit.co</p>
                 <p className="text-xs text-muted-foreground/70 mt-1">Inquiries about plans, pricing, and demos.</p>
               </div>
             </a>
 
             <a
-              href="mailto:support@commissionk.it"
+              href="mailto:support@commissionkit.co"
               className="flex items-start gap-4 p-6 rounded-xl border border-border bg-card hover:border-primary/30 transition-colors group"
             >
               <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary/15 transition-colors">
@@ -40,7 +40,7 @@ export function ContactPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Support</h3>
-                <p className="text-sm text-muted-foreground">support@commissionk.it</p>
+                <p className="text-sm text-muted-foreground">support@commissionkit.co</p>
                 <p className="text-xs text-muted-foreground/70 mt-1">Technical help and troubleshooting.</p>
               </div>
             </a>
