@@ -112,6 +112,13 @@ export default async function LangLayout({ children, params }: LayoutProps) {
 
   return (
     <html lang={lang} dir={dir} suppressHydrationWarning>
+      <head>
+        <script
+          defer
+          src="https://a.commissionk.it/script.js"
+          data-website-id="69d72e35-987d-4855-a00f-b193ade7a494"
+        />
+      </head>
       <body>
         <ThemeProvider
           attribute="class"

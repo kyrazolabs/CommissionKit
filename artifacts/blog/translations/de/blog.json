@@ -17,5 +17,6 @@
   "leadSuccess": "Danke! Wir melden uns in Kürze.",
   "leadFormError": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
   "leadEmailRequired": "Bitte geben Sie Ihre E-Mail-Adresse ein.",
-  "leadNoSpam": "Kein Spam. Jederzeit abbestellbar."
+  "leadNoSpam": "Kein Spam. Jederzeit abbestellbar.",
+  "readAlso": "Lesen Sie auch"
 }

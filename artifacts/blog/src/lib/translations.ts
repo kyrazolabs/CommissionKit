@@ -36,6 +36,7 @@ export interface Translations {
   leadFormError: string;
   leadEmailRequired: string;
   leadNoSpam: string;
+  readAlso: string;
   selectLanguage: string;
   filterByLanguage: string;
   all: string;

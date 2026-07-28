@@ -11,7 +11,8 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
 import { LanguagePills } from "@/components/language-pills";
 import { FallbackBanner } from "@/components/fallback-banner";
-import { BlogLeadCapture } from "@/components/blog-lead-capture";
+import { RelatedArticles } from "@/components/related-articles";
+import { FunnelCTA } from "@/components/funnel-cta";
 import { baseUrl, makeAbsolute } from "@/lib/baseUrl";
 import { cn } from "@/lib/utils";
 
@@ -217,7 +218,11 @@ export default async function BlogPost({ params }: Props) {
           <MDXRemote source={post.content} options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }} />
         </div>
 
-        <BlogLeadCapture lang={lang} />
+        {post.tags && post.tags.length > 0 && (
+          <RelatedArticles slug={slug} tags={post.tags} lang={lang} t={dict} />
+        )}
+
+        <FunnelCTA slug={slug} tags={post.tags || []} lang={lang} />
 
         <div className="mt-16 pt-8 border-t border-border">
           <div className="flex items-center justify-between">

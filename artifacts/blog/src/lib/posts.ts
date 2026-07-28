@@ -206,6 +206,35 @@ export function getAllLanguages(): string[] {
   return [...languages].sort();
 }
 
+export function getRelatedPosts(
+  slug: string,
+  tags: string[],
+  lang: string,
+  limit = 3,
+): BlogPost[] {
+  if (!tags.length) return [];
+
+  const allPosts = getAllPosts(lang);
+
+  // Filter out the current post and match by shared tags
+  const scored = allPosts
+    .filter((p) => p.slug !== slug)
+    .map((p) => {
+      const sharedTags = (p.tags || []).filter((t) => tags.includes(t));
+      return { post: p, sharedCount: sharedTags.length };
+    })
+    .filter((s) => s.sharedCount > 0)
+    .sort((a, b) => {
+      // Primary: shared tag count descending
+      const tagDiff = b.sharedCount - a.sharedCount;
+      if (tagDiff !== 0) return tagDiff;
+      // Secondary: most recent first
+      return new Date(b.post.date).getTime() - new Date(a.post.date).getTime();
+    });
+
+  return scored.slice(0, limit).map((s) => s.post);
+}
+
 export function findArticleDir(slug: string): string | null {
   if (!fs.existsSync(ARTICLES_DIR)) return null;
 

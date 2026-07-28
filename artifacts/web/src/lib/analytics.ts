@@ -122,6 +122,11 @@ export const Analytics = {
   integrationConnectOpened(provider: string) { track("integration_connect_opened", { provider }); },
   integrationConnected(provider: string) { track("integration_connected", { provider }); },
   integrationDisconnected(provider: string) { track("integration_disconnected", { provider }); },
+  integrationTrialClick(provider: string, location: string) { track("integration_trial_click", { provider, location }); },
+  integrationOdooTrialClick(location: string) { track("integration_odoo_trial_click", { location }); },
+  integrationHubspotTrialClick(location: string) { track("integration_hubspot_trial_click", { location }); },
+  integrationSalesforceTrialClick(location: string) { track("integration_salesforce_trial_click", { location }); },
+  integrationCustomTrialClick(location: string) { track("integration_custom_trial_click", { location }); },
 
   // ── Enterprise / Aissol ───────────────────────────────────────────────
   enterpriseProjectsView() { track("enterprise_projects_view"); },
