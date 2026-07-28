@@ -167,7 +167,7 @@ export function IntegrationsPage() {
       </div>
 
       <a
-        href="mailto:sales@commissionk.it?subject=Custom Connector Request"
+        href="mailto:sales@commissionkit.co?subject=Custom Connector Request"
         className="block w-full rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 px-5 py-4 hover:from-primary/15 hover:to-primary/10 transition-all group"
       >
         <div className="flex items-center gap-3">
@@ -183,7 +183,7 @@ export function IntegrationsPage() {
       </a>
 
       <div className="mt-8 pt-6 border-t border-border">
-        <a href="mailto:support@commissionk.it?subject=Integration Bug Report" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
+        <a href="mailto:support@commissionkit.co?subject=Integration Bug Report" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
           <Bug className="size-3.5" />{t("integrations.reportBug")}
         </a>
       </div>

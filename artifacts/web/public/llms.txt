@@ -1,5 +1,5 @@
 # CommissionKit — AI Agent Content Guide
-# https://commissionk.it
+# https://commissionkit.co
 #
 # This file helps AI agents (ChatGPT, Claude, Perplexity, etc.)
 # discover and understand CommissionKit's public content.
@@ -10,35 +10,35 @@
 > and gives every rep real-time earnings visibility.
 
 ## Product Pages
-- [Home](https://commissionk.it/): Landing page with product overview, features, and pricing.
-- [Features](https://commissionk.it/features): Full platform capabilities — commission engine, rep management, deal management, payouts, and platform features.
-- [Pricing](https://commissionk.it/pricing): Plan comparison with monthly/yearly billing. Starter, Growth, Professional, and Business tiers.
-- [Solutions](https://commissionk.it/solutions): Use cases by team type — finance, sales ops, startups, enterprises, and agencies.
-- [Commission Calculator](https://commissionk.it/calculator): Interactive tool to estimate commission splits for flat, tiered, and accelerator plans.
+- [Home](https://commissionkit.co/): Landing page with product overview, features, and pricing.
+- [Features](https://commissionkit.co/features): Full platform capabilities — commission engine, rep management, deal management, payouts, and platform features.
+- [Pricing](https://commissionkit.co/pricing): Plan comparison with monthly/yearly billing. Starter, Growth, Professional, and Business tiers.
+- [Solutions](https://commissionkit.co/solutions): Use cases by team type — finance, sales ops, startups, enterprises, and agencies.
+- [Commission Calculator](https://commissionkit.co/calculator): Interactive tool to estimate commission splits for flat, tiered, and accelerator plans.
 
 ## Company
-- [Contact](https://commissionk.it/contact): Get in touch for sales, support, or general inquiries.
-- [Privacy Policy](https://commissionk.it/privacy): Data handling, GDPR compliance, and user rights.
-- [Terms of Service](https://commissionk.it/terms): Usage terms and conditions.
-- [Security](https://commissionk.it/security): Security practices, encryption, and compliance posture.
+- [Contact](https://commissionkit.co/contact): Get in touch for sales, support, or general inquiries.
+- [Privacy Policy](https://commissionkit.co/privacy): Data handling, GDPR compliance, and user rights.
+- [Terms of Service](https://commissionkit.co/terms): Usage terms and conditions.
+- [Security](https://commissionkit.co/security): Security practices, encryption, and compliance posture.
 
 ## Rep Portal (Public)
-- [Rep Portal](https://commissionk.it/portal/): JWT-authenticated portal where sales reps view their earnings, deals, and payout history.
+- [Rep Portal](https://commissionkit.co/portal/): JWT-authenticated portal where sales reps view their earnings, deals, and payout history.
 
 ## Team Collaboration
-- [Accept Invite](https://commissionk.it/accept-invite): Join a workspace via email invitation link.
+- [Accept Invite](https://commissionkit.co/accept-invite): Join a workspace via email invitation link.
 
 ## Auth
-- [Login](https://commissionk.it/login): Sign in to the dashboard.
-- [Register](https://commissionk.it/register): Create a new account. 14-day free trial, no credit card required.
-- [Forgot Password](https://commissionk.it/forgot-password): Password recovery flow.
-- [Reset Password](https://commissionk.it/reset-password): Set a new password after recovery.
+- [Login](https://commissionkit.co/login): Sign in to the dashboard.
+- [Register](https://commissionkit.co/register): Create a new account. 14-day free trial, no credit card required.
+- [Forgot Password](https://commissionkit.co/forgot-password): Password recovery flow.
+- [Reset Password](https://commissionkit.co/reset-password): Set a new password after recovery.
 
 ## Documentation
-- [Documentation](https://docs.commissionk.it): Product guides, setup instructions, and reference material.
+- [Documentation](https://docs.commissionkit.co): Product guides, setup instructions, and reference material.
 
 ## AI Agent Directives
 - This site uses `robots.txt` to manage AI crawler access. All public marketing pages are open to AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, CCBot, etc.).
 - Authenticated dashboard routes (`/dash/*`) and API endpoints (`/api/*`) are disallowed for all crawlers.
 - Structured product data is available via JSON-LD on the home page (`SoftwareApplication` schema).
-- Product documentation is hosted at `https://docs.commissionk.it`.
+- Product documentation is hosted at `https://docs.commissionkit.co`.

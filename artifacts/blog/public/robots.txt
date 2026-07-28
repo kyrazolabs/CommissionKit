@@ -1,5 +1,5 @@
 # CommissionKit Blog — robots.txt
-# https://commissionk.it/blog
+# https://commissionkit.co/blog
 # 
 # AI crawler directives mirror the main site policy:
 # - search=yes: search engines may index
@@ -34,4 +34,4 @@ Disallow: /blog/_next/
 Disallow: /blog/api/
 Crawl-delay: 1
 
-Sitemap: https://commissionk.it/blog/sitemap.xml
+Sitemap: https://commissionkit.co/blog/sitemap.xml

@@ -131,7 +131,7 @@ describe("POST /api/leads", () => {
     expect(sendEmailMock).toHaveBeenCalledTimes(1);
 
     const callArgs = sendEmailMock.mock.calls[0][0];
-    expect(callArgs.to).toBe("sales@commissionk.it");
+    expect(callArgs.to).toBe("sales@commissionkit.co");
     expect(callArgs.subject).toBe("New Lead — hero");
     expect(callArgs.html).toContain("jane@example.com");
     expect(callArgs.html).toContain("hero");

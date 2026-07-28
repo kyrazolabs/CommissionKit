@@ -14,7 +14,7 @@ const LeadSchema = z.object({
 
 const router: IRouter = Router();
 
-const LEAD_NOTIFICATION_TO = process.env.LEAD_NOTIFICATION_TO ?? "sales@commissionk.it";
+const LEAD_NOTIFICATION_TO = process.env.LEAD_NOTIFICATION_TO ?? "sales@commissionkit.co";
 
 function getClientIp(req: Request): string {
   const forwarded = req.headers["x-forwarded-for"];

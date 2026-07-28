@@ -310,4 +310,4 @@ flowchart TD
 
 - Back to entry point: `AGENTS.md`
 - Next in technical series: `context/ui-tokens.md`
-- Related business context: AFFiNE OS (`https://affine.commissionk.it`)
+- Related business context: AFFiNE OS (`https://affine.commissionkit.co`)

@@ -26,7 +26,7 @@ interface PageMeta {
 const APP_NAME = "CommissionKit — Sales Commission Platform";
 const DEFAULT_DESCRIPTION = "Automate sales commissions for your team. Track reps, deals, and payouts — all in one place.";
 
-const BASE_URL = "https://commissionk.it";
+const BASE_URL = "https://commissionkit.co";
 
 const ROBOTS_DIRECTIVE = import.meta.env.VITE_STAGING ? "noindex, nofollow" : "index, follow";
 

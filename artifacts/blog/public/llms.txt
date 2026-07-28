@@ -1,5 +1,5 @@
 # CommissionKit Blog — AI Agent Content Guide
-# https://commissionk.it/blog
+# https://commissionkit.co/blog
 # Standard: https://llmstxt.org
 
 ## CommissionKit Blog
@@ -7,11 +7,11 @@
 > and revenue operations. Powered by Ghost CMS.
 
 ## Pages
-- [Blog Home](https://commissionk.it/blog): Latest articles on commission management, sales operations, and revenue strategy.
-- [Blog RSS](https://commissionk.it/blog/rss.xml): Subscribe to new articles via RSS feed.
+- [Blog Home](https://commissionkit.co/blog): Latest articles on commission management, sales operations, and revenue strategy.
+- [Blog RSS](https://commissionkit.co/blog/rss.xml): Subscribe to new articles via RSS feed.
 
 ## AI Agent Directives
 - All blog content is open to AI crawlers for search and grounding/retrieval.
 - AI model training on blog content is expressly reserved (ai-train=no per robots.txt).
 - Each post has full Open Graph, Twitter Card, and JSON-LD structured data.
-- Sitemap available at https://commissionk.it/blog/sitemap.xml
+- Sitemap available at https://commissionkit.co/blog/sitemap.xml

@@ -31,7 +31,7 @@ CommissionKit is a B2B SaaS platform for sales commission management.
 
 The company operating system has been migrated to **AFFiNE** for live collaborative document management. All company documents (identity, strategy, revenue, product, operations, people, customer, tools, governance) live at:
 
-> **https://affine.commissionk.it**
+> **https://affine.commissionkit.co**
 
 This repo's `os/` folder retains only operational files:
 
@@ -54,7 +54,7 @@ graph TD
     AGENTS --> SKILLS[".agents/skills/<br/>Agent Skills"]
     AGENTS --> TECHSKILLS[".opencode/skills/<br/>Technical Skills"]
     AGENTS --> STATUS["os/STATUS.md<br/>Progress"]
-    AFFINE["AFFiNE OS<br/>affine.commissionk.it"] --> COMPANY["Company Docs"]
+    AFFINE["AFFiNE OS<br/>affine.commissionkit.co"] --> COMPANY["Company Docs"]
     AFFINE --> STRATEGY["Strategy Docs"]
     AFFINE --> REVENUE["Revenue Docs"]
     AFFINE --> PRODUCT["Product Docs"]
@@ -121,4 +121,4 @@ All 8 departments have foundational content in AFFiNE. Each department is active
 - Back to entry point: `AGENTS.md`
 - Next: `os/STATUS.md`
 - Agent teams: `os/agents/`
-- Open AFFiNE OS: `https://affine.commissionk.it`
+- Open AFFiNE OS: `https://affine.commissionkit.co`

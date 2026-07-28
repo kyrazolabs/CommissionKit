@@ -95,7 +95,7 @@ sudo ln -sf /etc/nginx/sites-available/ckdev /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-Access at `https://ckdev.commissionk.it` (or `https://<server-ip>`). The checked-in config uses self-signed certificate paths (`/etc/nginx/ssl/ckdev/`) for the dev preview; replace them with trusted certificates (e.g. Let's Encrypt) for trusted access.
+Access at `https://ckdev.commissionkit.co` (or `https://<server-ip>`). The checked-in config uses self-signed certificate paths (`/etc/nginx/ssl/ckdev/`) for the dev preview; replace them with trusted certificates (e.g. Let's Encrypt) for trusted access.
 
 ## 5. Code Generation
 
@@ -237,4 +237,4 @@ See `docs/enterprise-engine-architecture.md` for full specification.
 
 - Back to entry point: `AGENTS.md`
 - Next in technical series: `context/progress-tracker.md`
-- Related business context: AFFiNE OS (`https://affine.commissionk.it`)
+- Related business context: AFFiNE OS (`https://affine.commissionkit.co`)

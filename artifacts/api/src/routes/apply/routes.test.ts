@@ -83,8 +83,8 @@ describe("POST /api/apply", () => {
     expect(sendEmailMock).toHaveBeenCalledTimes(1);
 
     const callArgs = sendEmailMock.mock.calls[0][0];
-    expect(callArgs.to).toBe("abdullah@commissionk.it");
-    expect(callArgs.bcc).toBe("sales@commissionk.it");
+    expect(callArgs.to).toBe("abdullah@commissionkit.co");
+    expect(callArgs.bcc).toBe("sales@commissionkit.co");
     expect(callArgs.subject).toContain("Jane Doe");
     expect(callArgs.subject).toContain("sales-representative");
     expect(callArgs.html).toContain("jane@example.com");

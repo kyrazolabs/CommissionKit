@@ -65,13 +65,13 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:support@commissionk.it"
+        "href": "mailto:support@commissionkit.co"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://commissionk.it/dash"
+      "href": "https://commissionkit.co/dash"
     }
   }
 }

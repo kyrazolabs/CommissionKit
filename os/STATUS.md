@@ -119,4 +119,4 @@ This tracker shows the current state of every part of the CommissionKit OS.
 
 - Back to entry point: `AGENTS.md`
 - Full OS overview: `os/README.md`
-- Open AFFiNE OS: `https://affine.commissionk.it` — all company docs live here
+- Open AFFiNE OS: `https://affine.commissionkit.co` — all company docs live here
