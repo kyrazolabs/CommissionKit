@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { getAllSlugs, getAllLanguages } from "../src/lib/posts";
@@ -5,7 +7,27 @@ import { getAllSlugs, getAllLanguages } from "../src/lib/posts";
 const hostname = process.env.HOSTNAME || "commissionkit.co";
 const baseUrl = `https://${hostname}`;
 
+const ARTICLES_DIR = process.env.BLOG_ARTICLES_DIR
+  ? path.resolve(process.env.BLOG_ARTICLES_DIR)
+  : path.join(process.cwd(), "articles");
+
 const today = new Date().toISOString().split("T")[0];
+
+/** Get the YYYY-MM-DD date from the article's parent directory. */
+function getSlugDate(slug: string): string | null {
+  if (!fs.existsSync(ARTICLES_DIR)) return null;
+  const dateEntries = fs.readdirSync(ARTICLES_DIR, { withFileTypes: true });
+  for (const dateEntry of dateEntries) {
+    if (!dateEntry.isDirectory()) continue;
+    const match = dateEntry.name.match(/^(\d{4}-\d{2}-\d{2})/);
+    if (!match) continue;
+    const slugDir = path.join(ARTICLES_DIR, dateEntry.name, slug);
+    if (fs.existsSync(slugDir) && fs.statSync(slugDir).isDirectory()) {
+      return match[1];
+    }
+  }
+  return null;
+}
 
 function alternatesXml(
   languages: string[],
@@ -31,23 +53,19 @@ function buildSitemapXml(): string {
     entries.push(`  <url>
     <loc>${baseUrl}/blog/${lang}</loc>
     <lastmod>${today}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
 ${alts}
   </url>`);
   }
 
-  // Post pages (e.g. /blog/en/some-post)
+  // Post pages (e.g. /blog/en/some-post) — use real article dates
   const slugs = getAllSlugs();
   for (const { slug, languages: postLangs } of slugs) {
+    const date = getSlugDate(slug) || today;
     for (const lang of postLangs) {
-      const priority = lang === "en" ? "0.9" : "0.8";
       const alts = alternatesXml(postLangs, (l) => `${baseUrl}/blog/${l}/${slug}`);
       entries.push(`  <url>
     <loc>${baseUrl}/blog/${lang}/${slug}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>${priority}</priority>
+    <lastmod>${date}</lastmod>
 ${alts}
   </url>`);
     }
@@ -64,5 +82,5 @@ const xml = buildSitemapXml();
 const outPath = resolve(import.meta.dirname, "../public/sitemap.xml");
 writeFileSync(outPath, xml);
 console.log(
-  `[sitemap] Generated blog sitemap.xml (${xml.split("\n").length} lines, lastmod: ${today})`,
+  `[sitemap] Generated blog sitemap.xml (${xml.split("\n").length} lines)`,
 );
