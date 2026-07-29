@@ -64,7 +64,7 @@ cspell.json
 opencode.jsonc
 
 # Sitemap files — generated at build time, not tracked
-**/public/sitemap.xml
+**/sitemap*.xml*
 
 # Electrobun build output
 build/
