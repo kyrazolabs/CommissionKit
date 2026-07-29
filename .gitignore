@@ -63,6 +63,9 @@ cspell.json
 # opencode config — local env var placeholders, do not commit local overrides
 opencode.jsonc
 
+# Sitemap files — generated at build time, not tracked
+**/public/sitemap.xml
+
 # Electrobun build output
 build/
 *.asar
