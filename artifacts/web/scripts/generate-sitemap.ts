@@ -2,8 +2,9 @@ import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const today = new Date().toISOString().split("T")[0];
+const publicDir = resolve(import.meta.dirname, "../public");
 
-const urls = [
+const pages = [
   { loc: "https://commissionkit.co/", changefreq: "weekly", priority: "1.0" },
   { loc: "https://commissionkit.co/home", changefreq: "weekly", priority: "0.9" },
   { loc: "https://commissionkit.co/features", changefreq: "monthly", priority: "0.9" },
@@ -22,21 +23,38 @@ const urls = [
   { loc: "https://commissionkit.co/careers", changefreq: "monthly", priority: "0.7" },
 ];
 
-const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+// 1. Generate sitemap-pages.xml (the actual page URL entries)
+const pagesXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls
+${pages
   .map(
     (u) => `  <url>
     <loc>${u.loc}</loc>
     <lastmod>${today}</lastmod>
     <changefreq>${u.changefreq}</changefreq>
     <priority>${u.priority}</priority>
-  </url>`
+  </url>`,
   )
   .join("\n")}
 </urlset>
 `;
 
-const outPath = resolve(import.meta.dirname, "../public/sitemap.xml");
-writeFileSync(outPath, sitemap);
-console.log(`[sitemap] Generated sitemap.xml with ${urls.length} URLs (lastmod: ${today})`);
+writeFileSync(resolve(publicDir, "sitemap-pages.xml"), pagesXml);
+console.log(`[sitemap] Generated sitemap-pages.xml with ${pages.length} URLs`);
+
+// 2. Generate sitemap.xml as a sitemap index
+const indexXml = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://commissionkit.co/sitemap-pages.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://commissionkit.co/blog/sitemap.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+</sitemapindex>
+`;
+
+writeFileSync(resolve(publicDir, "sitemap.xml"), indexXml);
+console.log(`[sitemap] Generated sitemap.xml (index with 2 sub-sitemaps, lastmod: ${today})`);
