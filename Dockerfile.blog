@@ -53,6 +53,7 @@ WORKDIR /app
 # Copy built Next.js standalone output
 COPY --from=builder /app/artifacts/blog/.next/standalone ./
 COPY --from=builder /app/artifacts/blog/.next/static ./artifacts/blog/.next/static
+COPY --from=builder /app/artifacts/blog/public ./artifacts/blog/public
 COPY --from=builder /app/artifacts/blog/public/ /usr/share/nginx/html/
 COPY --from=builder /app/artifacts/blog/articles ./articles
 

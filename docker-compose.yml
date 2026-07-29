@@ -77,7 +77,7 @@ services:
       dockerfile: Dockerfile.blog
     container_name: blog
     expose:
-      - "3000"
+      - "80"
     restart: unless-stopped
     mem_limit: 512m
     mem_reservation: 256m
