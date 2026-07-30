@@ -1,4 +1,5 @@
 import { ApiKey } from "@workspace/db";
+import { connectDB } from "@workspace/db";
 import { verifyKey } from "../../lib/api-keys";
 import type { WorkspaceContext } from "./context";
 
@@ -34,5 +35,36 @@ export async function resolveWorkspaceFromApiKey(
 
   await ApiKey.findByIdAndUpdate(matchedKey._id, { lastUsedAt: new Date() });
 
-  return { workspaceId: matchedKey.workspaceId.toString() };
+  // Resolve the API key's creator user for audit trail attribution.
+  let creatorUserId = "";
+  let creatorName = "";
+  let creatorEmail = "";
+  if (matchedKey.createdBy) {
+    try {
+      const conn = await connectDB();
+      const db = (conn as any)?.connection?.db ?? (conn as any)?.db;
+      if (db) {
+        const creator = await db.collection("user").findOne(
+          { _id: matchedKey.createdBy },
+          { projection: { _id: 1, name: 1, email: 1 } },
+        );
+        if (creator) {
+          creatorUserId = creator._id?.toString() ?? creator.id ?? "";
+          creatorName = creator.name ?? "";
+          creatorEmail = creator.email ?? "";
+        }
+      }
+    } catch {
+      // Non-critical — proceed without creator info if lookup fails.
+    }
+  }
+
+  return {
+    workspaceId: matchedKey.workspaceId.toString(),
+    permissions: matchedKey.permissions || ["read:all"],
+    creatorUserId,
+    creatorName,
+    creatorEmail,
+    apiKeyName: matchedKey.name ?? "Unnamed Key",
+  };
 }

@@ -8,7 +8,8 @@
     "workspace": "Workspace",
     "notifications": "Notifications",
     "security": "Security",
-    "roles": "Roles & Permissions"
+    "roles": "Roles & Permissions",
+    "apiKeys": "API Keys"
   },
   "account": {
     "title": "Account",
@@ -103,5 +104,49 @@
     "sessionTimeout": "Session timeout",
     "sessionTimeoutDescription": "Automatically sign out after inactivity.",
     "eightHours": "8 hours"
+  },
+  "apiKeys": {
+    "title": "API Keys",
+    "description": "Create and manage API keys to connect AI assistants, scripts, and external tools to your workspace.",
+    "createButton": "Create API Key",
+    "createDescription": "Create a new API key for programmatic access to your workspace.",
+    "createConfirm": "Create Key",
+    "createFailed": "Failed to create API key",
+    "emptyTitle": "No API keys",
+    "emptyDescription": "Create an API key to connect AI assistants, scripts, and external tools to your workspace.",
+    "loadError": "Failed to load API keys",
+    "name": "Name",
+    "prefix": "Key Prefix",
+    "permissions": "Permissions",
+    "created": "Created",
+    "lastUsed": "Last Used",
+    "actions": "Actions",
+    "revokeConfirm": "Revoke API key",
+    "revokeConfirmDescription": "This will immediately block all access using this key. This action cannot be undone.",
+    "revoked": "API key revoked",
+    "revokeFailed": "Failed to revoke API key",
+    "keyCreated": "API Key Created",
+    "keyCreatedDescription": "Copy this key now. You will not be able to see it again.",
+    "copyWarning": "Copy this key now — it will not be shown again",
+    "keyNameLabel": "Key Name",
+    "keyNamePlaceholder": "e.g. AI Assistant, CLI Tool",
+    "permissionsLabel": "Permissions",
+    "permissionsPlaceholder": "read:all, write:all",
+    "expiresLabel": "Expires (optional)",
+    "expiresPlaceholder": "YYYY-MM-DD",
+    "never": "Never",
+    "copied": "Key copied to clipboard",
+    "copyFailed": "Failed to copy to clipboard",
+    "copyFirst": "Copy key to continue",
+    "permissions": {
+      "readAll": "Read all data",
+      "readAllDesc": "View deals, reps, runs, payouts, and dashboards",
+      "writeDeals": "Write deals",
+      "writeDealsDesc": "Create and manage sales deals",
+      "writeReps": "Write reps",
+      "writeRepsDesc": "Create and manage sales representatives",
+      "writeRuns": "Write runs",
+      "writeRunsDesc": "Create commission calculation runs"
+    }
   }
 }

@@ -32,6 +32,7 @@ class DealTools {
       page: z.number().int().min(1).optional().default(1),
       limit: z.number().int().min(1).max(100).optional().default(50),
     }, async ({ status, repId, paymentStatus, page, limit }) => {
+      requirePermission(ctx, "read:deals", "list_deals");
       const conditions: any = { workspaceId: wsObjectId };
       if (status) conditions.stage = status;
       if (repId) conditions.repId = new Types.ObjectId(repId);
@@ -60,6 +61,7 @@ class DealTools {
     server.tool("get_deal", "Get a single deal by ID", {
       dealId: z.string().describe("The deal ID"),
     }, async ({ dealId }) => {
+      requirePermission(ctx, "read:deals", "get_deal");
       const deal = await Deal.findOne({ _id: new Types.ObjectId(dealId), workspaceId: wsObjectId })
         .populate("repId", "name email").lean();
 
@@ -116,6 +118,7 @@ class DealTools {
     server.tool("search_deals", "Search deals by name or customer", {
       query: z.string().min(1).max(100).describe("Search term (matched against deal name)"),
     }, async ({ query }) => {
+      requirePermission(ctx, "read:deals", "search_deals");
       const deals = await Deal.find({ workspaceId: wsObjectId, name: new RegExp(query, "i") })
         .populate("repId", "name email").sort({ createdAt: -1 }).limit(25).lean();
 

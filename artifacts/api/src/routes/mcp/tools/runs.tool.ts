@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 import { z } from "zod/v4";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { WorkspaceContext } from "../context";
+import { requirePermission } from "../guard";
 import { enqueueCommissionCalc } from "@workspace/queue";
 
 function currentPeriod(): string {
@@ -26,10 +27,11 @@ class RunTools {
     const wsObjectId = new Types.ObjectId(ctx.workspaceId);
 
     server.tool("list_runs", "List commission calculation runs", {
-      status: z.string().optional().describe("Filter by status (pending, processing, completed, failed)"),
+      status: z.enum(["pending", "processing", "completed", "failed"]).optional().describe("Filter by run status"),
       page: z.number().int().min(1).optional().default(1),
       limit: z.number().int().min(1).max(100).optional().default(50),
     }, async ({ status, page, limit }) => {
+      requirePermission(ctx, "read:runs", "list_runs");
       const conditions: any = { workspaceId: wsObjectId };
       if (status) conditions.status = status;
 
@@ -53,6 +55,7 @@ class RunTools {
     server.tool("get_run", "Get details of a commission calculation run including results", {
       runId: z.string().describe("The run ID"),
     }, async ({ runId }) => {
+      requirePermission(ctx, "read:runs", "get_run");
       const run = await CommissionRun.findOne({ _id: new Types.ObjectId(runId), workspaceId: wsObjectId }).lean();
       if (!run) return { content: [{ type: "text", text: JSON.stringify({ error: "Run not found" }) }] };
 
@@ -82,8 +85,10 @@ class RunTools {
 
     server.tool("create_run", "Trigger a commission calculation for a given period", {
       period: z.string().optional().describe("Period in YYYY-MM format (default: current month)"),
-      paymentStatuses: z.array(z.string()).optional().describe("Filter deals by payment status"),
+      paymentStatuses: z.array(z.enum(["unpaid", "paid", "partial", "on_hold"])).optional().describe("Filter deals by payment status"),
     }, async ({ period, paymentStatuses }) => {
+      requirePermission(ctx, "write:runs", "create_run");
+
       const runPeriod = period || currentPeriod();
 
       const existing = await CommissionRun.findOne({

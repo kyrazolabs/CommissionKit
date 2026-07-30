@@ -2,6 +2,7 @@ import { CommissionRun, CommissionResult, Rep, Workspace } from "@workspace/db";
 import { Types } from "mongoose";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { WorkspaceContext } from "../context";
+import { requirePermission } from "../guard";
 import { convertCurrency } from "../../../lib/exchange";
 
 function currentPeriod(): string {
@@ -26,6 +27,7 @@ class DashboardTools {
 
     server.tool("get_dashboard_summary", "Get a dashboard summary with KPIs for the current period", {},
     async () => {
+      requirePermission(ctx, "read:dashboard", "get_dashboard_summary");
       const period = currentPeriod();
 
       const [workspace, totalReps, latestRun] = await Promise.all([

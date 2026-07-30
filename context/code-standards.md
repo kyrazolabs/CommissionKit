@@ -169,6 +169,16 @@ router.post("/reps", ...requirePermission("reps", "create"), async (req, res) =>
 - Generated React Query hooks + types.
 - `custom-fetch.ts` configures base URL, workspace ID, and auth token getter.
 
+## MCP Server Standards (`artifacts/api/src/routes/mcp/`)
+
+- **All constrained fields must use `z.enum()`** — never `z.string()`. AI assistants see dropdown-style allowed values.
+- **Every tool must have a permission guard** — `read:<resource>` for reads, `write:<resource>` for mutations. Throw via `requirePermission(ctx, permission, toolName)`.
+- **Audit context is set automatically** in `index.ts` via `auditContext.run()`. Tools do not need to call `setAuditUser` — the AsyncLocalStorage wraps every request.
+- **Creator info resolved once per session** in `auth.ts` (`createdBy` → Better Auth `user` collection). Stored in `sessionContexts` Map for re-use on subsequent requests.
+- **Tool naming**: `<verb>_<resource>` (e.g., `list_deals`, `create_rep`).
+- New tools go in a `.tool.ts` file under `src/routes/mcp/tools/` and register via the singleton pattern in `index.ts`.
+- File structure mirrors the domain model — one tool file per resource type.
+
 ## Plugin Standards (`plugins/`)
 
 - Implement `CKitPlugin` interface from `@workspace/plugins-core`.

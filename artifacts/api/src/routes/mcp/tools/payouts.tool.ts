@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 import { z } from "zod/v4";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { WorkspaceContext } from "../context";
+import { requirePermission } from "../guard";
 
 class PayoutTools {
   private static instance: PayoutTools;
@@ -20,11 +21,12 @@ class PayoutTools {
     const wsObjectId = new Types.ObjectId(ctx.workspaceId);
 
     server.tool("list_payouts", "List commission payouts in your workspace", {
-      status: z.string().optional().describe("Filter by status (pending, approved, paid, cancelled)"),
+      status: z.enum(["pending", "approved", "paid", "disputed", "on_hold"]).optional().describe("Filter by payout status"),
       repId: z.string().optional().describe("Filter by rep ID"),
       page: z.number().int().min(1).optional().default(1),
       limit: z.number().int().min(1).max(100).optional().default(50),
     }, async ({ status, repId, page, limit }) => {
+      requirePermission(ctx, "read:payouts", "list_payouts");
       const conditions: any = { workspaceId: wsObjectId };
       if (status) conditions.status = status;
       if (repId) conditions.repId = new Types.ObjectId(repId);
@@ -50,6 +52,7 @@ class PayoutTools {
     server.tool("get_payout", "Get details of a specific payout", {
       payoutId: z.string().describe("The payout ID"),
     }, async ({ payoutId }) => {
+      requirePermission(ctx, "read:payouts", "get_payout");
       const payout = await Payout.findOne({ _id: new Types.ObjectId(payoutId), workspaceId: wsObjectId })
         .populate("repId", "name email").lean();
 

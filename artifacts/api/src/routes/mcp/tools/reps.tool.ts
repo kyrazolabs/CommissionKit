@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 import { z } from "zod/v4";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { WorkspaceContext } from "../context";
+import { requirePermission } from "../guard";
 
 class RepTools {
   private static instance: RepTools;
@@ -23,6 +24,7 @@ class RepTools {
       page: z.number().int().min(1).optional().default(1),
       limit: z.number().int().min(1).max(100).optional().default(50),
     }, async ({ page, limit }) => {
+      requirePermission(ctx, "read:reps", "list_reps");
       const [reps, total] = await Promise.all([
         Rep.find({ workspaceId: wsObjectId }).select("name email role planId createdAt portalAccessCode")
           .sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
@@ -43,6 +45,7 @@ class RepTools {
     server.tool("get_rep", "Get a single rep by ID with their plan info", {
       repId: z.string().describe("The rep ID"),
     }, async ({ repId }) => {
+      requirePermission(ctx, "read:reps", "get_rep");
       const rep = await Rep.findOne({ _id: new Types.ObjectId(repId), workspaceId: wsObjectId }).lean();
       if (!rep) return { content: [{ type: "text", text: JSON.stringify({ error: "Rep not found" }) }] };
 
@@ -67,6 +70,8 @@ class RepTools {
       role: z.string().optional().default("Sales Rep").describe("Job title or role"),
       planId: z.string().optional().describe("Commission plan ID to assign"),
     }, async ({ name, email, role, planId }) => {
+      requirePermission(ctx, "write:reps", "create_rep");
+
       if (planId) {
         const plan = await Plan.findOne({ _id: planId, workspaceId: wsObjectId });
         if (!plan) return { content: [{ type: "text", text: JSON.stringify({ error: "Plan not found" }) }] };

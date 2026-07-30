@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 import { z } from "zod/v4";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { WorkspaceContext } from "../context";
+import { requirePermission } from "../guard";
 
 class DisputeTools {
   private static instance: DisputeTools;
@@ -20,10 +21,11 @@ class DisputeTools {
     const wsObjectId = new Types.ObjectId(ctx.workspaceId);
 
     server.tool("list_disputes", "List disputes in your workspace", {
-      status: z.string().optional().describe("Filter by status (open, resolved, closed)"),
+      status: z.enum(["open", "under_review", "resolved"]).optional().describe("Filter by dispute status"),
       page: z.number().int().min(1).optional().default(1),
       limit: z.number().int().min(1).max(100).optional().default(50),
     }, async ({ status, page, limit }) => {
+      requirePermission(ctx, "read:disputes", "list_disputes");
       const conditions: any = { workspaceId: wsObjectId };
       if (status) conditions.status = status;
 
@@ -49,6 +51,7 @@ class DisputeTools {
     server.tool("get_dispute", "Get details of a specific dispute", {
       disputeId: z.string().describe("The dispute ID"),
     }, async ({ disputeId }) => {
+      requirePermission(ctx, "read:disputes", "get_dispute");
       const dispute = await Dispute.findOne({ _id: new Types.ObjectId(disputeId), workspaceId: wsObjectId })
         .populate("repId", "name email").populate("payoutId", "amount currency period").lean();
 

@@ -5,6 +5,7 @@
     "": {
       "name": "workspace",
       "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.30.0",
         "@types/bun": "^1.3.14",
       },
       "devDependencies": {

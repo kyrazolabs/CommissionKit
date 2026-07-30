@@ -8,7 +8,8 @@
     "workspace": "कार्यक्षेत्र",
     "notifications": "सूचनाएं",
     "security": "सुरक्षा",
-    "roles": "भूमिकाएं और अनुमतियां"
+    "roles": "भूमिकाएं और अनुमतियां",
+    "apiKeys": "API कुंजियां"
   },
   "account": {
     "title": "शीर्षक",
@@ -103,5 +104,49 @@
     "sessionTimeout": "सत्र समय-सीमा",
     "sessionTimeoutDescription": "निष्क्रियता के बाद स्वचालित रूप से साइन आउट।",
     "eightHours": "8 घंटे"
+  },
+  "apiKeys": {
+    "title": "API कुंजियां",
+    "description": "AI सहायकों, स्क्रिप्ट और बाहरी उपकरणों को अपने वर्कस्पेस से जोड़ने के लिए API कुंजियां बनाएं और प्रबंधित करें।",
+    "createButton": "API कुंजी बनाएं",
+    "createDescription": "अपने वर्कस्पेस तक प्रोग्रामेटिक पहुंच के लिए एक नई API कुंजी बनाएं।",
+    "createConfirm": "कुंजी बनाएं",
+    "createFailed": "API कुंजी बनाने में विफल",
+    "emptyTitle": "कोई API कुंजी नहीं",
+    "emptyDescription": "AI सहायकों, स्क्रिप्ट और बाहरी उपकरणों को जोड़ने के लिए एक API कुंजी बनाएं।",
+    "loadError": "API कुंजियां लोड करने में विफल",
+    "name": "नाम",
+    "prefix": "कुंजी उपसर्ग",
+    "permissions": "अनुमतियां",
+    "created": "बनाई गई",
+    "lastUsed": "अंतिम उपयोग",
+    "actions": "क्रियाएं",
+    "revokeConfirm": "API कुंजी रद्द करें",
+    "revokeConfirmDescription": "इस कुंजी का उपयोग करने वाली सभी पहुंच तुरंत अवरुद्ध हो जाएगी। यह कार्रवाई पूर्ववत नहीं की जा सकती।",
+    "revoked": "API कुंजी रद्द की गई",
+    "revokeFailed": "API कुंजी रद्द करने में विफल",
+    "keyCreated": "API कुंजी बनाई गई",
+    "keyCreatedDescription": "इस कुंजी को अभी कॉपी करें। आप इसे दोबारा नहीं देख पाएंगे।",
+    "copyWarning": "इस कुंजी को अभी कॉपी करें — यह दोबारा नहीं दिखाई जाएगी",
+    "keyNameLabel": "कुंजी का नाम",
+    "keyNamePlaceholder": "जैसे AI सहायक, CLI उपकरण",
+    "permissionsLabel": "अनुमतियां",
+    "permissionsPlaceholder": "read:all, write:all",
+    "expiresLabel": "समाप्ति (वैकल्पिक)",
+    "expiresPlaceholder": "YYYY-MM-DD",
+    "never": "कभी नहीं",
+    "copied": "कुंजी क्लिपबोर्ड पर कॉपी की गई",
+    "copyFailed": "क्लिपबोर्ड पर कॉपी करने में विफल",
+    "copyFirst": "जारी रखने के लिए कुंजी कॉपी करें",
+    "permissions": {
+      "readAll": "सभी डेटा पढ़ें",
+      "readAllDesc": "सौदे, प्रतिनिधि, निष्पादन, भुगतान और डैशबोर्ड देखें",
+      "writeDeals": "सौदे लिखें",
+      "writeDealsDesc": "बिक्री सौदे बनाएं और प्रबंधित करें",
+      "writeReps": "प्रतिनिधि लिखें",
+      "writeRepsDesc": "बिक्री प्रतिनिधि बनाएं और प्रबंधित करें",
+      "writeRuns": "निष्पादन लिखें",
+      "writeRunsDesc": "कमीशन गणना निष्पादन बनाएं"
+    }
   }
 }
