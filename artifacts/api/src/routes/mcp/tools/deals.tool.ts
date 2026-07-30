@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 import { z } from "zod/v4";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { WorkspaceContext } from "../context";
+import { requirePermission } from "../guard";
 
 function currentPeriod(): string {
   const now = new Date();
@@ -25,9 +26,9 @@ class DealTools {
     const wsObjectId = new Types.ObjectId(ctx.workspaceId);
 
     server.tool("list_deals", "List deals in your workspace with optional filters", {
-      status: z.string().optional().describe("Filter by deal stage (e.g. closed_won, pipeline, lost)"),
+      status: z.enum(["closed_won", "closed_lost", "pending"]).optional().describe("Filter by deal stage"),
       repId: z.string().optional().describe("Filter by rep ID"),
-      paymentStatus: z.string().optional().describe("Filter by payment status (paid, unpaid)"),
+      paymentStatus: z.enum(["unpaid", "paid", "partial", "on_hold"]).optional().describe("Filter by payment status"),
       page: z.number().int().min(1).optional().default(1),
       limit: z.number().int().min(1).max(100).optional().default(50),
     }, async ({ status, repId, paymentStatus, page, limit }) => {
@@ -83,11 +84,13 @@ class DealTools {
       amount: z.number().positive().describe("Deal amount in the specified currency"),
       currency: z.string().optional().default("USD").describe("ISO 4217 currency code"),
       period: z.string().optional().describe("Period in YYYY-MM format (default: current month)"),
-      stage: z.string().optional().default("pipeline").describe("Deal stage"),
-      paymentStatus: z.string().optional().default("unpaid").describe("Payment status"),
+      stage: z.enum(["closed_won", "closed_lost", "pending"]).optional().default("pending").describe("Deal stage"),
+      paymentStatus: z.enum(["unpaid", "paid", "partial", "on_hold"]).optional().default("unpaid").describe("Payment status"),
       notes: z.string().optional().describe("Optional notes"),
       closeDate: z.string().optional().describe("Close date in YYYY-MM-DD format"),
     }, async ({ repId, name, amount, currency, period, stage, paymentStatus, notes, closeDate }) => {
+      requirePermission(ctx, "write:deals", "create_deal");
+
       const rep = await Rep.findOne({ _id: repId, workspaceId: wsObjectId });
       if (!rep) return { content: [{ type: "text", text: JSON.stringify({ error: "Rep not found in this workspace" }) }] };
 
@@ -124,6 +127,45 @@ class DealTools {
             currency: d.currency ?? "USD", stage: d.stage,
             repName: d.repId?.name ?? "Unknown", createdAt: d.createdAt,
           })),
+        }, null, 2) }],
+      };
+    });
+
+    server.tool("update_deal", "Update an existing deal's fields", {
+      dealId: z.string().describe("The deal ID to update"),
+      name: z.string().min(1).max(255).optional().describe("Updated deal name"),
+      amount: z.number().positive().optional().describe("Updated deal amount"),
+      stage: z.enum(["closed_won", "closed_lost", "pending"]).optional().describe("Updated deal stage"),
+      paymentStatus: z.enum(["unpaid", "paid", "partial", "on_hold"]).optional().describe("Updated payment status"),
+      notes: z.string().optional().describe("Updated notes"),
+      closeDate: z.string().optional().describe("Updated close date in YYYY-MM-DD format"),
+    }, async ({ dealId, name, amount, stage, paymentStatus, notes, closeDate }) => {
+      requirePermission(ctx, "write:deals", "update_deal");
+
+      const update: any = {};
+      if (name !== undefined) update.name = name;
+      if (amount !== undefined) update.amount = amount;
+      if (stage !== undefined) update.stage = stage;
+      if (paymentStatus !== undefined) update.paymentStatus = paymentStatus;
+      if (notes !== undefined) update.notes = notes;
+      if (closeDate !== undefined) update.closeDate = closeDate;
+
+      const deal = await Deal.findOneAndUpdate(
+        { _id: new Types.ObjectId(dealId), workspaceId: wsObjectId },
+        { $set: update },
+        { new: true },
+      ).populate("repId", "name email").lean();
+
+      if (!deal) return { content: [{ type: "text", text: JSON.stringify({ error: "Deal not found" }) }] };
+
+      return {
+        content: [{ type: "text", text: JSON.stringify({
+          id: (deal as any)._id, name: (deal as any).name, amount: (deal as any).amount,
+          currency: (deal as any).currency ?? "USD", stage: (deal as any).stage,
+          paymentStatus: (deal as any).paymentStatus ?? "unpaid", period: (deal as any).period,
+          closeDate: (deal as any).closeDate ?? null, notes: (deal as any).notes ?? null,
+          repName: (deal as any).repId?.name ?? "Unknown",
+          updatedAt: new Date().toISOString(),
         }, null, 2) }],
       };
     });
