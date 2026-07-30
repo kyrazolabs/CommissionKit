@@ -109,7 +109,7 @@ const AUDIT_ACTIONS = [
 const AUDIT_RESOURCE_TYPES = [
   "plan", "deal", "rep", "run", "payout", "dispute", "role",
   "workspace", "member", "integration", "setting", "billing",
-  "user", "session", "notification", "sample_data",
+  "user", "session", "notification", "sample_data", "api_key",
 ] as const;
 
 export const AuditLogJobSchema = z.object({

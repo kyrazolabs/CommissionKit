@@ -20,6 +20,8 @@ tags:
     description: Commission calculation runs
   - name: dashboard
     description: Summary and analytics
+  - name: api-keys
+    description: Workspace API key management
 
 paths:
   /healthz:
@@ -450,6 +452,59 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RepSummary"
+
+  # ── API Keys ───────────────────────────────────────────────────────────────
+  /api-keys:
+    get:
+      tags: [api-keys]
+      summary: List all active API keys for the workspace
+      operationId: getApiKeys
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ApiKey"
+    post:
+      tags: [api-keys]
+      summary: Create a new API key
+      operationId: createApiKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateApiKeyBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatedApiKey"
+
+  /api-keys/{id}:
+    delete:
+      tags: [api-keys]
+      summary: Revoke an API key
+      operationId: deleteApiKey
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Revoked
+        "404":
+          description: Not found
 
 components:
   schemas:
@@ -1008,3 +1063,72 @@ components:
                 type: string
             required: [name, repName, amount, closeDate]
       required: [executiveSummary, dealStages, monthlyTrends, monthlyGrowth, topPerformers]
+
+    # ── API Keys ───────────────────────────────────────────────────────────────
+    ApiKey:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        prefix:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+        lastUsedAt:
+          type: string
+          format: date-time
+          nullable: true
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, name, prefix, permissions, createdAt]
+
+    CreateApiKeyBody:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        permissions:
+          type: array
+          items:
+            type: string
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+      required: [name]
+
+    CreatedApiKey:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        key:
+          type: string
+          description: The raw API key (only returned once at creation)
+        prefix:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, name, key, prefix, permissions, createdAt]

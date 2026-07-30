@@ -143,6 +143,8 @@ flowchart LR
 | `/roles` | Custom RBAC roles |
 | `/enterprise` | Conditionally mounted enterprise routes (AISSOL) |
 | `/integrations` | Connector config and sync triggers |
+| `/mcp` | MCP SSE transport — AI assistant integration |
+| `/api-keys` | Workspace-scoped API key CRUD |
 
 ### Middleware (`src/middleware/`)
 
@@ -150,6 +152,67 @@ flowchart LR
 - `requireWorkspaceMember(minRole)`: validates `X-Workspace-ID`, auto-accepts pending invites, sets `req.workspaceId`/`req.workspaceRole`.
 - `requirePermission(resource, action)`: RBAC permission check with Redis cache.
 - `requireGrowthPlan`: subscription gating for premium features.
+
+### MCP Server (`src/routes/mcp/`)
+
+The MCP (Model Context Protocol) server lets AI assistants interact with CommissionKit data through a standardized tool interface. It uses Streamable HTTP transport (SSE-compatible) and workspace-scoped API keys.
+
+**Transport**: `POST /api/mcp` — Streamable HTTP. New sessions return `mcp-session-id` header; subsequent calls include it for session reuse. Per-session in-memory transport map.
+
+**Auth**: `Authorization: Bearer ck_xxx` → SHA-256 hash verification against `ApiKey` collection → resolves workspace, creator user identity, and permission set.
+
+**Tool input validation**: All constrained fields use `z.enum()` instead of `z.string()` to reject invalid values at the Zod layer:
+
+| Tool | Enforced enums |
+|------|---------------|
+| `list_deals` | `stage`: closed_won\|closed_lost\|pending — `paymentStatus`: unpaid\|paid\|partial\|on_hold |
+| `create_deal` / `update_deal` | `stage` + `paymentStatus` (same enums as above) |
+| `list_runs` | `status`: pending\|processing\|completed\|failed |
+| `create_run` | `paymentStatuses`: array of unpaid\|paid\|partial\|on_hold |
+| `list_payouts` | `status`: pending\|approved\|paid\|disputed\|on_hold |
+| `list_disputes` | `status`: open\|under_review\|resolved |
+
+**Permission guards** (`src/routes/mcp/guard.ts`):
+
+| Permission | Tools gated |
+|-----------|-------------|
+| `read:deals` | `list_deals`, `get_deal`, `search_deals` |
+| `write:deals` | `create_deal`, `update_deal` |
+| `read:reps` | `list_reps`, `get_rep` |
+| `write:reps` | `create_rep` |
+| `read:runs` | `list_runs`, `get_run` |
+| `write:runs` | `create_run` |
+| `read:payouts` | `list_payouts`, `get_payout` |
+| `read:disputes` | `list_disputes`, `get_dispute` |
+| `read:dashboard` | `get_dashboard_summary` |
+
+The `hasPermission()` function also accepts `read:all` as a super-admin read bypass. Denied callers receive a descriptive error with their current permissions listed.
+
+**Audit context**: Every MCP request is wrapped in an AsyncLocalStorage audit scope so Mongoose audit plugins and manual `logAudit()` calls capture the identity of who performed the action:
+- `userId` = API key creator's Better Auth user ID
+- `userName` = `"MCP {apiKeyName}"` (e.g. `"MCP Production Key"`)
+- `userEmail` = creator's email
+- `workspaceId`, `ipAddress`, `userAgent` from request
+
+The `WorkspaceContext` passed to all tools now includes `creatorUserId`, `creatorName`, `creatorEmail`, and `apiKeyName`. Resolved once per MCP session and stored in `sessionContexts` for subsequent requests.
+
+**File structure**:
+
+```
+src/routes/mcp/
+├── index.ts       # Express router, Streamable HTTP transport, audit context setup
+├── auth.ts        # API key verification + creator user resolution
+├── context.ts     # WorkspaceContext interface
+├── guard.ts       # hasPermission / requirePermission helpers
+└── tools/
+    ├── index.ts           # Tool registry (creates McpServer)
+    ├── deals.tool.ts      # list/get/create/search/update deal
+    ├── reps.tool.ts       # list/get/create rep
+    ├── runs.tool.ts       # list/get/create run
+    ├── payouts.tool.ts    # list/get payout
+    ├── disputes.tool.ts   # list/get dispute
+    └── dashboard.tool.ts  # get_dashboard_summary
+```
 
 ### Commission Engine (`src/workers/engines/`)
 

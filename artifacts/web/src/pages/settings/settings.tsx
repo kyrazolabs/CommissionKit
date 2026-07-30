@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import SettingsRoles from "./settings-roles";
+import SettingsApiKeys from "./settings-api-keys";
 import { apiFetch } from "@/lib/api";
 
 const ROLE_ICONS = {
@@ -357,6 +358,9 @@ export function SettingsPage() {
           {hasPermission("roles", "read") && (
             <TabsTrigger value="roles" className="min-w-fit px-4">{t("settings.tabs.roles")}</TabsTrigger>
           )}
+          {hasPermission("workspace", "edit") && (
+            <TabsTrigger value="api-keys" className="min-w-fit px-4">{t("settings.tabs.apiKeys")}</TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="account" className="outline-none">
@@ -672,6 +676,13 @@ export function SettingsPage() {
         <TabsContent value="roles" className="outline-none mt-0">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-7">
             <SettingsRoles />
+          </motion.div>
+        </TabsContent>
+      )}
+      {isAdmin && (
+        <TabsContent value="api-keys" className="outline-none mt-0">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-7">
+            <SettingsApiKeys />
           </motion.div>
         </TabsContent>
       )}

@@ -14,3 +14,4 @@ export * from "./integrationSync";
 export * from "./integrationLog";
 export * from "./leads";
 export * from "./auditEvents";
+export * from "./apiKeys";

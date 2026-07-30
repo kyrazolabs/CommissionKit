@@ -56,6 +56,8 @@ This tracker captures the current state of the codebase as of the latest explora
 | Limits | ✅ Done | `lib/limits.ts` + subscription gating. |
 | Bull Board | ✅ Done | Secured board at `/api/admin/queues`. |
 | Sentry | ✅ Done | API instrumentation + sourcemaps. |
+| API Keys | ✅ Done | Workspace-scoped API keys with SHA-256 hashing, CRUD endpoints under `/api/api-keys`. |
+| MCP Server | ✅ Done | 16 tools (4 read + 3 write deals, 2 read + 1 write reps, 2 read + 1 write runs, 2 read payouts, 2 read disputes, 1 dashboard summary) via Streamable HTTP POST `/api/mcp`. API key auth, per-workspace scoping, creator-resolved audit context, z.enum() input validation, per-tool permission guards. |
 
 ## 3. Frontend (`artifacts/web`)
 
@@ -266,6 +268,22 @@ This tracker captures the current state of the codebase as of the latest explora
 |- **Sitemap overhaul (P0)**: Two sitemap issues fixed:
   - **Blog sitemap binary data**: `/blog/sitemap.xml` on production was returning raw binary/garbled data (Next.js live `MetadataRoute.Sitemap` route + nginx Content-Type/gzip mismatch → Google couldn't parse it → blog posts not indexing via sitemap). Fixed by switching to build-time static XML generation matching the web frontend's pattern. Created `scripts/generate-blog-sitemap.ts` (mirrors old `sitemap.ts` logic — same 56 URLs, 448 hreflang alternates, languages, priorities, x-default). Deleted live `src/app/sitemap.ts` and `src/app/sitemap.test.ts`. Script runs after `next build`, produces plain ASCII `public/sitemap.xml`. File correctly identified as "XML Sitemap document, ASCII text" (no gzip, no binary garbage).
   - **Root sitemap as index**: `/sitemap.xml` was a flat `<urlset>` with only 16 marketing page URLs — no path for crawlers to discover the blog sitemap. Rewrote `artifacts/web/scripts/generate-sitemap.ts` to produce two files: `public/sitemap.xml` (now a `<sitemapindex>` with 2 entries: `/sitemap-pages.xml` and `/blog/sitemap.xml`) and `public/sitemap-pages.xml` (the 16 marketing page URLs). Crawlers can now reach the blog sitemap via the root sitemap index. `robots.txt` already lists both sitemap URLs. Both web and blog builds pass clean.
+- **MCP Server (Hosted SSE) — Phase 1 Complete**: Built a hosted SSE MCP server integrated into the existing Express 5 API. Clients connect AI hosts directly to `https://app.commissionkit.co/api/mcp/sse` with a workspace-scoped API key. Implementation includes:
+  - **API Key infrastructure**: New `ApiKey` Mongoose model (SHA-256 hashed keys, `ck_` prefix, permissions array, expiration) in `lib/db/src/schema/apiKeys.ts`, plus `generateApiKey()`/`verifyKey()` utilities using native `crypto`. CRUD endpoints at `GET/POST /api/api-keys` and `DELETE /api/api-keys/:keyId` with `requireWorkspaceMember("admin")` auth. Added `"api_key"` to `AuditResourceType`.
+  - **14 MCP tools**: `list_deals`, `get_deal`, `create_deal`, `search_deals`, `list_reps`, `get_rep`, `create_rep`, `list_runs`, `get_run`, `create_run`, `list_payouts`, `get_payout`, `list_disputes`, `get_dispute`, `get_dashboard_summary` — all scoped to workspace via API key, with Mongoose models and Zod input validation.
+  - **SSE transport**: `GET /api/mcp/sse` creates per-connection `McpServer` + `SSEServerTransport`, verifies `Authorization: Bearer ck_xxx`, resolves workspace. `POST /api/mcp/messages?sessionId=xxx` routes incoming tool calls. Session tracking via in-memory `Map`.
+  - **Dependencies**: `@modelcontextprotocol/sdk@^1.30.0` (54 packages). Full monorepo typecheck passes, 0 test regressions.
+- **API Keys Control UI (Settings Page)**: Added full API key management interface to the web settings page, completing the MCP/API key infrastructure. Implementation includes:
+  - **OpenAPI spec + codegen**: Added `/api-keys` (GET/POST) and `/api-keys/{id}` (DELETE) paths + schemas (`ApiKey`, `CreateApiKeyBody`, `CreatedApiKey`) to `lib/api-spec/openapi.yaml`. Ran codegen producing generated React Query hooks (`useGetApiKeys`, `useCreateApiKey`, `useDeleteApiKey`) and Zod schemas. Tag `api-keys` added.
+  - **Frontend component**: `artifacts/web/src/pages/settings/settings-api-keys.tsx` — full CRUD UI with table listing (name, prefix, permissions badges, relative dates), create dialog with special "show key once" UX (amber warning box, copy-to-clipboard, copy-gated Done button), and revoke with ConfirmDialog + optimistic cache update. Uses `apiFetch` with TanStack React Query.
+  - **Settings integration**: New "API Keys" tab in `/dash/settings` under the admin-gated workspace section, following the same pattern as the Roles tab. Tab gated by `hasPermission("workspace", "edit")`.
+  - **i18n**: 23 new translation keys under `apiKeys` section added to all 3 source locale files (translations/en|es|hi/settings.json). Generated files regenerated via `scripts/merge-translations.ts`.
+  - Full monorepo typecheck passes. No regressions in existing test suites.
+- **MCP Phase 2 — Enum constraints, permission guards, audit context**: All 16 MCP tools hardened:
+  - **z.enum() validation**: All constrained fields (`stage`, `paymentStatus`, run `status`, payout `status`, dispute `status`) switched from `z.string()` to `z.enum()` — AI assistants now see dropdown-style allowed values via MCP schema.
+  - **Bug fix**: `create_deal` defaulted `stage` to `"pipeline"` (not a valid value) → corrected to `"pending"`.
+  - **Permission guards**: Every tool now has a guard — 10 read tools (`read:deals|reps|runs|payouts|disputes|dashboard`) + 4 write tools (`write:deals|reps|runs` omitted from existing). `read:all` escape hatch preserved.
+  - **Audit context**: MCP requests wrapped in AsyncLocalStorage so Mongoose audit plugins and `logAudit()` attribute actions to the API key creator with `userName: "MCP {apiKeyName}"` pattern. Creator identity resolved once per MCP session from the `createdBy` field.
 
 ## Where to Go Next
 - Back to entry point: `AGENTS.md`

@@ -16,7 +16,7 @@ export type AuditAction = (typeof AUDIT_ACTIONS)[number];
 export const AUDIT_RESOURCE_TYPES = [
   "plan", "deal", "rep", "run", "payout", "dispute", "role",
   "workspace", "member", "integration", "setting", "billing",
-  "user", "session", "notification", "sample_data",
+  "user", "session", "notification", "sample_data", "api_key",
 ] as const;
 
 export type AuditResourceType = (typeof AUDIT_RESOURCE_TYPES)[number];

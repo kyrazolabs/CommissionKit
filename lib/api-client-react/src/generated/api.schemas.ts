@@ -358,6 +358,37 @@ export interface ReportData {
   topDeals?: ReportDataTopDealsItem[];
 }
 
+export interface ApiKey {
+  id: string;
+  name: string;
+  prefix: string;
+  permissions: string[];
+  lastUsedAt?: string | null;
+  expiresAt?: string | null;
+  createdAt: string;
+}
+
+export interface CreateApiKeyBody {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  name: string;
+  permissions?: string[];
+  expiresAt?: string | null;
+}
+
+export interface CreatedApiKey {
+  id: string;
+  name: string;
+  /** The raw API key (only returned once at creation) */
+  key: string;
+  prefix: string;
+  permissions: string[];
+  expiresAt?: string | null;
+  createdAt: string;
+}
+
 export type ListRepsParams = {
 /**
  * Search by rep name or email
@@ -409,5 +440,9 @@ export type GetRepSummaryParams = {
  * Filter by period (YYYY-MM). Defaults to current period.
  */
 period?: string;
+};
+
+export type GetApiKeys200 = {
+  data?: ApiKey[];
 };
 
