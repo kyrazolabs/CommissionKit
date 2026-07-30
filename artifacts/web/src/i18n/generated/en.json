@@ -1474,16 +1474,7 @@
       "loadError": "Failed to load API keys",
       "name": "Name",
       "prefix": "Key Prefix",
-      "permissions": {
-        "readAll": "Read all data",
-        "readAllDesc": "View deals, reps, runs, payouts, and dashboards",
-        "writeDeals": "Write deals",
-        "writeDealsDesc": "Create and manage sales deals",
-        "writeReps": "Write reps",
-        "writeRepsDesc": "Create and manage sales representatives",
-        "writeRuns": "Write runs",
-        "writeRunsDesc": "Create commission calculation runs"
-      },
+      "permissionsHeader": "Permissions",
       "created": "Created",
       "lastUsed": "Last Used",
       "actions": "Actions",
@@ -1503,7 +1494,30 @@
       "never": "Never",
       "copied": "Key copied to clipboard",
       "copyFailed": "Failed to copy to clipboard",
-      "copyFirst": "Copy key to continue"
+      "copyFirst": "Copy key to continue",
+      "permissions": {
+        "readAll": "Read all data",
+        "readAllDesc": "View deals, reps, runs, payouts, and dashboards",
+        "writeDeals": "Write deals",
+        "writeDealsDesc": "Create and manage sales deals",
+        "writeReps": "Write reps",
+        "writeRepsDesc": "Create and manage sales representatives",
+        "writeRuns": "Write runs",
+        "writeRunsDesc": "Create commission calculation runs"
+      }
+    },
+    "mcp": {
+      "title": "Connect AI Assistants (MCP)",
+      "description": "Use your API keys to connect AI assistants and tools to your workspace via the Model Context Protocol.",
+      "endpointLabel": "MCP Endpoint",
+      "endpointDescription": "Use this endpoint to connect MCP-compatible clients:",
+      "howToTitle": "How to connect",
+      "claudeConfig": "Claude Desktop configuration:",
+      "configLabel": "Paste this into your Claude Desktop config file:",
+      "copyConfig": "Copy config",
+      "configCopied": "Config copied to clipboard",
+      "compatibleClients": "Works with: Claude Desktop, Cursor, VS Code, and any MCP-compatible client",
+      "docsLink": "View full documentation"
     }
   },
   "sidebar": {

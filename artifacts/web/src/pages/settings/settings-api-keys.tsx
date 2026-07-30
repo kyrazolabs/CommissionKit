@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { Key, Plus, Trash2, Copy, Check, AlertTriangle, Loader2 } from "lucide-react";
+import { Key, Plus, Trash2, Copy, Check, AlertTriangle, Loader2, Bot, ExternalLink } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -280,7 +280,7 @@ export default function SettingsApiKeys() {
                       {t("settings.apiKeys.prefix")}
                     </TableHead>
                     <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      {t("settings.apiKeys.permissions")}
+                      {t("settings.apiKeys.permissionsHeader")}
                     </TableHead>
                     <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                       {t("settings.apiKeys.created")}
@@ -482,7 +482,7 @@ export default function SettingsApiKeys() {
                     <code className="text-xs">{createdKey.prefix}</code>
                   </p>
                   <p>
-                    <span className="font-medium text-foreground">{t("settings.apiKeys.permissions")}:</span>{" "}
+                    <span className="font-medium text-foreground">{t("settings.apiKeys.permissionsHeader")}:</span>{" "}
                     {createdKey.permissions.join(", ")}
                   </p>
                   <p>
@@ -523,6 +523,93 @@ export default function SettingsApiKeys() {
           `Revoke API key "${revokeConfirmKey?.name}"? This will immediately block all access using this key. This action cannot be undone.`
         }
       />
+
+      {/* MCP Configuration Card */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Bot className="size-4 text-primary" />
+            {t("settings.mcp.title")}
+          </CardTitle>
+          <CardDescription>
+            {t("settings.mcp.description")}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          {/* Endpoint URL */}
+          <div className="space-y-1.5">
+            <p className="text-sm font-medium text-foreground">{t("settings.mcp.endpointLabel")}</p>
+            <p className="text-xs text-muted-foreground">{t("settings.mcp.endpointDescription")}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <code className="flex-1 rounded-md border border-card-border bg-muted px-3 py-2 text-sm font-mono text-foreground select-all">
+                https://app.commissionkit.co/api/mcp
+              </code>
+              <Button
+                variant="outline"
+                size="icon"
+                className="shrink-0 size-9"
+                onClick={() => {
+                  navigator.clipboard.writeText("https://app.commissionkit.co/api/mcp");
+                  toast.success(t("settings.mcp.configCopied") || "Copied");
+                }}
+              >
+                <Copy className="size-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-card-border" />
+
+          {/* Claude Desktop config */}
+          <div className="space-y-1.5">
+            <p className="text-sm font-medium text-foreground">{t("settings.mcp.howToTitle")}</p>
+            <p className="text-xs text-muted-foreground">{t("settings.mcp.claudeConfig")}</p>
+            <div className="relative mt-1">
+              <pre className="rounded-lg border border-card-border bg-muted p-4 overflow-x-auto text-sm">
+                <code className="text-xs leading-relaxed font-mono text-foreground whitespace-pre">{`{
+  "mcpServers": {
+    "commissionkit": {
+      "url": "https://app.commissionkit.co/api/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_KEY"
+      }
+    }
+  }
+}`}</code>
+              </pre>
+              <Button
+                variant="outline"
+                size="sm"
+                className="absolute top-3 right-3 h-7 text-xs gap-1.5"
+                onClick={() => {
+                  navigator.clipboard.writeText(`{\n  "mcpServers": {\n    "commissionkit": {\n      "url": "https://app.commissionkit.co/api/mcp",\n      "headers": {\n        "Authorization": "Bearer YOUR_API_KEY"\n      }\n    }\n  }\n}`);
+                  toast.success(t("settings.mcp.configCopied") || "Config copied to clipboard");
+                }}
+              >
+                <Copy className="size-3.5" />
+                {t("settings.mcp.copyConfig")}
+              </Button>
+            </div>
+          </div>
+
+          {/* Compatible clients */}
+          <p className="text-xs text-muted-foreground">
+            {t("settings.mcp.compatibleClients")}
+          </p>
+
+          {/* Docs link */}
+          <a
+            href="https://docs.commissionkit.co/guides/mcp"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+          >
+            {t("settings.mcp.docsLink")}
+            <ExternalLink className="size-3.5" />
+          </a>
+        </CardContent>
+      </Card>
     </>
   );
 }

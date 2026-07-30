@@ -117,7 +117,7 @@
     "loadError": "Failed to load API keys",
     "name": "Name",
     "prefix": "Key Prefix",
-    "permissions": "Permissions",
+    "permissionsHeader": "Permissions",
     "created": "Created",
     "lastUsed": "Last Used",
     "actions": "Actions",
@@ -148,5 +148,18 @@
       "writeRuns": "Write runs",
       "writeRunsDesc": "Create commission calculation runs"
     }
+  },
+  "mcp": {
+    "title": "Connect AI Assistants (MCP)",
+    "description": "Use your API keys to connect AI assistants and tools to your workspace via the Model Context Protocol.",
+    "endpointLabel": "MCP Endpoint",
+    "endpointDescription": "Use this endpoint to connect MCP-compatible clients:",
+    "howToTitle": "How to connect",
+    "claudeConfig": "Claude Desktop configuration:",
+    "configLabel": "Paste this into your Claude Desktop config file:",
+    "copyConfig": "Copy config",
+    "configCopied": "Config copied to clipboard",
+    "compatibleClients": "Works with: Claude Desktop, Cursor, VS Code, and any MCP-compatible client",
+    "docsLink": "View full documentation"
   }
 }

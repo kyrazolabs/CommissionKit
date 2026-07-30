@@ -117,7 +117,7 @@
     "loadError": "Error al cargar las claves API",
     "name": "Nombre",
     "prefix": "Prefijo de la Clave",
-    "permissions": "Permisos",
+    "permissionsHeader": "Permisos",
     "created": "Creada",
     "lastUsed": "Último Uso",
     "actions": "Acciones",
@@ -148,5 +148,18 @@
       "writeRuns": "Escribir ejecuciones",
       "writeRunsDesc": "Crear ejecuciones de cálculo de comisiones"
     }
+  },
+  "mcp": {
+    "title": "Conectar Asistentes de IA (MCP)",
+    "description": "Use sus claves API para conectar asistentes de IA y herramientas a su espacio de trabajo a través del Protocolo de Contexto de Modelo.",
+    "endpointLabel": "Endpoint MCP",
+    "endpointDescription": "Use este endpoint para conectar clientes compatibles con MCP:",
+    "howToTitle": "Cómo conectar",
+    "claudeConfig": "Configuración de Claude Desktop:",
+    "configLabel": "Pegue esto en su archivo de configuración de Claude Desktop:",
+    "copyConfig": "Copiar configuración",
+    "configCopied": "Configuración copiada al portapapeles",
+    "compatibleClients": "Funciona con: Claude Desktop, Cursor, VS Code y cualquier cliente compatible con MCP",
+    "docsLink": "Ver documentación completa"
   }
 }

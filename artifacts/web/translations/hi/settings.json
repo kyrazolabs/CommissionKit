@@ -117,7 +117,7 @@
     "loadError": "API कुंजियां लोड करने में विफल",
     "name": "नाम",
     "prefix": "कुंजी उपसर्ग",
-    "permissions": "अनुमतियां",
+    "permissionsHeader": "अनुमतियां",
     "created": "बनाई गई",
     "lastUsed": "अंतिम उपयोग",
     "actions": "क्रियाएं",
@@ -148,5 +148,18 @@
       "writeRuns": "निष्पादन लिखें",
       "writeRunsDesc": "कमीशन गणना निष्पादन बनाएं"
     }
+  },
+  "mcp": {
+    "title": "AI सहायकों को कनेक्ट करें (MCP)",
+    "description": "मॉडल कॉन्टेक्स्ट प्रोटोकॉल के माध्यम से AI सहायकों और टूल्स को अपने वर्कस्पेस से जोड़ने के लिए अपनी API कुंजियों का उपयोग करें।",
+    "endpointLabel": "MCP एंडपॉइंट",
+    "endpointDescription": "MCP-संगत क्लाइंट को कनेक्ट करने के लिए इस एंडपॉइंट का उपयोग करें:",
+    "howToTitle": "कैसे कनेक्ट करें",
+    "claudeConfig": "Claude Desktop कॉन्फ़िगरेशन:",
+    "configLabel": "इसे अपने Claude Desktop कॉन्फ़िग फ़ाइल में पेस्ट करें:",
+    "copyConfig": "कॉन्फ़िग कॉपी करें",
+    "configCopied": "कॉन्फ़िग क्लिपबोर्ड पर कॉपी हो गया",
+    "compatibleClients": "इसके साथ काम करता है: Claude Desktop, Cursor, VS Code, और कोई भी MCP-संगत क्लाइंट",
+    "docsLink": "पूर्ण दस्तावेज़ देखें"
   }
 }
