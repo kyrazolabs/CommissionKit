@@ -56,6 +56,8 @@ This tracker captures the current state of the codebase as of the latest explora
 | Limits | ✅ Done | `lib/limits.ts` + subscription gating. |
 | Bull Board | ✅ Done | Secured board at `/api/admin/queues`. |
 | Sentry | ✅ Done | API instrumentation + sourcemaps. |
+| API Keys | ✅ Done | Workspace-scoped API keys with SHA-256 hashing, CRUD endpoints under `/api/api-keys`. |
+| MCP Server (SSE) | ✅ Done | 14 tools exposed via `/api/mcp/sse` SSE transport, API key auth, per-workspace scoping. |
 
 ## 3. Frontend (`artifacts/web`)
 
@@ -266,6 +268,11 @@ This tracker captures the current state of the codebase as of the latest explora
 |- **Sitemap overhaul (P0)**: Two sitemap issues fixed:
   - **Blog sitemap binary data**: `/blog/sitemap.xml` on production was returning raw binary/garbled data (Next.js live `MetadataRoute.Sitemap` route + nginx Content-Type/gzip mismatch → Google couldn't parse it → blog posts not indexing via sitemap). Fixed by switching to build-time static XML generation matching the web frontend's pattern. Created `scripts/generate-blog-sitemap.ts` (mirrors old `sitemap.ts` logic — same 56 URLs, 448 hreflang alternates, languages, priorities, x-default). Deleted live `src/app/sitemap.ts` and `src/app/sitemap.test.ts`. Script runs after `next build`, produces plain ASCII `public/sitemap.xml`. File correctly identified as "XML Sitemap document, ASCII text" (no gzip, no binary garbage).
   - **Root sitemap as index**: `/sitemap.xml` was a flat `<urlset>` with only 16 marketing page URLs — no path for crawlers to discover the blog sitemap. Rewrote `artifacts/web/scripts/generate-sitemap.ts` to produce two files: `public/sitemap.xml` (now a `<sitemapindex>` with 2 entries: `/sitemap-pages.xml` and `/blog/sitemap.xml`) and `public/sitemap-pages.xml` (the 16 marketing page URLs). Crawlers can now reach the blog sitemap via the root sitemap index. `robots.txt` already lists both sitemap URLs. Both web and blog builds pass clean.
+- **MCP Server (Hosted SSE) — Phase 1 Complete**: Built a hosted SSE MCP server integrated into the existing Express 5 API. Clients connect AI hosts directly to `https://app.commissionkit.co/api/mcp/sse` with a workspace-scoped API key. Implementation includes:
+  - **API Key infrastructure**: New `ApiKey` Mongoose model (SHA-256 hashed keys, `ck_` prefix, permissions array, expiration) in `lib/db/src/schema/apiKeys.ts`, plus `generateApiKey()`/`verifyKey()` utilities using native `crypto`. CRUD endpoints at `GET/POST /api/api-keys` and `DELETE /api/api-keys/:keyId` with `requireWorkspaceMember("admin")` auth. Added `"api_key"` to `AuditResourceType`.
+  - **14 MCP tools**: `list_deals`, `get_deal`, `create_deal`, `search_deals`, `list_reps`, `get_rep`, `create_rep`, `list_runs`, `get_run`, `create_run`, `list_payouts`, `get_payout`, `list_disputes`, `get_dispute`, `get_dashboard_summary` — all scoped to workspace via API key, with Mongoose models and Zod input validation.
+  - **SSE transport**: `GET /api/mcp/sse` creates per-connection `McpServer` + `SSEServerTransport`, verifies `Authorization: Bearer ck_xxx`, resolves workspace. `POST /api/mcp/messages?sessionId=xxx` routes incoming tool calls. Session tracking via in-memory `Map`.
+  - **Dependencies**: `@modelcontextprotocol/sdk@^1.30.0` (54 packages). Full monorepo typecheck passes, 0 test regressions.
 
 ## Where to Go Next
 - Back to entry point: `AGENTS.md`
