@@ -24,7 +24,7 @@ export function usePageMeta({ title, description, robots, keywords }: PageMeta) 
 
   useEffect(() => {
     // Title
-    const fullTitle = title === APP_NAME ? APP_NAME : `${title} — ${APP_NAME}`;
+    const fullTitle = title === APP_NAME || title.endsWith(` — ${APP_NAME}`) ? title : `${title} — ${APP_NAME}`;
     document.title = fullTitle;
 
     // Meta description
