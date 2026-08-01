@@ -39,15 +39,12 @@ RUN bun install
 WORKDIR /app/artifacts/blog
 RUN bun run build
 
-# Stage 2: Production — Next.js standalone server
+# Stage 2: Production — Next.js standalone only (Coolify handles proxying)
 FROM oven/bun:1.3.13-alpine
-
-# Install wget for Docker health check
-RUN apk add --no-cache wget
 
 WORKDIR /app
 
-# Copy built standalone output
+# Copy built Next.js standalone output
 COPY --from=builder /app/artifacts/blog/.next/standalone ./
 COPY --from=builder /app/artifacts/blog/.next/static ./artifacts/blog/.next/static
 COPY --from=builder /app/artifacts/blog/public ./artifacts/blog/public

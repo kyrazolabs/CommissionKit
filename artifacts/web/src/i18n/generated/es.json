@@ -1293,7 +1293,8 @@
       "workspace": "Espacio de trabajo",
       "notifications": "Notificaciones",
       "security": "Seguridad",
-      "roles": "Roles y Permisos"
+      "roles": "Roles y Permisos",
+      "apiKeys": "Claves API"
     },
     "account": {
       "title": "Cuenta",
@@ -1388,6 +1389,63 @@
       "sessionTimeout": "Timeout de sesión",
       "sessionTimeoutDescription": "Cerrar sesión automáticamente después de inactividad.",
       "eightHours": "8 horas"
+    },
+    "apiKeys": {
+      "title": "Claves API",
+      "description": "Crea y gestiona claves API para conectar asistentes de IA, scripts y herramientas externas a tu espacio de trabajo.",
+      "createButton": "Crear Clave API",
+      "createDescription": "Crea una nueva clave API para acceso programático a tu espacio de trabajo.",
+      "createConfirm": "Crear Clave",
+      "createFailed": "Error al crear la clave API",
+      "emptyTitle": "Sin claves API",
+      "emptyDescription": "Crea una clave API para conectar asistentes de IA, scripts y herramientas externas.",
+      "loadError": "Error al cargar las claves API",
+      "name": "Nombre",
+      "prefix": "Prefijo de la Clave",
+      "permissionsHeader": "Permisos",
+      "created": "Creada",
+      "lastUsed": "Último Uso",
+      "actions": "Acciones",
+      "revokeConfirm": "Revocar clave API",
+      "revokeConfirmDescription": "Esto bloqueará inmediatamente todo acceso usando esta clave. Esta acción no se puede deshacer.",
+      "revoked": "Clave API revocada",
+      "revokeFailed": "Error al revocar la clave API",
+      "keyCreated": "Clave API Creada",
+      "keyCreatedDescription": "Copia esta clave ahora. No podrás verla de nuevo.",
+      "copyWarning": "Copia esta clave ahora — no se mostrará de nuevo",
+      "keyNameLabel": "Nombre de la Clave",
+      "keyNamePlaceholder": "ej. Asistente IA, Herramienta CLI",
+      "permissionsLabel": "Permisos",
+      "permissionsPlaceholder": "read:all, write:all",
+      "expiresLabel": "Expira (opcional)",
+      "expiresPlaceholder": "AAAA-MM-DD",
+      "never": "Nunca",
+      "copied": "Clave copiada al portapapeles",
+      "copyFailed": "Error al copiar al portapapeles",
+      "copyFirst": "Copia la clave para continuar",
+      "permissions": {
+        "readAll": "Leer todos los datos",
+        "readAllDesc": "Ver negocios, representantes, ejecuciones, pagos y paneles",
+        "writeDeals": "Escribir negocios",
+        "writeDealsDesc": "Crear y gestionar negocios de ventas",
+        "writeReps": "Escribir representantes",
+        "writeRepsDesc": "Crear y gestionar representantes de ventas",
+        "writeRuns": "Escribir ejecuciones",
+        "writeRunsDesc": "Crear ejecuciones de cálculo de comisiones"
+      }
+    },
+    "mcp": {
+      "title": "Conectar Asistentes de IA (MCP)",
+      "description": "Use sus claves API para conectar asistentes de IA y herramientas a su espacio de trabajo a través del Protocolo de Contexto de Modelo.",
+      "endpointLabel": "Endpoint MCP",
+      "endpointDescription": "Use este endpoint para conectar clientes compatibles con MCP:",
+      "howToTitle": "Cómo conectar",
+      "claudeConfig": "Configuración de Claude Desktop:",
+      "configLabel": "Pegue esto en su archivo de configuración de Claude Desktop:",
+      "copyConfig": "Copiar configuración",
+      "configCopied": "Configuración copiada al portapapeles",
+      "compatibleClients": "Funciona con: Claude Desktop, Cursor, VS Code y cualquier cliente compatible con MCP",
+      "docsLink": "Ver documentación completa"
     }
   },
   "sidebar": {

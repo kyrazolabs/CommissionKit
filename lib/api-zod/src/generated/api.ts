@@ -511,3 +511,41 @@ export const GetRepSummaryResponse = zod.object({
   "totalDeals": zod.number()
 }))
 })
+
+
+/**
+ * @summary List all active API keys for the workspace
+ */
+export const GetApiKeysResponse = zod.object({
+  "data": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "prefix": zod.string(),
+  "permissions": zod.array(zod.string()),
+  "lastUsedAt": zod.coerce.date().nullish(),
+  "expiresAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date()
+})).optional()
+})
+
+
+/**
+ * @summary Create a new API key
+ */
+export const createApiKeyBodyNameMax = 100;
+
+
+
+export const CreateApiKeyBody = zod.object({
+  "name": zod.string().min(1).max(createApiKeyBodyNameMax),
+  "permissions": zod.array(zod.string()).optional(),
+  "expiresAt": zod.coerce.date().nullish()
+})
+
+
+/**
+ * @summary Revoke an API key
+ */
+export const DeleteApiKeyParams = zod.object({
+  "id": zod.coerce.string()
+})
