@@ -64,7 +64,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: "article",
       siteName: "CommissionKit",
       locale: lang === "ar" ? "ar_AR" : lang,
-      title: `${post.title} — Blog`,
+      title: `${post.title} | CommissionKit`,
       description: post.description || "",
       url: canonicalUrl,
       publishedTime: post.date,
@@ -74,7 +74,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: `${post.title} — Blog`,
+      title: `${post.title} | CommissionKit`,
       description: post.description || "",
       images: ogImage ? [ogImage] : undefined,
     },

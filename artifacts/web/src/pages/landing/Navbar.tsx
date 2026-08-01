@@ -6,8 +6,8 @@ import { Analytics } from "@/lib/analytics";
 const FEATURES_LINKS = [
   { name: "Features", desc: "Commission plans, deals, payouts", href: "/features" },
   { name: "Solutions", desc: "By role and team size", href: "/solutions" },
-  { name: "CGent", desc: "AI Agent — Telegram, Slack, WhatsApp", href: "#", badge: "Soon", icon: "bot" as const },
-  { name: "MCP Integration", desc: "Connect your AI tools via MCP", href: "#", badge: "Soon", icon: "terminal" as const },
+  { name: "MCP Integration", desc: "Connect your AI tools via MCP", href: "https://docs.commissionkit.co/guides/mcp", icon: "terminal" as const },
+  { name: "CGent", desc: "AI Agent — Telegram, Slack.", href: "#", badge: "Soon", icon: "bot" as const },
 ];
 
 const INTEGRATIONS = [
@@ -219,12 +219,11 @@ export function Navbar() {
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Product</span>
             <a href="/features" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-muted-foreground hover:text-primary">Features</a>
             <a href="/solutions" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-muted-foreground hover:text-primary">Solutions</a>
+            <a href="https://docs.commissionkit.co/guides/mcp" className="text-sm font-medium text-muted-foreground hover:text-primary">
+              MCP Integration
+            </a>
             <span className="text-sm font-medium text-muted-foreground/60 flex items-center gap-2">
               CGent
-              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 border border-amber-500/20">Soon</span>
-            </span>
-            <span className="text-sm font-medium text-muted-foreground/60 flex items-center gap-2">
-              MCP Integration
               <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 border border-amber-500/20">Soon</span>
             </span>
             <a href="/portal" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-muted-foreground hover:text-primary">CKit Portal</a>

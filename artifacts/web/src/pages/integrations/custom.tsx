@@ -145,7 +145,7 @@ export function CustomIntegrationPage() {
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
               CommissionKit's custom connector connects to any ERP or CRM that exposes a REST API. Configure authentication, map fields with JSONPath, set up pagination — all without writing a line of code.
             </p>
-            <p className="text-sm text-muted-foreground max-w-xl">
+            <p className="text-sm mx-auto text-muted-foreground max-w-xl mb-4">
               Unlike commission tools locked to specific CRMs, the Custom REST connector works with any system that has an API — internal tools, legacy ERPs, or niche CRMs that other platforms ignore.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
