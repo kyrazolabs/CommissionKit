@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "wouter";
 import { format } from "date-fns";
@@ -158,6 +158,7 @@ export function PublicRepPortal() {
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [passwordRequired, setPasswordRequired] = useState(false);
   const [tempPassword, setTempPassword] = useState("");
+  const tempPasswordRef = useRef("");
   const [mustChangePassword, setMustChangePassword] = useState(false);
   const [disputeTarget, setDisputeTarget] = useState<Payout | null>(null);
   const [workspaceName, setWsName] = useState("");
@@ -169,6 +170,8 @@ export function PublicRepPortal() {
 
   const refreshData = () => {
     if (!accessCode) return;
+    // Don't try to fetch portal data while the user needs to change their password
+    if (mustChangePassword) return;
     setLoading(true);
     setError(null);
     setPasswordRequired(false);
@@ -214,10 +217,12 @@ export function PublicRepPortal() {
     setPasswordRequired(true);
     setSummary(null);
     setPayouts([]);
+    tempPasswordRef.current = "";
   };
 
   const handleLogin = (username: string, pwd: string, mustChange: boolean, wsName: string) => {
     setTempPassword(pwd);
+    tempPasswordRef.current = pwd;
     setWsName(wsName);
     if (mustChange) {
       setPasswordRequired(false);
@@ -339,7 +344,7 @@ export function PublicRepPortal() {
         {!loading && mustChangePassword && (
           <PortalChangePassword
             accessCode={accessCode}
-            currentPassword={tempPassword}
+            currentPassword={tempPassword || tempPasswordRef.current}
             onComplete={handlePasswordComplete}
           />
         )}
