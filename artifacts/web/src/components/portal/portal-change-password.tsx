@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ShieldAlert } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
-import { portalFetch } from "@/lib/portal-fetch";
+import { portalFetch, setPortalToken } from "@/lib/portal-fetch";
 import {
   Card,
   CardContent,
@@ -34,6 +34,8 @@ export function PortalChangePassword({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const base = import.meta.env.VITE_API_URL ?? "";
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -51,7 +53,7 @@ export function PortalChangePassword({
     setLoading(true);
 
     try {
-      const res = await portalFetch(`/api/portal/${accessCode}/change-password`, accessCode, {
+      const res = await portalFetch(`${base}/api/portal/${encodeURIComponent(accessCode)}/change-password`, accessCode, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -63,6 +65,12 @@ export function PortalChangePassword({
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || data.message || t("portal.changePasswordFailed", "Failed to change password."));
+      }
+
+      // Save the new token — the backend returns a fresh JWT with mustChangePassword: false
+      const data = await res.json();
+      if (data.token) {
+        setPortalToken(accessCode, data.token);
       }
 
       onComplete();
