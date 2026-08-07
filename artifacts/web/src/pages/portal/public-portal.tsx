@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MonthPicker } from "@/components/ui/month-picker";
 import { useToast } from "@/hooks/use-toast";
-import { portalFetch, clearPortalToken } from "@/lib/portal-fetch";
+import { portalFetch, clearPortalToken, setPortalToken } from "@/lib/portal-fetch";
 import { cn } from "@/lib/utils";
 
 import { PortalAuth } from "@/components/portal/portal-auth";
@@ -79,6 +79,7 @@ function ChangePasswordDialog({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? t("portal.public.failedToUpdatePassword"));
+      if (data.token) setPortalToken(accessCode, data.token);
       toast({ title: t("portal.public.passwordChanged") });
       setForm({ current: "", next: "", confirm: "" });
       onClose();
