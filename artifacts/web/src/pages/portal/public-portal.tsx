@@ -361,6 +361,21 @@ export function PublicRepPortal() {
           </div>
         )}
 
+        {!loading && !passwordRequired && !mustChangePassword && !summary && !error && (
+          <div className="flex flex-col items-center justify-center py-24 text-center gap-4">
+            <div className="size-16 rounded-full bg-destructive/10 flex items-center justify-center">
+              <ShieldAlert className="size-8 text-destructive" />
+            </div>
+            <h1 className="text-xl font-semibold text-foreground">{t("portal.public.portalNotFoundTitle")}</h1>
+            <p className="text-muted-foreground max-w-sm">
+              {t("portal.public.portalNotFoundDescription")}
+            </p>
+            <Button variant="outline" onClick={refreshData}>
+              {t("common.retry")}
+            </Button>
+          </div>
+        )}
+
         {!loading && !passwordRequired && !error && !mustChangePassword && summary && (
           <PortalDashboard
             summary={summary}
