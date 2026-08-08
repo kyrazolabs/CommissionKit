@@ -137,6 +137,16 @@ function getInitials(name: string): string {
   return name.slice(0, 2).toUpperCase();
 }
 
+// Guards against Invalid Date crashes — the API can return empty strings
+// for optional dates (e.g. deal.closeDate), and date-fns format() throws
+// RangeError on Invalid Date, which unmounts the whole portal.
+function formatDateSafe(value: string | null | undefined, pattern: string): string {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  return format(d, pattern);
+}
+
 export function PortalDashboard({
   summary,
   payouts,
@@ -396,7 +406,7 @@ export function PortalDashboard({
                         )}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground tabular-nums">
-                        {format(new Date(deal.closeDate), "MMM d, yyyy")}
+                        {formatDateSafe(deal.closeDate, "MMM d, yyyy")}
                       </TableCell>
                       <TableCell className="text-right tabular-nums text-sm">
                         {formatCurrency(deal.dealAmount, deal.currency)}
@@ -479,7 +489,7 @@ export function PortalDashboard({
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {payout.paymentDate
-                          ? format(new Date(payout.paymentDate), "MMM d, yyyy")
+                          ? formatDateSafe(payout.paymentDate, "MMM d, yyyy")
                           : "—"}
                       </TableCell>
                       <TableCell>
