@@ -11,6 +11,10 @@ import { auditContextMiddleware } from "./middleware/audit-context";
 
 const app: Express = express();
 
+// Respect X-Forwarded-Proto/Host set by the reverse proxy (Coolify/Traefik, nginx)
+// so req.protocol and any derived URLs use https, not the internal http scheme.
+app.set("trust proxy", true);
+
 app.use(
   pinoHttp({
     logger,
