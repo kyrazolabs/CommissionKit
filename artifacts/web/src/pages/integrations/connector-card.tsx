@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { ConnectorImage } from "./icons";
 import { ConnectDialog } from "./connect-dialog";
+import { OAuthConnectButton } from "./oauth-connect-button";
 import type { Connector } from "./types";
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
 
 export function ConnectorCard({ connector, isConnected }: Props) {
   const { t } = useTranslation();
+  const supportsOAuth = connector.features.includes("oauth_support");
   return (
     <Card className={cn("transition-colors", isConnected && "border-primary/40")}>
       <CardHeader className="pb-2">
@@ -37,7 +39,11 @@ export function ConnectorCard({ connector, isConnected }: Props) {
             <Badge key={f} variant="secondary" className="text-[10px]">{f.replace(/_/g, " ")}</Badge>
           ))}
         </div>
-        <ConnectDialog connector={connector} isConnected={isConnected} />
+        {!isConnected && supportsOAuth ? (
+          <OAuthConnectButton connector={connector} isConnected={false} />
+        ) : (
+          <ConnectDialog connector={connector} isConnected={isConnected} />
+        )}
       </CardContent>
     </Card>
   );

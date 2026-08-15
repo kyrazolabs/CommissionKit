@@ -17,7 +17,7 @@ import { MappingDialog } from "./mapping-dialog";
 import { StageMappingDialog } from "./stage-mapping-dialog";
 import { PaymentDefaultsDialog } from "./payment-defaults-dialog";
 import { StageFilterDialog } from "./stage-filter-dialog";
-import type { Connector, ConnectionStatus } from "./types";
+import type { Connector, ConnectionStatusList } from "./types";
 
 export function IntegrationsPage() {
   usePageMeta({ title: "Integrations", description: "Connect CommissionKit to your ERP or CRM.", robots: "noindex, nofollow" });
@@ -32,6 +32,7 @@ export function IntegrationsPage() {
   const [mappingError, setMappingError] = useState<string | null>(null);
   const [stageMappingConnector, setStageMappingConnector] = useState<string>("");
   const [stageMappingOpen, setStageMappingOpen] = useState(false);
+  const [paymentDefaultsConnector, setPaymentDefaultsConnector] = useState("");
   const [paymentDefaultsOpen, setPaymentDefaultsOpen] = useState(false);
   const [stageFilterOpen, setStageFilterOpen] = useState(false);
   const [stageFilterConnector, setStageFilterConnector] = useState("");
@@ -46,7 +47,7 @@ export function IntegrationsPage() {
     queryFn: () => apiFetch("/api/integrations/connectors"),
   });
 
-  const { data: status, isLoading: statusLoading } = useQuery<ConnectionStatus>({
+  const { data: status, isLoading: statusLoading } = useQuery<ConnectionStatusList>({
     queryKey: ["integrations", "status", activeWorkspace?.id],
     queryFn: () => apiFetch(`/api/integrations/${activeWorkspace?.id}/status`),
     enabled: !!activeWorkspace?.id,
@@ -54,9 +55,24 @@ export function IntegrationsPage() {
     refetchOnWindowFocus: true,
   });
 
+  const connections = status?.connections ?? [];
+  const connectedBy = new Map(connections.map((c) => [c.connectorName, c]));
+
+  // Surface a success toast when returning from the OAuth callback (?connected=<connector>)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const connected = params.get("connected");
+    if (!connected) return;
+    toast({ title: "Connected", description: connected });
+    params.delete("connected");
+    const qs = params.toString();
+    const next = `${window.location.pathname}${qs ? `?${qs}` : ""}${window.location.hash}`;
+    window.history.replaceState(window.history.state, "", next);
+  }, []);
+
   const openMappingEditor = async () => {
     try {
-      const data = await apiFetch(`/api/integrations/${activeWorkspace?.id}/config`);
+      const data = await apiFetch(`/api/integrations/${activeWorkspace?.id}/config?connector=custom`);
       setMappingJson(JSON.stringify(data?.config || data, null, 2));
     } catch {
       setMappingJson(JSON.stringify({
@@ -74,8 +90,8 @@ export function IntegrationsPage() {
   const isLoading = connectorsLoading || statusLoading;
 
   const sortedConnectors = connectors?.connectors?.slice().sort((a, b) => {
-    const aConnected = status?.connectorName === a.name ? 0 : 1;
-    const bConnected = status?.connectorName === b.name ? 0 : 1;
+    const aConnected = connectedBy.has(a.name) ? 0 : 1;
+    const bConnected = connectedBy.has(b.name) ? 0 : 1;
     const aCustom = a.name === "custom" ? 2 : aConnected;
     const bCustom = b.name === "custom" ? 2 : bConnected;
     return aCustom - bCustom;
@@ -121,19 +137,20 @@ export function IntegrationsPage() {
         <p className="text-sm text-muted-foreground mt-1">{t("integrations.description")}</p>
       </div>
 
-      {status?.connected && (
+      {connections.map((conn) => (
         <ConnectedCard
-          status={status}
+          key={conn.connectorName}
+          status={conn}
           onOpenMappingEditor={openMappingEditor}
-          onOpenStageMapping={() => { setStageMappingConnector(status.connectorName!); setStageMappingOpen(true); }}
-          onOpenPaymentDefaults={() => setPaymentDefaultsOpen(true)}
+          onOpenStageMapping={(name) => { setStageMappingConnector(name); setStageMappingOpen(true); }}
+          onOpenPaymentDefaults={(name) => { setPaymentDefaultsConnector(name); setPaymentDefaultsOpen(true); }}
           onOpenStageFilter={(name) => { setStageFilterConnector(name); setStageFilterOpen(true); }}
         />
-      )}
+      ))}
 
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold">{status?.connected ? t("integrations.switchConnector") : t("integrations.chooseConnector")}</h2>
+          <h2 className="text-lg font-semibold">{connections.length > 0 ? t("integrations.switchConnector") : t("integrations.chooseConnector")}</h2>
           {sortedConnectors && sortedConnectors.length > 1 && (
             <div className="flex gap-1">
               <button onClick={() => setCarouselIndex((i) => Math.max(0, i - 1))} disabled={carouselIndex === 0} className="flex size-8 items-center justify-center rounded-lg border hover:bg-muted disabled:opacity-30 transition-colors">
@@ -159,7 +176,7 @@ export function IntegrationsPage() {
                 transition={{ duration: 0.35 }}
                 className="w-full min-w-full md:min-w-[calc(50%-8px)]"
               >
-                <ConnectorCard connector={connector} isConnected={status?.connectorName === connector.name} />
+                <ConnectorCard connector={connector} isConnected={connectedBy.has(connector.name)} />
               </motion.div>
             ))}
           </motion.div>
@@ -190,7 +207,7 @@ export function IntegrationsPage() {
 
       <MappingDialog open={mappingOpen} onOpenChange={setMappingOpen} json={mappingJson} onJsonChange={setMappingJson} error={mappingError} onErrorChange={setMappingError} />
       <StageMappingDialog open={stageMappingOpen} onOpenChange={setStageMappingOpen} connectorName={stageMappingConnector} />
-      <PaymentDefaultsDialog open={paymentDefaultsOpen} onOpenChange={setPaymentDefaultsOpen} />
+      <PaymentDefaultsDialog open={paymentDefaultsOpen} onOpenChange={setPaymentDefaultsOpen} connectorName={paymentDefaultsConnector} />
       <StageFilterDialog open={stageFilterOpen} onOpenChange={setStageFilterOpen} connectorName={stageFilterConnector} />
     </div>
   );

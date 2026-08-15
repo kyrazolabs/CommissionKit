@@ -8,6 +8,8 @@ export interface Connector {
   version: string;
 }
 
+export type ConnectionStatusList = { connections: ConnectionStatus[] };
+
 export interface ConnectionStatus {
   connected: boolean;
   connectorName?: string;

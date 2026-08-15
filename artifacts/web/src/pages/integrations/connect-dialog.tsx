@@ -92,7 +92,7 @@ export function ConnectDialog({ connector, isConnected }: Props) {
         // Pre-populate with existing config if already connected
         if (isConnected) {
           try {
-            const data = await apiFetch(`/api/integrations/${activeWorkspace?.id}/config`);
+            const data = await apiFetch(`/api/integrations/${activeWorkspace?.id}/config?connector=${connector.name}`);
             const cfg = data?.config || data || {};
             setFormValues(Object.fromEntries(
               Object.entries(cfg as Record<string, unknown>).map(([k, v]) => [k, typeof v === 'boolean' || typeof v === 'string' ? v : String(v)])

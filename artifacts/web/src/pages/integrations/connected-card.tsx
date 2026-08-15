@@ -20,8 +20,8 @@ import type { ConnectionStatus } from "./types";
 interface Props {
   status: ConnectionStatus;
   onOpenMappingEditor: () => void;
-  onOpenStageMapping: () => void;
-  onOpenPaymentDefaults: () => void;
+  onOpenStageMapping: (connectorName: string) => void;
+  onOpenPaymentDefaults: (connectorName: string) => void;
   onOpenStageFilter: (connectorName: string) => void;
 }
 
@@ -31,29 +31,31 @@ export function ConnectedCard({ status, onOpenMappingEditor, onOpenStageMapping,
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  const connectorName = status.connectorName || "";
+
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["integrations"] });
 
   const syncReps = async () => {
-    await apiFetch(`/api/integrations/${activeWorkspace?.id}/sync/reps`, { method: "POST" });
+    await apiFetch(`/api/integrations/${activeWorkspace?.id}/sync/reps?connector=${connectorName}`, { method: "POST" });
     invalidate();
     toast({ title: t("integrations.syncStarted"), description: t("integrations.repSyncEnqueued") });
   };
 
   const syncDeals = async () => {
-    await apiFetch(`/api/integrations/${activeWorkspace?.id}/sync/deals`, { method: "POST" });
+    await apiFetch(`/api/integrations/${activeWorkspace?.id}/sync/deals?connector=${connectorName}`, { method: "POST" });
     invalidate();
     toast({ title: t("integrations.syncStarted"), description: t("integrations.dealSyncEnqueued") });
   };
 
   const updateSchedule = async (v: string) => {
-    await apiFetch(`/api/integrations/${activeWorkspace?.id}/config`, { method: "PATCH", body: JSON.stringify({ syncSchedule: { reps: v, deals: v } }) });
+    await apiFetch(`/api/integrations/${activeWorkspace?.id}/config?connector=${connectorName}`, { method: "PATCH", body: JSON.stringify({ syncSchedule: { reps: v, deals: v } }) });
     invalidate();
     const labels: Record<string, string> = { realtime: t("integrations.every10min"), hourly: t("integrations.hourly"), daily: t("integrations.daily"), manual: t("integrations.manualOnly") };
     toast({ title: t("integrations.autoSyncUpdated"), description: `${t("integrations.nowSyncing")} ${labels[v] || v}.` });
   };
 
   const disconnect = async () => {
-    await apiFetch(`/api/integrations/${activeWorkspace?.id}/disconnect`, { method: "DELETE" });
+    await apiFetch(`/api/integrations/${activeWorkspace?.id}/disconnect?connector=${connectorName}`, { method: "DELETE" });
     invalidate();
     toast({ title: "Disconnected" });
   };
@@ -109,12 +111,12 @@ export function ConnectedCard({ status, onOpenMappingEditor, onOpenStageMapping,
               )}
               {(status.connectorName === "hubspot" || status.connectorName === "salesforce") && (
                 <>
-                  <DropdownMenuItem onClick={onOpenStageMapping} className="flex items-center gap-2">
-                    <GitBranch className="size-3.5" />Stage Mapping
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={onOpenPaymentDefaults} className="flex items-center gap-2">
-                    <CreditCard className="size-3.5" />Payment Defaults
-                  </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onOpenStageMapping(connectorName)} className="flex items-center gap-2">
+                <GitBranch className="size-3.5" />Stage Mapping
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onOpenPaymentDefaults(connectorName)} className="flex items-center gap-2">
+                <CreditCard className="size-3.5" />Payment Defaults
+              </DropdownMenuItem>
                   <DropdownMenuSeparator />
                 </>
               )}
@@ -144,7 +146,7 @@ export function ConnectedCard({ status, onOpenMappingEditor, onOpenStageMapping,
           <div className="flex items-center justify-between rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
             <div className="flex items-center gap-2 min-w-0"><AlertTriangle className="size-4 shrink-0" /><span className="truncate">{status.lastError}</span></div>
             <Button variant="ghost" className="h-6 text-xs shrink-0 ml-2 hover:bg-destructive/20" onClick={async () => {
-              await apiFetch(`/api/integrations/${activeWorkspace?.id}/dismiss-error`, { method: "POST" });
+              await apiFetch(`/api/integrations/${activeWorkspace?.id}/dismiss-error?connector=${connectorName}`, { method: "POST" });
               queryClient.setQueryData(["integrations", "status", activeWorkspace?.id], (old: any) => old ? { ...old, lastError: undefined } : old);
               await queryClient.refetchQueries({ queryKey: ["integrations", "status", activeWorkspace?.id] });
             }}>{t("integrations.dismiss")}</Button>

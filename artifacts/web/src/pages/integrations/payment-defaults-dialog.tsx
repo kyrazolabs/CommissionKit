@@ -18,9 +18,10 @@ const STATUS_OPTIONS = [
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  connectorName: string;
 }
 
-export function PaymentDefaultsDialog({ open, onOpenChange }: Props) {
+export function PaymentDefaultsDialog({ open, onOpenChange, connectorName }: Props) {
   const { t } = useTranslation();
   const { activeWorkspace } = useWorkspace();
   const { toast } = useToast();
@@ -30,18 +31,18 @@ export function PaymentDefaultsDialog({ open, onOpenChange }: Props) {
   useEffect(() => {
     if (!open) return;
     setLoading(true);
-    apiFetch(`/api/integrations/${activeWorkspace?.id}/config`)
+    apiFetch(`/api/integrations/${activeWorkspace?.id}/config?connector=${connectorName}`)
       .then((data) => {
         const meta = (data as any)?.metadata || {};
         setStatus(meta.defaultPaymentStatus || "paid");
       })
       .catch(() => setStatus("paid"))
       .finally(() => setLoading(false));
-  }, [open, activeWorkspace?.id]);
+  }, [open, activeWorkspace?.id, connectorName]);
 
   const save = async () => {
     try {
-      await apiFetch(`/api/integrations/${activeWorkspace?.id}/connector/settings`, {
+      await apiFetch(`/api/integrations/${activeWorkspace?.id}/connector/settings?connector=${connectorName}`, {
         method: "PATCH",
         body: JSON.stringify({ defaultPaymentStatus: status }),
       });

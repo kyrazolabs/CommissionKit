@@ -31,7 +31,7 @@ export function StageFilterDialog({ open, onOpenChange, connectorName }: Props) 
       .then((data) => {
         setStages(data.stages || []);
         // Load existing filter
-        apiFetch(`/api/integrations/${activeWorkspace?.id}/config`)
+        apiFetch(`/api/integrations/${activeWorkspace?.id}/config?connector=${connectorName}`)
           .then((cfg) => {
             const filter = (cfg as any)?.metadata?.stageFilter;
             // null/undefined = all selected (first time), empty array = nothing selected, array = selected
@@ -56,7 +56,7 @@ export function StageFilterDialog({ open, onOpenChange, connectorName }: Props) 
 
   const save = async () => {
     try {
-      await apiFetch(`/api/integrations/${activeWorkspace?.id}/connector/settings`, {
+      await apiFetch(`/api/integrations/${activeWorkspace?.id}/connector/settings?connector=${connectorName}`, {
         method: "PATCH",
         body: JSON.stringify({ stageFilter: selected }),
       });
