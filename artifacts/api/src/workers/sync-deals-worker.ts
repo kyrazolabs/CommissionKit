@@ -4,7 +4,7 @@ import { getRedisClient, SYNC_DEALS_QUEUE } from "@workspace/queue";
 import type { SyncDealsPayload } from "@workspace/queue";
 import { pluginRegistry } from "@workspace/plugins-core";
 import { logger } from "../lib/logger";
-import { decryptConfig } from "../lib/crypto";
+import { ensureFreshConfig } from "../lib/integrations/oauth";
 import * as Sentry from "@sentry/bun";
 import { acquireWorkspaceLock } from "../lib/sync/lock";
 import { upsertDeals } from "../lib/sync/upsert-engine";
@@ -50,10 +50,7 @@ export const syncDealsWorker = new Worker<SyncDealsPayload>(
       try {
         await job.updateProgress(10);
 
-        const pluginConfig = {
-          ...(decryptConfig(conn.config as string) || {}),
-          _metadata: conn.metadata || {},
-        };
+        const pluginConfig = await ensureFreshConfig(conn, plugin);
 
         const deals = await plugin.fetchDeals(
           workspaceId,
