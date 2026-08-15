@@ -1,14 +1,17 @@
 import { createHmac } from "crypto";
 import { IntegrationConnection } from "@workspace/db";
 import type { CKitPlugin, ConnectionConfig } from "@workspace/plugins-core";
+import { pluginRegistry } from "@workspace/plugins-core";
 import { HubSpotClient } from "@workspace/plugins-hubspot";
 import { SalesforceClient } from "@workspace/plugins-salesforce";
 import { decryptConfig, encryptConfig } from "../crypto";
+import { logAudit } from "../../lib/audit";
 import { logger } from "../logger";
 import { startSyncs } from "./sync";
 
 function hmac(payload: string): string {
-  const secret = process.env.SESSION_SECRET || "dev-secret";
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) throw new Error("SESSION_SECRET is required for OAuth state signing");
   return createHmac("sha256", secret).update(payload).digest("hex");
 }
 
@@ -25,7 +28,15 @@ export function verifyState(state: string): { workspaceId: string; connector: st
   return { workspaceId, connector };
 }
 
-export async function ensureFreshConfig(conn: IntegrationConnection, plugin: CKitPlugin): Promise<ConnectionConfig> {
+interface IntegrationConnectionLike {
+  _id: unknown;
+  workspaceId: unknown;
+  connectorName: string;
+  config: unknown;
+  metadata?: unknown;
+}
+
+export async function ensureFreshConfig(conn: IntegrationConnectionLike, plugin: CKitPlugin): Promise<ConnectionConfig> {
   const config = decryptConfig(conn.config as string) ?? {};
   if (config.authType !== "oauth") return { ...config, _metadata: conn.metadata ?? {} };
   const expiresAt = Number(config.expiresAt) || 0;
@@ -34,7 +45,7 @@ export async function ensureFreshConfig(conn: IntegrationConnection, plugin: CKi
   logger.info({ workspaceId: conn.workspaceId, connector: conn.connectorName }, "[OAuth] Refreshing access token");
   const patch = await plugin.refreshTokens(config);
   const merged = { ...config, ...patch };
-  await IntegrationConnection.updateOne({ _id: conn._id }, { config: encryptConfig(merged) });
+  await IntegrationConnection.updateOne({ _id: conn._id } as any, { config: encryptConfig(merged) });
   return { ...merged, _metadata: conn.metadata ?? {} };
 }
 
@@ -109,6 +120,14 @@ export async function handleOAuthCallback(
     },
     { upsert: true, new: true },
   );
+
+  const plugin = pluginRegistry.get(connector);
+  if (plugin) await plugin.init(workspaceId, config);
+  logAudit("integration_connected", "integration", {
+    workspaceId,
+    resourceName: connector,
+    metadata: { connectorName: connector, viaOAuth: true },
+  }).catch(() => {});
 
   logger.info({ workspaceId, connector }, "[OAuth] Connection persisted");
   await startSyncs(workspaceId, connector);

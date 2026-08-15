@@ -378,9 +378,14 @@ router.post(
   ...requirePermission("workspace", "edit"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
+    const connectorName = req.query.connector as string | undefined;
+    if (!connectorName) {
+      res.status(400).json({ error: "connector query param required" });
+      return;
+    }
 
     await IntegrationConnection.findOneAndUpdate(
-      { workspaceId },
+      { workspaceId, connectorName },
       { lastError: '' },
     );
 
@@ -597,7 +602,13 @@ router.get(
     if (!plugin) { res.status(404).json({ error: "Connector not found" }); return; }
     const redirectUri = process.env[`${connector.toUpperCase()}_REDIRECT_URI`] || `${req.protocol}://${req.get("host")}/api/integrations/oauth/${connector}/callback`;
     const state = signState(workspaceId, connector);
-    const url = buildOAuthStartUrl(connector, redirectUri, state);
+    let url: string;
+    try {
+      url = buildOAuthStartUrl(connector, redirectUri, state);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || "OAuth start failed" });
+      return;
+    }
     res.redirect(url);
   },
 );
@@ -609,7 +620,8 @@ router.get(
     const code = req.query.code as string;
     const state = req.query.state as string;
     try {
-      verifyState(state || "");
+      const { connector: stateConnector } = verifyState(state || "");
+      if (stateConnector !== connector) { res.status(400).send("OAuth state/connector mismatch"); return; }
       if (!code) { res.status(400).send("Missing code"); return; }
       const redirectUri = process.env[`${connector.toUpperCase()}_REDIRECT_URI`] || `${req.protocol}://${req.get("host")}/api/integrations/oauth/${connector}/callback`;
       await handleOAuthCallback(connector, code, state, redirectUri);

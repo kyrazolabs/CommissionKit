@@ -1,12 +1,16 @@
 import { describe, test, expect, beforeAll, beforeEach, mock } from "bun:test";
+import { pluginRegistry } from "@workspace/plugins-core";
 
 let updateOneMock: any;
 let findOneAndUpdateMock: any;
+let enqueueAuditEventMock: any;
+let pluginInitMock: any;
 
 mock.module("@workspace/queue", () => ({
   syncRepsQueue: { add: mock(() => Promise.resolve()) },
   syncDealsQueue: { add: mock(() => Promise.resolve()) },
   getRedisClient: () => ({}),
+  enqueueAuditEvent: (...args: any[]) => enqueueAuditEventMock(...args),
 }));
 
 mock.module("@workspace/db", () => ({
@@ -21,6 +25,9 @@ const cryptoMod: typeof import("../crypto") = {} as any;
 
 beforeAll(async () => {
   process.env.SESSION_SECRET = "test-session-secret-for-oauth";
+  enqueueAuditEventMock = mock(() => Promise.resolve());
+  pluginInitMock = mock(async () => {});
+  pluginRegistry.register({ name: "hubspot", init: pluginInitMock } as any);
   Object.assign(oauthMod, await import("./oauth"));
   Object.assign(cryptoMod, await import("../crypto"));
 });
@@ -28,6 +35,8 @@ beforeAll(async () => {
 beforeEach(() => {
   updateOneMock = mock(() => Promise.resolve());
   findOneAndUpdateMock = mock(() => Promise.resolve());
+  pluginInitMock.mockClear();
+  enqueueAuditEventMock.mockClear();
 });
 
 describe("OAuth state signing", () => {
@@ -173,5 +182,25 @@ describe("handleOAuthCallback", () => {
     await expect(
       oauthMod.handleOAuthCallback("hubspot", "code", "bad-state", "https://x/cb"),
     ).rejects.toThrow("Invalid OAuth state");
+  });
+
+  test("calls plugin.init and writes an audit event", async () => {
+    globalThis.fetch = mock(async () =>
+      new Response(JSON.stringify({ access_token: "at", refresh_token: "rt", expires_in: 1800 }), {
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    const state = oauthMod.signState("ws-1", "hubspot");
+    await oauthMod.handleOAuthCallback("hubspot", "code123", state, "https://x/cb");
+
+    expect(pluginInitMock).toHaveBeenCalled();
+    expect(enqueueAuditEventMock).toHaveBeenCalled();
+
+    const payload = enqueueAuditEventMock.mock.calls[0][0];
+    expect(payload.action).toBe("integration_connected");
+    expect(payload.resourceType).toBe("integration");
+    expect(payload.workspaceId).toBe("ws-1");
+    expect(payload.metadata).toEqual({ connectorName: "hubspot", viaOAuth: true });
   });
 });

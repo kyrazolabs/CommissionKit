@@ -293,10 +293,29 @@ describe("OAuth start + callback routes", () => {
     expect(config.authType).toBe("oauth");
     expect(config.accessToken).toBe("at");
     expect(config.refreshToken).toBe("rt");
+
+    const hubPlugin = pluginRegistry.get("hubspot");
+    expect(hubPlugin).toBeTruthy();
+    expect((hubPlugin as any).init).toHaveBeenCalled();
   });
 
   test("callback rejects tampered state", async () => {
     const res = await request(app).get("/api/integrations/oauth/hubspot/callback?code=code123&state=tampered");
     expect(res.status).toBe(500);
+  });
+
+  test("callback rejects state signed for a different connector", async () => {
+    globalThis.fetch = mock(async () =>
+      new Response(JSON.stringify({ access_token: "at", refresh_token: "rt", expires_in: 1800 }), {
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    const state = signState(workspaceId, "salesforce");
+    const res = await request(app).get(`/api/integrations/oauth/hubspot/callback?code=code123&state=${encodeURIComponent(state)}`);
+
+    expect(res.status).toBe(400);
+    const conn = await IntegrationConnection.findOne({ workspaceId, connectorName: "hubspot" });
+    expect(conn).toBeFalsy();
   });
 });
