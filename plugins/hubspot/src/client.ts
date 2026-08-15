@@ -67,7 +67,7 @@ export class HubSpotClient {
       redirect_uri: redirectUri,
       code,
     });
-    const res = await fetch(`${HUBSPOT_API}/oauth/v1/token`, {
+    const res = await fetch(`${HUBSPOT_API}/oauth/v3/token`, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: params.toString(),
@@ -95,7 +95,7 @@ export class HubSpotClient {
       client_secret: clientSecret,
       refresh_token: refreshToken,
     });
-    const res = await fetch(`${HUBSPOT_API}/oauth/v1/token`, {
+    const res = await fetch(`${HUBSPOT_API}/oauth/v3/token`, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: params.toString(),

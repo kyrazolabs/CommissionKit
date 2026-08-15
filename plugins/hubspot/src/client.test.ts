@@ -5,15 +5,18 @@ describe("HubSpotClient", () => {
   afterEach(() => { mock.restore(); });
 
   test("exchanges OAuth code for tokens (static method)", async () => {
-    globalThis.fetch = (async () => {
+    let capturedUrl = "";
+    globalThis.fetch = mock(async (url: any) => {
+      capturedUrl = String(url);
       return new Response(JSON.stringify({
         access_token: "at-123",
         refresh_token: "rt-456",
         expires_in: 1800,
       }), { headers: { "Content-Type": "application/json" } });
-    }) as any;
+    });
 
     const tokens = await HubSpotClient.exchangeCode("cid", "csecret", "https://example.com/cb", "auth-code");
+    expect(capturedUrl).toBe("https://api.hubapi.com/oauth/v3/token");
     expect(tokens.accessToken).toBe("at-123");
     expect(tokens.refreshToken).toBe("rt-456");
     expect(tokens.expiresIn).toBe(1800);
@@ -49,7 +52,7 @@ describe("HubSpotClient", () => {
       }), { headers: { "Content-Type": "application/json" } });
     });
     const res = await HubSpotClient.refreshAccessToken("cid", "csec", "rt-old");
-    expect(capturedUrl).toBe("https://api.hubapi.com/oauth/v1/token");
+    expect(capturedUrl).toBe("https://api.hubapi.com/oauth/v3/token");
     expect(capturedBody).toContain("grant_type=refresh_token");
     expect(capturedBody).toContain("refresh_token=rt-old");
     expect(res.accessToken).toBe("new-at");
