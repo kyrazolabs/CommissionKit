@@ -14,6 +14,7 @@ import { logger } from "../../lib/logger";
 import { encryptConfig, decryptConfig, stripSensitiveFields } from "../../lib/crypto";
 import { webhookRateLimit } from "../../middleware/rate-limiter";
 import { logAudit } from "../../lib/audit";
+import { startSyncs } from "../../lib/integrations/sync";
 
 const router: IRouter = Router();
 
@@ -189,37 +190,8 @@ router.post(
         { upsert: true, new: true },
       );
 
-      // Enqueue initial syncs
-      await syncRepsQueue.add(`initial-reps-${workspaceId}`, {
-        workspaceId,
-        connectorName,
-        trigger: "initial",
-      });
-
-      await syncDealsQueue.add(`initial-deals-${workspaceId}`, {
-        workspaceId,
-        connectorName,
-        trigger: "initial",
-      });
-
-      // Schedule periodic syncs (only if not set to manual)
-      if (syncSchedule?.reps !== "manual") {
-        const repInterval = syncSchedule?.reps === "realtime" ? 600_000 : syncSchedule?.reps === "daily" ? 86_400_000 : 3_600_000;
-        await syncRepsQueue.add(
-          `scheduled-reps-${workspaceId}`,
-          { workspaceId, connectorName, trigger: "scheduled" },
-          { repeat: { every: repInterval }, jobId: `scheduled-reps-${workspaceId}`, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
-        );
-      }
-
-      if (syncSchedule?.deals !== "manual") {
-        const dealInterval = syncSchedule?.deals === "realtime" ? 600_000 : syncSchedule?.deals === "daily" ? 86_400_000 : 3_600_000;
-        await syncDealsQueue.add(
-          `scheduled-deals-${workspaceId}`,
-          { workspaceId, connectorName, trigger: "scheduled" },
-          { repeat: { every: dealInterval }, jobId: `scheduled-deals-${workspaceId}`, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
-        );
-      }
+      // Enqueue initial syncs + schedule periodic syncs
+      await startSyncs(workspaceId, connectorName, syncSchedule);
 
       const webhookUrl = `${process.env.API_BASE_URL || "http://localhost:8088"}/api/integrations/webhooks/${connectorName}`;
 
