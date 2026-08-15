@@ -169,6 +169,15 @@ export class HubSpotConnector extends BasePlugin {
     // HubSpot webhooks use request signature verification (v3)
   }
 
+  async refreshTokens(config: ConnectionConfig): Promise<ConnectionConfig> {
+    const clientId = process.env.HUBSPOT_CLIENT_ID;
+    const clientSecret = process.env.HUBSPOT_CLIENT_SECRET;
+    if (!clientId || !clientSecret) throw new Error("HubSpot OAuth not configured (HUBSPOT_CLIENT_ID/SECRET)");
+    if (!config.refreshToken) throw new Error("HubSpot refresh token missing");
+    const t = await HubSpotClient.refreshAccessToken(clientId, clientSecret, config.refreshToken as string);
+    return { accessToken: t.accessToken, refreshToken: t.refreshToken, expiresAt: Date.now() + t.expiresIn * 1000 };
+  }
+
   parseWebhook(_payload: unknown): IngresEvent[] {
     return [];
   }
@@ -201,7 +210,7 @@ export class HubSpotConnector extends BasePlugin {
       description: this.description,
       icon: this.icon,
       category: "crm",
-      features: ["sync_reps", "sync_deals"],
+      features: ["sync_reps", "sync_deals", "oauth_support"],
       setupGuideUrl: "https://docs.commissionkit.com/integrations/hubspot",
     };
   }
