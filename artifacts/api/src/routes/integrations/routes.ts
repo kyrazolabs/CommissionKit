@@ -8,6 +8,7 @@ import {
 } from "@workspace/queue";
 import {
   requirePermission,
+  requirePermissionFromPath,
   type AuthenticatedRequest,
 } from "../../middleware/auth";
 import { logger } from "../../lib/logger";
@@ -595,7 +596,7 @@ router.post(
 
 router.get(
   "/:workspaceId/oauth/start/:connector",
-  ...requirePermission("workspace", "edit"),
+  ...requirePermissionFromPath("workspace", "edit"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const { workspaceId, connector } = req.params as { workspaceId: string; connector: string };
     const plugin = pluginRegistry.get(connector);

@@ -266,6 +266,15 @@ describe("OAuth start + callback routes", () => {
     expect(res.headers.location).toContain("client_id=hs-cid");
   });
 
+  test("start route resolves workspace from path param without X-Workspace-ID header", async () => {
+    const res = await request(app)
+      .get(`/api/integrations/${workspaceId}/oauth/start/hubspot`);
+
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toContain("https://app.hubspot.com/oauth/authorize?");
+    expect(res.headers.location).toContain("client_id=hs-cid");
+  });
+
   test("start route 404s for unknown connector", async () => {
     const res = await request(app)
       .get(`/api/integrations/${workspaceId}/oauth/start/nope`)

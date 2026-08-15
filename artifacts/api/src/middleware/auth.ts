@@ -109,6 +109,43 @@ export function requireWorkspaceMember(
   return [requireAuth as RequestHandler, memberCheck];
 }
 
+async function checkWorkspacePermission(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+  workspaceId: string,
+  resource: string,
+  action: string,
+): Promise<void> {
+  const userId = req.userId!;
+  const userEmail = req.userEmail ?? "";
+
+  let member = await WorkspaceMember.findOne({
+    workspaceId: new Types.ObjectId(workspaceId),
+    userId,
+  });
+  if (!member && userEmail) {
+    const pending = await WorkspaceMember.findOne({
+      workspaceId: new Types.ObjectId(workspaceId),
+      userId: null,
+      email: userEmail,
+    });
+    if (pending) { pending.userId = userId; await pending.save(); member = pending; }
+  }
+  if (!member) { res.status(403).json({ error: "Access denied: not a member of this workspace" }); return; }
+
+  const permissions = await getUserPermissions(workspaceId, userId);
+  if (!hasPermission(permissions, resource, action)) {
+    res.status(403).json({ error: `This action requires the '${resource}:${action}' permission.` });
+    return;
+  }
+
+  req.workspaceId = workspaceId;
+  req.permissions = permissions;
+  req.workspaceRole = (member.role as any) || "member";
+  next();
+}
+
 /**
  * Returns an array of [requireAuth, permissionCheck] middleware.
  * Spread into route definitions: router.get('/path', ...requirePermission('deals', 'read'), handler)
@@ -120,63 +157,32 @@ export function requirePermission(
   resource: string,
   action: string
 ): RequestHandler[] {
-  const permissionCheck: RequestHandler = async (
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
+  const permissionCheck: RequestHandler = async (req, res, next) => {
     const raw = req.headers["x-workspace-id"];
     const workspaceId = Array.isArray(raw) ? raw[0] : (raw ?? "");
-    if (!workspaceId) {
-      res.status(400).json({ error: "X-Workspace-ID header is required" });
-      return;
-    }
-
-    const userId = req.userId!;
-    
-    // Auto-accept invites if they just landed here
-    const userEmail = req.userEmail ?? "";
-    let member = await WorkspaceMember.findOne({
-      workspaceId: new Types.ObjectId(workspaceId),
-      userId,
-    });
-
-    if (!member && userEmail) {
-      const pending = await WorkspaceMember.findOne({
-        workspaceId: new Types.ObjectId(workspaceId),
-        userId: null,
-        email: userEmail,
-      });
-
-      if (pending) {
-        pending.userId = userId;
-        await pending.save();
-        member = pending;
-      }
-    }
-
-    if (!member) {
-      res.status(403).json({ error: "Access denied: not a member of this workspace" });
-      return;
-    }
-
-    // Get cached permissions via RBAC lib
-    const permissions = await getUserPermissions(workspaceId, userId);
-
-    if (!hasPermission(permissions, resource, action)) {
-      res.status(403).json({
-        error: `This action requires the '${resource}:${action}' permission.`,
-      });
-      return;
-    }
-
-    req.workspaceId = workspaceId;
-    req.permissions = permissions;
-    // Set a legacy role for backward compatibility with some frontend logic if needed
-    req.workspaceRole = (member.role as any) || "member";
-    next();
+    if (!workspaceId) { res.status(400).json({ error: "X-Workspace-ID header is required" }); return; }
+    await checkWorkspacePermission(req, res, next, workspaceId, resource, action);
   };
+  return [requireAuth as RequestHandler, permissionCheck];
+}
 
+/**
+ * Returns an array of [requireAuth, permissionCheck] middleware, resolving the
+ * workspace ID from a URL path param instead of the X-Workspace-ID header.
+ * Use for browser-navigation routes (e.g. OAuth redirects) that carry the
+ * session cookie but not the custom header.
+ */
+export function requirePermissionFromPath(
+  resource: string,
+  action: string,
+  paramName = "workspaceId",
+): RequestHandler[] {
+  const permissionCheck: RequestHandler = async (req, res, next) => {
+    const raw = req.params[paramName];
+    const workspaceId = Array.isArray(raw) ? raw[0] : (raw ?? "");
+    if (!workspaceId) { res.status(400).json({ error: `${paramName} path param is required` }); return; }
+    await checkWorkspacePermission(req, res, next, workspaceId, resource, action);
+  };
   return [requireAuth as RequestHandler, permissionCheck];
 }
 
