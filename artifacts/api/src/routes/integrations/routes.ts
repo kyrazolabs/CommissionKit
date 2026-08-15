@@ -174,7 +174,7 @@ router.post(
       ).join("");
 
       const conn = await IntegrationConnection.findOneAndUpdate(
-        { workspaceId },
+        { workspaceId, connectorName },
         {
           workspaceId,
           connectorName,
