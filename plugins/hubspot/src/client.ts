@@ -77,6 +77,34 @@ export class HubSpotClient {
     return { accessToken: data.access_token, refreshToken: data.refresh_token, expiresIn: data.expires_in };
   }
 
+  static buildAuthorizeUrl(clientId: string, redirectUri: string, state: string): string {
+    const params = new URLSearchParams({
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      scope: "crm.objects.owners.read crm.objects.deals.read",
+      response_type: "code",
+      state,
+    });
+    return `https://app.hubspot.com/oauth/authorize?${params.toString().replace(/\+/g, "%20")}`;
+  }
+
+  static async refreshAccessToken(clientId: string, clientSecret: string, refreshToken: string): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
+    const params = new URLSearchParams({
+      grant_type: "refresh_token",
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+    });
+    const res = await fetch(`${HUBSPOT_API}/oauth/v1/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params.toString(),
+    });
+    if (!res.ok) throw new Error(`HubSpot token refresh failed: HTTP ${res.status}`);
+    const data = (await res.json()) as TokenResponse;
+    return { accessToken: data.access_token, refreshToken: data.refresh_token, expiresIn: data.expires_in };
+  }
+
   async getOwners(): Promise<HubSpotOwner[]> {
     const owners: HubSpotOwner[] = [];
     let after: string | undefined;

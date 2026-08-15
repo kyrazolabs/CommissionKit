@@ -35,4 +35,34 @@ describe("HubSpotClient", () => {
     const client = new HubSpotClient("bad-token");
     await expect(client.getOwners()).rejects.toThrow("HTTP 401");
   });
+
+  test("refreshAccessToken posts a refresh_token grant", async () => {
+    let capturedUrl = "";
+    let capturedBody = "";
+    globalThis.fetch = mock(async (url: any, init: any) => {
+      capturedUrl = String(url);
+      capturedBody = String(init?.body || "");
+      return new Response(JSON.stringify({
+        access_token: "new-at",
+        refresh_token: "new-rt",
+        expires_in: 1800,
+      }), { headers: { "Content-Type": "application/json" } });
+    });
+    const res = await HubSpotClient.refreshAccessToken("cid", "csec", "rt-old");
+    expect(capturedUrl).toBe("https://api.hubapi.com/oauth/v1/token");
+    expect(capturedBody).toContain("grant_type=refresh_token");
+    expect(capturedBody).toContain("refresh_token=rt-old");
+    expect(res.accessToken).toBe("new-at");
+    expect(res.refreshToken).toBe("new-rt");
+    expect(res.expiresIn).toBe(1800);
+  });
+
+  test("buildAuthorizeUrl encodes the OAuth params", () => {
+    const url = HubSpotClient.buildAuthorizeUrl("cid", "https://x/cb", "st");
+    expect(url).toContain("https://app.hubspot.com/oauth/authorize?");
+    expect(url).toContain("response_type=code");
+    expect(url).toContain("scope=crm.objects.owners.read%20crm.objects.deals.read");
+    expect(url).toContain("client_id=cid");
+    expect(url).toContain("state=st");
+  });
 });
