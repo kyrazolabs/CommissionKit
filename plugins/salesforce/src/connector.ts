@@ -172,6 +172,16 @@ export class SalesforceConnector extends BasePlugin {
     // Salesforce webhooks use Outbound Messages / Change Data Capture
   }
 
+  async refreshTokens(config: ConnectionConfig): Promise<ConnectionConfig> {
+    const clientId = process.env.SALESFORCE_CLIENT_ID;
+    const clientSecret = process.env.SALESFORCE_CLIENT_SECRET;
+    if (!clientId || !clientSecret) throw new Error("Salesforce OAuth not configured (SALESFORCE_CLIENT_ID/SECRET)");
+    if (!config.refreshToken) throw new Error("Salesforce refresh token missing");
+    const instanceUrl = (config.instanceUrl as string) || "https://login.salesforce.com";
+    const t = await SalesforceClient.refreshAccessToken(instanceUrl, clientId, clientSecret, config.refreshToken as string);
+    return { accessToken: t.accessToken, refreshToken: t.refreshToken, instanceUrl, expiresAt: Date.now() + t.expiresIn * 1000 };
+  }
+
   parseWebhook(_payload: unknown): IngresEvent[] {
     return [];
   }
@@ -179,7 +189,7 @@ export class SalesforceConnector extends BasePlugin {
   getSettingsSchema(): JsonSchema {
     return {
       type: "object",
-      required: ["instanceUrl"],
+      required: [],
       properties: {
         instanceUrl: {
           type: "string",
@@ -241,7 +251,7 @@ export class SalesforceConnector extends BasePlugin {
       description: this.description,
       icon: this.icon,
       category: "crm",
-      features: ["sync_reps", "sync_deals"],
+      features: ["sync_reps", "sync_deals", "oauth_support"],
       setupGuideUrl: "https://docs.commissionkit.com/integrations/salesforce",
     };
   }
