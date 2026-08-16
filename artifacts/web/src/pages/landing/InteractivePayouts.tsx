@@ -41,8 +41,8 @@ const payoutData: Payout[] = [
 ];
 
 const initialDisputes = [
-  { id: "DSP-001", rep: "Alex Kim", deal: "Initech Upsell", reason: "Missing bonus accelerator on deal above $15k — should have received 8% instead of 5% on the full deal amount.", status: "under_review", created: "Jul 6, 2024" },
-  { id: "DSP-002", rep: "Mike Chen", deal: "Globex Renewal", reason: "Tier boundary calculated incorrectly for split deal — the second half should have fallen into the higher tier.", status: "resolved", created: "Jul 4, 2024", resolvedAt: "Jul 5, 2024", adminNotes: "Confirmed — recalculated and adjusted payout." },
+  { id: "DSP-001", rep: "Alex Kim", deal: "Initech Upsell", reason: "Missing bonus accelerator on deal above $15k. Should have received 8% instead of 5% on the full deal amount.", status: "under_review", created: "Jul 6, 2024" },
+  { id: "DSP-002", rep: "Mike Chen", deal: "Globex Renewal", reason: "Tier boundary calculated incorrectly for split deal. The second half should have fallen into the higher tier.", status: "resolved", created: "Jul 4, 2024", resolvedAt: "Jul 5, 2024", adminNotes: "Confirmed. Recalculated and adjusted payout." },
 ];
 
 function fmtCurrency(n: number) {
@@ -108,7 +108,7 @@ export function InteractivePayouts() {
 
   function resolveDispute(id: string) {
     setDisputes((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, status: "resolved", resolvedAt: "Jul 7, 2024", adminNotes: "Reviewed — commission recalculated." } : d))
+      prev.map((d) => (d.id === id ? { ...d, status: "resolved", resolvedAt: "Jul 7, 2024", adminNotes: "Reviewed. Commission recalculated." } : d))
     );
   }
 

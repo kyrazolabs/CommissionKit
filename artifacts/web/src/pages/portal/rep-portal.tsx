@@ -45,6 +45,16 @@ const PAYOUT_STATUS_CLASSES: Record<string, string> = {
   on_hold: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 border-gray-200/50",
 };
 
+// Guards against Invalid Date crashes — the API can return empty strings
+// for optional dates (e.g. deal.closeDate), and date-fns format() throws
+// RangeError on Invalid Date, which unmounts the whole portal.
+function formatDateSafe(value: string | null | undefined, pattern: string): string {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  return format(d, pattern);
+}
+
 // ─── Payouts Section ──────────────────────────────────────────────────────────
 
 function PayoutsSection({ payouts, isLoading, currency, t, statusI18n, statusClasses }: any) {
@@ -87,7 +97,7 @@ function PayoutsSection({ payouts, isLoading, currency, t, statusI18n, statusCla
                 return (
                   <TableRow key={p.id}>
                     <TableCell className="text-sm text-muted-foreground">
-                      {format(new Date(p.periodStart), "MMM d")}–{format(new Date(p.periodEnd), "MMM d, yyyy")}
+                      {formatDateSafe(p.periodStart, "MMM d")}–{formatDateSafe(p.periodEnd, "MMM d, yyyy")}
                     </TableCell>
                     <TableCell className="text-right text-sm tabular-nums">{formatCurrency(p.commissionAmount, p.currency)}</TableCell>
                     <TableCell className={cn("text-right text-sm tabular-nums", p.adjustments < 0 ? "text-red-600" : p.adjustments > 0 ? "text-green-600" : "text-muted-foreground")}>
@@ -96,7 +106,7 @@ function PayoutsSection({ payouts, isLoading, currency, t, statusI18n, statusCla
                     <TableCell className="text-right text-sm font-semibold tabular-nums">{formatCurrency(p.finalAmount, p.currency)}</TableCell>
                     <TableCell><span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold", statusClass)}>{t(statusKey)}</span></TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {p.actualPaymentDate ? format(new Date(p.actualPaymentDate), "MMM d, yyyy") : "—"}
+                      {formatDateSafe(p.actualPaymentDate, "MMM d, yyyy")}
                     </TableCell>
                   </TableRow>
                 );
@@ -350,7 +360,7 @@ export function RepPortal() {
                         <div className="text-xs text-muted-foreground mt-0.5">{deal.calculationNote}</div>
                         {dealCurrency !== currency && (<Badge variant="outline" className="mt-0.5 text-[10px] p-1.5 h-4">{dealCurrency}</Badge>)}
                       </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">{format(new Date(deal.closeDate), "MMM d")}</TableCell>
+                      <TableCell className="text-muted-foreground text-sm">{formatDateSafe(deal.closeDate, "MMM d")}</TableCell>
                       <TableCell className="text-right"><CurrencyCell amount={deal.dealAmount} currency={dealCurrency} wsCurrency={deal.wsCurrency ?? currency} convertedAmount={deal.convertedDealAmount} exchangeRateSnapshot={deal.exchangeRateSnapshot} rateSnapshotDate={deal.rateSnapshotDate} /></TableCell>
                       <TableCell className="text-right font-medium">{formatPercent(deal.rateApplied)}</TableCell>
                       <TableCell className="text-right font-semibold text-primary"><CurrencyCell amount={deal.commissionAmount} currency={dealCurrency} wsCurrency={deal.wsCurrency ?? currency} convertedAmount={deal.convertedCommission} exchangeRateSnapshot={deal.exchangeRateSnapshot} rateSnapshotDate={deal.rateSnapshotDate} /></TableCell>

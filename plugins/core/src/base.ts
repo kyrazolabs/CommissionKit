@@ -59,4 +59,5 @@ export abstract class BasePlugin implements CKitPlugin {
 
   async writeBackCommission?(_workspaceId: string, _config: ConnectionConfig, _results: CommissionWriteBack[]): Promise<WriteBackResult[]>;
   async writeBackPayoutStatus?(_workspaceId: string, _config: ConnectionConfig, _payouts: PayoutWriteBack[]): Promise<WriteBackResult[]>;
+  async refreshTokens?(config: ConnectionConfig): Promise<ConnectionConfig> { return config; }
 }

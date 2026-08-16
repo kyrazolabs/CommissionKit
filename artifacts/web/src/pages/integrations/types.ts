@@ -6,7 +6,10 @@ export interface Connector {
   category: string;
   features: string[];
   version: string;
+  setupGuideUrl?: string;
 }
+
+export type ConnectionStatusList = { connections: ConnectionStatus[] };
 
 export interface ConnectionStatus {
   connected: boolean;

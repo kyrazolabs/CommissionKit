@@ -1,0 +1,40 @@
+{
+  "uid": "CommissionKit_app",
+  "type": "app",
+  "config": {
+    "description": "CommissionKit connects your HubSpot deals and owners to calculate sales commissions.",
+    "name": "CommissionKit",
+    "distribution": "marketplace",
+    "auth": {
+      "type": "oauth",
+      "redirectUrls": [
+        "https://app.commissionkit.co/api/integrations/oauth/hubspot/callback",
+        "https://staging.commissionk.it/api/integrations/oauth/hubspot/callback",
+        "https://staging.commissionkit.co/api/integrations/oauth/hubspot/callback",
+        "https://dev.commissionkit.co/api/integrations/oauth/hubspot/callback",
+        "http://localhost:8088/api/integrations/oauth/hubspot/callback"
+      ],
+      "requiredScopes": [
+        "oauth",
+        "crm.objects.deals.read",
+        "crm.objects.owners.read",
+        "crm.schemas.deals.read"
+      ],
+      "optionalScopes": [],
+      "conditionallyRequiredScopes": []
+    },
+    "permittedUrls": {
+      "fetch": [
+        "https://api.hubapi.com"
+      ],
+      "iframe": [],
+      "img": []
+    },
+    "support": {
+      "supportEmail": "support@commissionkit.co",
+      "documentationUrl": "https://commissionkit.co",
+      "supportUrl": "https://commissionkit.co/contact",
+      "supportPhone": ""
+    }
+  }
+}

@@ -650,7 +650,7 @@ export function RepPortalLanding() {
                 Stop being your reps' commission calculator.
               </h2>
               <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
-                Set up CommissionKit in under 10 minutes. Import your deals, configure your plans, run your first calculation. Then give every rep their access code and watch the "what's my commission?" messages stop. Free for 14 days. No credit card required.
+                Set up CommissionKit in under 30 minutes. Import your deals, configure your plans, run your first calculation. Then give every rep their access code and watch the "what's my commission?" messages stop. Free for 14 days. No credit card required.
               </p>
             </div>
             <div className="flex flex-row gap-3 justify-center">
@@ -667,7 +667,7 @@ export function RepPortalLanding() {
               </a>
             </div>
             <p className="text-xs text-muted-foreground">
-              No credit card required · Set up in under 10 minutes · Cancel anytime
+              No credit card required · Set up in under 30 minutes · Cancel anytime
             </p>
           </div>
         </section>

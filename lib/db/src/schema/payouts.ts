@@ -28,6 +28,8 @@ const PayoutSchema = new Schema(
     scheduledPaymentDate: { type: Date },
     actualPaymentDate:    { type: Date },
     notes: { type: String },
+    /** CommissionRuns that contributed to this payout (empty for manual payouts) */
+    runIds: [{ type: Schema.Types.ObjectId, ref: "CommissionRun" }],
     /** Internal log of status changes for audit trail */
     statusHistory: [
       {
@@ -44,6 +46,8 @@ const PayoutSchema = new Schema(
 PayoutSchema.index({ workspaceId: 1, repId: 1 });
 PayoutSchema.index({ workspaceId: 1, status: 1 });
 PayoutSchema.index({ workspaceId: 1, periodStart: 1, periodEnd: 1 });
+// Compound index for dedup: same rep + same period = one payout target
+PayoutSchema.index({ workspaceId: 1, repId: 1, periodStart: 1, periodEnd: 1 }, { unique: false });
 
 PayoutSchema.plugin(auditPlugin({ resourceType: "payout" }));
 
@@ -60,6 +64,7 @@ export type Payout = mongoose.Document & {
   finalAmount: number;
   currency: string;
   status: "pending" | "approved" | "paid" | "disputed" | "on_hold";
+  runIds: Types.ObjectId[];
   paymentMethod?: "payroll" | "bank_transfer" | "other";
   scheduledPaymentDate?: Date;
   actualPaymentDate?: Date;
@@ -76,6 +81,7 @@ export const createPayoutSchema = z.object({
   commissionAmount: z.number().min(0),
   adjustments:      z.number().default(0),
   currency:         z.string().optional(),
+  runIds:           z.array(z.string()).optional(),
   paymentMethod:    z.enum(["payroll", "bank_transfer", "other"]).optional(),
   scheduledPaymentDate: z.string().optional(),
   notes:            z.string().optional(),

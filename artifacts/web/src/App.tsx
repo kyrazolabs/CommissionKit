@@ -121,7 +121,7 @@ function Layout({ children }: { children: React.ReactNode }) {
         ) : (
           <Sidebar />
         )}
-        <div className="flex-1 flex flex-col px-3 pb-3 overflow-hidden" style={{ background: "hsl(var(--sidebar))" }}>
+        <div className="flex-1 flex flex-col ltr:pr-3 rtl:pl-3 pb-3 overflow-hidden" style={{ background: "hsl(var(--sidebar))" }}>
           <div className="bg-card rounded-2xl border border-card-border flex-1 flex flex-col overflow-hidden shadow-xs">
             <div className="flex-1 overflow-y-auto custom-scrollbar">
               <main className="mx-auto px-6 py-6 lg:px-10 lg:py-8 max-w-6xl min-h-full">

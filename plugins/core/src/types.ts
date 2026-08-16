@@ -172,6 +172,7 @@ export interface CKitPlugin {
 
   writeBackCommission?(workspaceId: string, config: ConnectionConfig, results: CommissionWriteBack[]): Promise<WriteBackResult[]>;
   writeBackPayoutStatus?(workspaceId: string, config: ConnectionConfig, payouts: PayoutWriteBack[]): Promise<WriteBackResult[]>;
+  refreshTokens?(config: ConnectionConfig): Promise<ConnectionConfig>;
 
   getSettingsSchema(): JsonSchema;
   getUIMetadata(): PluginUIMetadata;

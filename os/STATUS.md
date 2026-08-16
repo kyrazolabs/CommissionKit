@@ -30,7 +30,7 @@ This tracker shows the current state of every part of the CommissionKit OS.
 | Sales — Leads Database | ✅ Done | AFFiNE database: 9 columns, 3 seed rows, company/contact/ICP fit/status/source tracking |
 | Sales — Outreach Campaigns | ✅ Done | AFFiNE database: 8 columns, 3 seed rows, channel/status/sent-opened-replied-metrics |
 | Sales — Deal Pipeline | ✅ Done | AFFiNE database: 5 columns, 3 seed rows, stage/contact/value/close date |
-| Marketing System | ✅ Done | Content, social, SEO, email strategy |
+| Marketing System | ✅ Done | Content, social, SEO, email strategy. Landing page optimized via 14-competitor analysis (Aug 2026). |
 | Marketing — Content Calendar | ✅ Done | AFFiNE database: 6 columns, 5 seed rows, pillar/status/keyword/due date/author/URL |
 | Marketing — Social Media Calendar | ✅ Done | AFFiNE database: 6 columns, 5 seed rows, platform/type/status/date/engagement |
 | Marketing — SEO Keyword Tracker | ✅ Done | AFFiNE database: 6 columns, 5 seed rows, position/volume/difficulty/status |

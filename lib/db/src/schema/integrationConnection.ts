@@ -8,7 +8,7 @@ const SyncScheduleSchema = new Schema({
 }, { _id: false });
 
 const IntegrationConnectionSchema = new Schema({
-  workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true, unique: true },
+  workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
   connectorName: { type: String, required: true },
   status: {
     type: String,
@@ -25,7 +25,7 @@ const IntegrationConnectionSchema = new Schema({
   lastError: { type: String },
 }, { timestamps: true });
 
-IntegrationConnectionSchema.index({ workspaceId: 1, connectorName: 1 });
+IntegrationConnectionSchema.index({ workspaceId: 1, connectorName: 1 }, { unique: true });
 
 IntegrationConnectionSchema.plugin(auditPlugin({ resourceType: "integration", resourceNameField: "connectorName" }));
 

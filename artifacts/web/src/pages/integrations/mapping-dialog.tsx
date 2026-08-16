@@ -25,7 +25,7 @@ export function MappingDialog({ open, onOpenChange, json, onJsonChange, error, o
 
   const mutation = useMutation({
     mutationFn: (config: Record<string, unknown>) =>
-      apiFetch(`/api/integrations/${activeWorkspace?.id}/config`, { method: "PATCH", body: JSON.stringify({ config }) }),
+      apiFetch(`/api/integrations/${activeWorkspace?.id}/config?connector=custom`, { method: "PATCH", body: JSON.stringify({ config }) }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["integrations"] });
       onOpenChange(false);

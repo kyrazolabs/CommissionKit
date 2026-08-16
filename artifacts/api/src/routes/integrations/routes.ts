@@ -8,12 +8,23 @@ import {
 } from "@workspace/queue";
 import {
   requirePermission,
+  requirePermissionFromPath,
   type AuthenticatedRequest,
 } from "../../middleware/auth";
 import { logger } from "../../lib/logger";
 import { encryptConfig, decryptConfig, stripSensitiveFields } from "../../lib/crypto";
 import { webhookRateLimit } from "../../middleware/rate-limiter";
 import { logAudit } from "../../lib/audit";
+import { startSyncs } from "../../lib/integrations/sync";
+import {
+  signState,
+  verifyState,
+  buildOAuthStartUrl,
+  handleOAuthCallback,
+  ensureFreshConfig,
+  generateCodeVerifier,
+  computeCodeChallenge,
+} from "../../lib/integrations/oauth";
 
 const router: IRouter = Router();
 
@@ -32,6 +43,7 @@ router.get(
         category: meta.category,
         features: meta.features,
         version: p.version,
+        setupGuideUrl: meta.setupGuideUrl,
       };
     });
 
@@ -73,44 +85,45 @@ router.get(
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
 
-    const conn = await IntegrationConnection.findOne({
+    const connections = await IntegrationConnection.find({
       workspaceId,
+      status: "connected",
     });
 
-    if (!conn) {
-      res.json({ connected: false });
-      return;
+    const out = [];
+    for (const conn of connections) {
+      const plugin = pluginRegistry.get(conn.connectorName);
+      const status = plugin ? await plugin.getStatus(workspaceId) : "disconnected";
+
+      const recentSyncs = await IntegrationSync.find({
+        workspaceId,
+        connectorName: conn.connectorName,
+      })
+        .sort({ startedAt: -1 })
+        .limit(10)
+        .lean();
+
+      out.push({
+        connected: conn.status === "connected",
+        connectorName: conn.connectorName,
+        connectorDisplayName: plugin?.displayName || conn.connectorName,
+        status,
+        lastSyncedAt: conn.lastSyncedAt,
+        syncSchedule: conn.syncSchedule,
+        writeBackEnabled: conn.writeBackEnabled,
+        lastError: conn.lastError,
+        recentSyncs: recentSyncs.map((s: any) => ({
+          id: s._id,
+          entityType: s.entityType,
+          status: s.status,
+          trigger: s.trigger,
+          stats: s.stats,
+          completedAt: s.completedAt,
+        })),
+      });
     }
 
-    const plugin = pluginRegistry.get(conn.connectorName);
-    const status = plugin ? await plugin.getStatus(workspaceId) : "disconnected";
-
-    const recentSyncs = await IntegrationSync.find({
-      workspaceId,
-      connectorName: conn.connectorName,
-    })
-      .sort({ startedAt: -1 })
-      .limit(10)
-      .lean();
-
-    res.json({
-      connected: conn.status === "connected",
-      connectorName: conn.connectorName,
-      connectorDisplayName: plugin?.displayName || conn.connectorName,
-      status,
-      lastSyncedAt: conn.lastSyncedAt,
-      syncSchedule: conn.syncSchedule,
-      writeBackEnabled: conn.writeBackEnabled,
-      lastError: conn.lastError,
-      recentSyncs: recentSyncs.map((s: any) => ({
-        id: s._id,
-        entityType: s.entityType,
-        status: s.status,
-        trigger: s.trigger,
-        stats: s.stats,
-        completedAt: s.completedAt,
-      })),
-    });
+    res.json({ connections: out });
   },
 );
 
@@ -173,7 +186,7 @@ router.post(
       ).join("");
 
       const conn = await IntegrationConnection.findOneAndUpdate(
-        { workspaceId },
+        { workspaceId, connectorName },
         {
           workspaceId,
           connectorName,
@@ -189,37 +202,8 @@ router.post(
         { upsert: true, new: true },
       );
 
-      // Enqueue initial syncs
-      await syncRepsQueue.add(`initial-reps-${workspaceId}`, {
-        workspaceId,
-        connectorName,
-        trigger: "initial",
-      });
-
-      await syncDealsQueue.add(`initial-deals-${workspaceId}`, {
-        workspaceId,
-        connectorName,
-        trigger: "initial",
-      });
-
-      // Schedule periodic syncs (only if not set to manual)
-      if (syncSchedule?.reps !== "manual") {
-        const repInterval = syncSchedule?.reps === "realtime" ? 600_000 : syncSchedule?.reps === "daily" ? 86_400_000 : 3_600_000;
-        await syncRepsQueue.add(
-          `scheduled-reps-${workspaceId}`,
-          { workspaceId, connectorName, trigger: "scheduled" },
-          { repeat: { every: repInterval }, jobId: `scheduled-reps-${workspaceId}`, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
-        );
-      }
-
-      if (syncSchedule?.deals !== "manual") {
-        const dealInterval = syncSchedule?.deals === "realtime" ? 600_000 : syncSchedule?.deals === "daily" ? 86_400_000 : 3_600_000;
-        await syncDealsQueue.add(
-          `scheduled-deals-${workspaceId}`,
-          { workspaceId, connectorName, trigger: "scheduled" },
-          { repeat: { every: dealInterval }, jobId: `scheduled-deals-${workspaceId}`, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
-        );
-      }
+      // Enqueue initial syncs + schedule periodic syncs
+      await startSyncs(workspaceId, connectorName, syncSchedule);
 
       const webhookUrl = `${process.env.API_BASE_URL || "http://localhost:8088"}/api/integrations/webhooks/${connectorName}`;
 
@@ -254,8 +238,13 @@ router.get(
   ...requirePermission("workspace", "read"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
+    const connectorName = req.query.connector as string | undefined;
+    if (!connectorName) {
+      res.status(400).json({ error: "connector query param required" });
+      return;
+    }
 
-    const conn = await IntegrationConnection.findOne({ workspaceId });
+    const conn = await IntegrationConnection.findOne({ workspaceId, connectorName });
     if (!conn) {
       res.status(404).json({ error: "No connection found" });
       return;
@@ -273,9 +262,14 @@ router.patch(
   ...requirePermission("workspace", "edit"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
+    const connectorName = req.query.connector as string | undefined;
+    if (!connectorName) {
+      res.status(400).json({ error: "connector query param required" });
+      return;
+    }
     const { config, syncSchedule, writeBackEnabled } = req.body;
 
-    const conn = await IntegrationConnection.findOne({ workspaceId });
+    const conn = await IntegrationConnection.findOne({ workspaceId, connectorName });
     if (!conn) {
       res.status(404).json({ error: "No connection found" });
       return;
@@ -302,30 +296,31 @@ router.patch(
     // Update repeatable jobs if schedule changed
     if (syncSchedule) {
       // Remove old repeatable jobs (all possible intervals)
-      const jobName = `scheduled-reps-${workspaceId}`;
+      const repsJobName = `scheduled-reps-${workspaceId}-${connectorName}`;
+      const dealsJobName = `scheduled-deals-${workspaceId}-${connectorName}`;
       for (const ms of [600_000, 3_600_000, 86_400_000]) {
-        await syncRepsQueue.removeRepeatable(jobName, { every: ms }).catch(() => {});
+        await syncRepsQueue.removeRepeatable(repsJobName, { every: ms }).catch(() => {});
       }
       for (const ms of [600_000, 3_600_000, 86_400_000]) {
-        await syncDealsQueue.removeRepeatable(`scheduled-deals-${workspaceId}`, { every: ms }).catch(() => {});
+        await syncDealsQueue.removeRepeatable(dealsJobName, { every: ms }).catch(() => {});
       }
 
       // Create new ones (unless set to manual)
       if (syncSchedule.reps !== "manual") {
         const repInterval = syncSchedule.reps === "realtime" ? 600_000 : syncSchedule.reps === "daily" ? 86_400_000 : 3_600_000;
         await syncRepsQueue.add(
-          jobName,
-          { workspaceId, connectorName: conn.connectorName, trigger: "scheduled" },
-          { repeat: { every: repInterval }, jobId: jobName, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
+          repsJobName,
+          { workspaceId, connectorName, trigger: "scheduled" },
+          { repeat: { every: repInterval }, jobId: repsJobName, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
         ).catch(() => {});
       }
 
       if (syncSchedule.deals !== "manual") {
         const dealInterval = syncSchedule.deals === "realtime" ? 600_000 : syncSchedule.deals === "daily" ? 86_400_000 : 3_600_000;
         await syncDealsQueue.add(
-          `scheduled-deals-${workspaceId}`,
-          { workspaceId, connectorName: conn.connectorName, trigger: "scheduled" },
-          { repeat: { every: dealInterval }, jobId: `scheduled-deals-${workspaceId}`, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
+          dealsJobName,
+          { workspaceId, connectorName, trigger: "scheduled" },
+          { repeat: { every: dealInterval }, jobId: dealsJobName, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
         ).catch(() => {});
       }
     }
@@ -341,8 +336,13 @@ router.delete(
   ...requirePermission("workspace", "edit"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
+    const connectorName = req.query.connector as string | undefined;
+    if (!connectorName) {
+      res.status(400).json({ error: "connector query param required" });
+      return;
+    }
 
-    const conn = await IntegrationConnection.findOne({ workspaceId });
+    const conn = await IntegrationConnection.findOne({ workspaceId, connectorName });
     if (!conn) {
       res.status(404).json({ error: "No connection found" });
       return;
@@ -355,20 +355,20 @@ router.delete(
 
     // Remove scheduled sync jobs
     for (const ms of [600_000, 3_600_000, 86_400_000]) {
-      await syncRepsQueue.removeRepeatable(`scheduled-reps-${workspaceId}`, { every: ms }).catch(() => {});
-      await syncDealsQueue.removeRepeatable(`scheduled-deals-${workspaceId}`, { every: ms }).catch(() => {});
+      await syncRepsQueue.removeRepeatable(`scheduled-reps-${workspaceId}-${connectorName}`, { every: ms }).catch(() => {});
+      await syncDealsQueue.removeRepeatable(`scheduled-deals-${workspaceId}-${connectorName}`, { every: ms }).catch(() => {});
     }
 
     await IntegrationConnection.findOneAndUpdate(
-      { workspaceId },
+      { workspaceId, connectorName },
       { status: "disconnected", lastError: undefined },
     );
 
-    logger.info({ workspaceId, connectorName: conn.connectorName }, "[Integrations] Workspace disconnected");
+    logger.info({ workspaceId, connectorName }, "[Integrations] Workspace disconnected");
 
     logAudit("integration_disconnected", "integration", {
       workspaceId,
-      resourceName: conn.connectorName,
+      resourceName: connectorName,
     }).catch(() => {});
 
     res.json({ success: true });
@@ -382,9 +382,14 @@ router.post(
   ...requirePermission("workspace", "edit"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
+    const connectorName = req.query.connector as string | undefined;
+    if (!connectorName) {
+      res.status(400).json({ error: "connector query param required" });
+      return;
+    }
 
     await IntegrationConnection.findOneAndUpdate(
-      { workspaceId },
+      { workspaceId, connectorName },
       { lastError: '' },
     );
 
@@ -400,6 +405,11 @@ router.post(
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
     const entityType = String(req.params.entityType);
+    const connectorName = req.query.connector as string | undefined;
+    if (!connectorName) {
+      res.status(400).json({ error: "connector query param required" });
+      return;
+    }
     const { externalIds, fullSync } = req.body || {};
 
     if (!["reps", "deals"].includes(entityType)) {
@@ -407,7 +417,7 @@ router.post(
       return;
     }
 
-    const conn = await IntegrationConnection.findOne({ workspaceId });
+    const conn = await IntegrationConnection.findOne({ workspaceId, connectorName });
     if (!conn || conn.status !== "connected") {
       res.status(400).json({ error: "Not connected" });
       return;
@@ -585,57 +595,51 @@ router.post(
   },
 );
 
-// ─── HubSpot OAuth callback ──────────────────────────────────────────
+// ─── OAuth start + callback (HubSpot + Salesforce) ───────────────────
 
 router.get(
-  "/hubspot/callback",
-  async (req, res) => {
-    const code = req.query.code as string;
-    const workspaceId = req.query.state as string;
-
-    if (!code || !workspaceId) {
-      res.status(400).json({ error: "Missing code or state (workspaceId)" });
+  "/:workspaceId/oauth/start/:connector",
+  ...requirePermissionFromPath("workspace", "edit"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const { workspaceId, connector } = req.params as { workspaceId: string; connector: string };
+    const plugin = pluginRegistry.get(connector);
+    if (!plugin) { res.status(404).json({ error: "Connector not found" }); return; }
+    const redirectUri = process.env[`${connector.toUpperCase()}_REDIRECT_URI`] || `${req.protocol}://${req.get("host")}/api/integrations/oauth/${connector}/callback`;
+    let state: string;
+    let codeChallenge: string | undefined;
+    if (connector === "salesforce") {
+      const codeVerifier = generateCodeVerifier();
+      codeChallenge = computeCodeChallenge(codeVerifier);
+      state = signState(workspaceId, connector, codeVerifier);
+    } else {
+      state = signState(workspaceId, connector);
+    }
+    let url: string;
+    try {
+      url = buildOAuthStartUrl(connector, redirectUri, state, codeChallenge);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || "OAuth start failed" });
       return;
     }
+    res.redirect(url);
+  },
+);
 
+router.get(
+  "/oauth/:connector/callback",
+  async (req, res): Promise<void> => {
+    const { connector } = req.params as { connector: string };
+    const code = req.query.code as string;
+    const state = req.query.state as string;
     try {
-      const conn = await IntegrationConnection.findOne({ workspaceId, connectorName: "hubspot" });
-      if (!conn) {
-        res.status(404).send("No pending HubSpot connection found. Please connect first.");
-        return;
-      }
-
-      const config = decryptConfig(conn.config as any);
-      const clientId = config?.clientId as string | undefined;
-      const clientSecret = config?.clientSecret as string | undefined;
-      const redirectUri = (config?.redirectUri as string) || `${req.protocol}://${req.get("host")}/api/integrations/hubspot/callback`;
-
-      if (!clientId || !clientSecret) {
-        res.status(400).send("HubSpot OAuth credentials not configured. Set clientId and clientSecret first.");
-        return;
-      }
-
-      const { HubSpotClient } = await import("@workspace/plugins-hubspot");
-      const tokens = await HubSpotClient.exchangeCode(clientId, clientSecret, redirectUri, code);
-
-      const decrypted = decryptConfig(conn.config as any) ?? {};
-      const updatedConfig = { ...decrypted, accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
-      const encrypted = encryptConfig(updatedConfig);
-
-      await IntegrationConnection.findOneAndUpdate(
-        { workspaceId, connectorName: "hubspot" },
-        {
-          status: "connected",
-          config: encrypted,
-        },
-      );
-
-      // Trigger initial sync
-      syncRepsQueue.add(`sync-reps:${workspaceId}`, { workspaceId, connectorName: "hubspot", trigger: "manual" });
-      syncDealsQueue.add(`sync-deals:${workspaceId}`, { workspaceId, connectorName: "hubspot", trigger: "manual" });
-
-      res.redirect(`${process.env.APP_URL || "http://localhost:3000"}/dash/integrations?connected=hubspot`);
+      const { connector: stateConnector } = verifyState(state || "");
+      if (stateConnector !== connector) { res.status(400).send("OAuth state/connector mismatch"); return; }
+      if (!code) { res.status(400).send("Missing code"); return; }
+      const redirectUri = process.env[`${connector.toUpperCase()}_REDIRECT_URI`] || `${req.protocol}://${req.get("host")}/api/integrations/oauth/${connector}/callback`;
+      await handleOAuthCallback(connector, code, state, redirectUri);
+      res.redirect(`${process.env.APP_URL || "http://localhost:3000"}/dash/integrations?connected=${connector}`);
     } catch (err: any) {
+      logger.error({ err, connector }, "[OAuth] Callback failed");
       res.status(500).send(`OAuth failed: ${err.message}`);
     }
   },
@@ -648,6 +652,11 @@ router.patch(
   ...requirePermission("workspace", "edit"),
   async (req: AuthenticatedRequest, res) => {
     const workspaceId = req.workspaceId!;
+    const connectorName = req.query.connector as string | undefined;
+    if (!connectorName) {
+      res.status(400).json({ error: "connector query param required" });
+      return;
+    }
     const { defaultPaymentStatus, stageFilter } = req.body;
 
     const validStatuses = ["paid", "unpaid", "partial", "on_hold"];
@@ -660,7 +669,7 @@ router.patch(
     if (defaultPaymentStatus) update["metadata.defaultPaymentStatus"] = defaultPaymentStatus;
     if (stageFilter) update["metadata.stageFilter"] = stageFilter;
 
-    await IntegrationConnection.findOneAndUpdate({ workspaceId }, { $set: update });
+    await IntegrationConnection.findOneAndUpdate({ workspaceId, connectorName }, { $set: update });
 
     res.json({ success: true, defaultPaymentStatus, stageFilter });
   },
@@ -694,13 +703,19 @@ router.get(
         return;
       }
 
-      const config = (decryptConfig(conn.config as any) || {}) as Record<string, any>;
+      const plugin = pluginRegistry.get("salesforce");
+      if (!plugin) {
+        res.status(404).json({ error: "Salesforce connector not found" });
+        return;
+      }
+
+      const config = (await ensureFreshConfig(conn, plugin)) as Record<string, any>;
       let accessToken = config.accessToken as string;
       let instanceUrl = config.instanceUrl as string;
 
       const { SalesforceClient: SFClient } = await import("@workspace/plugins-salesforce");
 
-      // OAuth: auto-authenticate if needed
+      // Manual path: auto-authenticate if no access token but client credentials present
       if (!accessToken && config.clientId && config.clientSecret) {
         const tokens = await SFClient.authenticate(
           config.instanceUrl || "https://login.salesforce.com",
@@ -770,8 +785,14 @@ router.get(
         return;
       }
 
-      const config = decryptConfig(conn.config as any);
-      if (!config?.accessToken) {
+      const plugin = pluginRegistry.get("hubspot");
+      if (!plugin) {
+        res.status(404).json({ error: "HubSpot connector not found" });
+        return;
+      }
+
+      const config = await ensureFreshConfig(conn, plugin);
+      if (!config.accessToken) {
         res.status(400).json({ error: "HubSpot access token not configured" });
         return;
       }

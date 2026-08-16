@@ -44,7 +44,12 @@ export class SalesforceConnector extends BasePlugin {
   private async getClient(config: ConnectionConfig): Promise<SalesforceClient> {
     const c = this.parseConfig(config);
 
-    // If OAuth credentials provided, auto-authenticate
+    // OAuth flow: access token already present (clientId/clientSecret are env vars, not stored)
+    if (c.accessToken) {
+      return new SalesforceClient(c.accessToken, c.instanceUrl || "");
+    }
+
+    // Manual flow: authenticate with client credentials / username-password
     if (c.authType === "oauth" && c.clientId && c.clientSecret) {
       const tokens = await SalesforceClient.authenticate(
         c.instanceUrl || "https://login.salesforce.com",
@@ -60,10 +65,10 @@ export class SalesforceConnector extends BasePlugin {
   async testConnection(config: ConnectionConfig): Promise<ConnectionTestResult> {
     try {
       const c = this.parseConfig(config);
-      if (!c.instanceUrl) {
+      if (!c.instanceUrl && !c.accessToken) {
         return { success: false, message: "Missing instance URL" };
       }
-      if (!(c.clientId && c.clientSecret)) {
+      if (!(c.accessToken || (c.clientId && c.clientSecret))) {
         return { success: false, message: "Missing OAuth credentials (Client ID + Client Secret)" };
       }
 
@@ -172,6 +177,16 @@ export class SalesforceConnector extends BasePlugin {
     // Salesforce webhooks use Outbound Messages / Change Data Capture
   }
 
+  async refreshTokens(config: ConnectionConfig): Promise<ConnectionConfig> {
+    const clientId = process.env.SALESFORCE_CLIENT_ID;
+    const clientSecret = process.env.SALESFORCE_CLIENT_SECRET;
+    if (!clientId || !clientSecret) throw new Error("Salesforce OAuth not configured (SALESFORCE_CLIENT_ID/SECRET)");
+    if (!config.refreshToken) throw new Error("Salesforce refresh token missing");
+    const instanceUrl = (config.instanceUrl as string) || "https://login.salesforce.com";
+    const t = await SalesforceClient.refreshAccessToken(instanceUrl, clientId, clientSecret, config.refreshToken as string);
+    return { accessToken: t.accessToken, refreshToken: t.refreshToken, instanceUrl, expiresAt: Date.now() + t.expiresIn * 1000 };
+  }
+
   parseWebhook(_payload: unknown): IngresEvent[] {
     return [];
   }
@@ -179,7 +194,7 @@ export class SalesforceConnector extends BasePlugin {
   getSettingsSchema(): JsonSchema {
     return {
       type: "object",
-      required: ["instanceUrl"],
+      required: [],
       properties: {
         instanceUrl: {
           type: "string",
@@ -241,8 +256,8 @@ export class SalesforceConnector extends BasePlugin {
       description: this.description,
       icon: this.icon,
       category: "crm",
-      features: ["sync_reps", "sync_deals"],
-      setupGuideUrl: "https://docs.commissionkit.com/integrations/salesforce",
+      features: ["sync_reps", "sync_deals", "oauth_support"],
+      setupGuideUrl: "https://docs.commissionkit.co/integrations/salesforce",
     };
   }
 }
