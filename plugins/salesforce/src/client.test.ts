@@ -18,6 +18,17 @@ describe("SalesforceClient OAuth (web-server flow)", () => {
     expect(url).toContain("https://test.salesforce.com/services/oauth2/authorize?");
   });
 
+  test("buildAuthorizeUrl includes PKCE params when codeChallenge is provided", () => {
+    const url = SalesforceClient.buildAuthorizeUrl("https://login.salesforce.com", "cid", "https://x/cb", "st", "challenge");
+    expect(url).toContain("code_challenge=challenge");
+    expect(url).toContain("code_challenge_method=S256");
+  });
+
+  test("buildAuthorizeUrl omits PKCE params when no codeChallenge", () => {
+    const url = SalesforceClient.buildAuthorizeUrl("https://login.salesforce.com", "cid", "https://x/cb", "st");
+    expect(url).not.toContain("code_challenge");
+  });
+
   test("exchangeCode posts authorization_code grant and returns instance_url", async () => {
     let capturedUrl = "";
     let capturedBody = "";
@@ -35,6 +46,19 @@ describe("SalesforceClient OAuth (web-server flow)", () => {
     expect(res.accessToken).toBe("at");
     expect(res.refreshToken).toBe("rt");
     expect(res.instanceUrl).toBe("https://x.my.salesforce.com");
+  });
+
+  test("exchangeCode includes code_verifier when provided", async () => {
+    let capturedBody = "";
+    globalThis.fetch = mock(async (url: any, init: any) => {
+      capturedBody = String(init?.body || "");
+      return new Response(JSON.stringify({
+        access_token: "at", refresh_token: "rt", instance_url: "https://x.my.salesforce.com",
+      }), { headers: { "Content-Type": "application/json" } });
+    });
+    await SalesforceClient.exchangeCode("https://login.salesforce.com", "cid", "csec", "https://x/cb", "code123", "verifier");
+    expect(capturedBody).toContain("code_verifier=verifier");
+    expect(capturedBody).toContain("code=code123");
   });
 
   test("refreshAccessToken posts refresh_token grant", async () => {

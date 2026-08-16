@@ -22,6 +22,8 @@ import {
   buildOAuthStartUrl,
   handleOAuthCallback,
   ensureFreshConfig,
+  generateCodeVerifier,
+  computeCodeChallenge,
 } from "../../lib/integrations/oauth";
 
 const router: IRouter = Router();
@@ -602,10 +604,18 @@ router.get(
     const plugin = pluginRegistry.get(connector);
     if (!plugin) { res.status(404).json({ error: "Connector not found" }); return; }
     const redirectUri = process.env[`${connector.toUpperCase()}_REDIRECT_URI`] || `${req.protocol}://${req.get("host")}/api/integrations/oauth/${connector}/callback`;
-    const state = signState(workspaceId, connector);
+    let state: string;
+    let codeChallenge: string | undefined;
+    if (connector === "salesforce") {
+      const codeVerifier = generateCodeVerifier();
+      codeChallenge = computeCodeChallenge(codeVerifier);
+      state = signState(workspaceId, connector, codeVerifier);
+    } else {
+      state = signState(workspaceId, connector);
+    }
     let url: string;
     try {
-      url = buildOAuthStartUrl(connector, redirectUri, state);
+      url = buildOAuthStartUrl(connector, redirectUri, state, codeChallenge);
     } catch (err: any) {
       res.status(500).json({ error: err.message || "OAuth start failed" });
       return;

@@ -1,4 +1,4 @@
-import { createHmac } from "crypto";
+import { createHmac, createHash, randomBytes } from "crypto";
 import { IntegrationConnection } from "@workspace/db";
 import type { CKitPlugin, ConnectionConfig } from "@workspace/plugins-core";
 import { pluginRegistry } from "@workspace/plugins-core";
@@ -15,17 +15,31 @@ function hmac(payload: string): string {
   return createHmac("sha256", secret).update(payload).digest("hex");
 }
 
-export function signState(workspaceId: string, connector: string): string {
-  const body = `${workspaceId}:${connector}`;
+function base64url(buf: Buffer): string {
+  return buf.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+export function generateCodeVerifier(): string {
+  return base64url(randomBytes(32));
+}
+
+export function computeCodeChallenge(verifier: string): string {
+  return base64url(createHash("sha256").update(verifier).digest());
+}
+
+export function signState(workspaceId: string, connector: string, codeVerifier?: string): string {
+  const body = codeVerifier ? `${workspaceId}:${connector}:${codeVerifier}` : `${workspaceId}:${connector}`;
   return `${body}.${hmac(body)}`;
 }
 
-export function verifyState(state: string): { workspaceId: string; connector: string } {
+export function verifyState(state: string): { workspaceId: string; connector: string; codeVerifier?: string } {
   const [body, sig] = String(state || "").split(".");
   if (!body || !sig || hmac(body) !== sig) throw new Error("Invalid OAuth state");
-  const [workspaceId, connector] = body.split(":");
+  const parts = body.split(":");
+  const workspaceId = parts[0];
+  const connector = parts[1];
   if (!workspaceId || !connector) throw new Error("Invalid OAuth state");
-  return { workspaceId, connector };
+  return { workspaceId, connector, codeVerifier: parts[2] };
 }
 
 interface IntegrationConnectionLike {
@@ -49,7 +63,7 @@ export async function ensureFreshConfig(conn: IntegrationConnectionLike, plugin:
   return { ...merged, _metadata: conn.metadata ?? {} };
 }
 
-export function buildOAuthStartUrl(connector: string, redirectUri: string, state: string): string {
+export function buildOAuthStartUrl(connector: string, redirectUri: string, state: string, codeChallenge?: string): string {
   if (connector === "hubspot") {
     const clientId = process.env.HUBSPOT_CLIENT_ID;
     if (!clientId) throw new Error("HubSpot OAuth not configured (HUBSPOT_CLIENT_ID)");
@@ -59,7 +73,7 @@ export function buildOAuthStartUrl(connector: string, redirectUri: string, state
     const clientId = process.env.SALESFORCE_CLIENT_ID;
     if (!clientId) throw new Error("Salesforce OAuth not configured (SALESFORCE_CLIENT_ID)");
     const instanceUrl = process.env.SALESFORCE_INSTANCE_URL || "https://login.salesforce.com";
-    return SalesforceClient.buildAuthorizeUrl(instanceUrl, clientId, redirectUri, state);
+    return SalesforceClient.buildAuthorizeUrl(instanceUrl, clientId, redirectUri, state, codeChallenge);
   }
   throw new Error(`Unknown OAuth connector: ${connector}`);
 }
@@ -77,7 +91,7 @@ export async function handleOAuthCallback(
   state: string,
   redirectUri?: string,
 ): Promise<void> {
-  const { workspaceId } = verifyState(state);
+  const { workspaceId, codeVerifier } = verifyState(state);
   const redirect = redirectUri || process.env[`${connector.toUpperCase()}_REDIRECT_URI`] || "";
 
   let tokens: OAuthTokens;
@@ -94,7 +108,7 @@ export async function handleOAuthCallback(
     if (!clientId || !clientSecret) throw new Error("Salesforce OAuth not configured (SALESFORCE_CLIENT_ID/SECRET)");
     if (!redirect) throw new Error("Salesforce redirect URI not configured");
     const instanceUrl = process.env.SALESFORCE_INSTANCE_URL || "https://login.salesforce.com";
-    tokens = await SalesforceClient.exchangeCode(instanceUrl, clientId, clientSecret, redirect, code);
+    tokens = await SalesforceClient.exchangeCode(instanceUrl, clientId, clientSecret, redirect, code, codeVerifier);
   } else {
     throw new Error(`Unknown OAuth connector: ${connector}`);
   }

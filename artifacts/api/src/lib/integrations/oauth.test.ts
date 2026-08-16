@@ -47,9 +47,32 @@ describe("OAuth state signing", () => {
     expect(parsed.connector).toBe("hubspot");
   });
 
+  test("signState/verifyState round-trips a codeVerifier", () => {
+    const state = oauthMod.signState("ws-123", "salesforce", "verifier-abc");
+    const parsed = oauthMod.verifyState(state);
+    expect(parsed.workspaceId).toBe("ws-123");
+    expect(parsed.connector).toBe("salesforce");
+    expect(parsed.codeVerifier).toBe("verifier-abc");
+  });
+
+  test("generateCodeVerifier/computeCodeChallenge are base64url", () => {
+    const verifier = oauthMod.generateCodeVerifier();
+    expect(verifier).toMatch(/^[A-Za-z0-9_-]+$/);
+    expect(verifier.length).toBeGreaterThanOrEqual(43);
+    const challenge = oauthMod.computeCodeChallenge(verifier);
+    expect(challenge).toMatch(/^[A-Za-z0-9_-]+$/);
+    expect(challenge.length).toBe(43);
+  });
+
   test("verifyState rejects tampered state", () => {
     const state = oauthMod.signState("ws-123", "hubspot");
     const tampered = state.replace(/^ws-123/, "ws-999");
+    expect(() => oauthMod.verifyState(tampered)).toThrow("Invalid OAuth state");
+  });
+
+  test("verifyState rejects tampered codeVerifier", () => {
+    const state = oauthMod.signState("ws-123", "salesforce", "verifier-abc");
+    const tampered = state.replace("verifier-abc", "verifier-zzz");
     expect(() => oauthMod.verifyState(tampered)).toThrow("Invalid OAuth state");
   });
 

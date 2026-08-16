@@ -89,7 +89,7 @@ export class SalesforceClient {
     throw lastError || new Error("Salesforce OAuth failed on all endpoints");
   }
 
-  static buildAuthorizeUrl(instanceUrl: string, clientId: string, redirectUri: string, state: string): string {
+  static buildAuthorizeUrl(instanceUrl: string, clientId: string, redirectUri: string, state: string, codeChallenge?: string): string {
     const isSandbox = instanceUrl.includes("test.salesforce.com") || instanceUrl.includes("sandbox");
     const base = isSandbox ? "https://test.salesforce.com" : "https://login.salesforce.com";
     const params = new URLSearchParams({
@@ -99,11 +99,16 @@ export class SalesforceClient {
       scope: "api refresh_token",
       state,
     });
+    if (codeChallenge) {
+      params.set("code_challenge", codeChallenge);
+      params.set("code_challenge_method", "S256");
+    }
     return `${base}/services/oauth2/authorize?${params.toString().replace(/\+/g, "%20")}`;
   }
 
-  static async exchangeCode(instanceUrl: string, clientId: string, clientSecret: string, redirectUri: string, code: string) {
+  static async exchangeCode(instanceUrl: string, clientId: string, clientSecret: string, redirectUri: string, code: string, codeVerifier?: string) {
     const body = new URLSearchParams({ grant_type: "authorization_code", client_id: clientId, client_secret: clientSecret, redirect_uri: redirectUri, code });
+    if (codeVerifier) body.set("code_verifier", codeVerifier);
     const res = await fetch(`${instanceUrl.replace(/\/+$/, "")}/services/oauth2/token`, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: body.toString() });
     if (!res.ok) { const t = await res.text().catch(() => ""); throw new Error(`Salesforce OAuth failed: HTTP ${res.status} — ${t.slice(0, 200)}`); }
     const data = (await res.json()) as any;
