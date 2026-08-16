@@ -3,7 +3,7 @@ import { useGetDashboardSummary, useGetReports, getGetDashboardSummaryQueryKey }
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   DollarSign, Users, Briefcase, Activity,
-  ArrowUpRight, TrendingUp, Zap, Play, CheckCircle2, Loader2, AlertCircle
+  ArrowUpRight, TrendingUp, Zap, Play, CheckCircle2, Loader2, AlertCircle, AlertTriangle
 } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -126,6 +126,37 @@ export function Dashboard() {
           trendLabel={t("dashboard.thisPeriod")}
         />
       </div>
+
+      {/* Payouts Needed indicator */}
+      {((summary as any).payoutsNeeded > 0) && (
+        <Card className="border-amber-500/40 bg-amber-500/10">
+          <CardContent className="flex items-center justify-between py-4">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="size-5 text-amber-600 dark:text-amber-400 shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  {(summary as any).payoutsNeeded} payout{((summary as any).payoutsNeeded !== 1) ? "s" : ""} need to be created
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {((summary as any).payoutsGenerated ?? 0) > 0
+                    ? `${(summary as any).payoutsGenerated} already generated`
+                    : "None generated yet"}
+                </p>
+              </div>
+            </div>
+            {(() => {
+              const latestRun = (summary as any).latestCompletableRunId;
+              return latestRun ? (
+                <Link href={`/dash/runs/${latestRun}`}>
+                  <Button size="sm" variant="default">
+                    View Run
+                  </Button>
+                </Link>
+              ) : null;
+            })()}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Revenue trend chart (last 6 months) */}
       <div className="bg-card border border-card-border rounded-xl px-5 py-5" style={{ boxShadow: "var(--shadow-card)" }}>

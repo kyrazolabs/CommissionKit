@@ -5,14 +5,16 @@ import { useGetRun, getGetRunQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { formatCurrency, formatPercent } from "@/lib/format";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DataPagination } from "@/components/ui/data-pagination";
-import { Info } from "lucide-react";
+import { Info, DollarSign } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { CurrencyCell } from "@/components/currency-cell";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { GeneratePayoutsDialog } from "./generate-payouts-dialog";
 
 import { useRole } from "@/hooks/use-role";
 
@@ -37,6 +39,7 @@ export function RunDetailsPage() {
   });
 
   const [page, setPage] = useState(1);
+  const [genPayoutsOpen, setGenPayoutsOpen] = useState(false);
   const LIMIT = 50;
 
   if (roleLoading) {
@@ -94,25 +97,41 @@ export function RunDetailsPage() {
     repGroups.get(r.repId)!.results.push(r);
   }
 
+  // Compute rep totals for the payout dialog
+  const repTotals = Array.from(repGroups.entries()).map(([repId, group]) => ({
+    repId,
+    repName: group.repName,
+    dealCount: group.results.length,
+    totalCommission: group.results.reduce((sum: number, r: any) => sum + r.commissionAmount, 0),
+  }));
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <p className="text-[12px] font-semibold text-primary mb-1">{t("runs.operations")}</p>
-        <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-semibold tracking-tight">{t("runs.runDetails.title")}</h1>
-          <Badge
-            variant="outline"
-            className={
-              runData.status === "completed"
-                ? "border-green-500/40 bg-green-500/10 text-green-600 dark:text-green-400"
-                : runData.status === "failed"
-                ? "border-destructive/40 bg-destructive/10 text-destructive"
-                : "border-yellow-500/40 bg-yellow-500/10 text-yellow-600"
-            }
-          >
-            {runData.status}
-          </Badge>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-semibold tracking-tight">{t("runs.runDetails.title")}</h1>
+            <Badge
+              variant="outline"
+              className={
+                runData.status === "completed"
+                  ? "border-green-500/40 bg-green-500/10 text-green-600 dark:text-green-400"
+                  : runData.status === "failed"
+                  ? "border-destructive/40 bg-destructive/10 text-destructive"
+                  : "border-yellow-500/40 bg-yellow-500/10 text-yellow-600"
+              }
+            >
+              {runData.status}
+            </Badge>
+          </div>
+          {runData.status === "completed" && (
+            <Button onClick={() => setGenPayoutsOpen(true)}>
+              <DollarSign className="mr-2 size-4" />
+              Generate Payouts
+            </Button>
+          )}
         </div>
         <p className="text-muted-foreground mt-1">
           {t('runs.runDetails.executedOn')} {format(new Date(runData.createdAt), "MMMM d, yyyy 'at' h:mm a")} for 
@@ -252,6 +271,15 @@ export function RunDetailsPage() {
           )}
         </CardContent>
       </Card>
+
+      <GeneratePayoutsDialog
+        open={genPayoutsOpen}
+        setOpen={setGenPayoutsOpen}
+        runId={id}
+        repTotals={repTotals}
+        totalCommission={runData.totalCommission}
+        currency={currency}
+      />
     </div>
   );
 }

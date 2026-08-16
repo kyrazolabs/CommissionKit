@@ -5,6 +5,7 @@ import {
   Deal,
   Rep,
   Plan,
+  Payout,
 } from "@workspace/db";
 import { GetRepSummaryParams } from "@workspace/api-zod";
 import {
@@ -109,12 +110,22 @@ router.get(
       }
     }
 
+    let payoutsGenerated = 0;
+    let payoutsNeeded = 0;
+    if (latestRun) {
+      // Count payouts that include this run in their runIds array (cross-run dedup)
+      payoutsGenerated = await Payout.countDocuments({ workspaceId, runIds: latestRun._id });
+      payoutsNeeded = Math.max(0, (latestRun.repsCount ?? 0) - payoutsGenerated);
+    }
+
     res.json({
       period,
       totalCommission,
       totalRevenue,
       totalDeals,
       totalReps,
+      payoutsGenerated,
+      payoutsNeeded,
       repEarnings: Array.from(repEarningsMap.values()).sort(
         (a, b) => b.totalCommission - a.totalCommission,
       ),
