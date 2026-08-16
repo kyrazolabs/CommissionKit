@@ -3,7 +3,7 @@ import { Twitter, Linkedin } from "lucide-react";
 export function Footer() {
   return (
     <footer className="mt-auto w-full px-4 py-6 border-t border-border bg-sidebar">
-      <div className="flex flex-col justify-between items-center w-full max-w-[1440px] mx-auto gap-4">
+      <div className="flex flex-col justify-between items-center w-full max-w-6xl mx-auto gap-4">
         <div className="flex items-center gap-6">
           <p className="text-[11px] text-muted-foreground/80 font-medium tracking-wide">
             © {new Date().getFullYear()} COMMISSIONKIT. ALL RIGHTS RESERVED.

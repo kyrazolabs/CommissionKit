@@ -6,9 +6,11 @@ import { HowItWorks } from "./HowItWorks";
 import { ValueProps } from "./ValueProps";
 import { FeatureDeepDives } from "./FeatureDeepDives";
 import { Integrations } from "./Integrations";
+import { McpSupport } from "./McpSupport";
 import { GlobalSupport } from "./GlobalSupport";
 import { Demo } from "./Demo";
 import { Pricing } from "./Pricing";
+import { TheProblem } from "./TheProblem";
 import { CustomEngine } from "./CustomEngine";
 import { FAQ } from "./FAQ";
 import { FinalCTA } from "./FinalCTA";
@@ -27,32 +29,27 @@ export function LandingPage() {
   useEffect(() => {
     Analytics.landingView();
     document.documentElement.style.scrollBehavior = "smooth";
-    return () => { document.documentElement.style.scrollBehavior = "smooth"; };
+    return () => { document.documentElement.style.scrollBehavior = ""; };
   }, []);
 
   return (
     <>
       <Navbar />
       <main className="pt-16">
-        <div>
-          <div className="max-w-7xl  mx-auto">
-            <Hero />
-          </div>
-            <SocialProof />
-          <div className="max-w-7xl  mx-auto">
-            <HowItWorks />
-            <ValueProps />
-            <FeatureDeepDives />
-            <Integrations />
-            <GlobalSupport />
-            {/* WARNING: Do not delete this component — leave it as is. */}
-            {/* <Demo /> */}
-            <Pricing />
-            <CustomEngine />
-            <FAQ />
-            <FinalCTA />
-          </div>
-        </div>
+        <Hero />
+        <TheProblem />
+        <SocialProof />
+        <HowItWorks />
+        <ValueProps />
+        <FeatureDeepDives />
+        <Integrations />
+        <McpSupport />
+        <GlobalSupport />
+        <Demo />
+        <Pricing />
+        <CustomEngine />
+        <FAQ />
+        <FinalCTA />
       </main>
       <Footer />
     </>

@@ -7,7 +7,7 @@ const FEATURES_LINKS = [
   { name: "Features", desc: "Commission plans, deals, payouts", href: "/features" },
   { name: "Solutions", desc: "By role and team size", href: "/solutions" },
   { name: "MCP Integration", desc: "Connect your AI tools via MCP", href: "https://docs.commissionkit.co/guides/mcp", icon: "terminal" as const },
-  { name: "CGent", desc: "AI Agent — Telegram, Slack.", href: "#", badge: "Soon", icon: "bot" as const },
+  { name: "CGent", desc: "AI agent for Telegram and Slack", href: "#", badge: "Soon", icon: "bot" as const },
 ];
 
 const INTEGRATIONS = [
@@ -105,7 +105,7 @@ export function Navbar() {
                             <div className="flex items-center gap-2">
                               <span className={`text-base font-medium ${item.badge ? "text-muted-foreground" : "text-foreground"}`}>{item.name}</span>
                               {item.badge && (
-                                <span className="text-xs font-medium px-1.5 text-amber-600">
+                                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border">
                                   {item.badge}
                                 </span>
                               )}
@@ -151,7 +151,7 @@ export function Navbar() {
                   <div className="col-span-3">
                     <a
                       href="/portal"
-                      className="group flex items-center gap-6 rounded-xl border border-card-border bg-white p-3 hover:border-primary/30 transition-all duration-300 hover:shadow-sm"
+                      className="group flex items-center gap-6 rounded-xl border border-card-border bg-card p-3 hover:border-primary/30 transition-all duration-300 hover:shadow-sm"
                       onClick={() => setProductOpen(false)}
                     >
                       {/* Image frame — fixed aspect-ratio, 3D frame with internal scroll */}
@@ -180,7 +180,7 @@ export function Navbar() {
                             Transparent earnings. Zero questions.
                           </h4>
                           <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                            Self-serve commission dashboard for your reps. No corporate login, no IT tickets - just a unique access code.
+                            Self-serve commission dashboard for your reps. No corporate login or IT tickets. Just a unique access code.
                           </p>
                         </div>
 
@@ -224,7 +224,7 @@ export function Navbar() {
             </a>
             <span className="text-sm font-medium text-muted-foreground/60 flex items-center gap-2">
               CGent
-              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 border border-amber-500/20">Soon</span>
+              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border">Soon</span>
             </span>
             <a href="/portal" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-muted-foreground hover:text-primary">CKit Portal</a>
             <div className="mt-2 pt-2 border-t border-border/60">

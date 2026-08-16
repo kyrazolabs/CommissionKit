@@ -77,25 +77,25 @@ export function Pricing() {
   const [payYearly, setPayYearly] = useState(false);
 
   return (
-    <section className="py-24 px-6 md:px-12 bg-white/50 backdrop-blur-sm border-b border-border/60" id="pricing">
-      <div ref={ref} className="max-w-[1440px] mx-auto">
+    <section className="py-24 bg-muted/30 border-b border-border/60" id="pricing">
+      <div ref={ref} className="max-w-6xl mx-auto px-6">
         {/* Limited-time launch offer */}
         <div className="mb-8 max-w-5xl mx-auto" style={fadeIn(inView)}>
           <div className="inline-flex w-full items-center justify-between gap-4 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/30 px-6 py-4">
             <div>
-              <p className="text-sm font-semibold text-foreground">Launch pricing for early customers</p>
-              <p className="text-xs text-muted-foreground mt-0.5">All plans are 60% off during our public launch. No coupon needed.</p>
+              <p className="text-sm font-semibold text-foreground">Founding member pricing — locked in for life</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Lock in today's price forever. You'll never pay more, even as we add features.</p>
             </div>
-            <span className="shrink-0 rounded-full bg-primary/20 px-3 py-1.5 text-[11px] font-bold text-primary uppercase tracking-wider">60% off</span>
+            <span className="shrink-0 rounded-full bg-primary/20 px-3 py-1.5 text-[11px] font-bold text-primary uppercase tracking-wider">Founding member</span>
           </div>
         </div>
 
         <div className="text-center mb-10" style={fadeIn(inView)}>
-          <h2 className="text-3xl lg:text-[32px] font-bold text-foreground mb-4 tracking-tight">
+          <h2 className="text-3xl sm:text-4xl lg:text-[40px] font-bold text-foreground mb-4 tracking-tight font-display">
             Simple, predictable pricing
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Choose the perfect plan for your revenue team. <br /> <span className="text-primary font-medium">Includes a 14-day free trial.</span>
+            Choose the plan that fits your team. <br /> <span className="text-primary font-medium">Includes a 14-day free trial.</span>
           </p>
         </div>
 
@@ -137,13 +137,13 @@ export function Pricing() {
                 className={`relative rounded-2xl p-8 flex flex-col h-full transition-all duration-300 ${
                   plan.highlighted
                     ? "bg-muted/30 border-2 border-primary shadow-md md:-translate-y-4"
-                    : "bg-white border shadow-sm"
+                    : "bg-card border border-card-border shadow-sm"
                 }`}
                 style={fadeIn(inView, i * 100 + 200)}
               >
                 {/* Badge */}
                 {(plan.badge || (payYearly && plan.id === "pro")) && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
                     {payYearly && plan.id === "pro" ? "Best Value" : plan.badge}
                   </div>
                 )}
@@ -158,11 +158,11 @@ export function Pricing() {
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-lg text-muted-foreground line-through">${price}</span>
-                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">60% OFF</span>
+                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">FOUNDING PRICE</span>
                   </div>
                   {payYearly && (
                     <p className="text-[11px] font-bold text-primary mt-1">
-                      Includes 2 months free
+                      Price locked in for life
                     </p>
                   )}
                 </div>
@@ -221,7 +221,7 @@ export function Pricing() {
             <span className="text-primary font-bold">${payYearly ? "32" : "3.20"}</span>
             <span className="text-muted-foreground">per additional rep/{payYearly ? "year" : "month"}</span>
             <span className="text-xs text-muted-foreground line-through">${payYearly ? "79.99" : "7.99"}</span>
-            <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">60% OFF</span>
+            <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">FOUNDING PRICE</span>
           </p>
         </div>
       </div>
