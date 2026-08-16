@@ -43,6 +43,7 @@ router.get(
         category: meta.category,
         features: meta.features,
         version: p.version,
+        setupGuideUrl: meta.setupGuideUrl,
       };
     });
 

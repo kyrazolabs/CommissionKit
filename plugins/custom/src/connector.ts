@@ -324,6 +324,7 @@ export class CustomConnector extends BasePlugin {
       icon: this.icon,
       category: "erp",
       features: ["sync_reps", "sync_deals"],
+      setupGuideUrl: "https://docs.commissionkit.co/integrations/custom",
     };
   }
 }

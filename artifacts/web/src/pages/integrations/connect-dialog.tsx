@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
+import { CheckCircle2, XCircle, ArrowRight, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { ConnectorImage } from "./icons";
@@ -116,6 +116,17 @@ export function ConnectDialog({ connector, isConnected }: Props) {
           <DialogDescription>
             {t("integrations.enterCredentials")} {connector.displayName} {t("integrations.credentialsHint")}
           </DialogDescription>
+          {connector.setupGuideUrl && (
+            <a
+              href={connector.setupGuideUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+            >
+              <ExternalLink className="size-3.5" />
+              View setup guide
+            </a>
+          )}
         </DialogHeader>
 
         <div className="space-y-4 py-2">

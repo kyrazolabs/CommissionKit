@@ -257,7 +257,7 @@ export class SalesforceConnector extends BasePlugin {
       icon: this.icon,
       category: "crm",
       features: ["sync_reps", "sync_deals", "oauth_support"],
-      setupGuideUrl: "https://docs.commissionkit.com/integrations/salesforce",
+      setupGuideUrl: "https://docs.commissionkit.co/integrations/salesforce",
     };
   }
 }

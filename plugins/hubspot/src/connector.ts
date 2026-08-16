@@ -211,7 +211,7 @@ export class HubSpotConnector extends BasePlugin {
       icon: this.icon,
       category: "crm",
       features: ["sync_reps", "sync_deals", "oauth_support"],
-      setupGuideUrl: "https://docs.commissionkit.com/integrations/hubspot",
+      setupGuideUrl: "https://docs.commissionkit.co/integrations/hubspot",
     };
   }
 }
