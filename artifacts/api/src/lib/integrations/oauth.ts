@@ -53,6 +53,9 @@ interface IntegrationConnectionLike {
 export async function ensureFreshConfig(conn: IntegrationConnectionLike, plugin: CKitPlugin): Promise<ConnectionConfig> {
   const config = decryptConfig(conn.config as string) ?? {};
   if (config.authType !== "oauth") return { ...config, _metadata: conn.metadata ?? {} };
+  // Manual connections (clientId/clientSecret, no refresh token) authenticate per-request.
+  // Only OAuth authorization-code connections carry a refresh token and should be refreshed here.
+  if (!config.refreshToken) return { ...config, _metadata: conn.metadata ?? {} };
   const expiresAt = Number(config.expiresAt) || 0;
   if (expiresAt > Date.now() + 5 * 60 * 1000) return { ...config, _metadata: conn.metadata ?? {} };
   if (!plugin.refreshTokens) throw new Error("Connector does not support token refresh");

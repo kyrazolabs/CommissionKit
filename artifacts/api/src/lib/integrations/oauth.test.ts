@@ -1,5 +1,6 @@
 import { describe, test, expect, beforeAll, beforeEach, mock } from "bun:test";
 import { pluginRegistry } from "@workspace/plugins-core";
+import { SalesforceConnector } from "@workspace/plugins-salesforce";
 
 let updateOneMock: any;
 let findOneAndUpdateMock: any;
@@ -149,6 +150,117 @@ describe("ensureFreshConfig", () => {
     expect(result.accessToken).toBe("current");
     expect(plugin.refreshTokens).not.toHaveBeenCalled();
     expect(updateOneMock).not.toHaveBeenCalled();
+  });
+
+  test("returns manual oauth config untouched when no refreshToken is present", async () => {
+    const conn = {
+      _id: "conn-1",
+      workspaceId: "ws-1",
+      connectorName: "salesforce",
+      config: cryptoMod.encryptConfig({
+        authType: "oauth",
+        clientId: "cid",
+        clientSecret: "csec",
+        username: "u@example.com",
+        password: "pw",
+        securityToken: "tok",
+        instanceUrl: "https://x.my.salesforce.com",
+      }),
+      metadata: {},
+    };
+    const plugin = { refreshTokens: mock(async () => ({ accessToken: "new" })) };
+
+    const result = await oauthMod.ensureFreshConfig(conn as any, plugin as any);
+    expect(result.authType).toBe("oauth");
+    expect(result.clientId).toBe("cid");
+    expect(result.clientSecret).toBe("csec");
+    expect(result.refreshToken).toBeUndefined();
+    expect(plugin.refreshTokens).not.toHaveBeenCalled();
+    expect(updateOneMock).not.toHaveBeenCalled();
+  });
+
+  test("returns non-oauth bearer config untouched", async () => {
+    const conn = {
+      _id: "conn-1",
+      workspaceId: "ws-1",
+      connectorName: "custom",
+      config: cryptoMod.encryptConfig({ authType: "bearer", token: "t" }),
+      metadata: {},
+    };
+    const plugin = { refreshTokens: mock(async () => ({ accessToken: "new" })) };
+
+    const result = await oauthMod.ensureFreshConfig(conn as any, plugin as any);
+    expect(result.authType).toBe("bearer");
+    expect(result.token).toBe("t");
+    expect(plugin.refreshTokens).not.toHaveBeenCalled();
+    expect(updateOneMock).not.toHaveBeenCalled();
+  });
+
+  test("throws when oauth token expired and plugin has no refreshTokens", async () => {
+    const conn = {
+      _id: "conn-1",
+      workspaceId: "ws-1",
+      connectorName: "salesforce",
+      config: cryptoMod.encryptConfig({
+        authType: "oauth",
+        accessToken: "old",
+        refreshToken: "rt",
+        expiresAt: Date.now() - 1000,
+      }),
+      metadata: {},
+    };
+    const plugin = {}; // no refreshTokens
+
+    await expect(oauthMod.ensureFreshConfig(conn as any, plugin as any)).rejects.toThrow(
+      "Connector does not support token refresh",
+    );
+    expect(updateOneMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("worker call sequence (manual Salesforce connection)", () => {
+  test("ensureFreshConfig does not throw and fetchReps proceeds for a manual config", async () => {
+    const connector = new SalesforceConnector();
+
+    globalThis.fetch = mock(async (url: string, init?: RequestInit) => {
+      const urlStr = String(url);
+      if (urlStr.includes("oauth2/token")) {
+        return new Response(JSON.stringify({
+          access_token: "authed-token",
+          instance_url: "https://x.my.salesforce.com",
+        }), { headers: { "Content-Type": "application/json" } });
+      }
+      return new Response(JSON.stringify({
+        records: [{ Id: "u1", Name: "Alice", Email: "a@b.com", UserRole: { Name: "Sales Rep" } }],
+        totalSize: 1, done: true,
+      }), { headers: { "Content-Type": "application/json" } });
+    });
+
+    const conn = {
+      _id: "conn-1",
+      workspaceId: "ws-1",
+      connectorName: "salesforce",
+      config: cryptoMod.encryptConfig({
+        authType: "oauth",
+        clientId: "cid",
+        clientSecret: "csec",
+        username: "u@example.com",
+        password: "pw",
+        securityToken: "tok",
+        instanceUrl: "https://x.my.salesforce.com",
+      }),
+      metadata: {},
+    };
+
+    // Mirrors sync-reps-worker.ts lines 53-59.
+    const pluginConfig = await oauthMod.ensureFreshConfig(conn as any, connector as any);
+    expect(pluginConfig.clientId).toBe("cid");
+    expect(pluginConfig.refreshToken).toBeUndefined();
+    expect(updateOneMock).not.toHaveBeenCalled();
+
+    const reps = await connector.fetchReps("ws-1", pluginConfig, {});
+    expect(reps).toHaveLength(1);
+    expect(reps[0].name).toBe("Alice");
   });
 });
 
