@@ -22,6 +22,7 @@ import sampleDataRouter from "./workspace/sample-data.routes";
 import auditLogRouter from "./audit-log/routes";
 import apiKeysRouter from "./api-keys/routes";
 import mcpRouter from "./mcp";
+import supportRouter from "./support/routes";
 
 const router: IRouter = Router();
 
@@ -47,6 +48,7 @@ router.use(leadsRouter);
 router.use("/workspace", sampleDataRouter);
 router.use("/audit-log", auditLogRouter);
 router.use(apiKeysRouter);
+router.use(supportRouter);
 router.use(mcpRouter);
 
 // Sentry integration test route
