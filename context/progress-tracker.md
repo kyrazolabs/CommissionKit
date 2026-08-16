@@ -44,7 +44,7 @@ This tracker captures the current state of the codebase as of the latest explora
 | Portal routes | ✅ Done | JWT rep portal auth. |
 | Export routes | ✅ Done | CSV/XLSX exports. |
 | Roles routes | ✅ Done | Custom role CRUD. |
-| Integrations routes | ✅ Done | Connector config and sync triggers. |
+| Integrations routes | ✅ Done | Connector config, sync triggers, OAuth start/callback (HubSpot + Salesforce) with PKCE + lazy token refresh. |
 | Enterprise routes | ✅ Done | AISSOL projects, invoices, matrix conditionally mounted. |
 | Apply route | ✅ Done | Public POST `/api/apply` with Zod validation, `applyRateLimit` (5 req/hour), env-driven notification emails, BCC field added to `MailJobSchema` and `sendMail()`. |
 | Standard calc engine | ✅ Done | Flat / tiered / accelerator + FX snapshots. |
@@ -79,7 +79,7 @@ This tracker captures the current state of the codebase as of the latest explora
 | Payouts / Disputes pages | ✅ Done | Payout lifecycle. |
 | Reports page | ✅ Done | Analytics. |
 | Settings / Billing pages | ✅ Done | Workspace config + Stripe billing. |
-| Integrations page | ✅ Done | Connector UI. |
+| Integrations page | ✅ Done | Connector UI, one-click OAuth connect (HubSpot + Salesforce) with manual fallback, setup-guide links. |
 | Portal pages | ✅ Done | Standard + AISSOL rep portals. |
 | Landing page | ✅ Done | Full marketing sections. |
 | Marketing pages | ✅ Done | Pricing, features, solutions, contact, legal. |
@@ -314,6 +314,8 @@ This tracker captures the current state of the codebase as of the latest explora
   - Full monorepo typecheck passes (zero errors). 0 new dependencies. `docs/competitor-landing-page-teardown-2026-08.md` committed for future reference.
 
 - **One-Click OAuth Integrations (HubSpot + Salesforce)**: Replaced the multi-field credential forms with OAuth 2.0 Authorization Code (Web Server) one-button connect. Backend (@forge): compound unique index `(workspaceId, connectorName)` on `IntegrationConnection` (multi-connector support); connector-aware routes — `/status` now returns `{ connections: [...] }`, and `config`/`disconnect`/`sync`/`dismiss-error`/`connector/settings` require `?connector=`; new OAuth routes `GET /api/integrations/:workspaceId/oauth/start/:connector` + `GET /api/integrations/oauth/:connector/callback` with HMAC-signed `state` (CSRF), env-based `*_CLIENT_ID`/`*_CLIENT_SECRET`, and `hubspot`/`salesforce` client methods (`buildAuthorizeUrl`, `exchangeCode`, `refreshAccessToken`); optional `refreshTokens?()` on the `CKitPlugin` interface + `ensureFreshConfig()` lazy token refresh wired into both sync workers and stage routes. Frontend (@pixel): `OAuthConnectButton` (one-click connect + "Advanced" manual fallback) and multi-connected cards. 15 commits total (13 backend + review-fix + frontend). Typecheck clean; integration/OAuth tests pass (22 new). Plan at `docs/plan-one-click-oauth-integrations.md`. **Pending @vault:** register OAuth apps with HubSpot/Salesforce and set the 4 env vars + redirect URIs.
+
+- **One-Click OAuth — production hardening & fixes**: Fixed issues surfaced in real end-to-end testing after the initial rollout. (1) OAuth start route resolves the workspace from the URL path param instead of the `X-Workspace-ID` header (browser redirects don't send that header). (2) `app.set('trust proxy', true)` so `req.protocol` returns `https` behind the Coolify/nginx proxy, fixing `redirect_uri` mismatches. (3) HubSpot token endpoint moved from `/oauth/v1/token` to `/oauth/v3/token` (new developer-platform apps). (4) Salesforce PKCE added (`code_challenge`/`code_verifier`) since Salesforce now enforces it. (5) Salesforce `getClient`/`testConnection` accept the stored OAuth access token, not just the manual `clientId`/`clientSecret` path. (6) `ensureFreshConfig` skips token refresh when no `refreshToken` is present, so manual Salesforce connections stay working. Added "View setup guide" docs links to every connector dialog (`.co` domain). HubSpot app project committed at `integrations/hubspot/`; Salesforce setup reference at `integrations/salesforce.md`. Full manual-vs-OAuth scenario test matrix across plugin → API → worker layers. Typecheck clean.
 
 ## Where to Go Next
 - Back to entry point: `AGENTS.md`
