@@ -60,6 +60,15 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+// Guards against Invalid Date crashes — API dates can be empty/null,
+// and date-fns format() throws RangeError on Invalid Date.
+function formatDateSafe(value: string | null | undefined, pattern: string): string {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  return format(d, pattern);
+}
+
 // ─── Dispute Modal ────────────────────────────────────────────────────────────
 function DisputeModal({
   payout,
@@ -90,7 +99,7 @@ function DisputeModal({
     onError: (err: any) => toast({ title: t("common.error", "Error"), description: err.message, variant: "destructive" }),
   });
 
-  const periodLabel = `${format(new Date(payout.periodStart), "MMM d")}–${format(new Date(payout.periodEnd), "MMM d, yyyy")}`;
+  const periodLabel = `${formatDateSafe(payout.periodStart, "MMM d")}–${formatDateSafe(payout.periodEnd, "MMM d, yyyy")}`;
 
   return (
     <DialogContent className="sm:max-w-md">
@@ -242,7 +251,7 @@ export function MyPayoutsPage() {
           />
           <StatCard
             label={t("portal.public.myPayouts.lastPaymentDate")}
-            value={lastPaid?.actualPaymentDate ? format(new Date(lastPaid.actualPaymentDate), "MMM d, yyyy") : "–"}
+            value={lastPaid?.actualPaymentDate ? formatDateSafe(lastPaid.actualPaymentDate, "MMM d, yyyy") : "–"}
             icon={Calendar}
             tooltip={t("portal.public.myPayouts.lastPaymentDate")}
           />
@@ -309,7 +318,7 @@ export function MyPayoutsPage() {
                 {sortedPayouts.map((payout: any) => (
                   <TableRow key={payout.id}>
                     <TableCell className="text-sm text-muted-foreground">
-                      {format(new Date(payout.periodStart), "MMM d")}–{format(new Date(payout.periodEnd), "MMM d, yyyy")}
+                      {formatDateSafe(payout.periodStart, "MMM d")}–{formatDateSafe(payout.periodEnd, "MMM d, yyyy")}
                     </TableCell>
                     <TableCell className="text-right text-sm tabular-nums">
                       {formatCurrency(payout.commissionAmount, payout.currency)}
@@ -328,9 +337,9 @@ export function MyPayoutsPage() {
                     <TableCell><StatusBadge status={payout.status} /></TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {payout.actualPaymentDate
-                        ? format(new Date(payout.actualPaymentDate), "MMM d, yyyy")
+                        ? formatDateSafe(payout.actualPaymentDate, "MMM d, yyyy")
                         : payout.scheduledPaymentDate
-                        ? t("portal.public.myPayouts.expected", { date: format(new Date(payout.scheduledPaymentDate), "MMM d") })
+                        ? t("portal.public.myPayouts.expected", { date: formatDateSafe(payout.scheduledPaymentDate, "MMM d") })
                         : "–"}
                     </TableCell>
                     <TableCell className="text-right">

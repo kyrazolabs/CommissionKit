@@ -67,7 +67,7 @@ function WorkspaceSwitcher({ collapsed }: { collapsed: boolean }) {
   if (!activeWorkspace) return null;
 
   return (
-    <div className={cn("pt-3 pb-2", collapsed ? "px-1.5" : "px-3")}>
+    <div className={cn("pt-3 pb-2 transition-all duration-200", collapsed ? "px-1.5" : "px-3")}>
       <Popover open={open} onOpenChange={(isOpen) => {
         setOpen(isOpen);
         if (!isOpen) {
@@ -77,8 +77,8 @@ function WorkspaceSwitcher({ collapsed }: { collapsed: boolean }) {
       }}>
         <PopoverTrigger asChild>
           <button className={cn(
-            "flex items-center gap-2 p-2 rounded-[10px] hover:bg-muted text-left transition-colors group outline-none click",
-            collapsed ? "w-full justify-center" : "w-full",
+            "flex items-center gap-2 p-2 rounded-[10px] hover:bg-muted text-left transition-all duration-200 group outline-none click",
+            collapsed ? "w-full justify-start" : "w-full",
           )}>
             <WorkspaceAvatar name={activeWorkspace.name} size={28} className="size-7 shrink-0 rounded-md" />
             {!collapsed && (
@@ -266,7 +266,7 @@ export function Sidebar({ onCloseMobile, isMobile }: { onCloseMobile?: () => voi
   return (
     <div className={cn(
       "flex h-full shrink-0 flex-col bg-sidebar transition-all duration-200",
-      isMobile ? "w-55" : collapsed ? "w-14" : "w-55",
+      isMobile ? "w-55" : collapsed ? "w-14" : "w-50",
     )}>
 
       {/* Workspace switcher */}
@@ -276,11 +276,18 @@ export function Sidebar({ onCloseMobile, isMobile }: { onCloseMobile?: () => voi
       <div className={cn("flex-1 overflow-y-auto", effectiveCollapsed ? "px-1.5 pt-4 space-y-4" : "px-3 pt-4 space-y-6")}>
         {filteredGroups.map((group) => (
           <div key={group.label}>
-            {!effectiveCollapsed && (
-              <p className="px-2 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-sidebar-muted-foreground select-none">
-                {group.label}
-              </p>
-            )}
+            <p
+              className={cn(
+                "px-2 mb-1.5 text-xs font-semibold uppercase tracking-wider",
+                "text-sidebar-muted-foreground select-none truncate",
+                "overflow-hidden transition-all duration-50 ease-in-out",
+                effectiveCollapsed
+                  ? "max-h-0 opacity-0 py-0 mb-0"
+                  : "max-h-6 opacity-100"
+              )}
+            >
+              {group.label}
+            </p>
             <nav className={effectiveCollapsed ? "space-y-1" : "space-y-0.5"}>
               {group.items.map((item: any) => {
                 const IconComponent = typeof item.icon === "string" ? ICON_MAP[item.icon] : item.icon;
@@ -293,8 +300,8 @@ export function Sidebar({ onCloseMobile, isMobile }: { onCloseMobile?: () => voi
                     key={item.name}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-2.5 rounded-[10px] text-sm transition-colors click",
-                      effectiveCollapsed ? "justify-center size-9 p-0" : "px-2.5 py-1.75",
+                      "flex items-center gap-2.5 rounded-lg text-sm transition-colors click truncate",
+                      effectiveCollapsed ? "justify-center size-9 mx-1 p-0" : "px-2.5 py-1.75",
                       isActive
                         ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold border border-transparent"
                         : "text-sidebar-foreground font-normal border border-transparent hover:bg-muted hover:text-foreground"
@@ -304,7 +311,7 @@ export function Sidebar({ onCloseMobile, isMobile }: { onCloseMobile?: () => voi
                     {IconComponent && (
                       <IconComponent
                         className={cn(
-                          effectiveCollapsed ? "size-4" : "h-[15px] w-[15px]",
+                          effectiveCollapsed ? "size-4" : "h-3.75 w-3.75",
                           "shrink-0",
                           isActive
                             ? "text-sidebar-primary"
@@ -334,12 +341,12 @@ export function Sidebar({ onCloseMobile, isMobile }: { onCloseMobile?: () => voi
       </div>
 
       {/* Toggle button */}
-      <div className={cn("flex", effectiveCollapsed ? "justify-center pt-2" : "px-3 pt-2")}>
+      <div className={cn("flex transition-all duration-200", effectiveCollapsed ? "justify-start pt-2" : "px-3 pt-2")}>
         <button
           onClick={isMobile ? onCloseMobile : toggleCollapsed}
           className={cn(
-            "flex items-center gap-2.5 rounded-[10px] text-sm text-sidebar-muted-foreground hover:bg-muted hover:text-foreground transition-colors click",
-            effectiveCollapsed ? "justify-center size-9 p-0" : "w-full px-2.5 py-1.75",
+            "flex items-center gap-2.5 rounded-[10px] text-sm text-sidebar-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200 click",
+            effectiveCollapsed ? "justify-center size-9 p-0 ml-1" : "w-full px-2.5 py-1.75",
           )}
         >
           {effectiveCollapsed ? (
@@ -354,13 +361,13 @@ export function Sidebar({ onCloseMobile, isMobile }: { onCloseMobile?: () => voi
       </div>
 
       {/* Bottom: user profile menu */}
-      <div className={cn("border-t border-border", effectiveCollapsed ? "p-1.5 mt-2" : "p-3 mt-2")}>
+      <div className={cn("border-t border-border transition-all duration-200", effectiveCollapsed ? "p-1.5 mt-2" : "p-3 mt-2")}>
         {user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className={cn(
-                "flex items-center justify-start gap-2 p-2 rounded-md hover:bg-sidebar-accent text-left transition-colors outline-none group",
-                effectiveCollapsed ? "w-full justify-center" : "w-full",
+                "flex items-center justify-start gap-2 p-2 rounded-md hover:bg-sidebar-accent text-left transition-all duration-200 outline-none group",
+                effectiveCollapsed ? "w-full justify-start" : "w-full",
               )}>
                 <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-semibold overflow-hidden">
                   {user.image ? (
