@@ -135,4 +135,68 @@ describe("Salesforce — payment defaults", () => {
     expect(reps).toHaveLength(1);
     expect(reps[0].name).toBe("Alice");
   });
+
+  test("fetchReps works with a stored OAuth access token and no clientId/clientSecret", async () => {
+    let authHeader = "";
+    globalThis.fetch = (async (url: string, init?: RequestInit) => {
+      authHeader = String(init?.headers?.["Authorization"] ?? init?.headers?.Authorization ?? "");
+      return new Response(JSON.stringify({
+        records: [
+          { Id: "u1", Name: "Bob", Email: "b@b.com", UserRole: { Name: "Sales Rep" } },
+        ],
+        totalSize: 1, done: true,
+      }), { headers: { "Content-Type": "application/json" } });
+    }) as any;
+
+    const reps = await connector.fetchReps("ws", {
+      instanceUrl: "https://x.my.salesforce.com",
+      authType: "oauth",
+      accessToken: "stored-oauth-token",
+    } as any);
+
+    expect(reps).toHaveLength(1);
+    expect(reps[0].name).toBe("Bob");
+    expect(authHeader).toContain("Bearer stored-oauth-token");
+  });
+
+  test("testConnection succeeds with a stored OAuth access token", async () => {
+    globalThis.fetch = (async () => {
+      return new Response(JSON.stringify({
+        records: [{ Id: "u1", Name: "Carol" }],
+        totalSize: 1, done: true,
+      }), { headers: { "Content-Type": "application/json" } });
+    }) as any;
+
+    const result = await connector.testConnection({
+      instanceUrl: "https://x.my.salesforce.com",
+      authType: "oauth",
+      accessToken: "stored-oauth-token",
+    } as any);
+
+    expect(result.success).toBe(true);
+    expect(result.message).toContain("1 user(s) found");
+  });
+
+  test("testConnection accepts manual clientId/clientSecret credentials", async () => {
+    globalThis.fetch = (async (url: string) => {
+      if (String(url).includes("oauth2/token")) {
+        return new Response(JSON.stringify({
+          access_token: "at", instance_url: "https://x.my.salesforce.com",
+        }), { headers: { "Content-Type": "application/json" } });
+      }
+      return new Response(JSON.stringify({
+        records: [{ Id: "u1", Name: "Dan" }],
+        totalSize: 1, done: true,
+      }), { headers: { "Content-Type": "application/json" } });
+    }) as any;
+
+    const result = await connector.testConnection({
+      instanceUrl: "https://x.my.salesforce.com",
+      authType: "oauth",
+      clientId: "cid",
+      clientSecret: "csec",
+    } as any);
+
+    expect(result.success).toBe(true);
+  });
 });

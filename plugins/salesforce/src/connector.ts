@@ -44,7 +44,12 @@ export class SalesforceConnector extends BasePlugin {
   private async getClient(config: ConnectionConfig): Promise<SalesforceClient> {
     const c = this.parseConfig(config);
 
-    // If OAuth credentials provided, auto-authenticate
+    // OAuth flow: access token already present (clientId/clientSecret are env vars, not stored)
+    if (c.accessToken) {
+      return new SalesforceClient(c.accessToken, c.instanceUrl || "");
+    }
+
+    // Manual flow: authenticate with client credentials / username-password
     if (c.authType === "oauth" && c.clientId && c.clientSecret) {
       const tokens = await SalesforceClient.authenticate(
         c.instanceUrl || "https://login.salesforce.com",
@@ -60,10 +65,10 @@ export class SalesforceConnector extends BasePlugin {
   async testConnection(config: ConnectionConfig): Promise<ConnectionTestResult> {
     try {
       const c = this.parseConfig(config);
-      if (!c.instanceUrl) {
+      if (!c.instanceUrl && !c.accessToken) {
         return { success: false, message: "Missing instance URL" };
       }
-      if (!(c.clientId && c.clientSecret)) {
+      if (!(c.accessToken || (c.clientId && c.clientSecret))) {
         return { success: false, message: "Missing OAuth credentials (Client ID + Client Secret)" };
       }
 
