@@ -32,6 +32,16 @@ function getOnboardingState(workspace: ReturnType<typeof useWorkspace>["activeWo
   };
 }
 
+function countItems(data: unknown): number {
+  if (Array.isArray(data)) {
+    return data.length;
+  }
+  if (data && typeof data === "object" && Array.isArray((data as { data?: unknown }).data)) {
+    return (data as { data: unknown[] }).data.length;
+  }
+  return 0;
+}
+
 export function useSetupChecklist(): UseSetupChecklistReturn {
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
@@ -44,9 +54,9 @@ export function useSetupChecklist(): UseSetupChecklistReturn {
 
   // Step completion status - derived from live data
   const steps = useMemo(() => ({
-    reps: Array.isArray(repsData) && repsData.length > 0,
-    plans: Array.isArray(plansData) && plansData.length > 0,
-    deals: Array.isArray(dealsData) && dealsData.length > 0,
+    reps: countItems(repsData) > 0,
+    plans: countItems(plansData) > 0,
+    deals: countItems(dealsData) > 0,
   }), [repsData, plansData, dealsData]);
 
   const completedCount = useMemo(() =>
