@@ -1,5 +1,4 @@
-import { ApiKey } from "@workspace/db";
-import { connectDB } from "@workspace/db";
+import { ApiKey, connectDB } from "@workspace/db";
 import { verifyKey } from "../../lib/api-keys";
 import type { WorkspaceContext } from "./context";
 
@@ -44,10 +43,9 @@ export async function resolveWorkspaceFromApiKey(
       const conn = await connectDB();
       const db = (conn as any)?.connection?.db ?? (conn as any)?.db;
       if (db) {
-        const creator = await db.collection("user").findOne(
-          { _id: matchedKey.createdBy },
-          { projection: { _id: 1, name: 1, email: 1 } },
-        );
+        const creator = await db
+          .collection("user")
+          .findOne({ _id: matchedKey.createdBy }, { projection: { _id: 1, name: 1, email: 1 } });
         if (creator) {
           creatorUserId = creator._id?.toString() ?? creator.id ?? "";
           creatorName = creator.name ?? "";

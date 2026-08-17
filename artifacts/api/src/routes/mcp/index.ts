@@ -1,11 +1,11 @@
-import { Router } from "express";
-import { randomUUID } from "crypto";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { resolveWorkspaceFromApiKey } from "./auth";
-import { createMcpServer } from "./tools";
+import { randomUUID } from "crypto";
+import { Router } from "express";
 import { auditContext } from "../../lib/audit-context";
 import { logger } from "../../lib/logger";
+import { resolveWorkspaceFromApiKey } from "./auth";
 import type { WorkspaceContext } from "./context";
+import { createMcpServer } from "./tools";
 
 const router = Router();
 
@@ -31,10 +31,11 @@ function handleWithAuditContext(
     userName: mcpUserName,
     userEmail: ctx.creatorEmail,
     workspaceId: ctx.workspaceId,
-    ipAddress: (req.headers["x-forwarded-for"] as string | undefined)?.split(",")[0]?.trim()
-      ?? req.socket?.remoteAddress
-      ?? req.ip
-      ?? undefined,
+    ipAddress:
+      (req.headers["x-forwarded-for"] as string | undefined)?.split(",")[0]?.trim() ??
+      req.socket?.remoteAddress ??
+      req.ip ??
+      undefined,
     userAgent: req.headers["user-agent"] as string | undefined,
   };
 

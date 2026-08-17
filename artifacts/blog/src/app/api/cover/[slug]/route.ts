@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import fs from "node:fs";
+import { NextResponse } from "next/server";
 import { findCover } from "@/lib/cover";
 
 const MIME_MAP: Record<string, string> = {
@@ -9,10 +9,7 @@ const MIME_MAP: Record<string, string> = {
   webp: "image/webp",
 };
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ slug: string }> }
-) {
+export async function GET(_request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const cover = findCover(slug);
   if (!cover) return new NextResponse("Not Found", { status: 404 });

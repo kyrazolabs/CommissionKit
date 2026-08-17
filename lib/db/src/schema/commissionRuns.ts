@@ -1,17 +1,25 @@
-import mongoose, { Schema, model, Types } from "mongoose";
+import type mongoose from "mongoose";
+import { model, Schema, type Types } from "mongoose";
 import { z } from "zod";
 
-const CommissionRunSchema = new Schema({
-  workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
-  period: { type: String, required: true },
-  totalCommission: { type: Number, required: true, default: 0 },
-  totalDeals: { type: Number, required: true, default: 0 },
-  skippedDeals: { type: Number, required: true, default: 0 },
-  repsCount: { type: Number, required: true, default: 0 },
-  status: { type: String, enum: ["pending", "processing", "completed", "failed"], default: "pending" },
-  error: { type: String },
-  isSampleData: { type: Boolean, default: false },
-}, { timestamps: { createdAt: true, updatedAt: true } });
+const CommissionRunSchema = new Schema(
+  {
+    workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
+    period: { type: String, required: true },
+    totalCommission: { type: Number, required: true, default: 0 },
+    totalDeals: { type: Number, required: true, default: 0 },
+    skippedDeals: { type: Number, required: true, default: 0 },
+    repsCount: { type: Number, required: true, default: 0 },
+    status: {
+      type: String,
+      enum: ["pending", "processing", "completed", "failed"],
+      default: "pending",
+    },
+    error: { type: String },
+    isSampleData: { type: Boolean, default: false },
+  },
+  { timestamps: { createdAt: true, updatedAt: true } },
+);
 
 const CommissionResultSchema = new Schema({
   runId: { type: Schema.Types.ObjectId, ref: "CommissionRun", required: true },

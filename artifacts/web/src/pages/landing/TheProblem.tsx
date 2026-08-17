@@ -1,5 +1,14 @@
-import { useInView, fadeIn } from "./hooks";
-import { FileSpreadsheet, Clock, FileWarning, MessageSquareWarning, Database, Zap, Eye, ScrollText } from "lucide-react";
+import {
+  Clock,
+  Database,
+  Eye,
+  FileSpreadsheet,
+  FileWarning,
+  MessageSquareWarning,
+  ScrollText,
+  Zap,
+} from "lucide-react";
+import { fadeIn, useInView } from "./hooks";
 
 const PAIN_ITEMS = [
   {
@@ -67,77 +76,80 @@ export function TheProblem() {
         </div>
 
         {/* Pain point stats */}
-        <div className="grid grid-cols-3 gap-6 max-w-3xl mx-auto mb-12" style={fadeIn(left.inView, 0)}>
+        <div
+          className="grid grid-cols-3 gap-6 max-w-3xl mx-auto mb-12"
+          style={fadeIn(left.inView, 0)}
+        >
           <div className="text-center">
-            <div className="text-2xl md:text-3xl font-bold text-destructive tracking-tight font-display tabular-nums">62%</div>
-            <div className="text-xs text-muted-foreground mt-1">of reps keep their own spreadsheets to verify payouts</div>
+            <div className="text-2xl md:text-3xl font-bold text-destructive tracking-tight font-display tabular-nums">
+              62%
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              of reps keep their own spreadsheets to verify payouts
+            </div>
           </div>
           <div className="text-center">
-            <div className="text-2xl md:text-3xl font-bold text-destructive tracking-tight font-display tabular-nums">23 hrs</div>
-            <div className="text-xs text-muted-foreground mt-1">spent per month on manual commission admin</div>
+            <div className="text-2xl md:text-3xl font-bold text-destructive tracking-tight font-display tabular-nums">
+              23 hrs
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              spent per month on manual commission admin
+            </div>
           </div>
           <div className="text-center">
-            <div className="text-2xl md:text-3xl font-bold text-destructive tracking-tight font-display tabular-nums">4.2%</div>
-            <div className="text-xs text-muted-foreground mt-1">of commission payouts contain errors</div>
+            <div className="text-2xl md:text-3xl font-bold text-destructive tracking-tight font-display tabular-nums">
+              4.2%
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              of commission payouts contain errors
+            </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-5xl mx-auto">
-        {/* Left — Pain */}
-        <div
-          ref={left.ref}
-          className="rounded-2xl border p-8 lg:p-10 bg-destructive/5 border-destructive/10"
-          style={fadeIn(left.inView, 0)}
-        >
-          <h3 className="text-lg font-semibold mb-6 text-destructive">
-            The way it is now
-          </h3>
-          <div className="space-y-5">
-            {PAIN_ITEMS.map((item) => (
-              <div key={item.title} className="flex gap-3">
-                <div className="size-9 rounded-lg bg-background border flex items-center justify-center shrink-0 mt-0.5">
-                  <item.icon className="size-4 text-destructive/70" />
+          {/* Left — Pain */}
+          <div
+            ref={left.ref}
+            className="rounded-2xl border p-8 lg:p-10 bg-destructive/5 border-destructive/10"
+            style={fadeIn(left.inView, 0)}
+          >
+            <h3 className="text-lg font-semibold mb-6 text-destructive">The way it is now</h3>
+            <div className="space-y-5">
+              {PAIN_ITEMS.map((item) => (
+                <div key={item.title} className="flex gap-3">
+                  <div className="size-9 rounded-lg bg-background border flex items-center justify-center shrink-0 mt-0.5">
+                    <item.icon className="size-4 text-destructive/70" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-foreground">
-                    {item.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {item.desc}
-                  </p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Right — Solution */}
-        <div
-          ref={right.ref}
-          className="rounded-2xl border p-8 lg:p-10 bg-primary/5 border-primary/10"
-          style={fadeIn(right.inView, 200)}
-        >
-          <h3 className="text-lg font-semibold mb-6 text-primary">
-            With CommissionKit
-          </h3>
-          <div className="space-y-5">
-            {SOLUTION_ITEMS.map((item) => (
-              <div key={item.title} className="flex gap-3">
-                <div className="size-9 rounded-lg bg-background border flex items-center justify-center shrink-0 mt-0.5">
-                  <item.icon className="size-4 text-primary" />
+          {/* Right — Solution */}
+          <div
+            ref={right.ref}
+            className="rounded-2xl border p-8 lg:p-10 bg-primary/5 border-primary/10"
+            style={fadeIn(right.inView, 200)}
+          >
+            <h3 className="text-lg font-semibold mb-6 text-primary">With CommissionKit</h3>
+            <div className="space-y-5">
+              {SOLUTION_ITEMS.map((item) => (
+                <div key={item.title} className="flex gap-3">
+                  <div className="size-9 rounded-lg bg-background border flex items-center justify-center shrink-0 mt-0.5">
+                    <item.icon className="size-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-foreground">
-                    {item.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {item.desc}
-                  </p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
         </div>
       </div>
     </section>

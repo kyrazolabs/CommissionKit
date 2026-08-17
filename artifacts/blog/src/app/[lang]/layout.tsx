@@ -1,9 +1,9 @@
+import { ArrowLeft } from "lucide-react";
 import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "next-themes";
-import { ArrowLeft } from "lucide-react";
-import { getAllLanguages } from "@/lib/posts";
-import { t, formatAllRightsReserved } from "@/lib/translations";
 import { baseUrl } from "@/lib/baseUrl";
+import { getAllLanguages } from "@/lib/posts";
+import { formatAllRightsReserved, t } from "@/lib/translations";
 import { cn } from "@/lib/utils";
 import "../globals.css";
 
@@ -18,9 +18,7 @@ interface LayoutProps {
   params: Promise<{ lang: string }>;
 }
 
-export async function generateMetadata({
-  params,
-}: LayoutProps): Promise<Metadata> {
+export async function generateMetadata({ params }: LayoutProps): Promise<Metadata> {
   const { lang } = await params;
   const languages = getAllLanguages();
   const dict = t(lang);
@@ -135,12 +133,7 @@ export default async function LangLayout({ children, params }: LayoutProps) {
                     className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {isRtl ? (
-                      <ArrowLeft
-                        className={cn(
-                          "size-4 rotate-180",
-                          isRtl && "rtl:rotate-180",
-                        )}
-                      />
+                      <ArrowLeft className={cn("size-4 rotate-180", isRtl && "rtl:rotate-180")} />
                     ) : (
                       <ArrowLeft className="size-4" />
                     )}

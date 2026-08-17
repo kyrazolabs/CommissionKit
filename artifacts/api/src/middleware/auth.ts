@@ -1,9 +1,9 @@
-import type { Request, Response, NextFunction, RequestHandler } from "express";
-import { auth } from "../lib/auth";
 import { WorkspaceMember } from "@workspace/db";
+import type { NextFunction, Request, RequestHandler, Response } from "express";
 import { Types } from "mongoose";
-import { getUserPermissions, hasPermission } from "../lib/rbac";
 import { setAuditUser } from "../lib/audit-context";
+import { auth } from "../lib/auth";
+import { getUserPermissions, hasPermission } from "../lib/rbac";
 
 export interface AuthenticatedRequest extends Request {
   userId?: string;
@@ -130,9 +130,16 @@ async function checkWorkspacePermission(
       userId: null,
       email: userEmail,
     });
-    if (pending) { pending.userId = userId; await pending.save(); member = pending; }
+    if (pending) {
+      pending.userId = userId;
+      await pending.save();
+      member = pending;
+    }
   }
-  if (!member) { res.status(403).json({ error: "Access denied: not a member of this workspace" }); return; }
+  if (!member) {
+    res.status(403).json({ error: "Access denied: not a member of this workspace" });
+    return;
+  }
 
   const permissions = await getUserPermissions(workspaceId, userId);
   if (!hasPermission(permissions, resource, action)) {
@@ -153,14 +160,14 @@ async function checkWorkspacePermission(
  * Reads the active workspace from the X-Workspace-ID request header.
  * Validates that the authenticated user has the necessary permission.
  */
-export function requirePermission(
-  resource: string,
-  action: string
-): RequestHandler[] {
+export function requirePermission(resource: string, action: string): RequestHandler[] {
   const permissionCheck: RequestHandler = async (req, res, next) => {
     const raw = req.headers["x-workspace-id"];
     const workspaceId = Array.isArray(raw) ? raw[0] : (raw ?? "");
-    if (!workspaceId) { res.status(400).json({ error: "X-Workspace-ID header is required" }); return; }
+    if (!workspaceId) {
+      res.status(400).json({ error: "X-Workspace-ID header is required" });
+      return;
+    }
     await checkWorkspacePermission(req, res, next, workspaceId, resource, action);
   };
   return [requireAuth as RequestHandler, permissionCheck];
@@ -180,7 +187,10 @@ export function requirePermissionFromPath(
   const permissionCheck: RequestHandler = async (req, res, next) => {
     const raw = req.params[paramName];
     const workspaceId = Array.isArray(raw) ? raw[0] : (raw ?? "");
-    if (!workspaceId) { res.status(400).json({ error: `${paramName} path param is required` }); return; }
+    if (!workspaceId) {
+      res.status(400).json({ error: `${paramName} path param is required` });
+      return;
+    }
     await checkWorkspacePermission(req, res, next, workspaceId, resource, action);
   };
   return [requireAuth as RequestHandler, permissionCheck];
@@ -207,8 +217,10 @@ export async function requireGrowthPlan(
     workspaceId: new Types.ObjectId(workspaceId),
   });
 
-  const isActive = sub?.isLifetime || (sub?.status && ["active", "trialing", "past_due", "paused"].includes(sub.status));
-  const plan = isActive ? (sub?.plan || "free") : "free";
+  const isActive =
+    sub?.isLifetime ||
+    (sub?.status && ["active", "trialing", "past_due", "paused"].includes(sub.status));
+  const plan = isActive ? sub?.plan || "free" : "free";
   const isGrowth = plan === "growth" || plan === "pro";
   const isLifetime = sub?.isLifetime || false;
 

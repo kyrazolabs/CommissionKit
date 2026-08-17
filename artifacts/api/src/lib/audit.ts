@@ -1,6 +1,6 @@
+import type { AuditAction, AuditResourceType } from "@workspace/db";
 import { enqueueAuditEvent } from "@workspace/queue";
 import { getAuditContext } from "./audit-context";
-import type { AuditAction, AuditResourceType } from "@workspace/db";
 
 export async function logAudit(
   action: AuditAction,

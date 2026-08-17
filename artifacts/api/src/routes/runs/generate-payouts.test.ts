@@ -1,7 +1,7 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, mock } from "bun:test";
-import { setupTestDB, teardownTestDB, clearCollections } from "../../../test/setup-db";
+import { afterAll, beforeAll, beforeEach, describe, expect, mock, test } from "bun:test";
 import mongoose from "mongoose";
 import request from "supertest";
+import { clearCollections, setupTestDB, teardownTestDB } from "../../../test/setup-db";
 
 const TEST_USER_ID = "test-user-001";
 const TEST_USER_EMAIL = "admin@test.com";
@@ -9,8 +9,12 @@ const TEST_USER_EMAIL = "admin@test.com";
 // ── Mock heavy dependencies ────────────────────────────────────────────────────
 mock.module("@workspace/queue", () => ({
   getRedisClient: () => ({
-    get: async () => null, setex: async () => "OK", del: async () => 1,
-    scan: async () => ["0", []], on: () => {}, quit: async () => "OK",
+    get: async () => null,
+    setex: async () => "OK",
+    del: async () => 1,
+    scan: async () => ["0", []],
+    on: () => {},
+    quit: async () => "OK",
   }),
   sendHighPriorityEmail: () => Promise.resolve(),
   sendMediumPriorityEmail: () => Promise.resolve(),
@@ -33,7 +37,11 @@ mock.module("@workspace/queue", () => ({
   syncDealsQueue: { add: () => Promise.resolve() },
   webhookIngressQueue: { add: () => Promise.resolve() },
   syncEgressQueue: { add: () => Promise.resolve() },
-  PRIORITY_QUEUE_MAP: { high: { add: () => Promise.resolve() }, medium: { add: () => Promise.resolve() }, low: { add: () => Promise.resolve() } },
+  PRIORITY_QUEUE_MAP: {
+    high: { add: () => Promise.resolve() },
+    medium: { add: () => Promise.resolve() },
+    low: { add: () => Promise.resolve() },
+  },
 }));
 mock.module("../../lib/auth", () => ({
   auth: {
@@ -45,14 +53,18 @@ mock.module("../../lib/auth", () => ({
 
 mock.module("../../lib/bull-board", () => ({
   secureBullBoard: (req: any, res: any, next: any) => next(),
-  serverAdapter: { getRouter: () => ((() => {}) as any) },
+  serverAdapter: { getRouter: () => (() => {}) as any },
 }));
 
 mock.module("stripe", () => ({
   default: class StripeMock {
     constructor() {}
     subscriptions = { create: () => Promise.resolve({ id: "sub_123", status: "active" }) };
-    checkout = { sessions: { create: () => Promise.resolve({ url: "https://checkout.stripe.com/test", id: "cs_test" }) } };
+    checkout = {
+      sessions: {
+        create: () => Promise.resolve({ url: "https://checkout.stripe.com/test", id: "cs_test" }),
+      },
+    };
     webhooks = { constructEvent: () => ({ type: "checkout.session.completed" }) };
   },
 }));
@@ -129,24 +141,43 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await clearCollections();
-  const ws = await Workspace.create({ slug: "test-ws", name: "Test Workspace", ownerId: TEST_USER_ID, currency: "USD" });
+  const ws = await Workspace.create({
+    slug: "test-ws",
+    name: "Test Workspace",
+    ownerId: TEST_USER_ID,
+    currency: "USD",
+  });
   workspaceId = ws._id.toString();
-  await WorkspaceMember.create({ workspaceId: ws._id, userId: TEST_USER_ID, email: TEST_USER_EMAIL, role: "owner" });
-  await WorkspaceSubscription.create({ workspaceId: ws._id, plan: "growth", status: "active", isLifetime: true });
-  testRepId1 = (await Rep.create({ workspaceId: ws._id, name: "Rep One", email: "rep1@test.com" }))._id;
-  testRepId2 = (await Rep.create({ workspaceId: ws._id, name: "Rep Two", email: "rep2@test.com" }))._id;
+  await WorkspaceMember.create({
+    workspaceId: ws._id,
+    userId: TEST_USER_ID,
+    email: TEST_USER_EMAIL,
+    role: "owner",
+  });
+  await WorkspaceSubscription.create({
+    workspaceId: ws._id,
+    plan: "growth",
+    status: "active",
+    isLifetime: true,
+  });
+  testRepId1 = (await Rep.create({ workspaceId: ws._id, name: "Rep One", email: "rep1@test.com" }))
+    ._id;
+  testRepId2 = (await Rep.create({ workspaceId: ws._id, name: "Rep Two", email: "rep2@test.com" }))
+    ._id;
 });
 
 const authHeader = () => ({ "X-Workspace-ID": workspaceId });
 
 // ─── Helper: create a completed run with results ──────────────────────────────
-async function createRunWithResults(results: Array<{ repId: any; commissionAmount: number; currency?: string }>) {
+async function createRunWithResults(
+  results: Array<{ repId: any; commissionAmount: number; currency?: string }>,
+) {
   const run = await CommissionRun.create({
     workspaceId,
     period: "2024-03",
     totalCommission: results.reduce((sum, r) => sum + r.commissionAmount, 0),
     totalDeals: results.length,
-    repsCount: new Set(results.map(r => r.repId.toString())).size,
+    repsCount: new Set(results.map((r) => r.repId.toString())).size,
     status: "completed",
   });
 
@@ -178,7 +209,9 @@ async function createPayout(overrides: any = {}) {
     finalAmount: (overrides.commissionAmount ?? 1000) + (overrides.adjustments ?? 0),
     currency: "USD",
     status: overrides.status ?? "pending",
-    statusHistory: [{ status: overrides.status ?? "pending", changedAt: new Date(), changedBy: TEST_USER_ID }],
+    statusHistory: [
+      { status: overrides.status ?? "pending", changedAt: new Date(), changedBy: TEST_USER_ID },
+    ],
   });
 }
 
@@ -209,9 +242,7 @@ describe("POST /api/runs/:id/generate-payouts", () => {
   // ─── Scenario 2: Pending existing + increase → update ──────────────────────
   test("updates existing pending payout when commission increases", async () => {
     // First run at $1000
-    const run1 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1000 },
-    ]);
+    const run1 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1000 }]);
     await request(app).post(`/api/runs/${run1._id}/generate-payouts`).set(authHeader());
 
     // Verify first payout created
@@ -221,9 +252,7 @@ describe("POST /api/runs/:id/generate-payouts", () => {
     expect(payouts[0].status).toBe("pending");
 
     // Second run — same rep, higher commission ($1500)
-    const run2 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1500 },
-    ]);
+    const run2 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1500 }]);
 
     const res = await request(app).post(`/api/runs/${run2._id}/generate-payouts`).set(authHeader());
 
@@ -245,15 +274,11 @@ describe("POST /api/runs/:id/generate-payouts", () => {
 
   // ─── Scenario 3: Pending existing + decrease → flag ────────────────────────
   test("flags decrease when existing pending payout has higher commission", async () => {
-    const run1 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 2000 },
-    ]);
+    const run1 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 2000 }]);
     await request(app).post(`/api/runs/${run1._id}/generate-payouts`).set(authHeader());
 
     // Second run — lower commission ($1200)
-    const run2 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1200 },
-    ]);
+    const run2 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1200 }]);
 
     const res = await request(app).post(`/api/runs/${run2._id}/generate-payouts`).set(authHeader());
 
@@ -273,14 +298,10 @@ describe("POST /api/runs/:id/generate-payouts", () => {
 
   // ─── Scenario 4: Pending existing + same → skip ────────────────────────────
   test("skips when commission hasn't changed and payout is pending", async () => {
-    const run1 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1000 },
-    ]);
+    const run1 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1000 }]);
     await request(app).post(`/api/runs/${run1._id}/generate-payouts`).set(authHeader());
 
-    const run2 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1000 },
-    ]);
+    const run2 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1000 }]);
 
     const res = await request(app).post(`/api/runs/${run2._id}/generate-payouts`).set(authHeader());
 
@@ -297,21 +318,22 @@ describe("POST /api/runs/:id/generate-payouts", () => {
 
   // ─── Scenario 5: Approved existing + increase → update + flag ──────────────
   test("updates but flags when approved payout gets higher commission", async () => {
-    const run1 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1000 },
-    ]);
+    const run1 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1000 }]);
     await request(app).post(`/api/runs/${run1._id}/generate-payouts`).set(authHeader());
 
     // Mark as approved
     await Payout.findOneAndUpdate(
       { repId: testRepId1 },
-      { status: "approved", $push: { statusHistory: { status: "approved", changedAt: new Date(), changedBy: TEST_USER_ID } } },
+      {
+        status: "approved",
+        $push: {
+          statusHistory: { status: "approved", changedAt: new Date(), changedBy: TEST_USER_ID },
+        },
+      },
     );
 
     // Second run — higher commission
-    const run2 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1800 },
-    ]);
+    const run2 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1800 }]);
 
     const res = await request(app).post(`/api/runs/${run2._id}/generate-payouts`).set(authHeader());
 
@@ -329,19 +351,12 @@ describe("POST /api/runs/:id/generate-payouts", () => {
 
   // ─── Scenario 6: Approved existing + decrease → skip ───────────────────────
   test("skips when approved payout would get lower commission", async () => {
-    const run1 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 2000 },
-    ]);
+    const run1 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 2000 }]);
     await request(app).post(`/api/runs/${run1._id}/generate-payouts`).set(authHeader());
 
-    await Payout.findOneAndUpdate(
-      { repId: testRepId1 },
-      { status: "approved" },
-    );
+    await Payout.findOneAndUpdate({ repId: testRepId1 }, { status: "approved" });
 
-    const run2 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1500 },
-    ]);
+    const run2 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1500 }]);
 
     const res = await request(app).post(`/api/runs/${run2._id}/generate-payouts`).set(authHeader());
 
@@ -357,19 +372,12 @@ describe("POST /api/runs/:id/generate-payouts", () => {
 
   // ─── Scenario 7: Approved existing + same → skip ───────────────────────────
   test("skips when approved payout amount hasn't changed", async () => {
-    const run1 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1000 },
-    ]);
+    const run1 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1000 }]);
     await request(app).post(`/api/runs/${run1._id}/generate-payouts`).set(authHeader());
 
-    await Payout.findOneAndUpdate(
-      { repId: testRepId1 },
-      { status: "approved" },
-    );
+    await Payout.findOneAndUpdate({ repId: testRepId1 }, { status: "approved" });
 
-    const run2 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1000 },
-    ]);
+    const run2 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1000 }]);
 
     const res = await request(app).post(`/api/runs/${run2._id}/generate-payouts`).set(authHeader());
 
@@ -383,20 +391,21 @@ describe("POST /api/runs/:id/generate-payouts", () => {
   // ─── Scenario 8: Paid existing + increase → create delta ───────────────────
   test("creates delta payout when paid payout gets higher commission", async () => {
     // Run 1: $1000 → paid
-    const run1 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1000 },
-    ]);
+    const run1 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1000 }]);
     await request(app).post(`/api/runs/${run1._id}/generate-payouts`).set(authHeader());
 
     await Payout.findOneAndUpdate(
       { repId: testRepId1 },
-      { status: "paid", $push: { statusHistory: { status: "paid", changedAt: new Date(), changedBy: TEST_USER_ID } } },
+      {
+        status: "paid",
+        $push: {
+          statusHistory: { status: "paid", changedAt: new Date(), changedBy: TEST_USER_ID },
+        },
+      },
     );
 
     // Run 2: $1500 total → delta of $500
-    const run2 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1500 },
-    ]);
+    const run2 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1500 }]);
 
     const res = await request(app).post(`/api/runs/${run2._id}/generate-payouts`).set(authHeader());
 
@@ -417,19 +426,12 @@ describe("POST /api/runs/:id/generate-payouts", () => {
 
   // ─── Scenario 9: Paid existing + decrease → skip ───────────────────────────
   test("skips when paid payout would decrease — no auto-clawback", async () => {
-    const run1 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 2000 },
-    ]);
+    const run1 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 2000 }]);
     await request(app).post(`/api/runs/${run1._id}/generate-payouts`).set(authHeader());
 
-    await Payout.findOneAndUpdate(
-      { repId: testRepId1 },
-      { status: "paid" },
-    );
+    await Payout.findOneAndUpdate({ repId: testRepId1 }, { status: "paid" });
 
-    const run2 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1500 },
-    ]);
+    const run2 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1500 }]);
 
     const res = await request(app).post(`/api/runs/${run2._id}/generate-payouts`).set(authHeader());
 
@@ -446,19 +448,12 @@ describe("POST /api/runs/:id/generate-payouts", () => {
 
   // ─── Scenario 10: Paid existing + same → skip ──────────────────────────────
   test("skips when paid payout amount hasn't changed", async () => {
-    const run1 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1000 },
-    ]);
+    const run1 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1000 }]);
     await request(app).post(`/api/runs/${run1._id}/generate-payouts`).set(authHeader());
 
-    await Payout.findOneAndUpdate(
-      { repId: testRepId1 },
-      { status: "paid" },
-    );
+    await Payout.findOneAndUpdate({ repId: testRepId1 }, { status: "paid" });
 
-    const run2 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1000 },
-    ]);
+    const run2 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1000 }]);
 
     const res = await request(app).post(`/api/runs/${run2._id}/generate-payouts`).set(authHeader());
 
@@ -471,19 +466,20 @@ describe("POST /api/runs/:id/generate-payouts", () => {
 
   // ─── Scenario 11: Disputed existing → skip always ──────────────────────────
   test("skips disputed payouts entirely", async () => {
-    const run1 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1000 },
-    ]);
+    const run1 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1000 }]);
     await request(app).post(`/api/runs/${run1._id}/generate-payouts`).set(authHeader());
 
     await Payout.findOneAndUpdate(
       { repId: testRepId1 },
-      { status: "disputed", $push: { statusHistory: { status: "disputed", changedAt: new Date(), changedBy: TEST_USER_ID } } },
+      {
+        status: "disputed",
+        $push: {
+          statusHistory: { status: "disputed", changedAt: new Date(), changedBy: TEST_USER_ID },
+        },
+      },
     );
 
-    const run2 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 2000 },
-    ]);
+    const run2 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 2000 }]);
 
     const res = await request(app).post(`/api/runs/${run2._id}/generate-payouts`).set(authHeader());
 
@@ -499,19 +495,20 @@ describe("POST /api/runs/:id/generate-payouts", () => {
 
   // ─── Scenario 12: On Hold + increase → update + flag ───────────────────────
   test("updates on-hold payout but flags for review when commission increases", async () => {
-    const run1 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1000 },
-    ]);
+    const run1 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1000 }]);
     await request(app).post(`/api/runs/${run1._id}/generate-payouts`).set(authHeader());
 
     await Payout.findOneAndUpdate(
       { repId: testRepId1 },
-      { status: "on_hold", $push: { statusHistory: { status: "on_hold", changedAt: new Date(), changedBy: TEST_USER_ID } } },
+      {
+        status: "on_hold",
+        $push: {
+          statusHistory: { status: "on_hold", changedAt: new Date(), changedBy: TEST_USER_ID },
+        },
+      },
     );
 
-    const run2 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 2500 },
-    ]);
+    const run2 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 2500 }]);
 
     const res = await request(app).post(`/api/runs/${run2._id}/generate-payouts`).set(authHeader());
 
@@ -525,19 +522,12 @@ describe("POST /api/runs/:id/generate-payouts", () => {
 
   // ─── Scenario 13: On Hold + decrease → skip ────────────────────────────────
   test("skips on-hold payout when commission decreases", async () => {
-    const run1 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 2000 },
-    ]);
+    const run1 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 2000 }]);
     await request(app).post(`/api/runs/${run1._id}/generate-payouts`).set(authHeader());
 
-    await Payout.findOneAndUpdate(
-      { repId: testRepId1 },
-      { status: "on_hold" },
-    );
+    await Payout.findOneAndUpdate({ repId: testRepId1 }, { status: "on_hold" });
 
-    const run2 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1500 },
-    ]);
+    const run2 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1500 }]);
 
     const res = await request(app).post(`/api/runs/${run2._id}/generate-payouts`).set(authHeader());
 
@@ -551,21 +541,14 @@ describe("POST /api/runs/:id/generate-payouts", () => {
 
   // ─── Scenario 15: Preserve existing manual adjustments ─────────────────────
   test("preserves existing manual adjustments when updating payout", async () => {
-    const run1 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1000 },
-    ]);
+    const run1 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1000 }]);
     await request(app).post(`/api/runs/${run1._id}/generate-payouts`).set(authHeader());
 
     // Admin adds a $200 bonus
-    await Payout.findOneAndUpdate(
-      { repId: testRepId1 },
-      { adjustments: 200, finalAmount: 1200 },
-    );
+    await Payout.findOneAndUpdate({ repId: testRepId1 }, { adjustments: 200, finalAmount: 1200 });
 
     // Second run — commission goes up to $1500
-    const run2 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1500 },
-    ]);
+    const run2 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1500 }]);
 
     const res = await request(app).post(`/api/runs/${run2._id}/generate-payouts`).set(authHeader());
 
@@ -623,19 +606,12 @@ describe("POST /api/runs/:id/generate-payouts", () => {
   // ─── Edge case: real-world mid-month + end-of-month ────────────────────────
   test("handles mid-month pay + end-of-month recalculation correctly", async () => {
     // Mid-month run #1: $1000 → generate → mark as paid
-    const run1 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1000 },
-    ]);
+    const run1 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1000 }]);
     await request(app).post(`/api/runs/${run1._id}/generate-payouts`).set(authHeader());
-    await Payout.findOneAndUpdate(
-      { repId: testRepId1 },
-      { status: "paid" },
-    );
+    await Payout.findOneAndUpdate({ repId: testRepId1 }, { status: "paid" });
 
     // End-of-month run #2: $1500 (rep closed another deal)
-    const run2 = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1500 },
-    ]);
+    const run2 = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1500 }]);
     const res = await request(app).post(`/api/runs/${run2._id}/generate-payouts`).set(authHeader());
 
     // Should create delta payout of $500 (not duplicate full $1500)
@@ -646,7 +622,7 @@ describe("POST /api/runs/:id/generate-payouts", () => {
     expect(payouts).toHaveLength(2);
     expect(payouts[0].commissionAmount).toBe(1000); // original, paid
     expect(payouts[0].status).toBe("paid");
-    expect(payouts[1].commissionAmount).toBe(500);  // delta, pending
+    expect(payouts[1].commissionAmount).toBe(500); // delta, pending
     expect(payouts[1].status).toBe("pending");
   });
 
@@ -692,12 +668,12 @@ describe("POST /api/runs/:id/generate-payouts", () => {
 
   // ─── Edge case: custom period params ───────────────────────────────────────
   test("respects custom periodStart and periodEnd query params", async () => {
-    const run = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 1000 },
-    ]);
+    const run = await createRunWithResults([{ repId: testRepId1, commissionAmount: 1000 }]);
 
     const res = await request(app)
-      .post(`/api/runs/${run._id}/generate-payouts?periodStart=2024-03-15T00:00:00.000Z&periodEnd=2024-03-31T23:59:59.999Z`)
+      .post(
+        `/api/runs/${run._id}/generate-payouts?periodStart=2024-03-15T00:00:00.000Z&periodEnd=2024-03-31T23:59:59.999Z`,
+      )
       .set(authHeader());
 
     expect(res.status).toBe(200);
@@ -773,18 +749,22 @@ describe("POST /api/runs/:id/generate-payouts", () => {
 
     expect(res.status).toBe(401);
 
-    (authModule.auth.api.getSession as any) = mock(() => Promise.resolve(originalGetSession ? originalGetSession() : {
-      session: { id: "s1" },
-      user: { id: TEST_USER_ID, email: TEST_USER_EMAIL, name: "Admin" },
-    }));
+    (authModule.auth.api.getSession as any) = mock(() =>
+      Promise.resolve(
+        originalGetSession
+          ? originalGetSession()
+          : {
+              session: { id: "s1" },
+              user: { id: TEST_USER_ID, email: TEST_USER_EMAIL, name: "Admin" },
+            },
+      ),
+    );
   });
 
   // ─── Aggregate: multiple reps with mixed statuses ──────────────────────────
   test("handles mixed rep statuses correctly in a single run", async () => {
     // Rep 1: already has a paid payout from a prior run
-    const priorRun = await createRunWithResults([
-      { repId: testRepId1, commissionAmount: 500 },
-    ]);
+    const priorRun = await createRunWithResults([{ repId: testRepId1, commissionAmount: 500 }]);
     await request(app).post(`/api/runs/${priorRun._id}/generate-payouts`).set(authHeader());
     await Payout.findOneAndUpdate({ repId: testRepId1 }, { status: "paid" });
 

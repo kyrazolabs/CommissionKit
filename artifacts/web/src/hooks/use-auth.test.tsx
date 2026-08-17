@@ -1,4 +1,4 @@
-import { describe, test, expect, mock, beforeEach } from "bun:test";
+import { beforeEach, describe, expect, mock, test } from "bun:test";
 import { render, screen } from "@testing-library/react";
 import React from "react";
 
@@ -36,7 +36,11 @@ describe("useAuth / AuthProvider", () => {
   test("AuthProvider renders children", async () => {
     const { AuthProvider } = await import("@/hooks/use-auth");
     const { container } = render(
-      React.createElement(AuthProvider, null, React.createElement("div", { "data-testid": "child" }, "Hello")),
+      React.createElement(
+        AuthProvider,
+        null,
+        React.createElement("div", { "data-testid": "child" }, "Hello"),
+      ),
     );
     expect(container.querySelector("[data-testid='child']")).not.toBeNull();
   });
@@ -50,9 +54,7 @@ describe("useAuth / AuthProvider", () => {
       return null;
     }
 
-    render(
-      React.createElement(AuthProvider, null, React.createElement(Consumer)),
-    );
+    render(React.createElement(AuthProvider, null, React.createElement(Consumer)));
 
     expect(state).toBeDefined();
     expect(state.loading).toBe(true);
@@ -74,9 +76,7 @@ describe("useAuth / AuthProvider", () => {
       return null;
     }
 
-    render(
-      React.createElement(AuthProvider, null, React.createElement(Consumer)),
-    );
+    render(React.createElement(AuthProvider, null, React.createElement(Consumer)));
 
     expect(authValue.loading).toBe(false);
     expect(authValue.session).toBeDefined();
@@ -94,9 +94,7 @@ describe("useAuth / AuthProvider", () => {
       return null;
     }
 
-    render(
-      React.createElement(AuthProvider, null, React.createElement(Consumer)),
-    );
+    render(React.createElement(AuthProvider, null, React.createElement(Consumer)));
 
     await signOutFn!();
     expect(mockSignOut).toHaveBeenCalledTimes(1);

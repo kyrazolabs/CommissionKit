@@ -1,4 +1,4 @@
-import { baseTemplate, h1, p, muted, divider, warningBox, cardSection } from "./base.js";
+import { baseTemplate, cardSection, divider, h1, muted, p, warningBox } from "./base.js";
 
 export interface VerificationCodeTemplateProps {
   code: string;

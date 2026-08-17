@@ -1,11 +1,12 @@
-import { useState, useRef } from "react";
+import { format } from "date-fns";
 import { Search, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useAuditLogFilters } from "@/hooks/use-audit-log";
-import { useWorkspace } from "@/hooks/use-workspace";
+import { useRef, useState } from "react";
+import type { DateRange } from "react-day-picker";
 import { useTranslation } from "react-i18next";
-import { FilterChip } from "./filter-chip";
+import { Button } from "@/components/ui/button";
+import { DateRangePicker } from "@/components/ui/date-picker";
+import { Input } from "@/components/ui/input";
+import { MultiSelect } from "@/components/ui/multi-select";
 import {
   Select,
   SelectContent,
@@ -13,11 +14,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MultiSelect } from "@/components/ui/multi-select";
-import { DateRangePicker } from "@/components/ui/date-picker";
-import type { DateRange } from "react-day-picker";
-import { format } from "date-fns";
+import { useAuditLogFilters } from "@/hooks/use-audit-log";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { AUDIT_ACTIONS, AUDIT_RESOURCE_TYPES } from "@/types/audit-log";
+import { FilterChip } from "./filter-chip";
 
 export function AuditLogFilters() {
   const { t } = useTranslation();
@@ -98,7 +98,12 @@ export function AuditLogFilters() {
         </Select>
 
         {hasActiveFilters && (
-          <Button variant="ghost" size="lg" onClick={clearFilters} className="gap-1 text-muted-foreground">
+          <Button
+            variant="ghost"
+            size="lg"
+            onClick={clearFilters}
+            className="gap-1 text-muted-foreground"
+          >
             <X className="size-3.5" />
             {t("auditLog.filters.clear")}
           </Button>
@@ -146,9 +151,7 @@ export function AuditLogFilters() {
             <FilterChip
               label={t("auditLog.filters.dateChip")}
               value={`${filters.dateRange.from || "…"} – ${filters.dateRange.to || "…"}`}
-              onRemove={() =>
-                updateFilters({ dateRange: { from: undefined, to: undefined } })
-              }
+              onRemove={() => updateFilters({ dateRange: { from: undefined, to: undefined } })}
             />
           )}
           {filters.actions.map((a) => (

@@ -1,10 +1,10 @@
-import { baseTemplate, btn, h1, p, muted, divider, statRow, infoBox, cardSection } from "./base.js";
+import { baseTemplate, btn, cardSection, divider, h1, infoBox, muted, p, statRow } from "./base.js";
 
 export interface CommissionRunTemplateProps {
   recipientName: string;
   workspaceName: string;
-  period: string;          // e.g. "2024-03"
-  totalPaid: string;       // pre-formatted, e.g. "$42,350.00"
+  period: string; // e.g. "2024-03"
+  totalPaid: string; // pre-formatted, e.g. "$42,350.00"
   totalDeals: number;
   totalReps: number;
   topEarner?: { name: string; amount: string };
@@ -13,8 +13,14 @@ export interface CommissionRunTemplateProps {
 
 export function commissionRunTemplate(props: CommissionRunTemplateProps): string {
   const {
-    recipientName, workspaceName, period, totalPaid, totalDeals,
-    totalReps, topEarner, runUrl,
+    recipientName,
+    workspaceName,
+    period,
+    totalPaid,
+    totalDeals,
+    totalReps,
+    topEarner,
+    runUrl,
   } = props;
 
   const [year, month] = period.split("-");

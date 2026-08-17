@@ -1,4 +1,4 @@
-import { describe, test, expect, mock, spyOn } from "bun:test";
+import { describe, expect, mock, spyOn, test } from "bun:test";
 import { WorkspaceMember } from "@workspace/db";
 
 const VALID_WS_ID = "aaaaaaaaaaaaaaaaaaaaaaaa";
@@ -96,7 +96,11 @@ describe("requireWorkspaceMember", () => {
     const res = {
       status: (s: number) => {
         statusCode = s;
-        return { json: (body: any) => { errorBody = body; } };
+        return {
+          json: (body: any) => {
+            errorBody = body;
+          },
+        };
       },
     } as any;
     const next = mock(() => {});
@@ -143,7 +147,11 @@ describe("requirePermission", () => {
     const res = {
       status: (s: number) => {
         statusCode = s;
-        return { json: (body: any) => { errorBody = body; } };
+        return {
+          json: (body: any) => {
+            errorBody = body;
+          },
+        };
       },
     } as any;
     const next = mock(() => {});

@@ -1,5 +1,8 @@
+import { AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Alert } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,13 +11,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Alert } from "@/components/ui/alert";
-import { AlertTriangle } from "lucide-react";
-import { portalFetch } from "@/lib/portal-fetch";
+import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/format";
+import { portalFetch } from "@/lib/portal-fetch";
 import { cn } from "@/lib/utils";
 
 interface PayoutInfo {
@@ -68,7 +68,9 @@ export function PortalDisputeDialog({
       onSuccess();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : t("portal.disputeSubmitError") ?? "Failed to submit dispute. Please try again."
+        err instanceof Error
+          ? err.message
+          : (t("portal.disputeSubmitError") ?? "Failed to submit dispute. Please try again."),
       );
     } finally {
       setLoading(false);
@@ -81,7 +83,8 @@ export function PortalDisputeDialog({
         <DialogHeader>
           <DialogTitle>{t("portal.disputeTitle") ?? "Submit Dispute"}</DialogTitle>
           <DialogDescription>
-            {t("portal.disputeDescription") ?? "Explain why this payout looks incorrect and our team will review it."}
+            {t("portal.disputeDescription") ??
+              "Explain why this payout looks incorrect and our team will review it."}
           </DialogDescription>
         </DialogHeader>
 
@@ -89,31 +92,37 @@ export function PortalDisputeDialog({
           {/* Payout info */}
           <div className="rounded-lg border border-card-border bg-muted/30 p-4 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">{t("portal.period") ?? "Period"}</span>
+              <span className="text-sm text-muted-foreground">
+                {t("portal.period") ?? "Period"}
+              </span>
               <span className="text-sm font-medium text-foreground">{payout.period}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">{t("portal.amount") ?? "Amount"}</span>
+              <span className="text-sm text-muted-foreground">
+                {t("portal.amount") ?? "Amount"}
+              </span>
               <span className="text-sm font-medium text-foreground tabular-nums">
                 {formatCurrency(payout.commissionAmount, payout.currency)}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">{t("portal.status") ?? "Status"}</span>
-              <span className="text-sm font-medium text-foreground capitalize">{payout.status}</span>
+              <span className="text-sm text-muted-foreground">
+                {t("portal.status") ?? "Status"}
+              </span>
+              <span className="text-sm font-medium text-foreground capitalize">
+                {payout.status}
+              </span>
             </div>
           </div>
 
           {/* Reason textarea */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="dispute-reason">
-                {t("portal.disputeReason") ?? "Reason"}
-              </Label>
+              <Label htmlFor="dispute-reason">{t("portal.disputeReason") ?? "Reason"}</Label>
               <span
                 className={cn(
                   "text-xs tabular-nums",
-                  reasonTooShort ? "text-destructive" : "text-muted-foreground"
+                  reasonTooShort ? "text-destructive" : "text-muted-foreground",
                 )}
               >
                 {reason.trim().length}/{REASON_MIN_LENGTH}+
@@ -130,7 +139,7 @@ export function PortalDisputeDialog({
               rows={4}
               className={cn(
                 "resize-none",
-                reasonTooShort && "border-destructive focus:border-destructive"
+                reasonTooShort && "border-destructive focus:border-destructive",
               )}
               aria-invalid={reasonTooShort}
             />
@@ -162,8 +171,8 @@ export function PortalDisputeDialog({
             aria-busy={loading}
           >
             {loading
-              ? t("portal.submitting") ?? "Submitting..."
-              : t("portal.submitDispute") ?? "Submit Dispute"}
+              ? (t("portal.submitting") ?? "Submitting...")
+              : (t("portal.submitDispute") ?? "Submit Dispute")}
           </Button>
         </DialogFooter>
       </DialogContent>

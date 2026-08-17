@@ -1,8 +1,8 @@
-import { createHash } from "crypto";
-import { Rep, Deal, IntegrationLog } from "@workspace/db";
-import type { NormalizedRep, NormalizedDeal } from "@workspace/plugins-core";
-import { logger } from "../logger";
 import * as Sentry from "@sentry/bun";
+import { Deal, IntegrationLog, Rep } from "@workspace/db";
+import type { NormalizedDeal, NormalizedRep } from "@workspace/plugins-core";
+import { createHash } from "crypto";
+import { logger } from "../logger";
 
 // ─── Sync Stats ─────────────────────────────────────────────────────
 
@@ -33,9 +33,12 @@ function normalizeStage(raw: string): string {
   if (VALID_STAGES.includes(raw as any)) return raw;
 
   // Common aliases from external systems
-  if (lower === "won" || lower === "closed won" || lower === "sale" || lower === "done") return "closed_won";
-  if (lower === "lost" || lower === "closed lost" || lower === "cancel" || lower === "cancelled") return "closed_lost";
-  if (lower === "draft" || lower === "sent" || lower === "negotiation" || lower === "open") return "pending";
+  if (lower === "won" || lower === "closed won" || lower === "sale" || lower === "done")
+    return "closed_won";
+  if (lower === "lost" || lower === "closed lost" || lower === "cancel" || lower === "cancelled")
+    return "closed_lost";
+  if (lower === "draft" || lower === "sent" || lower === "negotiation" || lower === "open")
+    return "pending";
 
   // Fallback
   return "closed_won";
@@ -116,7 +119,10 @@ export async function upsertReps(
       }
     } catch (err: any) {
       stats.failed++;
-      logger.error({ err, externalId: rep.externalId, connectorName }, "[SyncEngine] Failed to upsert rep");
+      logger.error(
+        { err, externalId: rep.externalId, connectorName },
+        "[SyncEngine] Failed to upsert rep",
+      );
       Sentry.captureException(err, {
         tags: { phase: "upsert-rep", connectorName },
         extra: { externalId: rep.externalId, workspaceId },
@@ -177,7 +183,11 @@ export async function upsertDeals(
         Sentry.captureMessage("Rep not found for deal", {
           level: "warning",
           tags: { phase: "upsert-deal", connectorName },
-          extra: { dealExternalId: deal.externalId, repExternalId: deal.repExternalId, workspaceId },
+          extra: {
+            dealExternalId: deal.externalId,
+            repExternalId: deal.repExternalId,
+            workspaceId,
+          },
         });
         await IntegrationLog.create({
           workspaceId,
@@ -260,7 +270,10 @@ export async function upsertDeals(
       }
     } catch (err: any) {
       stats.failed++;
-      logger.error({ err, externalId: deal.externalId, connectorName }, "[SyncEngine] Failed to upsert deal");
+      logger.error(
+        { err, externalId: deal.externalId, connectorName },
+        "[SyncEngine] Failed to upsert deal",
+      );
       Sentry.captureException(err, {
         tags: { phase: "upsert-deal", connectorName },
         extra: { externalId: deal.externalId, workspaceId },

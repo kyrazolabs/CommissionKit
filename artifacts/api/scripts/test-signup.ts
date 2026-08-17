@@ -1,5 +1,5 @@
-import { auth } from "../src/lib/auth";
 import { connectDB } from "@workspace/db";
+import { auth } from "../src/lib/auth";
 
 async function run() {
   await connectDB();

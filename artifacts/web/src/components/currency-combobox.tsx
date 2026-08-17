@@ -1,7 +1,6 @@
+import { Check, ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
 import {
   Command,
   CommandEmpty,
@@ -10,12 +9,9 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CURRENCIES } from "@/lib/currencies";
+import { cn } from "@/lib/utils";
 
 interface CurrencyComboboxProps {
   value: string;
@@ -24,12 +20,7 @@ interface CurrencyComboboxProps {
   className?: string;
 }
 
-export function CurrencyCombobox({
-  value,
-  onChange,
-  disabled,
-  className,
-}: CurrencyComboboxProps) {
+export function CurrencyCombobox({ value, onChange, disabled, className }: CurrencyComboboxProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const selected = CURRENCIES.find((c) => c.code === value);
@@ -44,7 +35,7 @@ export function CurrencyCombobox({
           className={cn(
             "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
             !selected && "text-muted-foreground",
-            className
+            className,
           )}
         >
           <span className="truncate">
@@ -63,7 +54,7 @@ export function CurrencyCombobox({
         <Command>
           <CommandInput placeholder={t("common.searchCurrency")} />
           <CommandList className="max-h-60">
-            <CommandEmpty>{t('common.noCurrencyFound')}</CommandEmpty>
+            <CommandEmpty>{t("common.noCurrencyFound")}</CommandEmpty>
             <CommandGroup>
               {CURRENCIES.map((c) => (
                 <CommandItem

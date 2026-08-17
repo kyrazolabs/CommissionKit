@@ -1,17 +1,21 @@
-import mongoose, { Schema, model, Types } from "mongoose";
+import type mongoose from "mongoose";
+import { model, Schema, type Types } from "mongoose";
 import { z } from "zod";
 import { auditPlugin } from "../plugins/audit.js";
 
-const PlanSchema = new Schema({
-  workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
-  name: { type: String, required: true },
-  type: { type: String, required: true },
-  flatRate: { type: Number },
-  acceleratorThreshold: { type: Number },
-  acceleratorRate: { type: Number },
-  clawbackDays: { type: Number },
-  isSampleData: { type: Boolean, default: false },
-}, { timestamps: { createdAt: true, updatedAt: false } });
+const PlanSchema = new Schema(
+  {
+    workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
+    name: { type: String, required: true },
+    type: { type: String, required: true },
+    flatRate: { type: Number },
+    acceleratorThreshold: { type: Number },
+    acceleratorRate: { type: Number },
+    clawbackDays: { type: Number },
+    isSampleData: { type: Boolean, default: false },
+  },
+  { timestamps: { createdAt: true, updatedAt: false } },
+);
 
 const PlanTierSchema = new Schema({
   planId: { type: Schema.Types.ObjectId, ref: "Plan", required: true },

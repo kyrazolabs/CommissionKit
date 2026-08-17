@@ -1,5 +1,5 @@
-import { describe, test, expect, mock, beforeEach, afterEach } from "bun:test";
-import { render, waitFor, cleanup, screen, act } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import React from "react";
 
 // Mock localStorage
@@ -10,10 +10,16 @@ function clearStore() {
 Object.defineProperty(globalThis, "localStorage", {
   value: {
     getItem: (key: string) => store[key] ?? null,
-    setItem: (key: string, value: string) => { store[key] = value; },
-    removeItem: (key: string) => { delete store[key]; },
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
     clear: clearStore,
-    get length() { return Object.keys(store).length; },
+    get length() {
+      return Object.keys(store).length;
+    },
     key: (i: number) => Object.keys(store)[i] ?? null,
   },
   writable: true,
@@ -122,10 +128,10 @@ describe("useSetupChecklist", () => {
       await hookRef.dismiss();
     });
 
-    expect(mockApiFetch).toHaveBeenCalledWith(
-      "/api/workspaces/ws1/onboarding",
-      { method: "PATCH", body: JSON.stringify({ action: "dismiss" }) },
-    );
+    expect(mockApiFetch).toHaveBeenCalledWith("/api/workspaces/ws1/onboarding", {
+      method: "PATCH",
+      body: JSON.stringify({ action: "dismiss" }),
+    });
   });
 
   test("complete calls API PATCH with complete action", async () => {
@@ -144,10 +150,10 @@ describe("useSetupChecklist", () => {
       await hookRef.complete();
     });
 
-    expect(mockApiFetch).toHaveBeenCalledWith(
-      "/api/workspaces/ws1/onboarding",
-      { method: "PATCH", body: JSON.stringify({ action: "complete" }) },
-    );
+    expect(mockApiFetch).toHaveBeenCalledWith("/api/workspaces/ws1/onboarding", {
+      method: "PATCH",
+      body: JSON.stringify({ action: "complete" }),
+    });
   });
 
   test("loadSampleData calls API and invalidates queries", async () => {
@@ -181,8 +187,14 @@ describe("useSetupChecklist", () => {
   });
 
   test("detects all steps complete from paginated reps/deals and array plans", async () => {
-    mockUseListReps.mockReturnValue({ data: { data: [{ id: "r1" }], pagination: { total: 1 } }, isLoading: false });
-    mockUseListDeals.mockReturnValue({ data: { data: [{ id: "d1" }], pagination: { total: 1 } }, isLoading: false });
+    mockUseListReps.mockReturnValue({
+      data: { data: [{ id: "r1" }], pagination: { total: 1 } },
+      isLoading: false,
+    });
+    mockUseListDeals.mockReturnValue({
+      data: { data: [{ id: "d1" }], pagination: { total: 1 } },
+      isLoading: false,
+    });
     mockUseListPlans.mockReturnValue({ data: [{ id: "p1" }], isLoading: false });
 
     const { useSetupChecklist } = await import("@/hooks/use-setup-checklist");

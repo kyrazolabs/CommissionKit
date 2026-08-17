@@ -8,8 +8,8 @@
  * directly with correct Content-Type: application/xml.
  */
 
-import { writeFileSync, readdirSync, existsSync, statSync } from "node:fs";
-import { join, basename, resolve } from "node:path";
+import { existsSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { basename, join, resolve } from "node:path";
 
 const ARTICLES_DIR = join(import.meta.dirname, "..", "articles");
 const OUT_DIR = join(import.meta.dirname, "..", "public");
@@ -60,20 +60,13 @@ function getAllLanguages(articles: ArticleEntry[]): string[] {
   return [...langs].sort();
 }
 
-function renderAlternates(
-  allLangs: string[],
-  urlForLang: (lang: string) => string,
-): string {
+function renderAlternates(allLangs: string[], urlForLang: (lang: string) => string): string {
   const lines: string[] = [];
   for (const lang of allLangs) {
-    lines.push(
-      `    <xhtml:link rel="alternate" hreflang="${lang}" href="${urlForLang(lang)}" />`,
-    );
+    lines.push(`    <xhtml:link rel="alternate" hreflang="${lang}" href="${urlForLang(lang)}" />`);
   }
   // x-default always points to English
-  lines.push(
-    `    <xhtml:link rel="alternate" hreflang="x-default" href="${urlForLang("en")}" />`,
-  );
+  lines.push(`    <xhtml:link rel="alternate" hreflang="x-default" href="${urlForLang("en")}" />`);
   return lines.join("\n");
 }
 

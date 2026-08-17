@@ -1,8 +1,8 @@
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getRedisClient, LOGS_FLUSH_QUEUE } from "@workspace/queue";
 import { Worker } from "bullmq";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import fs from "fs";
 import path from "path";
-import { getRedisClient, LOGS_FLUSH_QUEUE } from "@workspace/queue";
 import { logger } from "../lib/logger";
 
 const WORKER_OPTS = {
@@ -25,7 +25,7 @@ const WORKER_OPTS = {
       type: "exponential",
       delay: 5000,
     },
-  }
+  },
 };
 
 // Initialize S3 Client from env variables
@@ -84,7 +84,9 @@ export const logsWorker = new Worker(
       const timestamp = new Date().toISOString().replace(/:/g, "-");
       const key = `logs/app-${timestamp}.log`;
 
-      logger.info(`[Worker:Logs] Uploading logs to S3 bucket "${bucketName}" under key "${key}"...`);
+      logger.info(
+        `[Worker:Logs] Uploading logs to S3 bucket "${bucketName}" under key "${key}"...`,
+      );
 
       // 4. Send upload request to S3
       await s3Client.send(
@@ -93,7 +95,7 @@ export const logsWorker = new Worker(
           Key: key,
           Body: fileContent,
           ContentType: "application/json",
-        })
+        }),
       );
 
       logger.info(`[Worker:Logs] Successfully uploaded log file to S3: ${key}`);
@@ -110,13 +112,16 @@ export const logsWorker = new Worker(
         try {
           fs.unlinkSync(tempFilePath);
         } catch (cleanupErr) {
-          logger.error({ err: cleanupErr }, "[Worker:Logs] Failed to delete temp log copy after failed upload");
+          logger.error(
+            { err: cleanupErr },
+            "[Worker:Logs] Failed to delete temp log copy after failed upload",
+          );
         }
       }
       throw err;
     }
   },
-  { ...WORKER_OPTS, concurrency: 1 }
+  { ...WORKER_OPTS, concurrency: 1 },
 );
 
 // Register event handlers

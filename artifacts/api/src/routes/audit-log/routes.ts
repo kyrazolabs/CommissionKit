@@ -1,7 +1,7 @@
+import { AuditEvent } from "@workspace/db";
 import { Router } from "express";
 import { Types } from "mongoose";
-import { AuditEvent } from "@workspace/db";
-import { requirePermission, type AuthenticatedRequest } from "../../middleware/auth";
+import { type AuthenticatedRequest, requirePermission } from "../../middleware/auth";
 
 const router = Router();
 
@@ -61,11 +61,7 @@ router.get(
     const skip = (pageNum - 1) * limitNum;
 
     const [events, total] = await Promise.all([
-      AuditEvent.find(filter)
-        .sort({ timestamp: sortDirection })
-        .skip(skip)
-        .limit(limitNum)
-        .lean(),
+      AuditEvent.find(filter).sort({ timestamp: sortDirection }).skip(skip).limit(limitNum).lean(),
       AuditEvent.countDocuments(filter),
     ]);
 
@@ -88,17 +84,8 @@ router.get(
   ...requirePermission("audit_log", "read"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
-    const {
-      userId,
-      action,
-      resourceType,
-      resourceId,
-      search,
-      startDate,
-      endDate,
-      month,
-      format,
-    } = req.query as Record<string, string | undefined>;
+    const { userId, action, resourceType, resourceId, search, startDate, endDate, month, format } =
+      req.query as Record<string, string | undefined>;
 
     const filter: any = { workspaceId: new Types.ObjectId(workspaceId) };
     if (userId) filter.userId = userId;
@@ -113,7 +100,10 @@ router.get(
       const monthStart = new Date(y, m - 1, 1);
       const monthEnd = new Date(y, m, 0, 23, 59, 59, 999);
       filter.timestamp = { $gte: monthStart, $lte: monthEnd };
-      monthLabel = new Date(y, m - 1, 1).toLocaleString("default", { month: "long", year: "numeric" });
+      monthLabel = new Date(y, m - 1, 1).toLocaleString("default", {
+        month: "long",
+        year: "numeric",
+      });
     } else if (startDate || endDate) {
       filter.timestamp = {};
       if (startDate) filter.timestamp.$gte = new Date(startDate);
@@ -121,14 +111,10 @@ router.get(
       monthLabel = startDate || endDate || "export";
     }
 
-    const events = await AuditEvent.find(filter)
-      .sort({ timestamp: -1 })
-      .lean();
+    const events = await AuditEvent.find(filter).sort({ timestamp: -1 }).lean();
 
     const isPdf = format === "pdf";
-    const safeFilename = month && /^\d{4}-\d{2}$/.test(month)
-      ? `audit-log-${month}`
-      : "audit-log";
+    const safeFilename = month && /^\d{4}-\d{2}$/.test(month) ? `audit-log-${month}` : "audit-log";
 
     if (isPdf) {
       const { default: jsPDF } = await import("jspdf");
@@ -173,9 +159,8 @@ router.get(
       if (action) activeFilters.push(`Actions: ${action}`);
       if (resourceType) activeFilters.push(`Resource types: ${resourceType}`);
       if (search) activeFilters.push(`Search: "${search}"`);
-      const filterText = activeFilters.length > 0
-        ? activeFilters.join("  |  ")
-        : "No filters applied — full export";
+      const filterText =
+        activeFilters.length > 0 ? activeFilters.join("  |  ") : "No filters applied — full export";
       doc.setFontSize(7.5);
       doc.setTextColor(120, 120, 120);
       doc.text(`Filters: ${filterText}`, 14, y);
@@ -216,12 +201,16 @@ router.get(
       if (events.length === 0) {
         doc.setFontSize(11);
         doc.setTextColor(100, 100, 100);
-        doc.text("No audit events found for this period.", pageWidth / 2, y + 10, { align: "center" });
+        doc.text("No audit events found for this period.", pageWidth / 2, y + 10, {
+          align: "center",
+        });
       } else {
         // Summary table — compact, no overflowing Changes column
         const summaryRows = events.map((event: any, i: number) => [
           String(i + 1),
-          event.timestamp ? new Date(event.timestamp).toISOString().replace("T", " ").substring(0, 16) : "",
+          event.timestamp
+            ? new Date(event.timestamp).toISOString().replace("T", " ").substring(0, 16)
+            : "",
           (event.userName || event.userEmail || "").substring(0, 32),
           event.action,
           event.resourceType,
@@ -233,7 +222,12 @@ router.get(
           body: summaryRows,
           startY: y,
           theme: "grid",
-          headStyles: { fillColor: [13, 148, 136], textColor: [255, 255, 255], fontSize: 7.5, cellPadding: 2 },
+          headStyles: {
+            fillColor: [13, 148, 136],
+            textColor: [255, 255, 255],
+            fontSize: 7.5,
+            cellPadding: 2,
+          },
           bodyStyles: { fontSize: 7, cellPadding: { top: 1.5, right: 2, bottom: 1.5, left: 2 } },
           alternateRowStyles: { fillColor: [245, 247, 250] },
           columnStyles: {
@@ -248,7 +242,9 @@ router.get(
             const pc = doc.getNumberOfPages();
             doc.setFontSize(7.5);
             doc.setTextColor(120, 120, 120);
-            doc.text(`Page ${data.pageNumber} of ${pc}`, pageWidth - 20, pageHeight - 8, { align: "right" });
+            doc.text(`Page ${data.pageNumber} of ${pc}`, pageWidth - 20, pageHeight - 8, {
+              align: "right",
+            });
             doc.text(`Generated: ${generatedAt}`, 14, pageHeight - 8);
           },
           didParseCell: (data: any) => {
@@ -263,7 +259,6 @@ router.get(
         });
       }
 
-      
       // --- Detailed Changes Section ---
       const eventsWithChanges = events.filter((e: any) => e.changes && e.changes.length > 0);
       if (eventsWithChanges.length > 0) {
@@ -318,10 +313,12 @@ router.get(
 
         for (let i = 0; i < eventsWithChanges.length; i++) {
           const event: any = eventsWithChanges[i];
-          const ts = event.timestamp
-            ? new Date(event.timestamp).toUTCString()
-            : "";
-          const user = `${event.userName} (${event.userEmail})` || event.userName || event.userEmail || "system";
+          const ts = event.timestamp ? new Date(event.timestamp).toUTCString() : "";
+          const user =
+            `${event.userName} (${event.userEmail})` ||
+            event.userName ||
+            event.userEmail ||
+            "system";
           const name = event.resourceName || event.resourceId?.toString() || "";
 
           // Pre-wrap every change value so we can measure the real card height
@@ -339,7 +336,7 @@ router.get(
           const headerHeight = 16;
           const rowsHeight = wrappedChanges.reduce(
             (sum: number, c: any) => sum + c.lineCount * 4.2 + 2.5,
-            0
+            0,
           );
           const cardHeight = headerHeight + 14 + rowsHeight + 6;
 
@@ -377,7 +374,9 @@ router.get(
           doc.text(event.resourceType, marginX + 22, dy + 12);
           if (name) {
             doc.setTextColor(60, 60, 60);
-            doc.text(name.substring(0, 60), marginX + contentWidth - 4, dy + 12, { align: "right" });
+            doc.text(name.substring(0, 60), marginX + contentWidth - 4, dy + 12, {
+              align: "right",
+            });
           }
           dy += headerHeight + 4;
 
@@ -430,7 +429,17 @@ router.get(
     }
 
     // CSV export (default)
-    const header = ["timestamp", "userEmail", "action", "resourceType", "resourceId", "resourceName", "changes", "ipAddress", "userAgent"];
+    const header = [
+      "timestamp",
+      "userEmail",
+      "action",
+      "resourceType",
+      "resourceId",
+      "resourceName",
+      "changes",
+      "ipAddress",
+      "userAgent",
+    ];
     const rows = events.map((event: any) => [
       event.timestamp.toISOString(),
       event.userEmail ?? "",

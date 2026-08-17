@@ -1,4 +1,14 @@
-import { baseTemplate, btn, h1, p, muted, divider, warningBox, statRow, cardSection } from "./base.js";
+import {
+  baseTemplate,
+  btn,
+  cardSection,
+  divider,
+  h1,
+  muted,
+  p,
+  statRow,
+  warningBox,
+} from "./base.js";
 
 export interface ClawbackAlertTemplateProps {
   recipientName: string;
@@ -13,8 +23,14 @@ export interface ClawbackAlertTemplateProps {
 
 export function clawbackAlertTemplate(props: ClawbackAlertTemplateProps): string {
   const {
-    recipientName, workspaceName, repName, dealName,
-    originalAmount, clawbackAmount, reason, detailsUrl,
+    recipientName,
+    workspaceName,
+    repName,
+    dealName,
+    originalAmount,
+    clawbackAmount,
+    reason,
+    detailsUrl,
   } = props;
 
   const body = `

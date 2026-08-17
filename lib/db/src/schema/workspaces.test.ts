@@ -1,5 +1,5 @@
-import { describe, test, expect } from "bun:test";
-import { insertWorkspaceSchema, insertWorkspaceMemberSchema } from "./workspaces";
+import { describe, expect, test } from "bun:test";
+import { insertWorkspaceMemberSchema, insertWorkspaceSchema } from "./workspaces";
 
 describe("insertWorkspaceSchema", () => {
   const validWS = {
@@ -31,15 +31,11 @@ describe("insertWorkspaceSchema", () => {
   });
 
   test("rejects empty slug", () => {
-    expect(() =>
-      insertWorkspaceSchema.parse({ ...validWS, slug: "" }),
-    ).not.toThrow();
+    expect(() => insertWorkspaceSchema.parse({ ...validWS, slug: "" })).not.toThrow();
   });
 
   test("rejects non-string values", () => {
-    expect(() =>
-      insertWorkspaceSchema.parse({ slug: 123, name: "Test", ownerId: "u1" }),
-    ).toThrow();
+    expect(() => insertWorkspaceSchema.parse({ slug: 123, name: "Test", ownerId: "u1" })).toThrow();
   });
 });
 

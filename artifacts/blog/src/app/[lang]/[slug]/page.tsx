@@ -1,19 +1,19 @@
+import { ArrowLeft, Clock, Share2, Tag } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Clock, ArrowLeft, Tag, Share2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { getPost, getAvailableLanguages, getAllSlugs } from "@/lib/posts";
-import { t, formatFallbackBanner, formatReadIn } from "@/lib/translations";
-import { formatRelativeDate } from "@/lib/format";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
-import { LanguagePills } from "@/components/language-pills";
 import { FallbackBanner } from "@/components/fallback-banner";
-import { RelatedArticles } from "@/components/related-articles";
 import { FunnelCTA } from "@/components/funnel-cta";
+import { LanguagePills } from "@/components/language-pills";
+import { RelatedArticles } from "@/components/related-articles";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { baseUrl, makeAbsolute } from "@/lib/baseUrl";
+import { formatRelativeDate } from "@/lib/format";
+import { getAllSlugs, getAvailableLanguages, getPost } from "@/lib/posts";
+import { formatFallbackBanner, formatReadIn, t } from "@/lib/translations";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -68,9 +68,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: post.description || "",
       url: canonicalUrl,
       publishedTime: post.date,
-      images: ogImage
-        ? [{ url: ogImage, width: 1200, height: 630 }]
-        : undefined,
+      images: ogImage ? [{ url: ogImage, width: 1200, height: 630 }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
@@ -122,9 +120,7 @@ export default async function BlogPost({ params }: Props) {
             datePublished: post.date,
             dateModified: post.date,
             ...(ogImage ? { image: ogImage } : {}),
-            ...(post.author
-              ? { author: { "@type": "Person", name: post.author } }
-              : {}),
+            ...(post.author ? { author: { "@type": "Person", name: post.author } } : {}),
             ...(post.tags?.length ? { keywords: post.tags.join(", ") } : {}),
             publisher: {
               "@type": "Organization",
@@ -157,16 +153,9 @@ export default async function BlogPost({ params }: Props) {
 
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              asChild
-              className="mb-0 -ms-3 text-muted-foreground"
-            >
+            <Button variant="ghost" size="sm" asChild className="mb-0 -ms-3 text-muted-foreground">
               <Link href={`/blog/${lang}`}>
-                <ArrowLeft
-                  className={cn("size-4 me-1", isRtl && "rtl:rotate-180")}
-                />
+                <ArrowLeft className={cn("size-4 me-1", isRtl && "rtl:rotate-180")} />
                 {dict.backToBlog}
               </Link>
             </Button>
@@ -215,7 +204,10 @@ export default async function BlogPost({ params }: Props) {
         )}
 
         <div className="blog-content" dir={isRtl ? "rtl" : "ltr"}>
-          <MDXRemote source={post.content} options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }} />
+          <MDXRemote
+            source={post.content}
+            options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+          />
         </div>
 
         {post.tags && post.tags.length > 0 && (
@@ -228,9 +220,7 @@ export default async function BlogPost({ params }: Props) {
           <div className="flex items-center justify-between">
             <Button variant="outline" size="sm" asChild>
               <Link href={`/blog/${lang}`}>
-                <ArrowLeft
-                  className={cn("size-4 me-1", isRtl && "rtl:rotate-180")}
-                />
+                <ArrowLeft className={cn("size-4 me-1", isRtl && "rtl:rotate-180")} />
                 {dict.backToBlog}
               </Link>
             </Button>

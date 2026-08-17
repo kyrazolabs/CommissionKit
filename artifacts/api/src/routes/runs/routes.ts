@@ -1,23 +1,23 @@
-import { Router } from "express";
-import { 
-  CommissionRun, 
-  CommissionResult, 
-  Deal, 
-  Rep, 
-  Plan, 
-  PlanTier,
-  WorkspaceMember,
-  Payout,
-  Workspace,
-} from "@workspace/db";
-import { Types } from "mongoose";
 import { CreateRunBody, GetRunParams } from "@workspace/api-zod";
-import { requirePermission, type AuthenticatedRequest } from "../../middleware/auth";
-import { sendMediumPriorityEmail, enqueueCommissionCalc } from "@workspace/queue";
+import {
+  CommissionResult,
+  CommissionRun,
+  Deal,
+  Payout,
+  Plan,
+  PlanTier,
+  Rep,
+  Workspace,
+  WorkspaceMember,
+} from "@workspace/db";
 import { commissionRunTemplate } from "@workspace/email-templates";
-import { createNotification } from "../../lib/notify";
-import { logger } from "../../lib/logger";
+import { enqueueCommissionCalc, sendMediumPriorityEmail } from "@workspace/queue";
+import { Router } from "express";
+import { Types } from "mongoose";
 import { logAudit } from "../../lib/audit";
+import { logger } from "../../lib/logger";
+import { createNotification } from "../../lib/notify";
+import { type AuthenticatedRequest, requirePermission } from "../../middleware/auth";
 
 const router = Router();
 
@@ -62,90 +62,107 @@ async function formatRun(run: any) {
   };
 }
 
-router.get("/runs", ...requirePermission("calculations", "read"), async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = req.workspaceId!;
-  const conditions = { workspaceId: new Types.ObjectId(workspaceId) };
-  const page = Math.max(1, Number(req.query.page) || 1);
-  const limit = Math.min(500, Math.max(1, Number(req.query.limit) || 50));
+router.get(
+  "/runs",
+  ...requirePermission("calculations", "read"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const conditions = { workspaceId: new Types.ObjectId(workspaceId) };
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(500, Math.max(1, Number(req.query.limit) || 50));
 
-  const [runs, total] = await Promise.all([
-    CommissionRun.find(conditions).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit),
-    CommissionRun.countDocuments(conditions),
-  ]);
+    const [runs, total] = await Promise.all([
+      CommissionRun.find(conditions)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+      CommissionRun.countDocuments(conditions),
+    ]);
 
-  res.json({
-    data: runs.map((r) => ({
-      id: r._id,
-      period: r.period,
-      totalCommission: Number(r.totalCommission),
-      totalDeals: r.totalDeals,
-      repsCount: r.repsCount,
-      status: r.status,
-      createdAt: r.createdAt.toISOString(),
-    })),
-    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-  });
-});
+    res.json({
+      data: runs.map((r) => ({
+        id: r._id,
+        period: r.period,
+        totalCommission: Number(r.totalCommission),
+        totalDeals: r.totalDeals,
+        repsCount: r.repsCount,
+        status: r.status,
+        createdAt: r.createdAt.toISOString(),
+      })),
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
+  },
+);
 
-router.post("/runs", ...requirePermission("calculations", "create"), async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = req.workspaceId!;
-  const body = CreateRunBody.parse(req.body);
-  const { period } = body;
+router.post(
+  "/runs",
+  ...requirePermission("calculations", "create"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const body = CreateRunBody.parse(req.body);
+    const { period } = body;
 
-  const staleThreshold = new Date(Date.now() - 10 * 60 * 1000);
-  const existingRun = await CommissionRun.findOne({
-    workspaceId: new Types.ObjectId(workspaceId),
-    period,
-    status: { $in: ["pending", "processing"] },
-    updatedAt: { $gt: staleThreshold }
-  });
+    const staleThreshold = new Date(Date.now() - 10 * 60 * 1000);
+    const existingRun = await CommissionRun.findOne({
+      workspaceId: new Types.ObjectId(workspaceId),
+      period,
+      status: { $in: ["pending", "processing"] },
+      updatedAt: { $gt: staleThreshold },
+    });
 
-  if (existingRun) {
-    res.status(409).json({ error: `A calculation for ${period} is already in progress. Please wait a few minutes.` });
-    return;
-  }
+    if (existingRun) {
+      res.status(409).json({
+        error: `A calculation for ${period} is already in progress. Please wait a few minutes.`,
+      });
+      return;
+    }
 
-  const run = await CommissionRun.create({ 
-    workspaceId: new Types.ObjectId(workspaceId), 
-    period, 
-    totalCommission: 0, 
-    totalDeals: 0, 
-    repsCount: 0,
-    status: "pending"
-  });
+    const run = await CommissionRun.create({
+      workspaceId: new Types.ObjectId(workspaceId),
+      period,
+      totalCommission: 0,
+      totalDeals: 0,
+      repsCount: 0,
+      status: "pending",
+    });
 
-  const payload: any = {
-    workspaceId,
-    runId: run._id.toString(),
-    period,
-    userId: req.userId
-  };
-  if (body.paymentStatuses) payload.paymentStatuses = body.paymentStatuses;
+    const payload: any = {
+      workspaceId,
+      runId: run._id.toString(),
+      period,
+      userId: req.userId,
+    };
+    if (body.paymentStatuses) payload.paymentStatuses = body.paymentStatuses;
 
-  await enqueueCommissionCalc(payload);
+    await enqueueCommissionCalc(payload);
 
-  res.status(201).json({
-    id: run._id,
-    period: run.period,
-    status: run.status,
-    createdAt: run.createdAt.toISOString()
-  });
-});
+    res.status(201).json({
+      id: run._id,
+      period: run.period,
+      status: run.status,
+      createdAt: run.createdAt.toISOString(),
+    });
+  },
+);
 
-router.get("/runs/:id", ...requirePermission("calculations", "read"), async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = req.workspaceId!;
-  const { id } = GetRunParams.parse(req.params);
-  const run = await CommissionRun.findOne({ 
-    _id: new Types.ObjectId(id), 
-    workspaceId: new Types.ObjectId(workspaceId) 
-  });
-  if (!run) {
-    res.status(404).json({ error: "Run not found" });
-    return;
-  }
-  const result = await formatRun(run);
-  res.json(result);
-});
+router.get(
+  "/runs/:id",
+  ...requirePermission("calculations", "read"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const { id } = GetRunParams.parse(req.params);
+    const run = await CommissionRun.findOne({
+      _id: new Types.ObjectId(id),
+      workspaceId: new Types.ObjectId(workspaceId),
+    });
+    if (!run) {
+      res.status(404).json({ error: "Run not found" });
+      return;
+    }
+    const result = await formatRun(run);
+    res.json(result);
+  },
+);
 
 // ─── Helpers for generate-payouts ──────────────────────────────────────────────
 
@@ -154,7 +171,8 @@ function formatPayoutForRun(payout: any, rep: any) {
     id: payout._id.toString(),
     repId: rep._id ? rep._id.toString() : (payout.repId?.toString?.() ?? null),
     repName: rep?.name ?? "Unknown",
-    periodStart: payout.periodStart instanceof Date ? payout.periodStart.toISOString() : payout.periodStart,
+    periodStart:
+      payout.periodStart instanceof Date ? payout.periodStart.toISOString() : payout.periodStart,
     periodEnd: payout.periodEnd instanceof Date ? payout.periodEnd.toISOString() : payout.periodEnd,
     commissionAmount: payout.commissionAmount,
     adjustments: payout.adjustments ?? 0,
@@ -247,7 +265,9 @@ async function processRepPayout(
     });
 
     const rep = (existing as any)?.repId ?? null;
-    result.created.push(formatPayoutForRun(payout.toObject(), rep || { _id: agg.repId, name: agg.repName }));
+    result.created.push(
+      formatPayoutForRun(payout.toObject(), rep || { _id: agg.repId, name: agg.repName }),
+    );
     return result;
   }
 
@@ -320,7 +340,11 @@ async function processRepPayout(
     case "paid": {
       if (delta <= 0) {
         // No increase or decrease — skip
-        result.skipped.push({ repId: agg.repId, repName: agg.repName, reason: delta === 0 ? "no change (paid)" : "decrease after paid — cannot auto-clawback" });
+        result.skipped.push({
+          repId: agg.repId,
+          repName: agg.repName,
+          reason: delta === 0 ? "no change (paid)" : "decrease after paid — cannot auto-clawback",
+        });
         return result;
       }
 
@@ -340,7 +364,9 @@ async function processRepPayout(
         statusHistory: [{ status: "pending", changedAt: new Date(), changedBy: userId }],
       });
 
-      result.created.push(formatPayoutForRun(deltaPayout.toObject(), { _id: agg.repId, name: agg.repName }));
+      result.created.push(
+        formatPayoutForRun(deltaPayout.toObject(), { _id: agg.repId, name: agg.repName }),
+      );
       return result;
     }
 
@@ -358,118 +384,122 @@ async function processRepPayout(
 
 // ─── POST /api/runs/:id/generate-payouts ──────────────────────────────────────
 
-router.post("/runs/:id/generate-payouts", ...requirePermission("payouts", "write"), async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = req.workspaceId!;
-  const runId = req.params.id as string;
+router.post(
+  "/runs/:id/generate-payouts",
+  ...requirePermission("payouts", "write"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const runId = req.params.id as string;
 
-  const run = await CommissionRun.findOne({
-    _id: new Types.ObjectId(runId),
-    workspaceId: new Types.ObjectId(workspaceId),
-  });
+    const run = await CommissionRun.findOne({
+      _id: new Types.ObjectId(runId),
+      workspaceId: new Types.ObjectId(workspaceId),
+    });
 
-  if (!run) {
-    res.status(404).json({ error: "Run not found" });
-    return;
-  }
-
-  if (run.status !== "completed") {
-    res.status(400).json({ error: "Run must be completed before generating payouts" });
-    return;
-  }
-
-  const workspace = await Workspace.findById(workspaceId).select("currency name").lean();
-  const wsCurrency = (workspace as any)?.currency ?? "USD";
-
-  // Derive period dates from run.period or query params
-  const [year, month] = run.period.split("-").map(Number);
-  const defaultPeriodStart = new Date(Date.UTC(year, month - 1, 1));
-  const defaultPeriodEnd = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
-
-  const periodStart = req.query.periodStart
-    ? new Date(String(req.query.periodStart))
-    : defaultPeriodStart;
-  const periodEnd = req.query.periodEnd
-    ? new Date(String(req.query.periodEnd))
-    : defaultPeriodEnd;
-
-  // Aggregate commission results by rep
-  const results = await CommissionResult.find({
-    runId: run._id,
-  }).populate("repId");
-
-  // Group by repId and compute totals
-  const repAggregates = new Map<string, RepAggregate>();
-  for (const r of results) {
-    const rep = r.repId as any;
-    if (!rep) continue;
-    const repIdStr = rep._id.toString();
-    if (!repAggregates.has(repIdStr)) {
-      repAggregates.set(repIdStr, {
-        repId: repIdStr,
-        repName: rep.name ?? "Unknown",
-        totalCommission: 0,
-      });
+    if (!run) {
+      res.status(404).json({ error: "Run not found" });
+      return;
     }
-    repAggregates.get(repIdStr)!.totalCommission += Number(r.commissionAmount);
-  }
 
-  // Optional: filter to specific repIds from request body (selective generation)
-  const requestedRepIds: string[] | undefined = req.body?.repIds;
-  const filteredAggregates = requestedRepIds
-    ? Array.from(repAggregates.entries()).filter(([id]) => requestedRepIds.includes(id))
-    : Array.from(repAggregates.entries());
+    if (run.status !== "completed") {
+      res.status(400).json({ error: "Run must be completed before generating payouts" });
+      return;
+    }
 
-  // Process each rep
-  const allCreated: any[] = [];
-  const allUpdated: any[] = [];
-  const allSkipped: any[] = [];
-  const allFlagged: any[] = [];
+    const workspace = await Workspace.findById(workspaceId).select("currency name").lean();
+    const wsCurrency = (workspace as any)?.currency ?? "USD";
 
-  for (const [, agg] of filteredAggregates) {
-    const outcome = await processRepPayout(
-      agg,
-      run,
-      new Types.ObjectId(workspaceId),
-      periodStart,
-      periodEnd,
-      wsCurrency,
-      req.userId!,
+    // Derive period dates from run.period or query params
+    const [year, month] = run.period.split("-").map(Number);
+    const defaultPeriodStart = new Date(Date.UTC(year, month - 1, 1));
+    const defaultPeriodEnd = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+
+    const periodStart = req.query.periodStart
+      ? new Date(String(req.query.periodStart))
+      : defaultPeriodStart;
+    const periodEnd = req.query.periodEnd
+      ? new Date(String(req.query.periodEnd))
+      : defaultPeriodEnd;
+
+    // Aggregate commission results by rep
+    const results = await CommissionResult.find({
+      runId: run._id,
+    }).populate("repId");
+
+    // Group by repId and compute totals
+    const repAggregates = new Map<string, RepAggregate>();
+    for (const r of results) {
+      const rep = r.repId as any;
+      if (!rep) continue;
+      const repIdStr = rep._id.toString();
+      if (!repAggregates.has(repIdStr)) {
+        repAggregates.set(repIdStr, {
+          repId: repIdStr,
+          repName: rep.name ?? "Unknown",
+          totalCommission: 0,
+        });
+      }
+      repAggregates.get(repIdStr)!.totalCommission += Number(r.commissionAmount);
+    }
+
+    // Optional: filter to specific repIds from request body (selective generation)
+    const requestedRepIds: string[] | undefined = req.body?.repIds;
+    const filteredAggregates = requestedRepIds
+      ? Array.from(repAggregates.entries()).filter(([id]) => requestedRepIds.includes(id))
+      : Array.from(repAggregates.entries());
+
+    // Process each rep
+    const allCreated: any[] = [];
+    const allUpdated: any[] = [];
+    const allSkipped: any[] = [];
+    const allFlagged: any[] = [];
+
+    for (const [, agg] of filteredAggregates) {
+      const outcome = await processRepPayout(
+        agg,
+        run,
+        new Types.ObjectId(workspaceId),
+        periodStart,
+        periodEnd,
+        wsCurrency,
+        req.userId!,
+      );
+      allCreated.push(...outcome.created);
+      allUpdated.push(...outcome.updated);
+      allSkipped.push(...outcome.skipped);
+      allFlagged.push(...outcome.flagged);
+    }
+
+    logger.info(
+      {
+        runId,
+        created: allCreated.length,
+        updated: allUpdated.length,
+        skipped: allSkipped.length,
+        flagged: allFlagged.length,
+      },
+      "Generated payouts from run",
     );
-    allCreated.push(...outcome.created);
-    allUpdated.push(...outcome.updated);
-    allSkipped.push(...outcome.skipped);
-    allFlagged.push(...outcome.flagged);
-  }
 
-  logger.info(
-    {
-      runId,
-      created: allCreated.length,
-      updated: allUpdated.length,
-      skipped: allSkipped.length,
-      flagged: allFlagged.length,
-    },
-    "Generated payouts from run",
-  );
+    await logAudit("create", "payout", {
+      workspaceId,
+      metadata: {
+        runId: run._id.toString(),
+        createdCount: allCreated.length,
+        updatedCount: allUpdated.length,
+        skippedCount: allSkipped.length,
+        flaggedCount: allFlagged.length,
+        period: run.period,
+      },
+    });
 
-  await logAudit("create", "payout", {
-    workspaceId,
-    metadata: {
-      runId: run._id.toString(),
-      createdCount: allCreated.length,
-      updatedCount: allUpdated.length,
-      skippedCount: allSkipped.length,
-      flaggedCount: allFlagged.length,
-      period: run.period,
-    },
-  });
-
-  res.json({
-    created: allCreated,
-    updated: allUpdated,
-    skipped: allSkipped,
-    flagged: allFlagged,
-  });
-});
+    res.json({
+      created: allCreated,
+      updated: allUpdated,
+      skipped: allSkipped,
+      flagged: allFlagged,
+    });
+  },
+);
 
 export default router;

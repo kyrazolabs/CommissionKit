@@ -1,10 +1,17 @@
-import { Navbar } from "./landing/Navbar";
-import { Footer } from "./landing/Footer";
-import { Mail, MessageCircle, Clock, MapPin } from "lucide-react";
+import { Clock, Mail, MapPin, MessageCircle } from "lucide-react";
 import { usePageMeta } from "@/hooks/use-page-meta";
+import { Footer } from "./landing/Footer";
+import { Navbar } from "./landing/Navbar";
 
 export function ContactPage() {
-  usePageMeta({ title: "Contact", description: "Get in touch with the CommissionKit team for sales, support, or general inquiries.", keywords: "contact sales commission software, commission management support, sales comp help, get commission software demo", robots: "index, follow" });
+  usePageMeta({
+    title: "Contact",
+    description:
+      "Get in touch with the CommissionKit team for sales, support, or general inquiries.",
+    keywords:
+      "contact sales commission software, commission management support, sales comp help, get commission software demo",
+    robots: "index, follow",
+  });
 
   return (
     <>
@@ -13,7 +20,8 @@ export function ContactPage() {
         <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-24 pb-16 w-full">
           <h1 className="text-4xl font-bold text-foreground mb-4 tracking-tight">Contact Us</h1>
           <p className="text-muted-foreground text-lg mb-12 max-w-2xl">
-            Have questions about CommissionKit? We are here to help. Reach out for sales inquiries, support, or anything else.
+            Have questions about CommissionKit? We are here to help. Reach out for sales inquiries,
+            support, or anything else.
           </p>
 
           <div className="grid gap-6 md:grid-cols-2 mb-16">
@@ -27,7 +35,9 @@ export function ContactPage() {
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Sales</h3>
                 <p className="text-sm text-muted-foreground">sales@commissionkit.co</p>
-                <p className="text-xs text-muted-foreground/70 mt-1">Inquiries about plans, pricing, and demos.</p>
+                <p className="text-xs text-muted-foreground/70 mt-1">
+                  Inquiries about plans, pricing, and demos.
+                </p>
               </div>
             </a>
 
@@ -41,7 +51,9 @@ export function ContactPage() {
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Support</h3>
                 <p className="text-sm text-muted-foreground">support@commissionkit.co</p>
-                <p className="text-xs text-muted-foreground/70 mt-1">Technical help and troubleshooting.</p>
+                <p className="text-xs text-muted-foreground/70 mt-1">
+                  Technical help and troubleshooting.
+                </p>
               </div>
             </a>
           </div>
@@ -51,7 +63,9 @@ export function ContactPage() {
               <Clock className="size-5 text-muted-foreground shrink-0 mt-0.5" />
               <div>
                 <h3 className="font-semibold text-foreground">Response Time</h3>
-                <p className="text-sm text-muted-foreground">We typically respond within 2 hours during business hours (Mon–Fri, 9am–6pm EST).</p>
+                <p className="text-sm text-muted-foreground">
+                  We typically respond within 2 hours during business hours (Mon–Fri, 9am–6pm EST).
+                </p>
               </div>
             </div>
 
@@ -59,7 +73,9 @@ export function ContactPage() {
               <MapPin className="size-5 text-muted-foreground shrink-0 mt-0.5" />
               <div>
                 <h3 className="font-semibold text-foreground">Location</h3>
-                <p className="text-sm text-muted-foreground">CommissionKit is a fully remote team serving customers worldwide.</p>
+                <p className="text-sm text-muted-foreground">
+                  CommissionKit is a fully remote team serving customers worldwide.
+                </p>
               </div>
             </div>
           </div>

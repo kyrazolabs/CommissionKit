@@ -1,31 +1,31 @@
-import { useRef, useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { Bell, CheckCheck, X, ExternalLink, Inbox } from "lucide-react";
-import { useNotifications } from "@/hooks/use-notifications";
 import { formatDistanceToNow } from "date-fns";
+import { Bell, CheckCheck, ExternalLink, Inbox, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "wouter";
+import { useNotifications } from "@/hooks/use-notifications";
 import { cn } from "@/lib/utils";
 
 const TYPE_COLORS: Record<string, string> = {
   commission_run_completed: "bg-primary/10 text-primary",
-  new_rep_added:            "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-  deal_imported:            "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
-  clawback_triggered:       "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
-  member_invited:           "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
-  member_role_changed:      "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300",
-  plan_created:             "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300",
-  plan_updated:             "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
+  new_rep_added: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+  deal_imported: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
+  clawback_triggered: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
+  member_invited: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
+  member_role_changed: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300",
+  plan_created: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300",
+  plan_updated: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
 };
 
 const TYPE_LABELS: Record<string, string> = {
   commission_run_completed: "notificationBell.run",
-  new_rep_added:            "notificationBell.rep",
-  deal_imported:            "notificationBell.deal",
-  clawback_triggered:       "notificationBell.clawback",
-  member_invited:           "notificationBell.invite",
-  member_role_changed:      "notificationBell.role",
-  plan_created:             "notificationBell.plan",
-  plan_updated:             "notificationBell.plan",
+  new_rep_added: "notificationBell.rep",
+  deal_imported: "notificationBell.deal",
+  clawback_triggered: "notificationBell.clawback",
+  member_invited: "notificationBell.invite",
+  member_role_changed: "notificationBell.role",
+  plan_created: "notificationBell.plan",
+  plan_updated: "notificationBell.plan",
 };
 
 export function NotificationBell() {
@@ -67,7 +67,8 @@ export function NotificationBell() {
               <span className="text-sm font-semibold">{t("notificationBell.notifications")}</span>
               {unreadCount > 0 && (
                 <span className="text-[11px] font-semibold bg-primary/10 text-primary p-1.5 rounded-full">
-                  {unreadCount}{t("notificationBell.newNotification")}
+                  {unreadCount}
+                  {t("notificationBell.newNotification")}
                 </span>
               )}
             </div>
@@ -86,8 +87,12 @@ export function NotificationBell() {
             {notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center p-10 text-center">
                 <Inbox className="size-8 text-muted-foreground/40 mb-2" />
-                <p className="text-sm font-medium text-muted-foreground">{t("notificationBell.noNotifications")}</p>
-                <p className="text-xs text-muted-foreground/70 mt-0.5">{t('notificationBell.allCaughtUp')}</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  {t("notificationBell.noNotifications")}
+                </p>
+                <p className="text-xs text-muted-foreground/70 mt-0.5">
+                  {t("notificationBell.allCaughtUp")}
+                </p>
               </div>
             ) : (
               notifications.map((n) => (
@@ -105,18 +110,24 @@ export function NotificationBell() {
 
                   <div className="flex-1 min-w-0 pl-1">
                     <div className="flex items-center gap-1.5 mb-0.5">
-                      <span className={cn(
-                        "inline-block text-[10px] font-semibold p-1.5 rounded-full",
-                        TYPE_COLORS[n.type] ?? "bg-muted text-muted-foreground",
-                      )}>
+                      <span
+                        className={cn(
+                          "inline-block text-[10px] font-semibold p-1.5 rounded-full",
+                          TYPE_COLORS[n.type] ?? "bg-muted text-muted-foreground",
+                        )}
+                      >
                         {t(TYPE_LABELS[n.type]) ?? n.type}
                       </span>
                       <span className="text-[10px] text-muted-foreground">
                         {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
                       </span>
                     </div>
-                    <p className="text-[13px] font-semibold text-foreground leading-tight">{n.title}</p>
-                    <p className="text-[12px] text-muted-foreground mt-0.5 leading-snug">{n.message}</p>
+                    <p className="text-[13px] font-semibold text-foreground leading-tight">
+                      {n.title}
+                    </p>
+                    <p className="text-[12px] text-muted-foreground mt-0.5 leading-snug">
+                      {n.message}
+                    </p>
                   </div>
 
                   {/* Actions */}
@@ -130,7 +141,10 @@ export function NotificationBell() {
                     {n.href && (
                       <Link
                         href={n.href}
-                        onClick={() => { markRead(n.id); setOpen(false); }}
+                        onClick={() => {
+                          markRead(n.id);
+                          setOpen(false);
+                        }}
                         className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
                       >
                         <ExternalLink className="size-3.5" />

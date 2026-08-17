@@ -1,53 +1,88 @@
-import { useState, useEffect } from "react";
-import { Link } from "wouter";
-import { useTranslation } from "react-i18next";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCreateRun } from "@workspace/api-client-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlayCircle, ArrowRight, CalendarDays, Clock, FileText, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { formatCurrency, formatNumber } from "@/lib/format";
-import { DatePicker } from "@/components/ui/date-picker";
-import { parseISO } from "date-fns";
+import { format, parseISO } from "date-fns";
+import {
+  AlertCircle,
+  ArrowRight,
+  CalendarDays,
+  CheckCircle2,
+  Clock,
+  Download,
+  FileText,
+  Loader2,
+  PlayCircle,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link } from "wouter";
 import { HelpTooltip } from "@/components/help-tooltip";
-import { Skeleton } from "@/components/ui/skeleton";
-import { DataPagination } from "@/components/ui/data-pagination";
-import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { useRole } from "@/hooks/use-role";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useWorkspace } from "@/hooks/use-workspace";
-import { useBillingStatus } from "@/hooks/use-billing-status";
 import { RunCalculationDialog } from "@/components/run-calculation-dialog";
-import { Download } from "lucide-react";
-import { apiFetch } from "@/lib/api";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DataPagination } from "@/components/ui/data-pagination";
+import { DatePicker } from "@/components/ui/date-picker";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useBillingStatus } from "@/hooks/use-billing-status";
 import { usePageMeta } from "@/hooks/use-page-meta";
-
+import { useRole } from "@/hooks/use-role";
+import { useToast } from "@/hooks/use-toast";
+import { useWorkspace } from "@/hooks/use-workspace";
+import { apiFetch } from "@/lib/api";
+import { formatCurrency, formatNumber } from "@/lib/format";
 
 export function RunsPage() {
   const { t } = useTranslation();
-  usePageMeta({ title: t("runs.title"), description: "View and manage commission calculation runs.", robots: "noindex, nofollow" });
+  usePageMeta({
+    title: t("runs.title"),
+    description: "View and manage commission calculation runs.",
+    robots: "noindex, nofollow",
+  });
   const { activeWorkspace } = useWorkspace();
   const currency = activeWorkspace?.currency || "USD";
   const [page, setPage] = useState(1);
   const LIMIT = 50;
 
-  const { data: runsResult, isLoading, error } = useQuery({
+  const {
+    data: runsResult,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["/api/runs", page],
     queryFn: () => {
       const sp = new URLSearchParams();
       sp.set("page", String(page));
       sp.set("limit", String(LIMIT));
-      return apiFetch(`/api/runs?${sp}`) as Promise<{ data: any[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>;
+      return apiFetch(`/api/runs?${sp}`) as Promise<{
+        data: any[];
+        pagination: { page: number; limit: number; total: number; totalPages: number };
+      }>;
     },
     refetchInterval: (query: any) => {
       const data = query?.state?.data?.data;
-      const hasActiveRuns = Array.isArray(data) && data.some((r: any) => r.status === "pending" || r.status === "processing");
+      const hasActiveRuns =
+        Array.isArray(data) &&
+        data.some((r: any) => r.status === "pending" || r.status === "processing");
       return hasActiveRuns ? 2000 : false;
     },
   });
@@ -56,7 +91,9 @@ export function RunsPage() {
   const { can, hasPermission, isLoading: roleLoading } = useRole();
 
   // Keep page reset on mount (runs are not filtered, so no dep changes expected)
-  useEffect(() => { setPage(1); }, []);
+  useEffect(() => {
+    setPage(1);
+  }, []);
 
   if (roleLoading) {
     return (
@@ -81,7 +118,8 @@ export function RunsPage() {
     );
   }
 
-  const isAnyRunProcessing = Array.isArray(runs) && runs.some(r => r.status === "pending" || r.status === "processing");
+  const isAnyRunProcessing =
+    Array.isArray(runs) && runs.some((r) => r.status === "pending" || r.status === "processing");
 
   return (
     <div className="space-y-6">
@@ -93,14 +131,16 @@ export function RunsPage() {
         </div>
         <div className="flex gap-2">
           {hasPermission("calculations", "export") && <ExportCommissionsButton />}
-          {hasPermission("calculations", "create") && <RunCalculationDialog isProcessing={isAnyRunProcessing} />}
+          {hasPermission("calculations", "create") && (
+            <RunCalculationDialog isProcessing={isAnyRunProcessing} />
+          )}
         </div>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>{t("runs.runHistory")}</CardTitle>
-          <CardDescription>{t('runs.runHistoryDescription')}.</CardDescription>
+          <CardDescription>{t("runs.runHistoryDescription")}.</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -109,7 +149,7 @@ export function RunsPage() {
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
             </div>
-          ) : (!Array.isArray(runs) || runs.length === 0) ? (
+          ) : !Array.isArray(runs) || runs.length === 0 ? (
             <div className="text-center py-12">
               <div className="bg-muted size-12 rounded-full flex items-center justify-center mx-auto mb-3">
                 <PlayCircle className="size-6 text-muted-foreground" />
@@ -121,99 +161,111 @@ export function RunsPage() {
             </div>
           ) : (
             <>
-            <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("runs.runId")}</TableHead>
-                  <TableHead>{t("runs.period")}</TableHead>
-                  <TableHead>{t("runs.executedOn")}</TableHead>
-                  <TableHead>{t("runs.status")}</TableHead>
-                  <TableHead className="text-right">Reps</TableHead>
-                  <TableHead className="text-right">Deals</TableHead>
-                  <TableHead className="text-right">Total Commission</TableHead>
-                  <TableHead className="text-right"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {runs.map((run) => (
-                  <TableRow key={run.id}>
-                    <TableCell className="font-mono text-xs text-muted-foreground">
-                      #{run.id.toString().padStart(4, '0')}
-                    </TableCell>
-                    <TableCell className="font-medium">{run.period}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center text-sm">
-                        <Clock className="mr-2 size-3 text-muted-foreground" />
-                        {format(new Date(run.createdAt), "MMM d, yyyy h:mm a")}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {run.status === "completed" && (
-                        <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20 gap-1">
-                          <CheckCircle2 className="size-3" /> Completed
-                        </Badge>
-                      )}
-                      {(run.status === "pending" || run.status === "processing") && (
-                        <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20 animate-pulse gap-1">
-                          <Loader2 className="size-3 animate-spin" /> {run.status === "processing" ? t("runs.processing2") : t("runs.pending2")}
-                        </Badge>
-                      )}
-                      {run.status === "failed" && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Badge variant="destructive" className="gap-1 cursor-help">
-                              <AlertCircle className="size-3" /> Failed
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t("runs.runId")}</TableHead>
+                      <TableHead>{t("runs.period")}</TableHead>
+                      <TableHead>{t("runs.executedOn")}</TableHead>
+                      <TableHead>{t("runs.status")}</TableHead>
+                      <TableHead className="text-right">Reps</TableHead>
+                      <TableHead className="text-right">Deals</TableHead>
+                      <TableHead className="text-right">Total Commission</TableHead>
+                      <TableHead className="text-right"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {runs.map((run) => (
+                      <TableRow key={run.id}>
+                        <TableCell className="font-mono text-xs text-muted-foreground">
+                          #{run.id.toString().padStart(4, "0")}
+                        </TableCell>
+                        <TableCell className="font-medium">{run.period}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center text-sm">
+                            <Clock className="mr-2 size-3 text-muted-foreground" />
+                            {format(new Date(run.createdAt), "MMM d, yyyy h:mm a")}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {run.status === "completed" && (
+                            <Badge
+                              variant="outline"
+                              className="bg-green-500/10 text-green-500 border-green-500/20 gap-1"
+                            >
+                              <CheckCircle2 className="size-3" /> Completed
                             </Badge>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{run.error || "{t('runs.unknownError')}."}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">{formatNumber(run.repsCount)}</TableCell>
-                    <TableCell className="text-right">
-                      {formatNumber(run.totalDeals)}
-                      {run.skippedDeals > 0 && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="ml-1.5 text-amber-500 cursor-help">
-                              <AlertCircle className="size-3 inline" />
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{run.skippedDeals} {t('runs.dealsSkipped', { count: run.skippedDeals })}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right font-semibold text-primary">
-                      {formatCurrency(run.totalCommission, currency)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/dash/runs/${run.id}`}>
-                          View Details <ArrowRight className="ml-2 size-4" />
-                        </Link>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            {pagination ? (
-              <div className="border-t px-4 py-3">
-                <DataPagination
-                  page={page}
-                  totalPages={pagination.totalPages}
-                  total={pagination.total}
-                  limit={LIMIT}
-                  onPageChange={setPage}
-                />
+                          )}
+                          {(run.status === "pending" || run.status === "processing") && (
+                            <Badge
+                              variant="outline"
+                              className="bg-blue-500/10 text-blue-500 border-blue-500/20 animate-pulse gap-1"
+                            >
+                              <Loader2 className="size-3 animate-spin" />{" "}
+                              {run.status === "processing"
+                                ? t("runs.processing2")
+                                : t("runs.pending2")}
+                            </Badge>
+                          )}
+                          {run.status === "failed" && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge variant="destructive" className="gap-1 cursor-help">
+                                  <AlertCircle className="size-3" /> Failed
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{run.error || "{t('runs.unknownError')}."}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">{formatNumber(run.repsCount)}</TableCell>
+                        <TableCell className="text-right">
+                          {formatNumber(run.totalDeals)}
+                          {run.skippedDeals > 0 && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="ml-1.5 text-amber-500 cursor-help">
+                                  <AlertCircle className="size-3 inline" />
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>
+                                  {run.skippedDeals}{" "}
+                                  {t("runs.dealsSkipped", { count: run.skippedDeals })}
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-semibold text-primary">
+                          {formatCurrency(run.totalCommission, currency)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="sm" asChild>
+                            <Link href={`/dash/runs/${run.id}`}>
+                              View Details <ArrowRight className="ml-2 size-4" />
+                            </Link>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                {pagination ? (
+                  <div className="border-t px-4 py-3">
+                    <DataPagination
+                      page={page}
+                      totalPages={pagination.totalPages}
+                      total={pagination.total}
+                      limit={LIMIT}
+                      onPageChange={setPage}
+                    />
+                  </div>
+                ) : null}
               </div>
-            ) : null}
-            </div>
             </>
           )}
         </CardContent>
@@ -221,7 +273,6 @@ export function RunsPage() {
     </div>
   );
 }
-
 
 function ExportCommissionsButton() {
   const { t } = useTranslation();
@@ -236,7 +287,8 @@ function ExportCommissionsButton() {
     if (!isGrowth) {
       toast({
         title: t("runs.growthPlanRequired"),
-        description: "Bulk CSV export is a premium feature. Please upgrade to the Growth plan to export your data.",
+        description:
+          "Bulk CSV export is a premium feature. Please upgrade to the Growth plan to export your data.",
         variant: "destructive",
       });
       return;
@@ -247,10 +299,13 @@ function ExportCommissionsButton() {
     setIsExporting(true);
     try {
       const workspaceId = localStorage.getItem("ck_active_workspace");
-      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8088"}/api/export/commissions`, {
-        credentials: "include",
-        headers: { "x-workspace-id": workspaceId ?? "" },
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL || "http://localhost:8088"}/api/export/commissions`,
+        {
+          credentials: "include",
+          headers: { "x-workspace-id": workspaceId ?? "" },
+        },
+      );
 
       if (!res.ok) throw new Error("Export failed");
 
@@ -263,7 +318,7 @@ function ExportCommissionsButton() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      
+
       toast({
         title: t("deals.exportSuccessful"),
         description: "Your commission data has been exported to CSV.",
@@ -280,9 +335,9 @@ function ExportCommissionsButton() {
   };
 
   return (
-    <Button 
-      variant="outline" 
-      onClick={handleExport} 
+    <Button
+      variant="outline"
+      onClick={handleExport}
       disabled={isExporting}
       className={!isGrowth ? "opacity-70 border-dashed" : ""}
     >

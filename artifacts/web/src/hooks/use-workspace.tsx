@@ -1,16 +1,16 @@
+import { setWorkspaceId } from "@workspace/api-client-react";
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
-  useState,
-  useCallback,
   useMemo,
   useRef,
+  useState,
 } from "react";
-
-import { setWorkspaceId } from "@workspace/api-client-react";
-import { useAuth } from "./use-auth";
 import { Analytics } from "@/lib/analytics";
+import { useAuth } from "./use-auth";
+
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 
 export interface WorkspaceOnboarding {
@@ -55,10 +55,7 @@ interface WorkspaceContextValue {
   loading: boolean;
   engineNavItems: EngineNavItem[];
   setActiveWorkspace: (ws: Workspace) => void;
-  createWorkspace: (
-    name: string,
-    currency?: string
-  ) => Promise<Workspace>;
+  createWorkspace: (name: string, currency?: string) => Promise<Workspace>;
   refreshWorkspaces: () => Promise<void>;
 }
 
@@ -76,16 +73,11 @@ const WorkspaceContext = createContext<WorkspaceContextValue>({
 
 const STORAGE_KEY = "ck_active_workspace";
 
-export function WorkspaceProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const { session } = useAuth();
 
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [activeWorkspace, setActiveWorkspaceState] =
-    useState<Workspace | null>(null);
+  const [activeWorkspace, setActiveWorkspaceState] = useState<Workspace | null>(null);
   const [loading, setLoading] = useState(true);
   const [engineNavItems, setEngineNavItems] = useState<EngineNavItem[]>([]);
 
@@ -116,9 +108,7 @@ export function WorkspaceProvider({
       const savedId = localStorage.getItem(STORAGE_KEY);
 
       // Validate stored workspace belongs to current account
-      const savedWorkspace =
-        savedId &&
-        data.find((w) => String(w.id) === String(savedId));
+      const savedWorkspace = savedId && data.find((w) => String(w.id) === String(savedId));
 
       const nextWorkspace = savedWorkspace ?? data[0] ?? null;
 
@@ -133,10 +123,13 @@ export function WorkspaceProvider({
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 5000);
         try {
-          const fRes = await fetch(`${API_URL}/api/workspaces/${(nextWorkspace as any).id}/features`, {
-            credentials: "include",
-            signal: controller.signal,
-          });
+          const fRes = await fetch(
+            `${API_URL}/api/workspaces/${(nextWorkspace as any).id}/features`,
+            {
+              credentials: "include",
+              signal: controller.signal,
+            },
+          );
           if (fRes.ok) {
             const fData = await fRes.json();
             setEngineNavItems(fData?.navItems ?? []);
@@ -147,7 +140,6 @@ export function WorkspaceProvider({
           clearTimeout(timeout);
         }
       }
-
     } catch (err) {
       console.error(err);
 
@@ -166,7 +158,10 @@ export function WorkspaceProvider({
     if (!initialized.current) {
       initialized.current = true;
       previousUserId.current = currentUserId;
-      if (session) { setLoading(true); fetchWorkspaces(); }
+      if (session) {
+        setLoading(true);
+        fetchWorkspaces();
+      }
       return;
     }
 
@@ -191,21 +186,15 @@ export function WorkspaceProvider({
     }
   }, [session, fetchWorkspaces, persistWorkspace]);
 
-  const setActiveWorkspace = useCallback(
-    (ws: Workspace) => {
-      localStorage.setItem(STORAGE_KEY, ws.id);
-      setWorkspaceId(ws.id);
-      Analytics.workspaceSwitched(ws.commissionEngine);
-      window.location.assign("/dash");
-    },
-    []
-  );
+  const setActiveWorkspace = useCallback((ws: Workspace) => {
+    localStorage.setItem(STORAGE_KEY, ws.id);
+    setWorkspaceId(ws.id);
+    Analytics.workspaceSwitched(ws.commissionEngine);
+    window.location.assign("/dash");
+  }, []);
 
   const createWorkspace = useCallback(
-    async (
-      name: string,
-      currency?: string
-    ): Promise<Workspace> => {
+    async (name: string, currency?: string): Promise<Workspace> => {
       if (!session) {
         throw new Error("Not authenticated");
       }
@@ -225,7 +214,7 @@ export function WorkspaceProvider({
 
       return ws;
     },
-    [session, setActiveWorkspace]
+    [session, setActiveWorkspace],
   );
 
   const contextValue = useMemo(
@@ -246,14 +235,10 @@ export function WorkspaceProvider({
       setActiveWorkspace,
       createWorkspace,
       fetchWorkspaces,
-    ]
+    ],
   );
 
-  return (
-    <WorkspaceContext.Provider value={contextValue}>
-      {children}
-    </WorkspaceContext.Provider>
-  );
+  return <WorkspaceContext.Provider value={contextValue}>{children}</WorkspaceContext.Provider>;
 }
 
 export function useWorkspace() {

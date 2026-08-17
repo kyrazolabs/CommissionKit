@@ -1,7 +1,7 @@
-import { z } from "zod";
-import { Router, type IRouter } from "express";
-import { sendMediumPriorityEmail } from "@workspace/queue";
 import { applicationTemplate } from "@workspace/email-templates";
+import { sendMediumPriorityEmail } from "@workspace/queue";
+import { type IRouter, Router } from "express";
+import { z } from "zod";
 import { logger } from "../../lib/logger";
 import { applyRateLimit } from "../../middleware/rate-limiter";
 

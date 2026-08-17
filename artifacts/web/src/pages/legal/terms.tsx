@@ -1,7 +1,7 @@
-import { Navbar } from "../landing/Navbar";
-import { Footer } from "../landing/Footer";
+import { AlertTriangle, FileText, Globe, Scale, Shield } from "lucide-react";
 import { usePageMeta } from "@/hooks/use-page-meta";
-import { Scale, FileText, AlertTriangle, Shield, Globe } from "lucide-react";
+import { Footer } from "../landing/Footer";
+import { Navbar } from "../landing/Navbar";
 
 const SECTIONS = [
   {
@@ -31,7 +31,11 @@ const SECTIONS = [
 ];
 
 export function TermsPage() {
-  usePageMeta({ title: "Terms of Service", description: "CommissionKit terms of service and usage agreement.", robots: "index, follow" });
+  usePageMeta({
+    title: "Terms of Service",
+    description: "CommissionKit terms of service and usage agreement.",
+    robots: "index, follow",
+  });
 
   return (
     <>
@@ -43,7 +47,9 @@ export function TermsPage() {
               <Scale className="size-3.5 text-primary" />
               Legal
             </div>
-            <h1 className="text-4xl font-bold text-foreground mb-4 tracking-tight">Terms of Service</h1>
+            <h1 className="text-4xl font-bold text-foreground mb-4 tracking-tight">
+              Terms of Service
+            </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               By accessing CommissionKit, you agree to these terms. Please read them carefully.
             </p>
@@ -62,7 +68,9 @@ export function TermsPage() {
                       <h2 className="text-lg font-semibold text-foreground mb-2">
                         {i + 1}. {section.title}
                       </h2>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{section.content}</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {section.content}
+                      </p>
                     </div>
                   </div>
                 </div>

@@ -20,12 +20,7 @@ Sentry.init({
 
       // 2. Ignore standard HTTP 4xx (client input, forbidden, not found) error events
       const status = (error as any).status || (error as any).statusCode;
-      if (
-        status &&
-        typeof status === "number" &&
-        status >= 400 &&
-        status < 500
-      ) {
+      if (status && typeof status === "number" && status >= 400 && status < 500) {
         return null;
       }
     }

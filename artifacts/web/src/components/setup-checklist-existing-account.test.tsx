@@ -1,5 +1,5 @@
-import { describe, test, expect, mock, beforeEach, afterEach } from "bun:test";
-import { render, waitFor, cleanup, screen, act } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import React from "react";
 
 // Mock localStorage
@@ -10,10 +10,16 @@ function clearStore() {
 Object.defineProperty(globalThis, "localStorage", {
   value: {
     getItem: (key: string) => store[key] ?? null,
-    setItem: (key: string, value: string) => { store[key] = value; },
-    removeItem: (key: string) => { delete store[key]; },
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
     clear: clearStore,
-    get length() { return Object.keys(store).length; },
+    get length() {
+      return Object.keys(store).length;
+    },
     key: (i: number) => Object.keys(store)[i] ?? null,
   },
   writable: true,
@@ -73,7 +79,9 @@ mock.module("wouter", () => ({
     return [loc, setLoc] as const;
   },
   Link: ({ href, children, ...props }: any) => (
-    <a href={href} {...props}>{children}</a>
+    <a href={href} {...props}>
+      {children}
+    </a>
   ),
 }));
 

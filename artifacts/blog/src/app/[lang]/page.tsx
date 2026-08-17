@@ -1,11 +1,11 @@
+import { ChevronLeft, ChevronRight, Tag } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Tag, ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { getAllPosts, getAllLanguages } from "@/lib/posts";
-import { t, formatPageXofY } from "@/lib/translations";
-import { baseUrl } from "@/lib/baseUrl";
 import { BlogGrid } from "@/components/blog-grid";
+import { Button } from "@/components/ui/button";
+import { baseUrl } from "@/lib/baseUrl";
+import { getAllLanguages, getAllPosts } from "@/lib/posts";
+import { formatPageXofY, t } from "@/lib/translations";
 
 interface PageProps {
   params: Promise<{ lang: string }>;
@@ -21,9 +21,7 @@ export async function generateStaticParams() {
 
 export const dynamicParams = true;
 
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { lang } = await params;
   const languages = getAllLanguages();
   const dict = t(lang);
@@ -96,10 +94,7 @@ export default async function BlogIndex({ params, searchParams }: PageProps) {
   const currentPage = Math.max(1, parseInt(search.page || "1", 10) || 1);
   const pageSize = 12;
   const totalPages = Math.ceil(allPosts.length / pageSize);
-  const posts = allPosts.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
-  );
+  const posts = allPosts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const isRtl = lang === "ar";
 
@@ -189,9 +184,7 @@ export default async function BlogIndex({ params, searchParams }: PageProps) {
         <h1 className="text-4xl font-bold text-foreground mb-4 tracking-tight font-display">
           {dict.blog}
         </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl">
-          {dict.blogDescription}
-        </p>
+        <p className="text-lg text-muted-foreground max-w-2xl">{dict.blogDescription}</p>
       </div>
 
       <BlogGrid posts={posts} lang={lang} t={dict} />

@@ -6,23 +6,23 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function injectMeta(
   template: string,
-  meta: { title: string; description: string; robots?: string; keywords?: string; canonical: string },
+  meta: {
+    title: string;
+    description: string;
+    robots?: string;
+    keywords?: string;
+    canonical: string;
+  },
 ) {
   const robots = meta.robots ?? "index, follow";
 
   let result = template
-    .replace(
-      /<title>.*?<\/title>/,
-      `<title>${meta.title}</title>`,
-    )
+    .replace(/<title>.*?<\/title>/, `<title>${meta.title}</title>`)
     .replace(
       /<meta name="description"[^>]*\/?>/,
       `<meta name="description" content="${meta.description}" />`,
     )
-    .replace(
-      /<meta name="robots"[^>]*\/?>/,
-      `<meta name="robots" content="${robots}" />`,
-    )
+    .replace(/<meta name="robots"[^>]*\/?>/, `<meta name="robots" content="${robots}" />`)
     .replace(
       /<meta property="og:title"[^>]*\/?>/,
       `<meta property="og:title" content="${meta.title}" />`,
@@ -56,19 +56,13 @@ function injectMeta(
   // Keywords: replace existing or inject before </head>
   if (meta.keywords !== undefined) {
     const kwTag = `<meta name="keywords" content="${meta.keywords}" />`;
-    result = result.replace(
-      /<meta name="keywords"[^>]*\/?>/,
-      kwTag,
-    );
+    result = result.replace(/<meta name="keywords"[^>]*\/?>/, kwTag);
     if (!result.includes(`name="keywords"`)) {
       result = result.replace("</head>", `  ${kwTag}\n</head>`);
     }
 
     const twKwTag = `<meta name="twitter:keywords" content="${meta.keywords}" />`;
-    result = result.replace(
-      /<meta name="twitter:keywords"[^>]*\/?>/,
-      twKwTag,
-    );
+    result = result.replace(/<meta name="twitter:keywords"[^>]*\/?>/, twKwTag);
     if (!result.includes(`name="twitter:keywords"`)) {
       result = result.replace("</head>", `  ${twKwTag}\n</head>`);
     }
@@ -103,7 +97,24 @@ async function run() {
   const { render } = await import(serverEntryPath);
 
   // 4. Pre-render indexable routes — always base off the ORIGINAL in-memory template
-  const routes = ["/", "/home", "/features", "/solutions", "/pricing", "/calculator", "/contact", "/privacy", "/terms", "/security", "/integrations/odoo", "/integrations/hubspot", "/integrations/salesforce", "/integrations/custom", "/portal", "/careers"];
+  const routes = [
+    "/",
+    "/home",
+    "/features",
+    "/solutions",
+    "/pricing",
+    "/calculator",
+    "/contact",
+    "/privacy",
+    "/terms",
+    "/security",
+    "/integrations/odoo",
+    "/integrations/hubspot",
+    "/integrations/salesforce",
+    "/integrations/custom",
+    "/portal",
+    "/careers",
+  ];
 
   for (const route of routes) {
     const { html, meta } = render(route);
@@ -115,18 +126,18 @@ async function run() {
     output = injectMeta(output, meta);
 
     // Inject SSR body into <div id="root">
-    output = output.replace(
-      `<div id="root"></div>`,
-      `<div id="root">${html}</div>`,
-    );
+    output = output.replace(`<div id="root"></div>`, `<div id="root">${html}</div>`);
 
     // Write the pre-rendered HTML to the route path
-    const outputPath = route === "/" ? templatePath : path.join(distDir, route.replace(/^\//, ""), "index.html");
+    const outputPath =
+      route === "/" ? templatePath : path.join(distDir, route.replace(/^\//, ""), "index.html");
     const outputDir = path.dirname(outputPath);
     fs.mkdirSync(outputDir, { recursive: true });
     fs.writeFileSync(outputPath, output, "utf-8");
     console.log(`[Prerender] Pre-rendered ${route} → ${outputPath}`);
-    console.log(`[Prerender]   title: ${meta.title}, canonical: ${meta.canonical}, robots: ${meta.robots}`);
+    console.log(
+      `[Prerender]   title: ${meta.title}, canonical: ${meta.canonical}, robots: ${meta.robots}`,
+    );
   }
 
   console.log("[Prerender] Prerender complete.");

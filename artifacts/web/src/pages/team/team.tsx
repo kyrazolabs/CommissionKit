@@ -1,35 +1,51 @@
-import { useState, useEffect, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  CheckCircle2,
+  Clock,
+  Crown,
+  Mail,
+  MoreHorizontal,
+  RefreshCw,
+  Shield,
+  Trash2,
+  UserPlus,
+  Users,
+} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useWorkspace } from "@/hooks/use-workspace";
-import { useRole } from "@/hooks/use-role";
-import { useAuth } from "@/hooks/use-auth";
-import { useToast } from "@/hooks/use-toast";
+import { HelpTooltip } from "@/components/help-tooltip";
+import { RepAvatar } from "@/components/rep-avatar";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Dialog, DialogContent, DialogDescription, DialogFooter,
-  DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuSeparator, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Crown, Shield, Users, UserPlus, MoreHorizontal, Mail,
-  Trash2, RefreshCw, Clock, CheckCircle2,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { HelpTooltip } from "@/components/help-tooltip";
-import { RepAvatar } from "@/components/rep-avatar";
+import { useAuth } from "@/hooks/use-auth";
 import { useBillingStatus } from "@/hooks/use-billing-status";
-import { useQuery } from "@tanstack/react-query";
-import { apiFetch } from "@/lib/api";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { usePageMeta } from "@/hooks/use-page-meta";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useRole } from "@/hooks/use-role";
+import { useToast } from "@/hooks/use-toast";
+import { useWorkspace } from "@/hooks/use-workspace";
+import { apiFetch } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 type MemberStatus = "active" | "pending";
 type MemberRole = "owner" | "admin" | "member";
@@ -46,17 +62,22 @@ interface Member {
 
 // ─── Role Meta ────────────────────────────────────────────────────────────────
 
-const ROLE_META: Record<MemberRole, { label: string; description: string; color: string; Icon: typeof Crown }> = {
+const ROLE_META: Record<
+  MemberRole,
+  { label: string; description: string; color: string; Icon: typeof Crown }
+> = {
   owner: {
     label: "Owner",
     description: "Full access, including billing and workspace deletion.",
-    color: "text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/30",
+    color:
+      "text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/30",
     Icon: Crown,
   },
   admin: {
     label: "Admin",
     description: "Manage team members, plans, deals and runs.",
-    color: "text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/30",
+    color:
+      "text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/30",
     Icon: Shield,
   },
   member: {
@@ -67,26 +88,34 @@ const ROLE_META: Record<MemberRole, { label: string; description: string; color:
   },
 };
 
-function RoleBadge({ member, rolesList }: { member: Member, rolesList: any[] }) {
+function RoleBadge({ member, rolesList }: { member: Member; rolesList: any[] }) {
   if (member.role === "owner" || member.roleIds?.length === 0) {
     const r = member.role || "member";
     const meta = ROLE_META[r as MemberRole] || ROLE_META.member;
     return (
-      <span className={cn("inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold", meta.color)}>
+      <span
+        className={cn(
+          "inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold",
+          meta.color,
+        )}
+      >
         <meta.Icon className="size-3" />
         {meta.label}
       </span>
     );
   }
-  
+
   // Custom roles
   return (
     <div className="flex flex-wrap gap-1">
-      {member.roleIds.map(id => {
-        const customRole = rolesList.find(r => r.id === id);
+      {member.roleIds.map((id) => {
+        const customRole = rolesList.find((r) => r.id === id);
         if (!customRole) return null;
         return (
-          <span key={id} className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold text-primary bg-primary/10 border-primary/20">
+          <span
+            key={id}
+            className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold text-primary bg-primary/10 border-primary/20"
+          >
             <Shield className="size-3" />
             {customRole.name}
           </span>
@@ -102,10 +131,7 @@ function MemberAvatar({ email, status }: { email: string; status: MemberStatus }
       <RepAvatar
         name={email}
         size={32}
-        className={cn(
-          "size-8 shrink-0 rounded-full",
-          status === "pending" && "opacity-50",
-        )}
+        className={cn("size-8 shrink-0 rounded-full", status === "pending" && "opacity-50")}
       />
       {status === "active" && (
         <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-green-500 border-2 border-card" />
@@ -122,8 +148,18 @@ function MemberAvatar({ email, status }: { email: string; status: MemberStatus }
 // ─── Invite Dialog ─────────────────────────────────────────────────────────────
 
 function InviteMemberDialog({
-  workspaceId, onInvited, isLimitReached, limit, rolesList
-}: { workspaceId: string; onInvited: () => void; isLimitReached: boolean; limit: number; rolesList: any[] }) {
+  workspaceId,
+  onInvited,
+  isLimitReached,
+  limit,
+  rolesList,
+}: {
+  workspaceId: string;
+  onInvited: () => void;
+  isLimitReached: boolean;
+  limit: number;
+  rolesList: any[];
+}) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -163,9 +199,7 @@ function InviteMemberDialog({
       <DialogContent className="sm:max-w-[440px]">
         <DialogHeader>
           <DialogTitle>{t("team.inviteTeamMember")}</DialogTitle>
-          <DialogDescription>
-            {t('team.inviteDescription')}.
-          </DialogDescription>
+          <DialogDescription>{t("team.inviteDescription")}.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleInvite} className="grid gap-5 py-2">
           <div className="grid gap-2">
@@ -196,12 +230,16 @@ function InviteMemberDialog({
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      setRoleIds(prev => prev.includes(r.id) ? prev.filter(id => id !== r.id) : [...prev, r.id])
+                      setRoleIds((prev) =>
+                        prev.includes(r.id) ? prev.filter((id) => id !== r.id) : [...prev, r.id],
+                      );
                     }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
-                        setRoleIds(prev => prev.includes(r.id) ? prev.filter(id => id !== r.id) : [...prev, r.id])
+                        setRoleIds((prev) =>
+                          prev.includes(r.id) ? prev.filter((id) => id !== r.id) : [...prev, r.id],
+                        );
                       }
                     }}
                     className={cn(
@@ -211,29 +249,44 @@ function InviteMemberDialog({
                         : "border-border hover:bg-muted",
                     )}
                   >
-                    <div className={cn(
-                      "size-4 shrink-0 rounded border border-primary flex items-center justify-center transition-colors mt-0.5",
-                      isSelected ? "bg-primary text-primary-foreground" : "bg-transparent"
-                    )}>
+                    <div
+                      className={cn(
+                        "size-4 shrink-0 rounded border border-primary flex items-center justify-center transition-colors mt-0.5",
+                        isSelected ? "bg-primary text-primary-foreground" : "bg-transparent",
+                      )}
+                    >
                       {isSelected && <CheckCircle2 className="size-3" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1.5">
-                        <span className={cn("text-[13px] font-semibold truncate", isSelected ? "text-foreground" : "text-muted-foreground")}>
+                        <span
+                          className={cn(
+                            "text-[13px] font-semibold truncate",
+                            isSelected ? "text-foreground" : "text-muted-foreground",
+                          )}
+                        >
                           {r.name}
                         </span>
-                        {r.isSystem && <span className="text-[9px] bg-muted p-1.5 rounded text-muted-foreground">SYSTEM</span>}
+                        {r.isSystem && (
+                          <span className="text-[9px] bg-muted p-1.5 rounded text-muted-foreground">
+                            SYSTEM
+                          </span>
+                        )}
                       </div>
-                      <p className="text-[11px] text-muted-foreground leading-tight mt-0.5 line-clamp-2">{r.description}</p>
+                      <p className="text-[11px] text-muted-foreground leading-tight mt-0.5 line-clamp-2">
+                        {r.description}
+                      </p>
                     </div>
-                  </div>
+                  </div>,
                 );
                 return acc;
               }, [])}
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>{t("common.cancel")}</Button>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              {t("common.cancel")}
+            </Button>
             <Button type="submit" disabled={loading || !email.trim()}>
               {loading ? t("common.sending2") : t("team.sendInvitation")}
             </Button>
@@ -247,7 +300,14 @@ function InviteMemberDialog({
 // ─── Member Row ────────────────────────────────────────────────────────────────
 
 function MemberRow({
-  member, index, currentUserId, workspaceId, canManage, isOwner, onChanged, rolesList
+  member,
+  index,
+  currentUserId,
+  workspaceId,
+  canManage,
+  isOwner,
+  onChanged,
+  rolesList,
 }: {
   member: Member;
   index: number;
@@ -273,10 +333,17 @@ function MemberRow({
         method: "PATCH",
         body: JSON.stringify({ roleIds: newRoleIds }),
       });
-      toast({ title: t("team.rolesUpdated"), description: `${member.email}'s roles have been updated.` });
+      toast({
+        title: t("team.rolesUpdated"),
+        description: `${member.email}'s roles have been updated.`,
+      });
       onChanged();
     } catch (err: any) {
-      toast({ title: t("team.failedToUpdateRole"), description: err.message, variant: "destructive" });
+      toast({
+        title: t("team.failedToUpdateRole"),
+        description: err.message,
+        variant: "destructive",
+      });
     } finally {
       setUpdating(false);
     }
@@ -299,11 +366,13 @@ function MemberRow({
   };
 
   return (
-    <div className={cn(
-      "flex items-center gap-4 px-5 py-3.5 border-b border-border last:border-0 transition-colors",
-      index % 2 === 1 && "bg-muted/10",
-      updating && "opacity-50 pointer-events-none",
-    )}>
+    <div
+      className={cn(
+        "flex items-center gap-4 px-5 py-3.5 border-b border-border last:border-0 transition-colors",
+        index % 2 === 1 && "bg-muted/10",
+        updating && "opacity-50 pointer-events-none",
+      )}
+    >
       <MemberAvatar email={member.email} status={member.status} />
 
       <div className="flex-1 min-w-0">
@@ -326,7 +395,12 @@ function MemberRow({
           )}
         </div>
         <p className="text-[11.5px] text-muted-foreground mt-0.5">
-          Added {new Date(member.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+          Added{" "}
+          {new Date(member.createdAt).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })}
         </p>
       </div>
 
@@ -340,18 +414,20 @@ function MemberRow({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 p-2">
-              <div className="mb-2 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Assign Roles</div>
+              <div className="mb-2 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Assign Roles
+              </div>
               <div className="max-h-[200px] overflow-y-auto">
                 {rolesList.reduce((acc, r) => {
                   if (r.name === "Owner") return acc;
                   const isSelected = member.roleIds?.includes(r.id);
                   acc.push(
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       key={r.id}
                       className="flex items-center gap-2 py-2"
                       onClick={(e) => {
                         e.preventDefault();
-                        const nextIds = isSelected 
+                        const nextIds = isSelected
                           ? member.roleIds.filter((id: string) => id !== r.id)
                           : [...(member.roleIds || []), r.id];
                         updateRole(nextIds);
@@ -360,7 +436,7 @@ function MemberRow({
                       <Checkbox checked={isSelected} className="pointer-events-none" />
                       <div className="flex-1 truncate text-[13px]">{r.name}</div>
                       {isSelected && <div className="size-1.5 rounded-full bg-primary" />}
-                    </DropdownMenuItem>
+                    </DropdownMenuItem>,
                   );
                   return acc;
                 }, [] as React.ReactNode[])}
@@ -375,7 +451,11 @@ function MemberRow({
         {(hasPermission("team", "delete") || isSelf) && !isProtected && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="size-7 text-muted-foreground hover:text-foreground">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-7 text-muted-foreground hover:text-foreground"
+              >
                 <MoreHorizontal className="size-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -395,9 +475,17 @@ function MemberRow({
         open={deleteConfirmOpen}
         onOpenChange={setDeleteConfirmOpen}
         title={isSelf ? t("team.leaveWorkspaceTitle") : t("team.removeMemberTitle")}
-        description={isSelf
-          ? <>Are you sure you want to leave <strong>{member.email}</strong> from this workspace?</>
-          : <>Are you sure you want to remove <strong>{member.email}</strong> from this workspace? This action can be undone by re-inviting them.</>
+        description={
+          isSelf ? (
+            <>
+              Are you sure you want to leave <strong>{member.email}</strong> from this workspace?
+            </>
+          ) : (
+            <>
+              Are you sure you want to remove <strong>{member.email}</strong> from this workspace?
+              This action can be undone by re-inviting them.
+            </>
+          )
         }
         confirmLabel={isSelf ? "Leave" : "Remove"}
         onConfirm={handleRemoveMember}
@@ -420,20 +508,30 @@ function RoleReference() {
         <p className="text-[12px] text-muted-foreground mt-0.5">Permissions granted per role</p>
       </div>
       <div className="divide-y divide-border">
-        {(Object.entries(ROLE_META) as [MemberRole, typeof ROLE_META[MemberRole]][]).map(([role, meta]) => (
-          <div key={role} className="p-5 flex items-start gap-3">
-            <div className={cn("flex size-7 shrink-0 items-center justify-center rounded-full border", meta.color)}>
-              <meta.Icon className="size-3.5" />
+        {(Object.entries(ROLE_META) as [MemberRole, (typeof ROLE_META)[MemberRole]][]).map(
+          ([role, meta]) => (
+            <div key={role} className="p-5 flex items-start gap-3">
+              <div
+                className={cn(
+                  "flex size-7 shrink-0 items-center justify-center rounded-full border",
+                  meta.color,
+                )}
+              >
+                <meta.Icon className="size-3.5" />
+              </div>
+              <div>
+                <p className="text-[13px] font-semibold text-foreground">{meta.label}</p>
+                <p className="text-[11.5px] text-muted-foreground mt-0.5 leading-relaxed">
+                  {meta.description}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-[13px] font-semibold text-foreground">{meta.label}</p>
-              <p className="text-[11.5px] text-muted-foreground mt-0.5 leading-relaxed">{meta.description}</p>
-            </div>
-          </div>
-        ))}
+          ),
+        )}
         <div className="p-5 bg-muted/30">
           <p className="text-[11px] text-muted-foreground">
-            <span className="font-medium text-foreground">Owners</span> have all Admin permissions plus billing access and workspace deletion.
+            <span className="font-medium text-foreground">Owners</span> have all Admin permissions
+            plus billing access and workspace deletion.
           </p>
         </div>
       </div>
@@ -445,7 +543,11 @@ function RoleReference() {
 
 export function TeamPage() {
   const { t } = useTranslation();
-  usePageMeta({ title: t("team.title"), description: "Manage team members, roles, and workspace access.", robots: "noindex, nofollow" });
+  usePageMeta({
+    title: t("team.title"),
+    description: "Manage team members, roles, and workspace access.",
+    robots: "noindex, nofollow",
+  });
   const { activeWorkspace } = useWorkspace();
   const { user } = useAuth();
   const { role, can, is, hasPermission, isLoading: roleLoading } = useRole();
@@ -465,10 +567,11 @@ export function TeamPage() {
     try {
       const data = await apiFetch(`/api/workspaces/${activeWorkspace.id}/members`);
       // Sort: owner first, then admin, then member; active before pending
-      const rankRole = (r: MemberRole) => ({ owner: 0, admin: 1, member: 2 }[r] ?? 3);
+      const rankRole = (r: MemberRole) => ({ owner: 0, admin: 1, member: 2 })[r] ?? 3;
       const rankStatus = (s: MemberStatus) => (s === "active" ? 0 : 1);
-      data.sort((a: Member, b: Member) =>
-        rankRole(a.role) - rankRole(b.role) || rankStatus(a.status) - rankStatus(b.status),
+      data.sort(
+        (a: Member, b: Member) =>
+          rankRole(a.role) - rankRole(b.role) || rankStatus(a.status) - rankStatus(b.status),
       );
       setMembers(data);
     } catch (err) {
@@ -478,7 +581,9 @@ export function TeamPage() {
     }
   }, [activeWorkspace?.id]);
 
-  useEffect(() => { fetchMembers(); }, [fetchMembers]);
+  useEffect(() => {
+    fetchMembers();
+  }, [fetchMembers]);
 
   if (roleLoading || loading) {
     return (
@@ -533,8 +638,12 @@ export function TeamPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <p className="text-[12px] font-semibold text-primary mb-1">{t("team.organization")}</p>
-          <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">{t("team.title")}</h1>
-          <p className="text-[14px] text-muted-foreground mt-1">{t("team.description", { workspace: activeWorkspace.name })}</p>
+          <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">
+            {t("team.title")}
+          </h1>
+          <p className="text-[14px] text-muted-foreground mt-1">
+            {t("team.description", { workspace: activeWorkspace.name })}
+          </p>
         </div>
         {hasPermission("team", "create") && (
           <InviteMemberDialog
@@ -552,14 +661,21 @@ export function TeamPage() {
         <Card className="lg:col-span-2 rounded-xl border border-card-border bg-card overflow-hidden">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-[15px] font-semibold leading-snug tracking-tight">Members</CardTitle>
+              <CardTitle className="text-[15px] font-semibold leading-snug tracking-tight">
+                Members
+              </CardTitle>
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-semibold text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
                   {activeMembers.length} active
                   {pendingMembers.length > 0 && ` · ${pendingMembers.length} pending`}
                   {limits.members !== -1 && ` / ${limits.members} total`}
                 </span>
-                <Button variant="ghost" size="icon" className="size-8 text-muted-foreground" onClick={fetchMembers}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 text-muted-foreground"
+                  onClick={fetchMembers}
+                >
                   <RefreshCw className="size-3.5" />
                 </Button>
               </div>

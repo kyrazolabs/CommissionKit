@@ -1,17 +1,17 @@
-import { Navbar } from "./landing/Navbar";
-import { Footer } from "./landing/Footer";
-import { usePageMeta } from "@/hooks/use-page-meta";
 import {
-  Calculator,
-  Users,
-  FileSpreadsheet,
-  Receipt,
-  ShieldCheck,
-  Settings,
-  Globe,
-  Zap,
   Bell,
+  Calculator,
+  FileSpreadsheet,
+  Globe,
+  Receipt,
+  Settings,
+  ShieldCheck,
+  Users,
+  Zap,
 } from "lucide-react";
+import { usePageMeta } from "@/hooks/use-page-meta";
+import { Footer } from "./landing/Footer";
+import { Navbar } from "./landing/Navbar";
 
 const FEATURES = [
   {
@@ -131,7 +131,8 @@ export function FeaturesPage() {
     title: "Features — CommissionKit",
     description:
       "Explore CommissionKit's full feature set — commission engine, rep portal, deal management, payout tracking, and platform capabilities.",
-    keywords: "commission calculation software, sales commission tracking, sales commission tracking software, commission sales software, commission software, sales rep commission software, commissions systems, software for commission sales",
+    keywords:
+      "commission calculation software, sales commission tracking, sales commission tracking software, commission sales software, commission software, sales rep commission software, commissions systems, software for commission sales",
     robots: "index, follow",
   });
 
@@ -149,8 +150,8 @@ export function FeaturesPage() {
               Everything You Need to Run Commissions
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              From plan design to payout — CommissionKit covers the entire commission lifecycle
-              with powerful automation and real-time visibility.
+              From plan design to payout — CommissionKit covers the entire commission lifecycle with
+              powerful automation and real-time visibility.
             </p>
           </div>
 
@@ -184,9 +185,21 @@ export function FeaturesPage() {
           <div className="mt-20 border-t border-border pt-12">
             <div className="grid gap-6 md:grid-cols-3">
               {[
-                { icon: ShieldCheck, title: "Enterprise Security", desc: "AES-256 encryption at rest, TLS 1.3 in transit. SOC2-compliant cloud infrastructure." },
-                { icon: Globe, title: "Global Ready", desc: "Multi-currency support with live exchange rates. Works for teams in any region." },
-                { icon: Bell, title: "Real-Time Alerts", desc: "Email notifications for completed runs, payout status changes, and dispute updates." },
+                {
+                  icon: ShieldCheck,
+                  title: "Enterprise Security",
+                  desc: "AES-256 encryption at rest, TLS 1.3 in transit. SOC2-compliant cloud infrastructure.",
+                },
+                {
+                  icon: Globe,
+                  title: "Global Ready",
+                  desc: "Multi-currency support with live exchange rates. Works for teams in any region.",
+                },
+                {
+                  icon: Bell,
+                  title: "Real-Time Alerts",
+                  desc: "Email notifications for completed runs, payout status changes, and dispute updates.",
+                },
               ].map((item) => {
                 const Icon = item.icon;
                 return (

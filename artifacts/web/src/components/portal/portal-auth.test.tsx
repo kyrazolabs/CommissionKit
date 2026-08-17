@@ -1,5 +1,5 @@
-import { describe, test, expect, mock, beforeEach } from "bun:test";
-import { render, screen, cleanup } from "@testing-library/react";
+import { beforeEach, describe, expect, mock, test } from "bun:test";
+import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import { PortalAuth } from "./portal-auth";
@@ -14,7 +14,7 @@ const mockFetch = mock(() =>
         workspaceName: "Test Workspace",
         mustChangePassword: false,
       }),
-  })
+  }),
 );
 
 mock.module("@/lib/portal-fetch", () => ({
@@ -75,35 +75,32 @@ describe("PortalAuth", () => {
       React.createElement(PortalAuth, {
         accessCode: "test-code",
         onLogin: mockOnLogin,
-      })
+      }),
     );
     expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /access portal/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /access portal/i })).toBeInTheDocument();
   });
 
   test("calls onLogin with credentials on successful submit", async () => {
     const user = userEvent.setup();
-    mockFetch.mockImplementationOnce(
-      () =>
-        Promise.resolve({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              token: "fake-token",
-              workspaceName: "Test Workspace",
-              mustChangePassword: false,
-            }),
-        })
+    mockFetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            token: "fake-token",
+            workspaceName: "Test Workspace",
+            mustChangePassword: false,
+          }),
+      }),
     );
 
     render(
       React.createElement(PortalAuth, {
         accessCode: "test-code",
         onLogin: mockOnLogin,
-      })
+      }),
     );
     await user.type(screen.getByLabelText(/username/i), "rep1");
     await user.type(screen.getByLabelText(/password/i), "password123");
@@ -112,11 +109,7 @@ describe("PortalAuth", () => {
     // Wait for async submission
     await new Promise((r) => setTimeout(r, 50));
     expect(mockOnLogin).toHaveBeenCalled();
-    const [pwd, mustChange, wsName] = mockOnLogin.mock.calls[0] as [
-      string,
-      boolean,
-      string
-    ];
+    const [pwd, mustChange, wsName] = mockOnLogin.mock.calls[0] as [string, boolean, string];
     expect(pwd).toBe("password123");
     expect(mustChange).toBe(false);
     expect(wsName).toBe("Test Workspace");
@@ -124,19 +117,18 @@ describe("PortalAuth", () => {
 
   test("shows error message on failed login", async () => {
     const user = userEvent.setup();
-    mockFetch.mockImplementationOnce(
-      () =>
-        Promise.resolve({
-          ok: false,
-          json: () => Promise.resolve({ error: "Invalid credentials" }),
-        })
+    mockFetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: false,
+        json: () => Promise.resolve({ error: "Invalid credentials" }),
+      }),
     );
 
     render(
       React.createElement(PortalAuth, {
         accessCode: "test-code",
         onLogin: mockOnLogin,
-      })
+      }),
     );
     await user.type(screen.getByLabelText(/username/i), "baduser");
     await user.type(screen.getByLabelText(/password/i), "badpass");
@@ -155,14 +147,12 @@ describe("PortalAuth", () => {
       React.createElement(PortalAuth, {
         accessCode: "test-code",
         onLogin: mockOnLogin,
-      })
+      }),
     );
     await user.type(screen.getByLabelText(/username/i), "rep1");
     await user.type(screen.getByLabelText(/password/i), "password123");
     await user.click(screen.getByRole("button", { name: /access portal/i }));
 
-    expect(
-      screen.getByRole("button", { name: /access portal/i })
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: /access portal/i })).toBeDisabled();
   });
 });

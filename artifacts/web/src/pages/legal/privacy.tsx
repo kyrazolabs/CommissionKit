@@ -1,7 +1,7 @@
-import { Navbar } from "../landing/Navbar";
-import { Footer } from "../landing/Footer";
+import { Database, FileText, Shield } from "lucide-react";
 import { usePageMeta } from "@/hooks/use-page-meta";
-import { Shield, Database, FileText } from "lucide-react";
+import { Footer } from "../landing/Footer";
+import { Navbar } from "../landing/Navbar";
 
 const SECTIONS = [
   {
@@ -31,7 +31,11 @@ const SECTIONS = [
 ];
 
 export function PrivacyPage() {
-  usePageMeta({ title: "Privacy Policy", description: "Learn how CommissionKit collects and uses your data.", robots: "index, follow" });
+  usePageMeta({
+    title: "Privacy Policy",
+    description: "Learn how CommissionKit collects and uses your data.",
+    robots: "index, follow",
+  });
 
   return (
     <>
@@ -43,9 +47,12 @@ export function PrivacyPage() {
               <Shield className="size-3.5 text-primary" />
               Legal
             </div>
-            <h1 className="text-4xl font-bold text-foreground mb-4 tracking-tight">Privacy Policy</h1>
+            <h1 className="text-4xl font-bold text-foreground mb-4 tracking-tight">
+              Privacy Policy
+            </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Your privacy is important to us. Here is how we collect, use, and protect your information.
+              Your privacy is important to us. Here is how we collect, use, and protect your
+              information.
             </p>
           </div>
 
@@ -62,7 +69,9 @@ export function PrivacyPage() {
                       <h2 className="text-lg font-semibold text-foreground mb-2">
                         {i + 1}. {section.title}
                       </h2>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{section.content}</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {section.content}
+                      </p>
                     </div>
                   </div>
                 </div>

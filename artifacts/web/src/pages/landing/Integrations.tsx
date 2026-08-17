@@ -1,5 +1,5 @@
 import { ArrowRight, Cable } from "lucide-react";
-import { useInView, fadeIn } from "./hooks";
+import { fadeIn, useInView } from "./hooks";
 
 type Integration = {
   name: string;
@@ -10,10 +10,33 @@ type Integration = {
 };
 
 const INTEGRATIONS: Integration[] = [
-  { name: "Odoo", badge: "ERP", desc: "Sync reps, sales orders, and invoices.", href: "/integrations/odoo", img: "/plugins/odoo.webp" },
-  { name: "Salesforce", badge: "CRM", desc: "Sync users and opportunities via OAuth.", href: "/integrations/salesforce", img: "/plugins/salesforce.webp" },
-  { name: "HubSpot", badge: "CRM", desc: "Sync owners and deals via token.", href: "/integrations/hubspot", img: "/plugins/hubspot.webp" },
-  { name: "Custom REST API", badge: "API", desc: "Connect any ERP or CRM without code.", href: "/integrations/custom" },
+  {
+    name: "Odoo",
+    badge: "ERP",
+    desc: "Sync reps, sales orders, and invoices.",
+    href: "/integrations/odoo",
+    img: "/plugins/odoo.webp",
+  },
+  {
+    name: "Salesforce",
+    badge: "CRM",
+    desc: "Sync users and opportunities via OAuth.",
+    href: "/integrations/salesforce",
+    img: "/plugins/salesforce.webp",
+  },
+  {
+    name: "HubSpot",
+    badge: "CRM",
+    desc: "Sync owners and deals via token.",
+    href: "/integrations/hubspot",
+    img: "/plugins/hubspot.webp",
+  },
+  {
+    name: "Custom REST API",
+    badge: "API",
+    desc: "Connect any ERP or CRM without code.",
+    href: "/integrations/custom",
+  },
 ];
 
 export function Integrations() {
@@ -32,7 +55,8 @@ export function Integrations() {
             Plugs into the stack you already run
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mt-4">
-            Reps and deals sync automatically from your CRM or ERP. No manual exports, no copy-paste, no version conflicts.
+            Reps and deals sync automatically from your CRM or ERP. No manual exports, no
+            copy-paste, no version conflicts.
           </p>
         </div>
 
@@ -71,7 +95,10 @@ export function Integrations() {
         <div className="mt-10 text-center" style={fadeIn(inView, 400)}>
           <p className="text-sm text-muted-foreground">
             Scheduled syncs keep data fresh between runs. Don't see your tool?{" "}
-            <a href="/integrations/custom" className="text-primary font-semibold hover:underline underline-offset-4">
+            <a
+              href="/integrations/custom"
+              className="text-primary font-semibold hover:underline underline-offset-4"
+            >
               The custom REST API connects anything
             </a>
             .

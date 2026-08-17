@@ -1,10 +1,10 @@
-import en from "../generated/translations/en.json";
 import ar from "../generated/translations/ar.json";
+import de from "../generated/translations/de.json";
+import en from "../generated/translations/en.json";
 import es from "../generated/translations/es.json";
 import fr from "../generated/translations/fr.json";
-import de from "../generated/translations/de.json";
-import pt from "../generated/translations/pt.json";
 import hi from "../generated/translations/hi.json";
+import pt from "../generated/translations/pt.json";
 
 export interface Translations {
   postNotFound: string;
@@ -56,36 +56,22 @@ export interface Translations {
   languageNames: Record<string, string>;
 }
 
-function replacePlaceholders(
-  template: string,
-  values: Record<string, string>,
-): string {
+function replacePlaceholders(template: string, values: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (_, key) => values[key] ?? `{${key}}`);
 }
 
-export function formatPageXofY(
-  t: Translations,
-  current: number,
-  total: number,
-): string {
+export function formatPageXofY(t: Translations, current: number, total: number): string {
   return replacePlaceholders(t.pageXofY, {
     current: String(current),
     total: String(total),
   });
 }
 
-export function formatAllRightsReserved(
-  t: Translations,
-  year: number,
-): string {
+export function formatAllRightsReserved(t: Translations, year: number): string {
   return replacePlaceholders(t.allRightsReserved, { year: String(year) });
 }
 
-export function formatFallbackBanner(
-  t: Translations,
-  requested: string,
-  fallback: string,
-): string {
+export function formatFallbackBanner(t: Translations, requested: string, fallback: string): string {
   return replacePlaceholders(t.fallbackBanner, { requested, fallback });
 }
 

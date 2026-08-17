@@ -1,6 +1,11 @@
-import { Notification, UserNotificationPrefs, NOTIFICATION_TYPES, type NotificationType } from "@workspace/db";
-import { Types } from "mongoose";
+import {
+  NOTIFICATION_TYPES,
+  Notification,
+  type NotificationType,
+  UserNotificationPrefs,
+} from "@workspace/db";
 import { sendMediumPriorityEmail } from "@workspace/queue";
+import { Types } from "mongoose";
 
 export interface CreateNotificationInput {
   workspaceId: string;
@@ -24,8 +29,16 @@ export interface CreateNotificationInput {
  */
 export async function createNotification(input: CreateNotificationInput): Promise<void> {
   const {
-    workspaceId, userId, type, title, message, href, meta,
-    emailHtml, emailSubject, emailTo,
+    workspaceId,
+    userId,
+    type,
+    title,
+    message,
+    href,
+    meta,
+    emailHtml,
+    emailSubject,
+    emailTo,
   } = input;
 
   // Load user prefs (fall back to defaults if no record exists)

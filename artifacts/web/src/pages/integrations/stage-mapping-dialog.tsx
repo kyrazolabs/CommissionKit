@@ -1,12 +1,24 @@
-import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { apiFetch } from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GitBranch, LoaderCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { apiFetch } from "@/lib/api";
 import type { StageOption } from "./types";
 
 interface Props {
@@ -28,24 +40,34 @@ export function StageMappingDialog({ open, onOpenChange, connectorName }: Props)
     setLoading(true);
     setLoadError(null);
     try {
-      const data = await apiFetch(`/api/integrations/${activeWorkspace?.id}/${connectorName}/stages`);
+      const data = await apiFetch(
+        `/api/integrations/${activeWorkspace?.id}/${connectorName}/stages`,
+      );
       setStages(data.stages || []);
       setMapping(data.mapping || {});
     } catch (err: any) {
       setLoadError(err.message || "Failed to fetch stages");
       setStages([]);
       setMapping({});
+    } finally {
+      setLoading(false);
     }
-    finally { setLoading(false); }
   };
 
   const save = async () => {
     try {
-      await apiFetch(`/api/integrations/${activeWorkspace?.id}/${connectorName}/stages`, { method: "PATCH", body: JSON.stringify({ mapping }) });
+      await apiFetch(`/api/integrations/${activeWorkspace?.id}/${connectorName}/stages`, {
+        method: "PATCH",
+        body: JSON.stringify({ mapping }),
+      });
       onOpenChange(false);
       toast({ title: t("integrations.stageMappingSaved") });
     } catch (err: any) {
-      toast({ title: t("integrations.connectionFailed"), description: err.message, variant: "destructive" });
+      toast({
+        title: t("integrations.connectionFailed"),
+        description: err.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -57,16 +79,23 @@ export function StageMappingDialog({ open, onOpenChange, connectorName }: Props)
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><GitBranch className="size-5" />{t("integrations.stageMappingTitle")}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <GitBranch className="size-5" />
+            {t("integrations.stageMappingTitle")}
+          </DialogTitle>
           <DialogDescription>{t("integrations.stageMappingDesc")}</DialogDescription>
         </DialogHeader>
         <div className="space-y-3 py-2 max-h-[400px] overflow-y-auto">
           {loading ? (
-            <div className="flex items-center justify-center py-8"><LoaderCircle className="size-5 animate-spin text-muted-foreground" /></div>
+            <div className="flex items-center justify-center py-8">
+              <LoaderCircle className="size-5 animate-spin text-muted-foreground" />
+            </div>
           ) : loadError ? (
             <p className="text-sm text-destructive text-center py-8">{loadError}</p>
           ) : stages.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">{t("integrations.noStages")}</p>
+            <p className="text-sm text-muted-foreground text-center py-8">
+              {t("integrations.noStages")}
+            </p>
           ) : (
             stages.map((stage) => (
               <div key={stage.id} className="flex items-center gap-3">
@@ -74,8 +103,13 @@ export function StageMappingDialog({ open, onOpenChange, connectorName }: Props)
                   <p className="text-sm font-medium truncate">{stage.label}</p>
                   <p className="text-[11px] text-muted-foreground">{stage.pipeline}</p>
                 </div>
-                <Select value={mapping[stage.id] || ""} onValueChange={(v) => setMapping((prev) => ({ ...prev, [stage.id]: v }))}>
-                  <SelectTrigger className="w-36 h-8 text-xs"><SelectValue placeholder="Select..." /></SelectTrigger>
+                <Select
+                  value={mapping[stage.id] || ""}
+                  onValueChange={(v) => setMapping((prev) => ({ ...prev, [stage.id]: v }))}
+                >
+                  <SelectTrigger className="w-36 h-8 text-xs">
+                    <SelectValue placeholder="Select..." />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="closed_won">closed_won</SelectItem>
                     <SelectItem value="closed_lost">closed_lost</SelectItem>
@@ -87,8 +121,12 @@ export function StageMappingDialog({ open, onOpenChange, connectorName }: Props)
           )}
         </div>
         <div className="flex gap-2 justify-end pt-2">
-          <Button variant="secondary" onClick={() => onOpenChange(false)}>{t("integrations.cancel")}</Button>
-          <Button onClick={save} disabled={loading}>{t("integrations.save")}</Button>
+          <Button variant="secondary" onClick={() => onOpenChange(false)}>
+            {t("integrations.cancel")}
+          </Button>
+          <Button onClick={save} disabled={loading}>
+            {t("integrations.save")}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

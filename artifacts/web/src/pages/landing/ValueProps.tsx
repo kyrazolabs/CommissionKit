@@ -1,6 +1,6 @@
-import { CheckCircle2, Zap, TrendingUp } from "lucide-react";
-import { useInView, fadeIn } from "./hooks";
+import { CheckCircle2, TrendingUp, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { fadeIn, useInView } from "./hooks";
 
 const PROPS = [
   {
@@ -51,9 +51,7 @@ export function ValueProps() {
                     <h3 className="text-xl font-semibold text-foreground mb-3 tracking-tight">
                       {prop.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {prop.desc}
-                    </p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{prop.desc}</p>
                   </CardContent>
                 </Card>
               </div>

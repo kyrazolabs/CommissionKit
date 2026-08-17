@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { insertRepSchema } from "./reps";
 
 describe("insertRepSchema", () => {
@@ -34,25 +34,23 @@ describe("insertRepSchema", () => {
   });
 
   test("rejects missing workspaceId", () => {
-    expect(() =>
-      insertRepSchema.parse({ name: "No WS", email: "test@test.com" })
-    ).toThrow();
+    expect(() => insertRepSchema.parse({ name: "No WS", email: "test@test.com" })).toThrow();
   });
 
   test("rejects missing name", () => {
-    expect(() =>
-      insertRepSchema.parse({ workspaceId: "ws1", email: "test@test.com" })
-    ).toThrow();
+    expect(() => insertRepSchema.parse({ workspaceId: "ws1", email: "test@test.com" })).toThrow();
   });
 
   test("rejects missing email", () => {
-    expect(() =>
-      insertRepSchema.parse({ workspaceId: "ws1", name: "No Email" })
-    ).toThrow();
+    expect(() => insertRepSchema.parse({ workspaceId: "ws1", name: "No Email" })).toThrow();
   });
 
   test("accepts any string as email (schema does not validate format)", () => {
-    const result = insertRepSchema.parse({ workspaceId: "ws1", name: "Bad Email", email: "not-an-email" });
+    const result = insertRepSchema.parse({
+      workspaceId: "ws1",
+      name: "Bad Email",
+      email: "not-an-email",
+    });
     expect(result.email).toBe("not-an-email");
   });
 });

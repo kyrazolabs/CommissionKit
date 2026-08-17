@@ -1,4 +1,5 @@
-import mongoose, { Schema, model, Types } from "mongoose";
+import type mongoose from "mongoose";
+import { model, Schema, type Types } from "mongoose";
 import { z } from "zod";
 
 const ApiKeySchema = new Schema(

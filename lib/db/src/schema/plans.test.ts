@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { insertPlanSchema, insertPlanTierSchema } from "./plans";
 
 describe("insertPlanSchema", () => {
@@ -51,15 +51,11 @@ describe("insertPlanSchema", () => {
   });
 
   test("rejects non-numeric flatRate", () => {
-    expect(() =>
-      insertPlanSchema.parse({ ...validPlan, flatRate: "not-a-number" }),
-    ).toThrow();
+    expect(() => insertPlanSchema.parse({ ...validPlan, flatRate: "not-a-number" })).toThrow();
   });
 
   test("rejects non-numeric clawbackDays", () => {
-    expect(() =>
-      insertPlanSchema.parse({ ...validPlan, clawbackDays: "forever" }),
-    ).toThrow();
+    expect(() => insertPlanSchema.parse({ ...validPlan, clawbackDays: "forever" })).toThrow();
   });
 
   test("accepts zero flatRate and clawbackDays", () => {
@@ -106,14 +102,10 @@ describe("insertPlanTierSchema", () => {
   });
 
   test("rejects negative fromAmount", () => {
-    expect(() =>
-      insertPlanTierSchema.parse({ ...validTier, fromAmount: -1 }),
-    ).not.toThrow();
+    expect(() => insertPlanTierSchema.parse({ ...validTier, fromAmount: -1 })).not.toThrow();
   });
 
   test("rejects non-numeric rate", () => {
-    expect(() =>
-      insertPlanTierSchema.parse({ ...validTier, rate: "five" }),
-    ).toThrow();
+    expect(() => insertPlanTierSchema.parse({ ...validTier, rate: "five" })).toThrow();
   });
 });

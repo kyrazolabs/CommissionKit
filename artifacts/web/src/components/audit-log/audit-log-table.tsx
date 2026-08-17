@@ -1,5 +1,26 @@
-import { Fragment, useState, useMemo } from "react";
 import { format, formatDistanceToNow } from "date-fns";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronRight as ChevronRightIcon,
+  Copy,
+  Pencil,
+  Plus,
+  Trash2,
+} from "lucide-react";
+import { Fragment, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -8,25 +29,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Empty, EmptyDescription, EmptyTitle, EmptyContent, EmptyMedia } from "@/components/ui/empty";
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
-import { DiffRow } from "./audit-log-diff";
-import type { AuditEvent } from "@/types/audit-log";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronRight as ChevronRightIcon,
-  Pencil,
-  Plus,
-  Trash2,
-  Copy,
-} from "lucide-react";
+import type { AuditEvent } from "@/types/audit-log";
+import { DiffRow } from "./audit-log-diff";
 
 interface AuditLogTableProps {
   events: AuditEvent[];
@@ -38,54 +44,89 @@ interface AuditLogTableProps {
 }
 
 function useActionStyles(t: ReturnType<typeof useTranslation>["t"]) {
-  return useMemo((): Record<
-    string,
-    {
-      label: string;
-      variant: "default" | "secondary" | "destructive" | "outline";
-      className?: string;
-      tooltip: string;
-    }
-  > => ({
-    create: { label: t("auditLog.actions.create"), variant: "default", tooltip: t("auditLog.actionTooltips.create") },
-    update: { label: t("auditLog.actions.update"), variant: "secondary", tooltip: t("auditLog.actionTooltips.update") },
-    delete: { label: t("auditLog.actions.delete"), variant: "destructive", tooltip: t("auditLog.actionTooltips.delete") },
-    bulk_create: {
-      label: t("auditLog.actions.bulk_create"),
-      variant: "outline",
-      className: "border-purple-500/50 text-purple-600 dark:text-purple-400",
-      tooltip: t("auditLog.actionTooltips.bulk_create"),
-    },
-    invite_sent: { label: t("auditLog.actions.invite_sent"), variant: "secondary", tooltip: t("auditLog.actionTooltips.invite_sent") },
-    invite_accepted: { label: t("auditLog.actions.invite_accepted"), variant: "secondary", tooltip: t("auditLog.actionTooltips.invite_accepted") },
-    role_change: {
-      label: t("auditLog.actions.role_change"),
-      variant: "outline",
-      className: "border-slate-400/50 text-slate-600 dark:text-slate-400",
-      tooltip: t("auditLog.actionTooltips.role_change"),
-    },
-    login: {
-      label: t("auditLog.actions.login"),
-      variant: "outline",
-      className: "border-slate-400/50 text-slate-600 dark:text-slate-400",
-      tooltip: t("auditLog.actionTooltips.login"),
-    },
-    logout: {
-      label: t("auditLog.actions.logout"),
-      variant: "outline",
-      className: "border-slate-400/50 text-slate-600 dark:text-slate-400",
-      tooltip: t("auditLog.actionTooltips.logout"),
-    },
-    password_changed: {
-      label: t("auditLog.actions.password_changed"),
-      variant: "outline",
-      className: "border-slate-400/50 text-slate-600 dark:text-slate-400",
-      tooltip: t("auditLog.actionTooltips.password_changed"),
-    },
-    approved: { label: t("auditLog.actions.approved"), variant: "default", tooltip: t("auditLog.actionTooltips.approved") },
-    rejected: { label: t("auditLog.actions.rejected"), variant: "destructive", tooltip: t("auditLog.actionTooltips.rejected") },
-    mark_paid: { label: t("auditLog.actions.mark_paid"), variant: "default", tooltip: t("auditLog.actionTooltips.mark_paid") },
-  }), [t]);
+  return useMemo(
+    (): Record<
+      string,
+      {
+        label: string;
+        variant: "default" | "secondary" | "destructive" | "outline";
+        className?: string;
+        tooltip: string;
+      }
+    > => ({
+      create: {
+        label: t("auditLog.actions.create"),
+        variant: "default",
+        tooltip: t("auditLog.actionTooltips.create"),
+      },
+      update: {
+        label: t("auditLog.actions.update"),
+        variant: "secondary",
+        tooltip: t("auditLog.actionTooltips.update"),
+      },
+      delete: {
+        label: t("auditLog.actions.delete"),
+        variant: "destructive",
+        tooltip: t("auditLog.actionTooltips.delete"),
+      },
+      bulk_create: {
+        label: t("auditLog.actions.bulk_create"),
+        variant: "outline",
+        className: "border-purple-500/50 text-purple-600 dark:text-purple-400",
+        tooltip: t("auditLog.actionTooltips.bulk_create"),
+      },
+      invite_sent: {
+        label: t("auditLog.actions.invite_sent"),
+        variant: "secondary",
+        tooltip: t("auditLog.actionTooltips.invite_sent"),
+      },
+      invite_accepted: {
+        label: t("auditLog.actions.invite_accepted"),
+        variant: "secondary",
+        tooltip: t("auditLog.actionTooltips.invite_accepted"),
+      },
+      role_change: {
+        label: t("auditLog.actions.role_change"),
+        variant: "outline",
+        className: "border-slate-400/50 text-slate-600 dark:text-slate-400",
+        tooltip: t("auditLog.actionTooltips.role_change"),
+      },
+      login: {
+        label: t("auditLog.actions.login"),
+        variant: "outline",
+        className: "border-slate-400/50 text-slate-600 dark:text-slate-400",
+        tooltip: t("auditLog.actionTooltips.login"),
+      },
+      logout: {
+        label: t("auditLog.actions.logout"),
+        variant: "outline",
+        className: "border-slate-400/50 text-slate-600 dark:text-slate-400",
+        tooltip: t("auditLog.actionTooltips.logout"),
+      },
+      password_changed: {
+        label: t("auditLog.actions.password_changed"),
+        variant: "outline",
+        className: "border-slate-400/50 text-slate-600 dark:text-slate-400",
+        tooltip: t("auditLog.actionTooltips.password_changed"),
+      },
+      approved: {
+        label: t("auditLog.actions.approved"),
+        variant: "default",
+        tooltip: t("auditLog.actionTooltips.approved"),
+      },
+      rejected: {
+        label: t("auditLog.actions.rejected"),
+        variant: "destructive",
+        tooltip: t("auditLog.actionTooltips.rejected"),
+      },
+      mark_paid: {
+        label: t("auditLog.actions.mark_paid"),
+        variant: "default",
+        tooltip: t("auditLog.actionTooltips.mark_paid"),
+      },
+    }),
+    [t],
+  );
 }
 
 export function AuditLogTable({
@@ -129,7 +170,14 @@ export function AuditLogTable({
     return (
       <Empty>
         <EmptyMedia variant="icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
             <polyline points="14 2 14 8 20 8" />
             <line x1="16" y1="13" x2="8" y2="13" />
@@ -138,9 +186,7 @@ export function AuditLogTable({
           </svg>
         </EmptyMedia>
         <EmptyTitle>{t("auditLog.table.noEvents")}</EmptyTitle>
-        <EmptyDescription>
-          {t("auditLog.table.noEventsDesc")}
-        </EmptyDescription>
+        <EmptyDescription>{t("auditLog.table.noEventsDesc")}</EmptyDescription>
       </Empty>
     );
   }
@@ -150,198 +196,214 @@ export function AuditLogTable({
       <div className="space-y-3">
         <div className="rounded-md border border-card-border bg-card overflow-hidden">
           <Table>
-          <TableHeader>
-            <TableRow className="border-b border-card-border hover:bg-transparent">
-              <TableHead className="w-10" />
-              <TableHead className="w-[160px]">{t("auditLog.table.timestamp")}</TableHead>
-              <TableHead className="w-[100px]">{t("auditLog.table.action")}</TableHead>
-              <TableHead className="w-[120px]">{t("auditLog.table.user")}</TableHead>
-              <TableHead className="w-[120px]">{t("auditLog.table.resource")}</TableHead>
-              <TableHead>{t("auditLog.table.details")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {events.map((event) => {
-              const isExpanded = expandedId === event.id;
-              const style = actionStyles[event.action] ?? {
-                label: event.action,
-                variant: "outline" as const,
-                tooltip: event.action,
-              };
+            <TableHeader>
+              <TableRow className="border-b border-card-border hover:bg-transparent">
+                <TableHead className="w-10" />
+                <TableHead className="w-[160px]">{t("auditLog.table.timestamp")}</TableHead>
+                <TableHead className="w-[100px]">{t("auditLog.table.action")}</TableHead>
+                <TableHead className="w-[120px]">{t("auditLog.table.user")}</TableHead>
+                <TableHead className="w-[120px]">{t("auditLog.table.resource")}</TableHead>
+                <TableHead>{t("auditLog.table.details")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {events.map((event) => {
+                const isExpanded = expandedId === event.id;
+                const style = actionStyles[event.action] ?? {
+                  label: event.action,
+                  variant: "outline" as const,
+                  tooltip: event.action,
+                };
 
-              return (
-                <Fragment key={event.id}>
-                  <TableRow
-                    onClick={() => toggleExpanded(event.id)}
-                    className={cn(
-                      "cursor-pointer transition-colors even:bg-muted/10",
-                      isExpanded ? "bg-muted/50" : "hover:bg-muted/20"
-                    )}
-                  >
-                    <TableCell className="w-10 py-2">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            data-testid={`expand-${event.id}`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleExpanded(event.id);
-                            }}
-                            className="text-muted-foreground hover:text-foreground transition-colors"
-                          >
-                            <ChevronRightIcon className={cn("size-4 transform duration-150", isExpanded ? "rotate-90" : "rotate-0")} />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {isExpanded ? t("auditLog.table.hideDetails") : t("auditLog.table.viewDetails")}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TableCell>
-                    <TableCell className="text-sm tabular-nums text-muted-foreground">
-                      <TimestampCell timestamp={event.timestamp} />
-                    </TableCell>
-                    <TableCell>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div>
-                            <Badge
-                              variant={style.variant}
-                              className={cn("text-xs capitalize", style.className)}
+                return (
+                  <Fragment key={event.id}>
+                    <TableRow
+                      onClick={() => toggleExpanded(event.id)}
+                      className={cn(
+                        "cursor-pointer transition-colors even:bg-muted/10",
+                        isExpanded ? "bg-muted/50" : "hover:bg-muted/20",
+                      )}
+                    >
+                      <TableCell className="w-10 py-2">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              data-testid={`expand-${event.id}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleExpanded(event.id);
+                              }}
+                              className="text-muted-foreground hover:text-foreground transition-colors"
                             >
-                              {style.label}
-                            </Badge>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {style.tooltip}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TableCell>
-                    <TableCell>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div
-                            className="text-sm font-medium text-foreground truncate max-w-30"
-                            title={event.userName || t("auditLog.table.unknown")}
-                          >
-                            {event.userName || "-"}
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {event.userName || t("auditLog.table.unknown")}
-                          {event.userEmail && `\n(${event.userEmail})`}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TableCell>
-                    <TableCell>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Badge variant="outline" className="text-xs capitalize">
-                            {event.resourceType}
-                          </Badge>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {event.resourceType}
-                          {event.resourceName && `\n${event.resourceName}`}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TableCell>
-                    <TableCell>
-                      <DetailsCell event={event} t={t} />
-                    </TableCell>
-                  </TableRow>
-
-                  <tr className="border-b border-border hover:bg-transparent">
-                    <td colSpan={6} className="p-0 border-t-0">
-                      <div
-                        className="overflow-hidden transition-all duration-300 ease-in-out"
-                        style={{ maxHeight: isExpanded ? 500 : 0, opacity: isExpanded ? 1 : 0 }}
-                      >
-                        <div className="px-4 py-3 bg-muted/20 border-t space-y-3">
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                            <span className="text-muted-foreground">
-                              <span className="font-medium">{t("auditLog.table.resourceLabel")}</span> {event.resourceType}
-                              {event.resourceName && <> - {event.resourceName}</>}
-                            </span>
-                            <CopyButton
-                              text={event.resourceId ?? ""}
-                              label={t("auditLog.table.resourceId")}
-                              t={t}
-                              copyToClipboard={copyToClipboard}
-                            />
-                            <span className="text-muted-foreground">
-                              <span className="font-medium">{t("auditLog.table.userLabel")}</span> {event.userName || t("auditLog.table.unknown")}
-                              {event.userEmail && <> ({event.userEmail})</>}
-                            </span>
-                          </div>
-
-                          {event.changes && event.changes.length > 0 && (
-                            <div className="space-y-1">
-                              {event.changes.map((change, i) => (
-                                <DiffRow key={i} change={change} />
-                              ))}
+                              <ChevronRightIcon
+                                className={cn(
+                                  "size-4 transform duration-150",
+                                  isExpanded ? "rotate-90" : "rotate-0",
+                                )}
+                              />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {isExpanded
+                              ? t("auditLog.table.hideDetails")
+                              : t("auditLog.table.viewDetails")}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TableCell>
+                      <TableCell className="text-sm tabular-nums text-muted-foreground">
+                        <TimestampCell timestamp={event.timestamp} />
+                      </TableCell>
+                      <TableCell>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div>
+                              <Badge
+                                variant={style.variant}
+                                className={cn("text-xs capitalize", style.className)}
+                              >
+                                {style.label}
+                              </Badge>
                             </div>
-                          )}
+                          </TooltipTrigger>
+                          <TooltipContent>{style.tooltip}</TooltipContent>
+                        </Tooltip>
+                      </TableCell>
+                      <TableCell>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div
+                              className="text-sm font-medium text-foreground truncate max-w-30"
+                              title={event.userName || t("auditLog.table.unknown")}
+                            >
+                              {event.userName || "-"}
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {event.userName || t("auditLog.table.unknown")}
+                            {event.userEmail && `\n(${event.userEmail})`}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TableCell>
+                      <TableCell>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Badge variant="outline" className="text-xs capitalize">
+                              {event.resourceType}
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {event.resourceType}
+                            {event.resourceName && `\n${event.resourceName}`}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TableCell>
+                      <TableCell>
+                        <DetailsCell event={event} t={t} />
+                      </TableCell>
+                    </TableRow>
 
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                            {event.ipAddress && (
-                              <span className="inline-flex items-center gap-1">
-                                <span className="font-medium">{t("auditLog.table.ipLabel")}</span> {event.ipAddress}
-                                <CopyButton text={event.ipAddress} label={t("auditLog.table.ipAddress")} t={t} copyToClipboard={copyToClipboard} />
+                    <tr className="border-b border-border hover:bg-transparent">
+                      <td colSpan={6} className="p-0 border-t-0">
+                        <div
+                          className="overflow-hidden transition-all duration-300 ease-in-out"
+                          style={{ maxHeight: isExpanded ? 500 : 0, opacity: isExpanded ? 1 : 0 }}
+                        >
+                          <div className="px-4 py-3 bg-muted/20 border-t space-y-3">
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                              <span className="text-muted-foreground">
+                                <span className="font-medium">
+                                  {t("auditLog.table.resourceLabel")}
+                                </span>{" "}
+                                {event.resourceType}
+                                {event.resourceName && <> - {event.resourceName}</>}
                               </span>
-                            )}
-                            {event.userAgent && (
-                              <span className="truncate max-w-75" title={event.userAgent}>
-                                <span className="font-medium">{t("auditLog.table.uaLabel")}</span> {event.userAgent}
+                              <CopyButton
+                                text={event.resourceId ?? ""}
+                                label={t("auditLog.table.resourceId")}
+                                t={t}
+                                copyToClipboard={copyToClipboard}
+                              />
+                              <span className="text-muted-foreground">
+                                <span className="font-medium">{t("auditLog.table.userLabel")}</span>{" "}
+                                {event.userName || t("auditLog.table.unknown")}
+                                {event.userEmail && <> ({event.userEmail})</>}
                               </span>
+                            </div>
+
+                            {event.changes && event.changes.length > 0 && (
+                              <div className="space-y-1">
+                                {event.changes.map((change, i) => (
+                                  <DiffRow key={i} change={change} />
+                                ))}
+                              </div>
                             )}
-                            <span>
-                              <span className="font-medium">{t("auditLog.table.timeLabel")}</span>{" "}
-                              {format(new Date(event.timestamp), "MMM d, yyyy HH:mm:ss zzz")}
-                            </span>
+
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                              {event.ipAddress && (
+                                <span className="inline-flex items-center gap-1">
+                                  <span className="font-medium">{t("auditLog.table.ipLabel")}</span>{" "}
+                                  {event.ipAddress}
+                                  <CopyButton
+                                    text={event.ipAddress}
+                                    label={t("auditLog.table.ipAddress")}
+                                    t={t}
+                                    copyToClipboard={copyToClipboard}
+                                  />
+                                </span>
+                              )}
+                              {event.userAgent && (
+                                <span className="truncate max-w-75" title={event.userAgent}>
+                                  <span className="font-medium">{t("auditLog.table.uaLabel")}</span>{" "}
+                                  {event.userAgent}
+                                </span>
+                              )}
+                              <span>
+                                <span className="font-medium">{t("auditLog.table.timeLabel")}</span>{" "}
+                                {format(new Date(event.timestamp), "MMM d, yyyy HH:mm:ss zzz")}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                  </tr>
-                </Fragment>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </div>
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between px-1">
-          <p className="text-sm text-muted-foreground">
-            {t("auditLog.table.eventsTotal", { count: total })}
-          </p>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onPageChange(page - 1)}
-              disabled={page <= 1}
-              className="size-8 p-0"
-            >
-              <ChevronLeft className="size-4" />
-            </Button>
-            <span className="text-sm tabular-nums px-2">
-              {t("auditLog.table.pagination", { current: page, total: totalPages })}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onPageChange(page + 1)}
-              disabled={page >= totalPages}
-              className="size-8 p-0"
-            >
-              <ChevronRightIcon className="size-4" />
-            </Button>
-          </div>
+                      </td>
+                    </tr>
+                  </Fragment>
+                );
+              })}
+            </TableBody>
+          </Table>
         </div>
-      )}
-    </div>
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-1">
+            <p className="text-sm text-muted-foreground">
+              {t("auditLog.table.eventsTotal", { count: total })}
+            </p>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onPageChange(page - 1)}
+                disabled={page <= 1}
+                className="size-8 p-0"
+              >
+                <ChevronLeft className="size-4" />
+              </Button>
+              <span className="text-sm tabular-nums px-2">
+                {t("auditLog.table.pagination", { current: page, total: totalPages })}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onPageChange(page + 1)}
+                disabled={page >= totalPages}
+                className="size-8 p-0"
+              >
+                <ChevronRightIcon className="size-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
     </TooltipProvider>
   );
 }

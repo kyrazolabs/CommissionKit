@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { Info } from "lucide-react";
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 
 interface FallbackBannerProps {

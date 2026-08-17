@@ -1,19 +1,25 @@
-import { useState, useEffect, useRef } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { motion, AnimatePresence } from "framer-motion";
-import { Analytics } from "@/lib/analytics";
-
+import bleftCurves from "@/decorative/bleft.curves.svg?raw";
 // Import decorative SVGs from public/decorative as raw strings
 import leftCurves from "@/decorative/left-curves.svg?raw";
 import rightCurves from "@/decorative/right-curves.svg?raw";
-import bleftCurves from "@/decorative/bleft.curves.svg?raw";
 import trightCurves from "@/decorative/tright-curves.svg?raw";
+import { useToast } from "@/hooks/use-toast";
+import { Analytics } from "@/lib/analytics";
+import { authClient } from "@/lib/auth-client";
 
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false);
@@ -26,12 +32,16 @@ const useIsMobile = () => {
   return isMobile;
 };
 
-export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "signup" | "forgot" }) {
+export function AuthPage({
+  initialMode = "login",
+}: {
+  initialMode?: "login" | "signup" | "forgot";
+}) {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [mode, setMode] = useState<"login" | "signup" | "forgot">(initialMode);
   const [email, setEmail] = useState(
-    () => new URLSearchParams(window.location.search).get("email") ?? ""
+    () => new URLSearchParams(window.location.search).get("email") ?? "",
   );
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -145,7 +155,10 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
       const isUnverified = err.code === "EMAIL_NOT_VERIFIED";
 
       if (mode === "login") {
-        Analytics.authLoginFailed("email", isUnverified ? "email_not_verified" : (err.message ?? "unknown"));
+        Analytics.authLoginFailed(
+          "email",
+          isUnverified ? "email_not_verified" : (err.message ?? "unknown"),
+        );
       }
 
       if (isUnverified) {
@@ -249,7 +262,10 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
           {/* MIDDLE CONTENT: CENTERED FORM CARD */}
           <div className="flex-1 flex items-center justify-center z-10 py-6">
             <div className="w-full max-w-sm space-y-6">
-              <motion.div layout className="overflow-hidden rounded-2xl border border-border/50 bg-card/45 backdrop-blur-md shadow-xl shadow-black/[0.03] dark:shadow-white/[0.01]">
+              <motion.div
+                layout
+                className="overflow-hidden rounded-2xl border border-border/50 bg-card/45 backdrop-blur-md shadow-xl shadow-black/[0.03] dark:shadow-white/[0.01]"
+              >
                 <Card className="border-none shadow-none bg-transparent">
                   <CardHeader className="pb-4">
                     <AnimatePresence mode="wait" initial={false}>
@@ -294,12 +310,24 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                               className="flex flex-col items-center justify-center text-center py-4 space-y-4"
                             >
                               <div className="rounded-full bg-primary/10 p-3 text-primary">
-                                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                <svg
+                                  className="w-8 h-8"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth="2.5"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                  />
                                 </svg>
                               </div>
                               <div className="space-y-2">
-                                <h3 className="font-semibold text-foreground">{t("auth.checkYourInbox")}</h3>
+                                <h3 className="font-semibold text-foreground">
+                                  {t("auth.checkYourInbox")}
+                                </h3>
                                 <p className="text-sm text-muted-foreground max-w-[280px]">
                                   {t("auth.verificationLinkSentTo", { email })}
                                 </p>
@@ -314,12 +342,24 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                               className="flex flex-col items-center justify-center text-center py-4 space-y-4"
                             >
                               <div className="rounded-full bg-primary/10 p-3 text-primary">
-                                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <svg
+                                  className="w-8 h-8"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth="2.5"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                  />
                                 </svg>
                               </div>
                               <div className="space-y-2">
-                                <h3 className="font-semibold text-foreground">{t("auth.checkYourInbox")}</h3>
+                                <h3 className="font-semibold text-foreground">
+                                  {t("auth.checkYourInbox")}
+                                </h3>
                                 <p className="text-sm text-muted-foreground max-w-[280px]">
                                   {t("auth.passwordResetLinkSentTo", { email })}
                                 </p>
@@ -419,7 +459,9 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                             >
                               <div className="relative flex items-center">
                                 <div className="flex-grow border-t border-border/40"></div>
-                                <span className="flex-shrink mx-3 text-[10px] uppercase font-bold tracking-widest text-muted-foreground/45">{t("auth.orContinueWith")}</span>
+                                <span className="flex-shrink mx-3 text-[10px] uppercase font-bold tracking-widest text-muted-foreground/45">
+                                  {t("auth.orContinueWith")}
+                                </span>
                                 <div className="flex-grow border-t border-border/40"></div>
                               </div>
 
@@ -459,13 +501,18 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                             <Button
                               type="button"
                               className="w-full font-bold shadow-sm relative overflow-hidden"
-                              
                               disabled={resendLoading || resendCooldown > 0}
                               onClick={handleResendVerification}
                             >
                               <AnimatePresence mode="wait" initial={false}>
                                 <motion.span
-                                  key={resendLoading ? "resending" : resendCooldown > 0 ? "cooldown" : "idle"}
+                                  key={
+                                    resendLoading
+                                      ? "resending"
+                                      : resendCooldown > 0
+                                        ? "cooldown"
+                                        : "idle"
+                                  }
                                   initial={{ opacity: 0, y: 6 }}
                                   animate={{ opacity: 1, y: 0 }}
                                   exit={{ opacity: 0, y: -6 }}
@@ -496,7 +543,6 @@ export function AuthPage({ initialMode = "login" }: { initialMode?: "login" | "s
                           <Button
                             type="button"
                             className="w-full font-bold shadow-sm relative overflow-hidden"
-                            
                             onClick={() => {
                               setMode("login");
                               setEmailSent(false);

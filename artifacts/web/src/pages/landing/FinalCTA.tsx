@@ -1,8 +1,8 @@
-import { useInView, fadeIn } from "./hooks";
-import { Button } from "@/components/ui/button";
 import { ArrowRight, Clock } from "lucide-react";
-import { Analytics } from "@/lib/analytics";
+import { Button } from "@/components/ui/button";
 import { useCalendly } from "@/hooks/use-calendly";
+import { Analytics } from "@/lib/analytics";
+import { fadeIn, useInView } from "./hooks";
 
 export function FinalCTA() {
   const { ref, inView } = useInView(0.15);
@@ -13,7 +13,10 @@ export function FinalCTA() {
       {/* Ambient glow */}
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[480px] pointer-events-none"
-        style={{ background: "radial-gradient(ellipse at center, hsl(var(--primary) / 0.14), transparent 62%)" }}
+        style={{
+          background:
+            "radial-gradient(ellipse at center, hsl(var(--primary) / 0.14), transparent 62%)",
+        }}
       />
 
       <div ref={ref} className="max-w-3xl mx-auto relative z-10 text-center" style={fadeIn(inView)}>
@@ -27,7 +30,8 @@ export function FinalCTA() {
         </h2>
 
         <p className="text-lg text-muted-foreground mb-10 leading-relaxed max-w-xl mx-auto">
-          No sales call. No implementation sprint. Just sign up, import your data, and run. Free for 14 days. Cancel anytime.
+          No sales call. No implementation sprint. Just sign up, import your data, and run. Free for
+          14 days. Cancel anytime.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -37,7 +41,15 @@ export function FinalCTA() {
               <ArrowRight className="ml-2 size-4 transition-transform group-hover:translate-x-0.5" />
             </a>
           </Button>
-          <Button variant="outline" className="font-bold bg-background/60 backdrop-blur-sm shadow-sm px-8 text-base h-9" size="md" onClick={() => { Analytics.landingCTAClick("final_cta_demo"); openCalendly(); }}>
+          <Button
+            variant="outline"
+            className="font-bold bg-background/60 backdrop-blur-sm shadow-sm px-8 text-base h-9"
+            size="md"
+            onClick={() => {
+              Analytics.landingCTAClick("final_cta_demo");
+              openCalendly();
+            }}
+          >
             Book a Demo
           </Button>
         </div>

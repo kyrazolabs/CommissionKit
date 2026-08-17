@@ -1,13 +1,29 @@
-import { Navbar } from "../landing/Navbar";
-import { Footer } from "../landing/Footer";
+import { Cloud, Eye, Lock, Mail, Search, Shield } from "lucide-react";
 import { usePageMeta } from "@/hooks/use-page-meta";
-import { Shield, Lock, Eye, Cloud, Search, Mail } from "lucide-react";
+import { Footer } from "../landing/Footer";
+import { Navbar } from "../landing/Navbar";
 
 const FEATURES = [
-  { title: "Data Encryption", desc: "All data is encrypted at rest using AES-256 and in transit using TLS 1.3.", icon: Lock },
-  { title: "Isolated Workspaces", desc: "Multi-tenant architecture ensures strict data isolation between different organization accounts.", icon: Shield },
-  { title: "Continuous Monitoring", desc: "We perform automated security scanning and real-time threat detection across our infrastructure.", icon: Eye },
-  { title: "Cloud Infrastructure", desc: "Hosted on industry-leading cloud providers with SOC2 and ISO 27001 certifications.", icon: Cloud },
+  {
+    title: "Data Encryption",
+    desc: "All data is encrypted at rest using AES-256 and in transit using TLS 1.3.",
+    icon: Lock,
+  },
+  {
+    title: "Isolated Workspaces",
+    desc: "Multi-tenant architecture ensures strict data isolation between different organization accounts.",
+    icon: Shield,
+  },
+  {
+    title: "Continuous Monitoring",
+    desc: "We perform automated security scanning and real-time threat detection across our infrastructure.",
+    icon: Eye,
+  },
+  {
+    title: "Cloud Infrastructure",
+    desc: "Hosted on industry-leading cloud providers with SOC2 and ISO 27001 certifications.",
+    icon: Cloud,
+  },
 ];
 
 const PRACTICES = [
@@ -26,7 +42,11 @@ const PRACTICES = [
 ];
 
 export function SecurityPage() {
-  usePageMeta({ title: "Security", description: "CommissionKit security practices and data protection information.", robots: "index, follow" });
+  usePageMeta({
+    title: "Security",
+    description: "CommissionKit security practices and data protection information.",
+    robots: "index, follow",
+  });
 
   return (
     <>
@@ -38,7 +58,9 @@ export function SecurityPage() {
               <Shield className="size-3.5 text-primary" />
               Trust & Compliance
             </div>
-            <h1 className="text-4xl font-bold text-foreground mb-4 tracking-tight">Enterprise-Grade Security</h1>
+            <h1 className="text-4xl font-bold text-foreground mb-4 tracking-tight">
+              Enterprise-Grade Security
+            </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               We protect your financial and team data with industry-leading security practices.
             </p>
@@ -69,8 +91,12 @@ export function SecurityPage() {
                       <Icon className="size-5" />
                     </div>
                     <div>
-                      <h2 className="text-lg font-semibold text-foreground mb-2">{section.title}</h2>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{section.content}</p>
+                      <h2 className="text-lg font-semibold text-foreground mb-2">
+                        {section.title}
+                      </h2>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {section.content}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -79,9 +105,7 @@ export function SecurityPage() {
           </div>
 
           <div className="mt-12 text-center">
-            <p className="text-xs text-muted-foreground/60">
-              Last updated: May 16, 2024
-            </p>
+            <p className="text-xs text-muted-foreground/60">Last updated: May 16, 2024</p>
           </div>
         </main>
       </main>

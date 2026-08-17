@@ -206,12 +206,7 @@ export function getAllLanguages(): string[] {
   return [...languages].sort();
 }
 
-export function getRelatedPosts(
-  slug: string,
-  tags: string[],
-  lang: string,
-  limit = 3,
-): BlogPost[] {
+export function getRelatedPosts(slug: string, tags: string[], lang: string, limit = 3): BlogPost[] {
   if (!tags.length) return [];
 
   const allPosts = getAllPosts(lang);

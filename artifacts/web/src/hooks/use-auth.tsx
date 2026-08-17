@@ -1,7 +1,7 @@
-import { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
-import { authClient, useSession } from "@/lib/auth-client";
-import { setAuthTokenGetter, setWorkspaceId, setBaseUrl } from "@workspace/api-client-react";
+import { setAuthTokenGetter, setBaseUrl, setWorkspaceId } from "@workspace/api-client-react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { loadSavedLang } from "@/i18n";
+import { authClient, useSession } from "@/lib/auth-client";
 
 interface AuthContextValue {
   session: any | null;
@@ -42,18 +42,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setWorkspaceId(null);
   }, []);
 
-  const value = useMemo(() => ({ 
-    session, 
-    user: session?.user ?? null, 
-    loading, 
-    signOut 
-  }), [session, loading, signOut]);
-
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({
+      session,
+      user: session?.user ?? null,
+      loading,
+      signOut,
+    }),
+    [session, loading, signOut],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

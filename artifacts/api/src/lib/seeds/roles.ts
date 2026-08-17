@@ -21,11 +21,7 @@ export const DEFAULT_ADMIN_PERMISSIONS = [
   "billing:*",
 ];
 
-export const DEFAULT_MEMBER_PERMISSIONS = [
-  "deals:read",
-  "reports:read",
-  "reps:read",
-];
+export const DEFAULT_MEMBER_PERMISSIONS = ["deals:read", "reports:read", "reps:read"];
 
 /**
  * Seeds the system roles for a given workspace if they do not exist.
@@ -38,31 +34,41 @@ export async function seedWorkspaceRoles(workspaceId: string | Types.ObjectId) {
   const ownerRole = await Role.findOneAndUpdate(
     { workspaceId: wsId, name: SYSTEM_ROLES.OWNER, isSystem: true },
     { $setOnInsert: { description: "Full access to all resources", permissions: ["*"] } },
-    { upsert: true, new: true }
+    { upsert: true, new: true },
   );
 
   const adminRole = await Role.findOneAndUpdate(
     { workspaceId: wsId, name: SYSTEM_ROLES.ADMIN, isSystem: true },
-    { $setOnInsert: { description: "Administrative access to most resources", permissions: DEFAULT_ADMIN_PERMISSIONS } },
-    { upsert: true, new: true }
+    {
+      $setOnInsert: {
+        description: "Administrative access to most resources",
+        permissions: DEFAULT_ADMIN_PERMISSIONS,
+      },
+    },
+    { upsert: true, new: true },
   );
 
   const memberRole = await Role.findOneAndUpdate(
     { workspaceId: wsId, name: SYSTEM_ROLES.MEMBER, isSystem: true },
-    { $setOnInsert: { description: "Standard member access", permissions: DEFAULT_MEMBER_PERMISSIONS } },
-    { upsert: true, new: true }
+    {
+      $setOnInsert: {
+        description: "Standard member access",
+        permissions: DEFAULT_MEMBER_PERMISSIONS,
+      },
+    },
+    { upsert: true, new: true },
   );
 
   // 2. Migrate legacy members who don't have roleIds set yet
   // We match users where `roleIds` does not exist or is empty
   const legacyMembers = await WorkspaceMember.find({
     workspaceId: wsId,
-    $or: [{ roleIds: { $exists: false } }, { roleIds: { $size: 0 } }]
+    $or: [{ roleIds: { $exists: false } }, { roleIds: { $size: 0 } }],
   });
 
   for (const member of legacyMembers) {
     let roleIdToAssign: Types.ObjectId | null = null;
-    
+
     if (member.role === "owner") {
       roleIdToAssign = ownerRole._id;
     } else if (member.role === "admin") {
@@ -72,10 +78,7 @@ export async function seedWorkspaceRoles(workspaceId: string | Types.ObjectId) {
     }
 
     if (roleIdToAssign) {
-      await WorkspaceMember.updateOne(
-        { _id: member._id },
-        { $push: { roleIds: roleIdToAssign } }
-      );
+      await WorkspaceMember.updateOne({ _id: member._id }, { $push: { roleIds: roleIdToAssign } });
     }
   }
 

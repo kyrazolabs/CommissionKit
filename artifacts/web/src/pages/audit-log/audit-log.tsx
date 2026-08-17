@@ -1,12 +1,12 @@
+import { ScrollText } from "lucide-react";
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslation } from "react-i18next";
+import { AuditLogExportDropdown } from "@/components/audit-log/audit-log-export-dropdown";
 import { AuditLogFilters } from "@/components/audit-log/audit-log-filters";
 import { AuditLogTable } from "@/components/audit-log/audit-log-table";
-import { AuditLogExportDropdown } from "@/components/audit-log/audit-log-export-dropdown";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuditLog, useAuditLogFilters } from "@/hooks/use-audit-log";
 import { usePageMeta } from "@/hooks/use-page-meta";
-import { useTranslation } from "react-i18next";
-import { ScrollText } from "lucide-react";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 25;
@@ -31,9 +31,7 @@ export default function AuditLogPage() {
           </div>
           <div>
             <h1 className="text-[20px] font-semibold tracking-tight">{t("auditLog.title")}</h1>
-            <p className="text-sm text-muted-foreground">
-              {t("auditLog.description")}
-            </p>
+            <p className="text-sm text-muted-foreground">{t("auditLog.description")}</p>
           </div>
         </div>
         <AuditLogExportDropdown filters={filters} />

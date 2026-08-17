@@ -1,18 +1,18 @@
 import type {
   CKitPlugin,
-  ConnectionConfig,
-  ConnectionTestResult,
-  ConnectionStatus,
-  FetchOptions,
-  NormalizedRep,
-  NormalizedDeal,
-  IngresEvent,
-  WebhookRequest,
   CommissionWriteBack,
-  PayoutWriteBack,
-  WriteBackResult,
+  ConnectionConfig,
+  ConnectionStatus,
+  ConnectionTestResult,
+  FetchOptions,
+  IngresEvent,
   JsonSchema,
+  NormalizedDeal,
+  NormalizedRep,
+  PayoutWriteBack,
   PluginUIMetadata,
+  WebhookRequest,
+  WriteBackResult,
 } from "./types";
 
 export abstract class BasePlugin implements CKitPlugin {
@@ -50,14 +50,32 @@ export abstract class BasePlugin implements CKitPlugin {
   }
 
   abstract testConnection(config: ConnectionConfig): Promise<ConnectionTestResult>;
-  abstract fetchReps(workspaceId: string, config: ConnectionConfig, options?: FetchOptions): Promise<NormalizedRep[]>;
-  abstract fetchDeals(workspaceId: string, config: ConnectionConfig, options?: FetchOptions): Promise<NormalizedDeal[]>;
+  abstract fetchReps(
+    workspaceId: string,
+    config: ConnectionConfig,
+    options?: FetchOptions,
+  ): Promise<NormalizedRep[]>;
+  abstract fetchDeals(
+    workspaceId: string,
+    config: ConnectionConfig,
+    options?: FetchOptions,
+  ): Promise<NormalizedDeal[]>;
   abstract verifyWebhook(req: WebhookRequest, secret: string): Promise<void>;
   abstract parseWebhook(payload: unknown): IngresEvent[];
   abstract getSettingsSchema(): JsonSchema;
   abstract getUIMetadata(): PluginUIMetadata;
 
-  async writeBackCommission?(_workspaceId: string, _config: ConnectionConfig, _results: CommissionWriteBack[]): Promise<WriteBackResult[]>;
-  async writeBackPayoutStatus?(_workspaceId: string, _config: ConnectionConfig, _payouts: PayoutWriteBack[]): Promise<WriteBackResult[]>;
-  async refreshTokens?(config: ConnectionConfig): Promise<ConnectionConfig> { return config; }
+  async writeBackCommission?(
+    _workspaceId: string,
+    _config: ConnectionConfig,
+    _results: CommissionWriteBack[],
+  ): Promise<WriteBackResult[]>;
+  async writeBackPayoutStatus?(
+    _workspaceId: string,
+    _config: ConnectionConfig,
+    _payouts: PayoutWriteBack[],
+  ): Promise<WriteBackResult[]>;
+  async refreshTokens?(config: ConnectionConfig): Promise<ConnectionConfig> {
+    return config;
+  }
 }

@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 import type { AuditEvent } from "@/types/audit-log";
 
 interface AuditLogDiffProps {
@@ -41,7 +41,10 @@ export function DiffRow({ change }: { change: { field: string; from?: unknown; t
 
   return (
     <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-x-2 gap-y-0.5 text-xs items-start">
-      <span className="text-muted-foreground font-medium capitalize text-right truncate max-w-25" title={field}>
+      <span
+        className="text-muted-foreground font-medium capitalize text-right truncate max-w-25"
+        title={field}
+      >
         {field}:
       </span>
       <span

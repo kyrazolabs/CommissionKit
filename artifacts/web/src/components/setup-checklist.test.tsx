@@ -1,5 +1,5 @@
-import { describe, test, expect, mock, beforeEach, afterEach } from "bun:test";
-import { render, waitFor, cleanup, screen, act, fireEvent } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 
@@ -64,7 +64,9 @@ mock.module("wouter", () => ({
     return [loc, setLoc] as const;
   },
   Link: ({ href, children, ...props }: any) => (
-    <a href={href} {...props}>{children}</a>
+    <a href={href} {...props}>
+      {children}
+    </a>
   ),
 }));
 
@@ -93,9 +95,15 @@ const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
     getItem: (key: string) => store[key] ?? null,
-    setItem: (key: string, value: string) => { store[key] = value; },
-    removeItem: (key: string) => { delete store[key]; },
-    clear: () => { store = {}; },
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
   };
 })();
 Object.defineProperty(globalThis, "localStorage", {
@@ -185,7 +193,7 @@ describe("SetupChecklist Component", () => {
     render(React.createElement(SetupChecklist));
 
     const minimizeBtn = await waitFor(() =>
-      screen.getByRole("button", { name: /minimize checklist/i })
+      screen.getByRole("button", { name: /minimize checklist/i }),
     );
     await act(() => userEvent.click(minimizeBtn));
 
@@ -203,13 +211,13 @@ describe("SetupChecklist Component", () => {
 
     // First minimize
     const minimizeBtn = await waitFor(() =>
-      screen.getByRole("button", { name: /minimize checklist/i })
+      screen.getByRole("button", { name: /minimize checklist/i }),
     );
     await act(() => userEvent.click(minimizeBtn));
 
     // Click the pill to expand
     const pill = await waitFor(() =>
-      screen.getByRole("button", { name: /setup checklist.*click to expand/i })
+      screen.getByRole("button", { name: /setup checklist.*click to expand/i }),
     );
     await act(() => userEvent.click(pill));
 
@@ -242,7 +250,7 @@ describe("SetupChecklist Component", () => {
       expect.objectContaining({
         method: "PATCH",
         body: JSON.stringify({ action: "dismiss" }),
-      })
+      }),
     );
   });
 
@@ -303,7 +311,7 @@ describe("SetupChecklist Component", () => {
     const { rerender } = render(React.createElement(SetupChecklist));
 
     const minimizeBtn = await waitFor(() =>
-      screen.getByRole("button", { name: /minimize checklist/i })
+      screen.getByRole("button", { name: /minimize checklist/i }),
     );
     await act(() => userEvent.click(minimizeBtn));
 

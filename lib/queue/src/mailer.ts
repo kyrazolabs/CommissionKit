@@ -1,4 +1,4 @@
-import nodemailer, { type Transporter, type SentMessageInfo } from "nodemailer";
+import nodemailer, { type SentMessageInfo, type Transporter } from "nodemailer";
 import type { MailSendPayload } from "./schemas.js";
 
 let _transporter: Transporter | null = null;
@@ -23,9 +23,7 @@ export function getTransporter(): Transporter {
   const pass = process.env.SMTP_PASS;
 
   if (!host || !user || !pass) {
-    throw new Error(
-      "Missing SMTP config. Ensure SMTP_HOST, SMTP_USER, and SMTP_PASS are set.",
-    );
+    throw new Error("Missing SMTP config. Ensure SMTP_HOST, SMTP_USER, and SMTP_PASS are set.");
   }
 
   _transporter = nodemailer.createTransport({
@@ -33,7 +31,7 @@ export function getTransporter(): Transporter {
     port,
     secure,
     auth: { user, pass },
-    pool: true,         // reuse connections (better throughput)
+    pool: true, // reuse connections (better throughput)
     maxConnections: 5,
   });
 
@@ -62,9 +60,7 @@ export async function sendMail(payload: MailSendPayload): Promise<SentMessageInf
 
   return transporter.sendMail({
     from: getMailFrom(),
-    to: payload.toName
-      ? `"${payload.toName}" <${payload.to}>`
-      : payload.to,
+    to: payload.toName ? `"${payload.toName}" <${payload.to}>` : payload.to,
     bcc: payload.bcc,
     replyTo: payload.replyTo,
     subject: payload.subject,

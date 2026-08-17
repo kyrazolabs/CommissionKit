@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { ArrowRight, Clock } from "lucide-react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatRelativeDate } from "@/lib/format";
 import { getRelatedPosts } from "@/lib/posts";
@@ -19,9 +19,7 @@ export function RelatedArticles({ slug, tags, lang, t }: RelatedArticlesProps) {
 
   return (
     <section className="mt-16 pt-8 border-t border-border">
-      <h2 className="text-lg font-semibold text-foreground mb-6">
-        {t.readAlso}
-      </h2>
+      <h2 className="text-lg font-semibold text-foreground mb-6">{t.readAlso}</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {related.map((post) => (
           <Link

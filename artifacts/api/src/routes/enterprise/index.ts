@@ -1,5 +1,5 @@
-import { Router, type Response, type NextFunction } from "express";
 import { Workspace } from "@workspace/db";
+import { type NextFunction, type Response, Router } from "express";
 import { Types } from "mongoose";
 import type { AuthenticatedRequest } from "../../middleware/auth";
 

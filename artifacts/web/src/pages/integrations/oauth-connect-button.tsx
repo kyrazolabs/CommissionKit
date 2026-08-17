@@ -1,8 +1,8 @@
+import { ArrowRight, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { cn } from "@/lib/utils";
 import { ConnectDialog } from "./connect-dialog";
 import type { Connector } from "./types";
 
@@ -42,7 +42,9 @@ export function OAuthConnectButton({ connector, workspaceId, isConnected = false
         aria-expanded={showAdvanced}
         className="flex w-full items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       >
-        <ChevronDown className={cn("size-3.5 transition-transform", showAdvanced && "rotate-180")} />
+        <ChevronDown
+          className={cn("size-3.5 transition-transform", showAdvanced && "rotate-180")}
+        />
         Advanced — enter credentials manually
       </button>
       {showAdvanced && <ConnectDialog connector={connector} isConnected={false} />}

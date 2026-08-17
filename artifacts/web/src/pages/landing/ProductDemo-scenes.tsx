@@ -1,4 +1,14 @@
-import { DollarSign, Users, Briefcase, Wallet, TrendingUp, Upload, CheckCircle2, BarChart3, Calendar } from "lucide-react";
+import {
+  BarChart3,
+  Briefcase,
+  Calendar,
+  CheckCircle2,
+  DollarSign,
+  TrendingUp,
+  Upload,
+  Users,
+  Wallet,
+} from "lucide-react";
 import { RevenueTrendChart } from "@/components/revenue-trend-chart";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,17 +33,35 @@ export interface SceneData {
 // ── Shared helpers ──
 
 function fmt(n: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(n);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+  }).format(n);
 }
 
-function StatTile({ icon: Icon, label, value, accent }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string; accent?: boolean }) {
+function StatTile({
+  icon: Icon,
+  label,
+  value,
+  accent,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+  accent?: boolean;
+}) {
   return (
-    <div className={`rounded-lg border px-3 py-2.5 flex flex-col justify-center ${accent ? "border-primary/20 bg-primary/5" : "border-card-border bg-card"}`}>
+    <div
+      className={`rounded-lg border px-3 py-2.5 flex flex-col justify-center ${accent ? "border-primary/20 bg-primary/5" : "border-card-border bg-card"}`}
+    >
       <div className="flex items-center gap-1.5 mb-1">
         <Icon className={`size-3 ${accent ? "text-primary" : "text-muted-foreground"}`} />
         <span className="text-[10px] font-medium text-muted-foreground">{label}</span>
       </div>
-      <div className={`text-base font-bold tracking-tight tabular-nums ${accent ? "text-primary" : "text-foreground"}`}>
+      <div
+        className={`text-base font-bold tracking-tight tabular-nums ${accent ? "text-primary" : "text-foreground"}`}
+      >
         {value}
       </div>
     </div>
@@ -54,7 +82,13 @@ const TREND_DATA = [
 const DEALS = [
   { deal: "Acme Corp Q2", rep: "Sarah Davis", amount: 28000, commission: 2240, status: "Won" },
   { deal: "Globex Expansion", rep: "Mike Chen", amount: 18500, commission: 1480, status: "Won" },
-  { deal: "Initech Platform", rep: "Sarah Davis", amount: 12500, commission: 750, status: "Pending" },
+  {
+    deal: "Initech Platform",
+    rep: "Sarah Davis",
+    amount: 12500,
+    commission: 750,
+    status: "Pending",
+  },
   { deal: "Umbrella Corp", rep: "Alex Kim", amount: 9000, commission: 450, status: "Won" },
   { deal: "Stark Industries", rep: "Mike Chen", amount: 34000, commission: 2720, status: "Won" },
 ];
@@ -134,11 +168,21 @@ function Scene2Deals() {
         <table className="w-full text-[9px]">
           <thead>
             <tr className="bg-muted/30">
-              <th className="text-left px-2.5 py-2 font-semibold text-muted-foreground uppercase tracking-wider">Deal</th>
-              <th className="text-left px-2.5 py-2 font-semibold text-muted-foreground uppercase tracking-wider">Rep</th>
-              <th className="text-right px-2.5 py-2 font-semibold text-muted-foreground uppercase tracking-wider">Amount</th>
-              <th className="text-right px-2.5 py-2 font-semibold text-muted-foreground uppercase tracking-wider">Comm.</th>
-              <th className="text-center px-2.5 py-2 font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+              <th className="text-left px-2.5 py-2 font-semibold text-muted-foreground uppercase tracking-wider">
+                Deal
+              </th>
+              <th className="text-left px-2.5 py-2 font-semibold text-muted-foreground uppercase tracking-wider">
+                Rep
+              </th>
+              <th className="text-right px-2.5 py-2 font-semibold text-muted-foreground uppercase tracking-wider">
+                Amount
+              </th>
+              <th className="text-right px-2.5 py-2 font-semibold text-muted-foreground uppercase tracking-wider">
+                Comm.
+              </th>
+              <th className="text-center px-2.5 py-2 font-semibold text-muted-foreground uppercase tracking-wider">
+                Status
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -146,10 +190,17 @@ function Scene2Deals() {
               <tr key={d.deal} className="border-t border-card-border/60 hover:bg-muted/20">
                 <td className="px-2.5 py-2 font-medium text-foreground">{d.deal}</td>
                 <td className="px-2.5 py-2 text-muted-foreground">{d.rep}</td>
-                <td className="px-2.5 py-2 text-right tabular-nums text-foreground">{fmt(d.amount)}</td>
-                <td className="px-2.5 py-2 text-right tabular-nums font-semibold text-primary">{fmt(d.commission)}</td>
+                <td className="px-2.5 py-2 text-right tabular-nums text-foreground">
+                  {fmt(d.amount)}
+                </td>
+                <td className="px-2.5 py-2 text-right tabular-nums font-semibold text-primary">
+                  {fmt(d.commission)}
+                </td>
                 <td className="px-2.5 py-2 text-center">
-                  <Badge variant={d.status === "Won" ? "default" : "secondary"} className="text-[8px] px-1.5 py-0 leading-normal">
+                  <Badge
+                    variant={d.status === "Won" ? "default" : "secondary"}
+                    className="text-[8px] px-1.5 py-0 leading-normal"
+                  >
                     {d.status}
                   </Badge>
                 </td>
@@ -178,19 +229,33 @@ function Scene3Run() {
         <table className="w-full text-[9px]">
           <thead>
             <tr className="bg-muted/30">
-              <th className="text-left px-2.5 py-2 font-semibold text-muted-foreground uppercase tracking-wider">Rep</th>
-              <th className="text-center px-2.5 py-2 font-semibold text-muted-foreground uppercase tracking-wider">Deals</th>
-              <th className="text-right px-2.5 py-2 font-semibold text-muted-foreground uppercase tracking-wider">Revenue</th>
-              <th className="text-right px-2.5 py-2 font-semibold text-muted-foreground uppercase tracking-wider">Commission</th>
+              <th className="text-left px-2.5 py-2 font-semibold text-muted-foreground uppercase tracking-wider">
+                Rep
+              </th>
+              <th className="text-center px-2.5 py-2 font-semibold text-muted-foreground uppercase tracking-wider">
+                Deals
+              </th>
+              <th className="text-right px-2.5 py-2 font-semibold text-muted-foreground uppercase tracking-wider">
+                Revenue
+              </th>
+              <th className="text-right px-2.5 py-2 font-semibold text-muted-foreground uppercase tracking-wider">
+                Commission
+              </th>
             </tr>
           </thead>
           <tbody>
             {RUN_RESULTS.map((r) => (
               <tr key={r.rep} className="border-t border-card-border/60 hover:bg-muted/20">
                 <td className="px-2.5 py-2.5 font-medium text-foreground">{r.rep}</td>
-                <td className="px-2.5 py-2.5 text-center tabular-nums text-muted-foreground">{r.deals}</td>
-                <td className="px-2.5 py-2.5 text-right tabular-nums text-foreground">{fmt(r.revenue)}</td>
-                <td className="px-2.5 py-2.5 text-right tabular-nums font-semibold text-primary">{fmt(r.commission)}</td>
+                <td className="px-2.5 py-2.5 text-center tabular-nums text-muted-foreground">
+                  {r.deals}
+                </td>
+                <td className="px-2.5 py-2.5 text-right tabular-nums text-foreground">
+                  {fmt(r.revenue)}
+                </td>
+                <td className="px-2.5 py-2.5 text-right tabular-nums font-semibold text-primary">
+                  {fmt(r.commission)}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -213,7 +278,9 @@ function Scene4Portal() {
     <div className="flex flex-col h-full gap-3">
       {/* Rep profile header */}
       <div className="flex items-center gap-2.5 pb-2 border-b border-card-border">
-        <div className="size-7 rounded-full bg-primary flex items-center justify-center text-[9px] font-bold text-primary-foreground shrink-0">SD</div>
+        <div className="size-7 rounded-full bg-primary flex items-center justify-center text-[9px] font-bold text-primary-foreground shrink-0">
+          SD
+        </div>
         <div className="flex-1 min-w-0">
           <p className="text-[11px] font-semibold text-foreground">Sarah Davis</p>
           <p className="text-[8px] text-muted-foreground">Senior AE</p>
@@ -233,7 +300,10 @@ function Scene4Portal() {
         <div className="text-[10px] font-semibold text-foreground mb-2">Monthly Earnings</div>
         <div className="flex items-end gap-1.5 flex-1">
           {REP_EARNINGS.map((m) => (
-            <div key={m.month} className="flex-1 flex flex-col items-center gap-1 justify-end h-full">
+            <div
+              key={m.month}
+              className="flex-1 flex flex-col items-center gap-1 justify-end h-full"
+            >
               <div
                 className="w-full rounded-sm bg-primary/70 min-h-[4px] transition-all"
                 style={{ height: `${(m.earnings / 8000) * 100}%`, maxHeight: "100%" }}

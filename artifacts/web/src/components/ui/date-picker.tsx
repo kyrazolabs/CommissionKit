@@ -1,23 +1,18 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { format, parse, isValid } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
-
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+import { format, isValid, parse } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import * as React from "react";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 interface DatePickerProps {
-  date?: Date
-  onChange?: (date: Date | undefined) => void
-  placeholder?: string
-  className?: string
+  date?: Date;
+  onChange?: (date: Date | undefined) => void;
+  placeholder?: string;
+  className?: string;
 }
 
 export function DatePicker({
@@ -34,7 +29,7 @@ export function DatePicker({
           className={cn(
             "w-full justify-start text-left font-normal h-9 rounded-md border border-input bg-transparent px-3 py-1 shadow-sm hover:bg-transparent no-click",
             !date && "text-muted-foreground",
-            className
+            className,
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
@@ -51,7 +46,7 @@ export function DatePicker({
         />
       </PopoverContent>
     </Popover>
-  )
+  );
 }
 
 export function DateRangePicker({
@@ -60,16 +55,16 @@ export function DateRangePicker({
   onRangeChange,
   placeholder = "Pick a date range",
   className,
-  numberOfMonths = 2
+  numberOfMonths = 2,
 }: {
-  from?: Date
-  to?: Date
-  onRangeChange?: (range: { from?: Date; to?: Date } | undefined) => void
-  placeholder?: string
-  className?: string
-  numberOfMonths?: number
+  from?: Date;
+  to?: Date;
+  onRangeChange?: (range: { from?: Date; to?: Date } | undefined) => void;
+  placeholder?: string;
+  className?: string;
+  numberOfMonths?: number;
 }) {
-  const range = React.useMemo(() => ({ from, to }), [from, to])
+  const range = React.useMemo(() => ({ from, to }), [from, to]);
 
   return (
     <Popover>
@@ -80,7 +75,7 @@ export function DateRangePicker({
           className={cn(
             "w-full justify-start text-left font-normal h-9 rounded-md border border-input bg-background px-3 py-1 shadow-sm no-click",
             !from && "text-muted-foreground",
-            className
+            className,
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
@@ -108,5 +103,5 @@ export function DateRangePicker({
         />
       </PopoverContent>
     </Popover>
-  )
+  );
 }

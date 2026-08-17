@@ -43,6 +43,6 @@ export async function refreshOAuthToken(config: AuthConfig): Promise<{ accessTok
     throw new Error(`OAuth token refresh failed: ${response.status}`);
   }
 
-  const data = await response.json() as { access_token: string };
+  const data = (await response.json()) as { access_token: string };
   return { accessToken: data.access_token };
 }

@@ -1,35 +1,51 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { 
-  Check, Zap, Building2, Infinity as InfinityIcon, Loader2, 
-  ExternalLink, Crown, AlertTriangle, CheckCircle2, Gift, 
-  Users, FileText, UserRound 
-} from "lucide-react";
 import * as TanStackReactQuery from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import {
+  AlertTriangle,
+  Building2,
+  Check,
+  CheckCircle2,
+  Crown,
+  ExternalLink,
+  FileText,
+  Gift,
+  Infinity as InfinityIcon,
+  Loader2,
+  UserRound,
+  Users,
+  Zap,
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { NumberInput } from "@/components/number-input";
-import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/use-auth";
-import { useWorkspace } from "@/hooks/use-workspace";
-import { cn } from "@/lib/utils";
-import { formatCurrency } from "@/lib/format";
-import { apiFetch } from "@/lib/api";
-import { useBillingStatus, type SubscriptionStatus } from "@/hooks/use-billing-status";
-import { useRole } from "@/hooks/use-role";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { useAuth } from "@/hooks/use-auth";
+import { type SubscriptionStatus, useBillingStatus } from "@/hooks/use-billing-status";
 import { usePageMeta } from "@/hooks/use-page-meta";
+import { useRole } from "@/hooks/use-role";
+import { useToast } from "@/hooks/use-toast";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { Analytics } from "@/lib/analytics";
-
+import { apiFetch } from "@/lib/api";
+import { formatCurrency } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 const EXTRA_REP_UNIT_MONTHLY_USD = 8;
 const EXTRA_REP_UNIT_YEARLY_USD = 80;
-const EXTRA_REP_DISCOUNT_MONTHLY = 3.20;
+const EXTRA_REP_DISCOUNT_MONTHLY = 3.2;
 const EXTRA_REP_DISCOUNT_YEARLY = 32;
 
 // ─── Stripe price IDs (mirror API env: STRIPE_* → STRIPE_* for Vite) ───
@@ -140,18 +156,20 @@ function usagePercent(used: number, cap: number): number {
 
 function formatDate(iso: string | null) {
   if (!iso) return null;
-  return new Date(iso).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 function StatusBanner({ sub }: { sub: SubscriptionStatus }) {
   const { t } = useTranslation();
   if (sub.plan === "free") return null;
 
-  const isActive   = sub.status === "active";
-  const isPastDue  = sub.status === "past_due";
+  const isActive = sub.status === "active";
+  const isPastDue = sub.status === "past_due";
   const isCanceled = sub.status === "canceled";
-
-
 
   if (isPastDue) {
     return (
@@ -255,9 +273,9 @@ function BillingUsageCard({
           </div>
           <Progress value={usagePercent(repsCount ?? 0, limits?.reps ?? 0)} className="h-1.5" />
           {limits && planBaseLimits && limits.reps > planBaseLimits.reps && (
-             <p className="text-[10px] text-primary font-medium">
-               {t("billing.includesExtraSeats", { count: limits.reps - planBaseLimits.reps })}
-             </p>
+            <p className="text-[10px] text-primary font-medium">
+              {t("billing.includesExtraSeats", { count: limits.reps - planBaseLimits.reps })}
+            </p>
           )}
         </div>
 
@@ -302,18 +320,23 @@ function BillingUsageCard({
               )}
             </div>
           </div>
-          <Progress value={usagePercent(membersCount ?? 0, limits?.members ?? 0)} className="h-1.5" />
+          <Progress
+            value={usagePercent(membersCount ?? 0, limits?.members ?? 0)}
+            className="h-1.5"
+          />
         </div>
       </CardContent>
     </Card>
   );
 }
 
-
-
 export function BillingPage() {
   const { t } = useTranslation();
-  usePageMeta({ title: t("billing.title"), description: "Manage your CommissionKit subscription and billing details.", robots: "noindex, nofollow" });
+  usePageMeta({
+    title: t("billing.title"),
+    description: "Manage your CommissionKit subscription and billing details.",
+    robots: "noindex, nofollow",
+  });
   const queryClient = TanStackReactQuery.useQueryClient();
   const { session } = useAuth();
   const { activeWorkspace } = useWorkspace();
@@ -321,7 +344,9 @@ export function BillingPage() {
   const { sub, limits, planBaseLimits, refetch } = useBillingStatus();
   const { hasPermission, isLoading: roleLoading } = useRole();
 
-  useEffect(() => { Analytics.billingView(); }, []);
+  useEffect(() => {
+    Analytics.billingView();
+  }, []);
 
   const [showLocalCurrency, setShowLocalCurrency] = useState(false);
   const [rates, setRates] = useState<Record<string, number>>({});
@@ -336,13 +361,14 @@ export function BillingPage() {
 
   const { data: repsResponse, isLoading: repsLoading } = TanStackReactQuery.useQuery({
     queryKey: ["reps", activeWorkspace?.id],
-    queryFn: () => apiFetch(`/api/reps?limit=1`) as Promise<{
-      data: unknown[];
-      pagination: { page: number; limit: number; total: number; totalPages: number };
-    }>,
+    queryFn: () =>
+      apiFetch(`/api/reps?limit=1`) as Promise<{
+        data: unknown[];
+        pagination: { page: number; limit: number; total: number; totalPages: number };
+      }>,
     enabled: Boolean(activeWorkspace?.id),
   });
-  
+
   const { data: commissionPlans = [], isLoading: plansLoading } = TanStackReactQuery.useQuery({
     queryKey: ["commission-plans", activeWorkspace?.id],
     queryFn: () => apiFetch(`/api/plans`),
@@ -367,14 +393,14 @@ export function BillingPage() {
     }
   }, [activeWorkspace?.id]);
 
-  const [loadingPlan, setLoadingPlan]   = useState<string | null>(null);
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
 
   const [selectedPlanId, setSelectedPlanId] = useState<string>(() => {
-     // Default to growth if not subscribed, otherwise use current plan
-     const currentPlan = sub?.plan ?? "free";
-     if (currentPlan === "free") return "growth";
-     return currentPlan;
+    // Default to growth if not subscribed, otherwise use current plan
+    const currentPlan = sub?.plan ?? "free";
+    if (currentPlan === "free") return "growth";
+    return currentPlan;
   });
 
   const [payYearly, setPayYearly] = useState(false);
@@ -404,7 +430,9 @@ export function BillingPage() {
         </div>
         <Skeleton className="h-32 w-full rounded-2xl" />
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-72 w-full rounded-2xl" />)}
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-72 w-full rounded-2xl" />
+          ))}
         </div>
       </div>
     );
@@ -429,9 +457,7 @@ export function BillingPage() {
     "paused",
   ]);
   const alreadySubscribed = Boolean(
-    sub &&
-    currentPlan !== "free" &&
-    sub.status && ACTIVE_BILLING_SUB_STATUSES.has(sub.status)
+    sub && currentPlan !== "free" && sub.status && ACTIVE_BILLING_SUB_STATUSES.has(sub.status),
   );
 
   const repsCount = repsResponse?.pagination?.total ?? null;
@@ -451,7 +477,11 @@ export function BillingPage() {
       window.location.href = url;
     } catch (err: any) {
       Analytics.billingCheckoutError(plan, err.message);
-      toast({ title: t("billing.checkoutError"), description: err.message, variant: "destructive" });
+      toast({
+        title: t("billing.checkoutError"),
+        description: err.message,
+        variant: "destructive",
+      });
       setLoadingPlan(null);
     }
   };
@@ -468,7 +498,10 @@ export function BillingPage() {
 
       Analytics.billingExtraRepsSaved(qty);
 
-      toast({ title: t("billing.updated"), description: t("billing.updatedDescription", { count: qty }) });
+      toast({
+        title: t("billing.updated"),
+        description: t("billing.updatedDescription", { count: qty }),
+      });
       await refetch();
     } catch (err: any) {
       toast({ title: t("common.error"), description: err.message, variant: "destructive" });
@@ -487,7 +520,11 @@ export function BillingPage() {
       });
       window.location.href = url;
     } catch (err: any) {
-      toast({ title: t("billing.couldNotOpenPortal"), description: err.message, variant: "destructive" });
+      toast({
+        title: t("billing.couldNotOpenPortal"),
+        description: err.message,
+        variant: "destructive",
+      });
     } finally {
       setPortalLoading(false);
     }
@@ -498,13 +535,10 @@ export function BillingPage() {
     Analytics.billingYearlyToggled(checked);
   };
 
-
   const selectedPlan = displayPlans.find((p) => p.id === selectedPlanId) ?? null;
   const extraRepsQty = Math.max(0, Math.floor(Number(extraReps || 0)));
-  
-  const extraRepUnitDisplayUsd = payYearly
-    ? EXTRA_REP_DISCOUNT_YEARLY
-    : EXTRA_REP_DISCOUNT_MONTHLY;
+
+  const extraRepUnitDisplayUsd = payYearly ? EXTRA_REP_DISCOUNT_YEARLY : EXTRA_REP_DISCOUNT_MONTHLY;
   const extraRepsAddonTotalUsd = extraRepsQty * extraRepUnitDisplayUsd;
 
   return (
@@ -512,7 +546,9 @@ export function BillingPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <p className="text-[12px] font-semibold text-primary mb-1">{t("sidebar.account")}</p>
-          <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">{t("billing.billingAndPlans")}</h1>
+          <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">
+            {t("billing.billingAndPlans")}
+          </h1>
           <p className="text-[14px] text-muted-foreground mt-1">
             {alreadySubscribed
               ? t("billing.alreadySubscribedDescription")
@@ -520,14 +556,16 @@ export function BillingPage() {
           </p>
         </div>
       </div>
-      
+
       {!alreadySubscribed && sub?.trialUsed === false && (
         <div className="flex items-start gap-4 rounded-xl border border-blue-200 bg-blue-50/50 p-4 dark:border-blue-900/30 dark:bg-blue-900/10">
           <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
             <Zap className="size-4" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">{t("billing.freeTrialAvailable")}</p>
+            <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+              {t("billing.freeTrialAvailable")}
+            </p>
             <p className="text-xs text-blue-800/80 dark:text-blue-200/60 mt-0.5">
               {t("billing.freeTrialDescription")}
             </p>
@@ -541,57 +579,63 @@ export function BillingPage() {
           <Gift className="size-4" />
         </div>
         <div className="flex-1">
-          <p className="text-sm font-semibold text-foreground">Limited-Time Launch Offer — 60% Off Forever</p>
+          <p className="text-sm font-semibold text-foreground">
+            Limited-Time Launch Offer — 60% Off Forever
+          </p>
           <p className="text-xs text-muted-foreground mt-0.5">
             Lock in 60% off for life on any plan. Applied automatically — no code needed.
           </p>
         </div>
-        <span className="shrink-0 rounded-full bg-primary/20 px-3 py-1.5 text-[11px] font-bold text-primary uppercase tracking-wider">60% OFF</span>
+        <span className="shrink-0 rounded-full bg-primary/20 px-3 py-1.5 text-[11px] font-bold text-primary uppercase tracking-wider">
+          60% OFF
+        </span>
       </div>
 
       {/* Growth yearly upsell : only for workspaces not already on a paid subscription */}
       {!alreadySubscribed && (
-      <div
-        className={cn(
-          "flex items-start gap-3 sm:gap-4 rounded-xl border p-4 sm:p-4 transition-all",
-          payYearly
-            ? "border-primary/40 bg-gradient-to-br from-primary/8 via-primary/4 to-transparent shadow-sm ring-1 ring-primary/15"
-            : "border-border bg-muted/20 hover:bg-muted/35",
-        )}
-      >
-        <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <Gift className="size-4" />
-        </div>
-        <div className="min-w-0 flex-1 space-y-2">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-            <div>
-              <p className="text-sm font-semibold text-foreground">{t("billing.payYearlyTitle")}</p>
-              <p className="text-xs text-muted-foreground mt-0.5 max-w-xl">
-                {t("billing.payYearlyDescription")}
-              </p>
-            </div>
-            <div className="flex items-center gap-2.5 sm:shrink-0">
-              <Checkbox
-                id="pay-yearly-growth"
-                checked={payYearly}
-                onCheckedChange={(v) => handlePayYearlyChange(v === true)}
-                className="shrink-0"
-              />
-              <Label
-                htmlFor="pay-yearly-growth"
-                className="text-sm font-medium leading-none cursor-pointer text-foreground"
-              >
-                {t("billing.iWantAnnual")}
-              </Label>
-            </div>
-          </div>
-          {payYearly && (
-            <p className="text-[11px] text-primary font-medium">
-              {t("billing.viewingYearlyPricing")}
-            </p>
+        <div
+          className={cn(
+            "flex items-start gap-3 sm:gap-4 rounded-xl border p-4 sm:p-4 transition-all",
+            payYearly
+              ? "border-primary/40 bg-gradient-to-br from-primary/8 via-primary/4 to-transparent shadow-sm ring-1 ring-primary/15"
+              : "border-border bg-muted/20 hover:bg-muted/35",
           )}
+        >
+          <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <Gift className="size-4" />
+          </div>
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  {t("billing.payYearlyTitle")}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5 max-w-xl">
+                  {t("billing.payYearlyDescription")}
+                </p>
+              </div>
+              <div className="flex items-center gap-2.5 sm:shrink-0">
+                <Checkbox
+                  id="pay-yearly-growth"
+                  checked={payYearly}
+                  onCheckedChange={(v) => handlePayYearlyChange(v === true)}
+                  className="shrink-0"
+                />
+                <Label
+                  htmlFor="pay-yearly-growth"
+                  className="text-sm font-medium leading-none cursor-pointer text-foreground"
+                >
+                  {t("billing.iWantAnnual")}
+                </Label>
+              </div>
+            </div>
+            {payYearly && (
+              <p className="text-[11px] text-primary font-medium">
+                {t("billing.viewingYearlyPricing")}
+              </p>
+            )}
+          </div>
         </div>
-      </div>
       )}
 
       {/* Status banner */}
@@ -615,13 +659,25 @@ export function BillingPage() {
       {sub && sub.plan !== "free" && (
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-xl border border-border bg-muted/30 p-4">
           <div>
-            <p className="text-sm font-semibold text-foreground capitalize">{sub.plan} {t("billing.plan")}</p>
+            <p className="text-sm font-semibold text-foreground capitalize">
+              {sub.plan} {t("billing.plan")}
+            </p>
             <p className="text-xs text-muted-foreground mt-0.5">
               {t("billing.billingPortalDescription")}
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={handlePortal} disabled={portalLoading} className="gap-2 shrink-0">
-            {portalLoading ? <Loader2 className="size-3.5 animate-spin" /> : <ExternalLink className="size-3.5" />}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePortal}
+            disabled={portalLoading}
+            className="gap-2 shrink-0"
+          >
+            {portalLoading ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <ExternalLink className="size-3.5" />
+            )}
             {t("billing.manageSubscription")}
           </Button>
         </div>
@@ -631,7 +687,9 @@ export function BillingPage() {
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800/40 dark:bg-amber-900/20">
           <AlertTriangle className="size-4 text-amber-700 shrink-0 mt-0.5 dark:text-amber-400" />
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">{t("billing.checkoutDisabled")}</p>
+            <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+              {t("billing.checkoutDisabled")}
+            </p>
             <p className="text-xs text-amber-900/85 dark:text-amber-200/90 mt-1 leading-relaxed">
               {t("billing.checkoutDisabledDescription")}
             </p>
@@ -653,7 +711,9 @@ export function BillingPage() {
           </CardHeader>
           <CardContent className="flex flex-col sm:flex-row items-center gap-4">
             <div className="flex-1 space-y-1 w-full">
-              <Label htmlFor="addon-reps" className="text-xs font-medium">{t("billing.extraRepSeats")}</Label>
+              <Label htmlFor="addon-reps" className="text-xs font-medium">
+                {t("billing.extraRepSeats")}
+              </Label>
               <div className="flex items-center gap-3">
                 <NumberInput
                   id="addon-reps"
@@ -662,7 +722,9 @@ export function BillingPage() {
                   onChange={(e) => setExtraReps(e.target.value)}
                   className="max-w-[120px]"
                 />
-                <span className="text-xs text-muted-foreground">{t("billing.totalAddonSeats")}</span>
+                <span className="text-xs text-muted-foreground">
+                  {t("billing.totalAddonSeats")}
+                </span>
               </div>
             </div>
             <Button
@@ -689,7 +751,14 @@ export function BillingPage() {
         {workspaceCurrency !== "USD" && (
           <div className="flex items-center gap-2">
             <Label htmlFor="currency-toggle" className="text-sm text-muted-foreground">
-              {t("billing.showInCurrency", { currency: workspaceCurrency === "SAR" ? "Riyal" : workspaceCurrency === "AED" ? "Dirham" : workspaceCurrency })}
+              {t("billing.showInCurrency", {
+                currency:
+                  workspaceCurrency === "SAR"
+                    ? "Riyal"
+                    : workspaceCurrency === "AED"
+                      ? "Dirham"
+                      : workspaceCurrency,
+              })}
             </Label>
             <Switch
               id="currency-toggle"
@@ -711,7 +780,7 @@ export function BillingPage() {
       >
         {displayPlans.map((plan) => {
           const Icon = plan.icon;
-          const isCurrent  = currentPlan === plan.id;
+          const isCurrent = currentPlan === plan.id;
           const isSelected = selectedPlanId === plan.id;
 
           return (
@@ -733,12 +802,14 @@ export function BillingPage() {
             >
               {plan.badge && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className={cn(
-                    "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold border whitespace-nowrap",
-                    plan.id === "pro"
-                      ? "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800/40"
-                      : "bg-primary text-primary-foreground border-primary",
-                  )}>
+                  <span
+                    className={cn(
+                      "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold border whitespace-nowrap",
+                      plan.id === "pro"
+                        ? "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800/40"
+                        : "bg-primary text-primary-foreground border-primary",
+                    )}
+                  >
                     {isCurrent ? t("billing.currentPlanBadge") : plan.badge}
                   </span>
                 </div>
@@ -746,33 +817,51 @@ export function BillingPage() {
 
               <CardHeader className="pb-3 pt-7">
                 <div className="flex items-center gap-2.5 mb-3">
-                  <div className={cn("flex size-8 items-center justify-center rounded-lg", plan.iconBg)}>
+                  <div
+                    className={cn(
+                      "flex size-8 items-center justify-center rounded-lg",
+                      plan.iconBg,
+                    )}
+                  >
                     <Icon className={cn("size-4", plan.iconColor)} />
                   </div>
                   <CardTitle className="text-base">{plan.name}</CardTitle>
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className="text-3xl font-semibold text-primary">
-                    {showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] ? (
+                    {showLocalCurrency &&
+                    workspaceCurrency !== "USD" &&
+                    rates[workspaceCurrency] ? (
                       <span className="flex items-baseline gap-1">
                         <span className="text-xl text-muted-foreground font-normal">≈</span>
-                        {formatCurrency((payYearly ? plan.discountYearly : plan.discountMonthly) * rates[workspaceCurrency], workspaceCurrency)}
+                        {formatCurrency(
+                          (payYearly ? plan.discountYearly : plan.discountMonthly) *
+                            rates[workspaceCurrency],
+                          workspaceCurrency,
+                        )}
                       </span>
                     ) : (
                       "$" + (payYearly ? plan.discountYearly : plan.discountMonthly)
                     )}
                   </span>
-                  <span className="text-sm text-muted-foreground">{payYearly ? t("billing.perYear") : t("billing.perMonth")}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {payYearly ? t("billing.perYear") : t("billing.perMonth")}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className="text-sm text-muted-foreground line-through">
-                    {showLocalCurrency && workspaceCurrency !== "USD" ? (
-                      "≈" + formatCurrency((payYearly ? plan.priceYearlyUsd : plan.priceMonthlyUsd) * (rates[workspaceCurrency] || 1), workspaceCurrency)
-                    ) : (
-                      "$" + (payYearly ? plan.priceYearlyUsd : plan.priceMonthlyUsd)
-                    )}
+                    {showLocalCurrency && workspaceCurrency !== "USD"
+                      ? "≈" +
+                        formatCurrency(
+                          (payYearly ? plan.priceYearlyUsd : plan.priceMonthlyUsd) *
+                            (rates[workspaceCurrency] || 1),
+                          workspaceCurrency,
+                        )
+                      : "$" + (payYearly ? plan.priceYearlyUsd : plan.priceMonthlyUsd)}
                   </span>
-                  <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">60% OFF</span>
+                  <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                    60% OFF
+                  </span>
                 </div>
                 <CardDescription className="mt-1 text-[13px]">{plan.description}</CardDescription>
               </CardHeader>
@@ -790,11 +879,7 @@ export function BillingPage() {
 
               <CardFooter>
                 {isCurrent ? (
-                  <Button
-                    className="w-full"
-                    variant="outline"
-                    disabled
-                  >
+                  <Button className="w-full" variant="outline" disabled>
                     <Check className="mr-2 size-4" />
                     {t("billing.currentPlan")}
                   </Button>
@@ -809,7 +894,11 @@ export function BillingPage() {
                     }}
                     disabled={loadingPlan !== null || alreadySubscribed}
                   >
-                    {isSelected ? t("billing.selected") : alreadySubscribed ? t("billing.usePortal") : t("billing.selectPlan")}
+                    {isSelected
+                      ? t("billing.selected")
+                      : alreadySubscribed
+                        ? t("billing.usePortal")
+                        : t("billing.selectPlan")}
                   </Button>
                 )}
               </CardFooter>
@@ -825,7 +914,7 @@ export function BillingPage() {
           <CardDescription className="text-xs">
             {alreadySubscribed
               ? t("billing.checkoutDisabledForSubscribed")
-              : sub?.trialUsed === false 
+              : sub?.trialUsed === false
                 ? t("billing.checkoutTrialDescription")
                 : t("billing.checkoutDescription")}
           </CardDescription>
@@ -836,7 +925,8 @@ export function BillingPage() {
               <p className="text-sm font-semibold text-foreground">
                 {selectedPlan ? (
                   <>
-                    {t("billing.selectedPlan")}: <span className="capitalize">{selectedPlan.name}</span>
+                    {t("billing.selectedPlan")}:{" "}
+                    <span className="capitalize">{selectedPlan.name}</span>
                   </>
                 ) : (
                   t("billing.noPlanSelected")
@@ -855,25 +945,26 @@ export function BillingPage() {
                 {showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] ? (
                   <>
                     <span className="mr-1">≈</span>
-                    {formatCurrency(extraRepUnitDisplayUsd * rates[workspaceCurrency], workspaceCurrency)}
+                    {formatCurrency(
+                      extraRepUnitDisplayUsd * rates[workspaceCurrency],
+                      workspaceCurrency,
+                    )}
                   </>
                 ) : (
                   formatCurrency(extraRepUnitDisplayUsd)
-                )} {t("billing.perExtraRep")}
+                )}{" "}
+                {t("billing.perExtraRep")}
                 <span className="text-xs text-muted-foreground line-through ml-1">
                   {payYearly ? "$79.99" : "$7.99"}
                 </span>
-                <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded ml-1.5">60% OFF</span>
+                <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded ml-1.5">
+                  60% OFF
+                </span>
               </p>
             </div>
             <p className="text-xs text-muted-foreground">
               {t("billing.enterExtraRepsDescription")}
-              {payYearly ? (
-                <>
-                  {" "}
-                  {t("billing.billedYearly")}
-                </>
-              ) : null}
+              {payYearly ? <> {t("billing.billedYearly")}</> : null}
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <NumberInput
@@ -888,15 +979,22 @@ export function BillingPage() {
             {extraRepsQty > 0 && (
               <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border/80 bg-background/80 p-3">
                 <span className="text-xs font-medium text-foreground">
-                  {t("billing.addonTotal", { count: extraRepsQty, price: showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] 
-                    ? `≈${formatCurrency(extraRepUnitDisplayUsd * rates[workspaceCurrency], workspaceCurrency)}` 
-                    : formatCurrency(extraRepUnitDisplayUsd) })}
+                  {t("billing.addonTotal", {
+                    count: extraRepsQty,
+                    price:
+                      showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency]
+                        ? `≈${formatCurrency(extraRepUnitDisplayUsd * rates[workspaceCurrency], workspaceCurrency)}`
+                        : formatCurrency(extraRepUnitDisplayUsd),
+                  })}
                 </span>
                 <span className="text-sm font-semibold tabular-nums text-foreground">
                   {showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] ? (
                     <>
                       <span className="mr-1 font-normal text-muted-foreground text-[10px]">≈</span>
-                      {formatCurrency(extraRepsAddonTotalUsd * rates[workspaceCurrency], workspaceCurrency)}
+                      {formatCurrency(
+                        extraRepsAddonTotalUsd * rates[workspaceCurrency],
+                        workspaceCurrency,
+                      )}
                     </>
                   ) : (
                     formatCurrency(extraRepsAddonTotalUsd)
@@ -912,11 +1010,20 @@ export function BillingPage() {
         <CardFooter className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
           <p className="text-xs text-muted-foreground">
             {selectedPlan ? (
-              <>{t("billing.stripeCheckoutSummary", { reps: extraRepsQty, annual: payYearly, priceFormatted: showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] 
-                      ? `≈${formatCurrency(extraRepsAddonTotalUsd * rates[workspaceCurrency], workspaceCurrency)}` 
-                      : formatCurrency(extraRepsAddonTotalUsd), perUnitFormatted: showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency] 
-                      ? `≈${formatCurrency(extraRepUnitDisplayUsd * rates[workspaceCurrency], workspaceCurrency)}` 
-                      : formatCurrency(extraRepUnitDisplayUsd) })}</>
+              <>
+                {t("billing.stripeCheckoutSummary", {
+                  reps: extraRepsQty,
+                  annual: payYearly,
+                  priceFormatted:
+                    showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency]
+                      ? `≈${formatCurrency(extraRepsAddonTotalUsd * rates[workspaceCurrency], workspaceCurrency)}`
+                      : formatCurrency(extraRepsAddonTotalUsd),
+                  perUnitFormatted:
+                    showLocalCurrency && workspaceCurrency !== "USD" && rates[workspaceCurrency]
+                      ? `≈${formatCurrency(extraRepUnitDisplayUsd * rates[workspaceCurrency], workspaceCurrency)}`
+                      : formatCurrency(extraRepUnitDisplayUsd),
+                })}
+              </>
             ) : (
               t("billing.selectPlanDescription")
             )}
@@ -925,12 +1032,20 @@ export function BillingPage() {
             className="sm:w-auto w-full"
             onClick={() => {
               if (!selectedPlan) {
-                toast({ title: t("billing.selectPlanTitle"), description: t("billing.selectPlanDescription"), variant: "destructive" });
+                toast({
+                  title: t("billing.selectPlanTitle"),
+                  description: t("billing.selectPlanDescription"),
+                  variant: "destructive",
+                });
                 return;
               }
               const priceId = payYearly ? selectedPlan.priceIdYearly : selectedPlan.priceIdMonthly;
               if (!priceId) {
-                toast({ title: t("billing.planNotConfigured"), description: t("billing.planNotConfiguredDescription"), variant: "destructive" });
+                toast({
+                  title: t("billing.planNotConfigured"),
+                  description: t("billing.planNotConfiguredDescription"),
+                  variant: "destructive",
+                });
                 return;
               }
               handleCheckout(priceId, selectedPlan.id, "subscription", extraRepsQty);
@@ -938,7 +1053,10 @@ export function BillingPage() {
             disabled={loadingPlan !== null || !selectedPlan || alreadySubscribed}
           >
             {loadingPlan ? (
-              <><Loader2 className="mr-2 size-4 animate-spin" />{t("billing.redirecting")}</>
+              <>
+                <Loader2 className="mr-2 size-4 animate-spin" />
+                {t("billing.redirecting")}
+              </>
             ) : alreadySubscribed ? (
               t("billing.subscribedUsePortal")
             ) : (
@@ -948,10 +1066,7 @@ export function BillingPage() {
         </CardFooter>
       </Card>
 
-
-      <p className="text-xs text-muted-foreground">
-        {t("billing.stripeFooter")}
-      </p>
+      <p className="text-xs text-muted-foreground">{t("billing.stripeFooter")}</p>
     </div>
   );
 }

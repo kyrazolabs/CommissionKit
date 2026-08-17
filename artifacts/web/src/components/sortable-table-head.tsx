@@ -1,6 +1,6 @@
-import { cn } from "@/lib/utils";
-import { ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import type { SortDirection } from "@/hooks/use-table-sort";
+import { cn } from "@/lib/utils";
 
 interface SortableTableHeadProps {
   label: string;
@@ -35,7 +35,7 @@ export function SortableTableHead({
         "px-3 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer select-none transition-colors hover:text-foreground",
         alignClass,
         isActive ? "text-foreground" : "",
-        className
+        className,
       )}
       onClick={onSort(column)}
       onKeyDown={(e) => {

@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { insertDealSchema } from "./deals";
 
 describe("insertDealSchema", () => {
@@ -59,9 +59,7 @@ describe("insertDealSchema", () => {
   });
 
   test("rejects invalid paymentStatus", () => {
-    expect(() =>
-      insertDealSchema.parse({ ...validDeal, paymentStatus: "invalid" })
-    ).toThrow();
+    expect(() => insertDealSchema.parse({ ...validDeal, paymentStatus: "invalid" })).toThrow();
   });
 
   test("accepts all valid payment statuses", () => {

@@ -1,8 +1,8 @@
-import { z } from "zod";
-import { Router, type IRouter } from "express";
 import { Workspace } from "@workspace/db/schema";
-import { requireWorkspaceMember, type AuthenticatedRequest } from "../../middleware/auth";
+import { type IRouter, Router } from "express";
+import { z } from "zod";
 import { logger } from "../../lib/logger";
+import { type AuthenticatedRequest, requireWorkspaceMember } from "../../middleware/auth";
 
 const WEBHOOK_URL =
   "https://crm.commissionk.it/webhooks/workflows/2c2c7e35-cb52-45e6-8d5f-6003f7935901/7a05d911-c30f-4e5a-ab76-6b55c3bd46ab";
@@ -32,7 +32,9 @@ router.post(
     const workspaceId = req.workspaceId;
 
     try {
-      const workspace = await Workspace.findById(workspaceId).select("name").lean<{ name: string }>();
+      const workspace = await Workspace.findById(workspaceId)
+        .select("name")
+        .lean<{ name: string }>();
       const workspaceName = workspace?.name ?? "Unknown Workspace";
 
       const payload = {
@@ -66,7 +68,10 @@ router.post(
         return;
       }
 
-      logger.error({ err, workspaceId }, "[Support] Failed to submit support ticket — returning success");
+      logger.error(
+        { err, workspaceId },
+        "[Support] Failed to submit support ticket — returning success",
+      );
       res.status(200).json({ success: true });
     }
   },

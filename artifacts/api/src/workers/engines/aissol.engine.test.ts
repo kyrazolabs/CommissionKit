@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, expect, test } from "bun:test";
 
 // Replicate pure functions from aissol.engine.ts for unit testing
 function determineSlab(value: number, slabs: { index: number; max: number | null }[]): number {
@@ -9,7 +9,10 @@ function determineSlab(value: number, slabs: { index: number; max: number | null
   return slabs[slabs.length - 1]?.index ?? 0;
 }
 
-function determineGmBracket(gmPercent: number, brackets: { key: string; max: number | null }[]): string {
+function determineGmBracket(
+  gmPercent: number,
+  brackets: { key: string; max: number | null }[],
+): string {
   for (const bracket of brackets) {
     if (bracket.max === null) return bracket.key;
     if (gmPercent < bracket.max) return bracket.key;

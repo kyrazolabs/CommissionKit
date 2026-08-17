@@ -1,15 +1,15 @@
-import { BasePlugin } from "@workspace/plugins-core";
 import type {
   ConnectionConfig,
   ConnectionTestResult,
   FetchOptions,
-  NormalizedRep,
-  NormalizedDeal,
   IngresEvent,
-  WebhookRequest,
   JsonSchema,
+  NormalizedDeal,
+  NormalizedRep,
   PluginUIMetadata,
+  WebhookRequest,
 } from "@workspace/plugins-core";
+import { BasePlugin } from "@workspace/plugins-core";
 import { OdooClient } from "./client";
 import { normalizeOdooCurrency } from "./currency";
 
@@ -27,7 +27,8 @@ export class OdooConnector extends BasePlugin {
   readonly name = "odoo";
   readonly displayName = "Odoo ERP";
   readonly version = "1.0.0";
-  readonly description = "Connect CKit to your Odoo instance. Syncs sales reps and confirmed sales orders from the Sales or CRM app.";
+  readonly description =
+    "Connect CKit to your Odoo instance. Syncs sales reps and confirmed sales orders from the Sales or CRM app.";
   readonly icon = "store";
 
   private getOdooClient(config: ConnectionConfig): OdooClient {
@@ -46,7 +47,10 @@ export class OdooConnector extends BasePlugin {
     try {
       const c = this.parseConfig(config);
       if (!c.baseUrl || !c.database || !c.username || !c.apiKey) {
-        return { success: false, message: "Missing required fields: baseUrl, database, username, apiKey" };
+        return {
+          success: false,
+          message: "Missing required fields: baseUrl, database, username, apiKey",
+        };
       }
 
       const start = Date.now();
@@ -149,7 +153,7 @@ export class OdooConnector extends BasePlugin {
     }
 
     // Batch fetch invoice payment states
-    let invoicePayments = new Map<number, string>();
+    const invoicePayments = new Map<number, string>();
     if (allInvoiceIds.length > 0) {
       try {
         const invoices = await client.searchRead(
@@ -165,55 +169,55 @@ export class OdooConnector extends BasePlugin {
       }
     }
 
-    return records.map((r: any) => {
-      const stage = normalizeStage(r.state);
-      // Derive payment status from actual invoices
-      let paymentStatus: import("@workspace/plugins-core").PaymentStatus = "unpaid";
-      if (r.invoice_ids && Array.isArray(r.invoice_ids) && r.invoice_ids.length > 0) {
-        const states = r.invoice_ids
-          .map((id: number) => invoicePayments.get(id) || "not_paid");
+    return records
+      .map((r: any) => {
+        const stage = normalizeStage(r.state);
+        // Derive payment status from actual invoices
+        let paymentStatus: import("@workspace/plugins-core").PaymentStatus = "unpaid";
+        if (r.invoice_ids && Array.isArray(r.invoice_ids) && r.invoice_ids.length > 0) {
+          const states = r.invoice_ids.map((id: number) => invoicePayments.get(id) || "not_paid");
 
-        const allPaid = states.every((s: string) => s === "paid" || s === "in_payment");
-        const nonePaid = states.every((s: string) => s === "not_paid");
-        const anyReversed = states.some((s: string) => s === "reversed" || s === "cancel");
+          const allPaid = states.every((s: string) => s === "paid" || s === "in_payment");
+          const nonePaid = states.every((s: string) => s === "not_paid");
+          const anyReversed = states.some((s: string) => s === "reversed" || s === "cancel");
 
-        if (anyReversed) {
-          paymentStatus = "on_hold";
-        } else if (allPaid) {
-          paymentStatus = "paid";
-        } else if (!nonePaid) {
-          paymentStatus = "partial";
+          if (anyReversed) {
+            paymentStatus = "on_hold";
+          } else if (allPaid) {
+            paymentStatus = "paid";
+          } else if (!nonePaid) {
+            paymentStatus = "partial";
+          }
+        } else if (stage === "closed_won") {
+          // No invoices yet but deal is closed-won — use default
+          paymentStatus = paymentDefault as import("@workspace/plugins-core").PaymentStatus;
         }
-      } else if (stage === "closed_won") {
-        // No invoices yet but deal is closed-won — use default
-        paymentStatus = paymentDefault as import("@workspace/plugins-core").PaymentStatus;
-      }
 
-      return {
-        externalId: String(r.id),
-        repExternalId: r.user_id?.[0] ? String(r.user_id[0]) : "",
-        name: r.name || "",
-        amount: r.amount_total || 0,
-        closeDate: r.date_order ? new Date(r.date_order) : new Date(),
-        stage,
-        currency: normalizeOdooCurrency(r.currency_id?.[1]),
-        paymentStatus,
-        notes: r.note || undefined,
-        metadata: { odooOrderId: r.id, odooRawState: r.state },
-      };
-    }).filter((d: any) => !stageFilter || stageFilter.length === 0 || stageFilter.includes(d.metadata.odooRawState));
+        return {
+          externalId: String(r.id),
+          repExternalId: r.user_id?.[0] ? String(r.user_id[0]) : "",
+          name: r.name || "",
+          amount: r.amount_total || 0,
+          closeDate: r.date_order ? new Date(r.date_order) : new Date(),
+          stage,
+          currency: normalizeOdooCurrency(r.currency_id?.[1]),
+          paymentStatus,
+          notes: r.note || undefined,
+          metadata: { odooOrderId: r.id, odooRawState: r.state },
+        };
+      })
+      .filter(
+        (d: any) =>
+          !stageFilter || stageFilter.length === 0 || stageFilter.includes(d.metadata.odooRawState),
+      );
   }
-
 
   async verifyWebhook(req: WebhookRequest, secret: string): Promise<void> {
     const signature = req.headers["x-odoo-signature"];
     if (!signature) throw new Error("Missing X-Odoo-Signature header");
 
     const crypto = await import("crypto");
-    const computed = crypto
-      .createHmac("sha256", secret)
-      .update(req.rawBody)
-      .digest("hex");
+    const computed = crypto.createHmac("sha256", secret).update(req.rawBody).digest("hex");
 
     if (!crypto.timingSafeEqual(Buffer.from(signature, "hex"), Buffer.from(computed, "hex"))) {
       throw new Error("Invalid webhook signature");
@@ -239,13 +243,15 @@ export class OdooConnector extends BasePlugin {
 
     const eventType = eventMap[payload.event] || "updated";
 
-    return [{
-      type: `${entityType}.${eventType}` as IngresEvent["type"],
-      externalId: String(payload.record_id || ""),
-      workspaceId: "", // Will be resolved by webhook handler
-      timestamp: payload.timestamp ? new Date(payload.timestamp) : new Date(),
-      payload,
-    }];
+    return [
+      {
+        type: `${entityType}.${eventType}` as IngresEvent["type"],
+        externalId: String(payload.record_id || ""),
+        workspaceId: "", // Will be resolved by webhook handler
+        timestamp: payload.timestamp ? new Date(payload.timestamp) : new Date(),
+        payload,
+      },
+    ];
   }
 
   getSettingsSchema(): JsonSchema {

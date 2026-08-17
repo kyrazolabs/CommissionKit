@@ -41,17 +41,18 @@ export function getRedisClient(): Redis {
   }
 
   // Default to true in production ONLY if REDIS_TLS is not explicitly set to "false"
-  const useTls = process.env.REDIS_TLS === "false" 
-    ? false 
-    : (process.env.REDIS_TLS === "true" || process.env.NODE_ENV === "production");
+  const useTls =
+    process.env.REDIS_TLS === "false"
+      ? false
+      : process.env.REDIS_TLS === "true" || process.env.NODE_ENV === "production";
 
   _client = new Redis(url, buildRedisOptions(useTls));
 
-  _client.on("connect",     () => console.info("[Queue:Redis] Connected"));
-  _client.on("ready",       () => console.info("[Queue:Redis] Ready"));
-  _client.on("reconnecting",() => console.warn("[Queue:Redis] Reconnecting…"));
-  _client.on("end",         () => console.info("[Queue:Redis] Connection closed"));
-  _client.on("error",  (err) => console.error("[Queue:Redis] Error:", err.message));
+  _client.on("connect", () => console.info("[Queue:Redis] Connected"));
+  _client.on("ready", () => console.info("[Queue:Redis] Ready"));
+  _client.on("reconnecting", () => console.warn("[Queue:Redis] Reconnecting…"));
+  _client.on("end", () => console.info("[Queue:Redis] Connection closed"));
+  _client.on("error", (err) => console.error("[Queue:Redis] Error:", err.message));
 
   return _client;
 }

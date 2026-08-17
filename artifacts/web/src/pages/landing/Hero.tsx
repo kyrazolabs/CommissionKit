@@ -1,9 +1,9 @@
+import { ArrowRight, Mail, ShieldCheck } from "lucide-react";
 import { useState } from "react";
-import { useInView } from "./hooks";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ShieldCheck, Mail } from "lucide-react";
 import { Analytics } from "@/lib/analytics";
-import { AnimatedWords, AnimatedBlock } from "./AnimatedText";
+import { AnimatedBlock, AnimatedWords } from "./AnimatedText";
+import { useInView } from "./hooks";
 
 export function Hero() {
   const { ref: inViewRef, inView } = useInView();
@@ -31,7 +31,10 @@ export function Hero() {
   };
 
   return (
-    <section className="min-h-[90vh] flex items-center justify-center px-6 relative overflow-hidden" id="hero">
+    <section
+      className="min-h-[90vh] flex items-center justify-center px-6 relative overflow-hidden"
+      id="hero"
+    >
       {/* Ambient gradient glow */}
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[460px] pointer-events-none z-0"
@@ -54,7 +57,10 @@ export function Hero() {
         className="absolute right-0 top-1/2 -translate-y-1/2 w-[30%] max-w-[360px] opacity-[0.10] dark:opacity-[0.06] pointer-events-none z-0"
       />
 
-      <div ref={inViewRef} className="max-w-3xl mx-auto relative z-10 py-16 lg:py-20 w-full text-center">
+      <div
+        ref={inViewRef}
+        className="max-w-3xl mx-auto relative z-10 py-16 lg:py-20 w-full text-center"
+      >
         {/* Positioning pill */}
         <AnimatedBlock inView={inView} delay={0} className="inline-flex">
           <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white/60 dark:bg-white/5 backdrop-blur-sm border border-border/60 text-xs font-medium text-foreground mb-6">
@@ -65,12 +71,17 @@ export function Hero() {
         </AnimatedBlock>
 
         <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-[-0.07em] text-foreground leading-[0.95] font-display">
-          <AnimatedWords text="Start running commissions 30 minutes from now." inView={inView} delay={0.15} />
+          <AnimatedWords
+            text="Start running commissions 30 minutes from now."
+            inView={inView}
+            delay={0.15}
+          />
         </h1>
 
         <AnimatedBlock inView={inView} delay={1.1} y={20}>
           <p className="text-base md:text-lg text-muted-foreground mt-6 mb-8 leading-relaxed max-w-xl mx-auto">
-            One click processes every rep, deal, and plan. Try it during your lunch break. No credit card, no consultants, no waiting.
+            One click processes every rep, deal, and plan. Try it during your lunch break. No credit
+            card, no consultants, no waiting.
           </p>
         </AnimatedBlock>
 
@@ -103,7 +114,11 @@ export function Hero() {
                 aria-label="Email address"
               />
             </div>
-            <Button type="submit" size="md" className="w-full h-9 sm:w-auto font-bold shadow-lg shrink-0 group">
+            <Button
+              type="submit"
+              size="md"
+              className="w-full h-9 sm:w-auto font-bold shadow-lg shrink-0 group"
+            >
               Start Now — Free
               <ArrowRight className="ml-1.5 transition-transform group-hover:translate-x-0.5" />
             </Button>
@@ -112,7 +127,9 @@ export function Hero() {
 
         <AnimatedBlock inView={inView} delay={1.5} y={12}>
           <p className="mt-5 text-xs text-muted-foreground/70 flex items-center justify-center gap-3 flex-wrap">
-            <span className="inline-flex items-center gap-1.5"><ShieldCheck className="size-3.5 text-primary" /> No credit card required</span>
+            <span className="inline-flex items-center gap-1.5">
+              <ShieldCheck className="size-3.5 text-primary" /> No credit card required
+            </span>
             <span className="hidden sm:inline text-border">·</span>
             <span>Set up in under 30 minutes</span>
             <span className="hidden sm:inline text-border">·</span>

@@ -1,5 +1,5 @@
-import { describe, test, expect, afterEach } from "bun:test";
-import { render, screen, cleanup } from "@testing-library/react";
+import { afterEach, describe, expect, test } from "bun:test";
+import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 

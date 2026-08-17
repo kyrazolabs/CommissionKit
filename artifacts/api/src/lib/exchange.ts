@@ -53,7 +53,9 @@ export async function convertCurrencyAt(
   }
 
   // Find the closest rate at or before the target date
-  let rateRecord = await ExchangeRate.findOne({ fetchedAt: { $lte: beforeDate } }).sort({ fetchedAt: -1 });
+  let rateRecord = await ExchangeRate.findOne({ fetchedAt: { $lte: beforeDate } }).sort({
+    fetchedAt: -1,
+  });
 
   // Fallback: use the oldest available rate if deal predates our rate history
   if (!rateRecord) {
@@ -61,7 +63,9 @@ export async function convertCurrencyAt(
   }
 
   if (!rateRecord || !rateRecord.rates) {
-    console.warn(`[Exchange] No rate record found for date ${beforeDate.toISOString()}. Using 1:1 fallback.`);
+    console.warn(
+      `[Exchange] No rate record found for date ${beforeDate.toISOString()}. Using 1:1 fallback.`,
+    );
     return { converted: amount, rate: 1, snapshotDate: beforeDate.toISOString() };
   }
 
@@ -70,7 +74,9 @@ export async function convertCurrencyAt(
   const toRate = rates instanceof Map ? rates.get(to) : (rates as any)[to];
 
   if (fromRate === undefined || toRate === undefined) {
-    console.warn(`[Exchange] Rate not found for ${from} or ${to} at ${beforeDate.toISOString()}. Using 1:1 fallback.`);
+    console.warn(
+      `[Exchange] Rate not found for ${from} or ${to} at ${beforeDate.toISOString()}. Using 1:1 fallback.`,
+    );
     return { converted: amount, rate: 1, snapshotDate: rateRecord.fetchedAt.toISOString() };
   }
 

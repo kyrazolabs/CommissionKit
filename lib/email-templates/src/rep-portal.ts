@@ -1,4 +1,4 @@
-import { baseTemplate, btn, h1, p, muted, divider, infoBox, cardSection } from "./base.js";
+import { baseTemplate, btn, cardSection, divider, h1, infoBox, muted, p } from "./base.js";
 
 export interface RepPortalTemplateProps {
   repName: string;
@@ -31,12 +31,16 @@ export function repPortalTemplate(props: RepPortalTemplateProps): string {
             <p style="margin:0 0 4px;font-size:12px;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Your username</p>
             <p style="margin:0;font-size:18px;font-family:monospace;color:#111827;letter-spacing:1px;font-weight:700;">${portalUsername}</p>
           </td>
-          ${props.portalPassword ? `
+          ${
+            props.portalPassword
+              ? `
           <td style="text-align:right;">
             <p style="margin:0 0 4px;font-size:12px;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Your password</p>
             <p style="margin:0;font-size:18px;font-family:monospace;color:#111827;font-weight:700;">${props.portalPassword}</p>
           </td>
-          ` : ""}
+          `
+              : ""
+          }
         </tr>
       </table>
       <p style="margin:12px 0 0;font-size:12px;color:#6B7280;">Keep these credentials secure. You will need them to access your portal.</p>

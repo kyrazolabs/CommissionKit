@@ -66,14 +66,8 @@ export function CurrencyCell({
           {primaryDisplay}
         </span>
       </TooltipTrigger>
-      <TooltipContent
-        side="top"
-        className="max-w-xs text-xs space-y-1 p-3"
-        sideOffset={6}
-      >
-        <p className="font-semibold">
-          ≈ {formatCurrency(convertedAmount, wsCurrency)}
-        </p>
+      <TooltipContent side="top" className="max-w-xs text-xs space-y-1 p-3" sideOffset={6}>
+        <p className="font-semibold">≈ {formatCurrency(convertedAmount, wsCurrency)}</p>
         <p className="text-background/80 dark:text-popover-foreground/80">
           1 {currency} = {exchangeRateSnapshot.toFixed(6)} {wsCurrency}
         </p>

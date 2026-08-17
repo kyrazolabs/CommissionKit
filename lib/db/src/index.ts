@@ -1,13 +1,13 @@
 import mongoose from "mongoose";
-export { mongoose };
 
-export * from "./schema";
 export * from "./limits";
-export { setAuditDispatcher, setAuditContextProvider } from "./plugins/audit-dispatcher.js";
+export { setAuditContextProvider, setAuditDispatcher } from "./plugins/audit-dispatcher.js";
+export * from "./schema";
+export { mongoose };
 
 const MONGO_URL = process.env.MONGO_URL || "mongodb://localhost:27017/commissionkit";
 
-let isConnected = false;
+const isConnected = false;
 
 export const connectDB = async () => {
   if (mongoose.connection.readyState === 1) {
@@ -15,16 +15,18 @@ export const connectDB = async () => {
   }
 
   try {
-    console.log("[DB] Connecting to MongoDB...");
+    console.info("[DB] Connecting to MongoDB...");
     const conn = await mongoose.connect(MONGO_URL, {
       bufferCommands: true, // Allow buffering during initial connection
       autoIndex: true,
     });
-    
-    console.log(`[DB] MongoDB Connected: ${conn.connection.host}`);
+
+    console.info(`[DB] MongoDB Connected: ${conn.connection.host}`);
     return conn.connection;
   } catch (error) {
-    console.error(`[DB] Error connecting to MongoDB: ${error instanceof Error ? error.message : "Unknown error"}`);
+    console.error(
+      `[DB] Error connecting to MongoDB: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
     throw error;
   }
 };

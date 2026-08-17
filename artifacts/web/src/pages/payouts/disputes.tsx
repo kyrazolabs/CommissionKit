@@ -1,31 +1,49 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { motion } from "framer-motion";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Clock,
+  Loader2,
+  MessageSquare,
+} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
 import { Link } from "wouter";
-import {
-  AlertTriangle, CheckCircle2, Clock, MessageSquare, Loader2,
-  ChevronDown, ChevronRight,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataPagination } from "@/components/ui/data-pagination";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
+import { useBillingStatus } from "@/hooks/use-billing-status";
+import { usePageMeta } from "@/hooks/use-page-meta";
+import { useRole } from "@/hooks/use-role";
+import { useSyncStore } from "@/hooks/use-sync-store";
 import { useToast } from "@/hooks/use-toast";
 import { useWorkspace } from "@/hooks/use-workspace";
-import { useRole } from "@/hooks/use-role";
-import { useBillingStatus } from "@/hooks/use-billing-status";
+import { apiFetch } from "@/lib/api";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { apiFetch } from "@/lib/api";
-import { usePageMeta } from "@/hooks/use-page-meta";
-import { useSyncStore } from "@/hooks/use-sync-store";
-
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 
@@ -52,19 +70,43 @@ interface Dispute {
 }
 
 // ─── Status config ────────────────────────────────────────────────────────────
-const DISPUTE_STATUS: Record<string, { label: string; class: string; icon: any; i18nKey: string }> = {
-  open:         { label: "Open",         i18nKey: "disputes.open", class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200/50",     icon: AlertTriangle },
-  under_review: { label: "Under Review", i18nKey: "disputes.underReview", class: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200/50", icon: Clock },
-  resolved:     { label: "Resolved",     i18nKey: "disputes.resolved", class: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200/50", icon: CheckCircle2 },
-};
+const DISPUTE_STATUS: Record<string, { label: string; class: string; icon: any; i18nKey: string }> =
+  {
+    open: {
+      label: "Open",
+      i18nKey: "disputes.open",
+      class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200/50",
+      icon: AlertTriangle,
+    },
+    under_review: {
+      label: "Under Review",
+      i18nKey: "disputes.underReview",
+      class:
+        "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200/50",
+      icon: Clock,
+    },
+    resolved: {
+      label: "Resolved",
+      i18nKey: "disputes.resolved",
+      class:
+        "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200/50",
+      icon: CheckCircle2,
+    },
+  };
 
 function DisputeStatusBadge({ status }: { status: string }) {
   const { t } = useTranslation();
   const cfg = DISPUTE_STATUS[status] ?? DISPUTE_STATUS.open;
   const Icon = cfg.icon;
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold", cfg.class)}>
-      <Icon className="size-3" />{t(cfg.i18nKey)}
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold",
+        cfg.class,
+      )}
+    >
+      <Icon className="size-3" />
+      {t(cfg.i18nKey)}
     </span>
   );
 }
@@ -98,7 +140,7 @@ function ResolveModal({
 
       queryClient.setQueriesData({ queryKey: ["/api/disputes"] }, (old: any) => {
         if (!Array.isArray(old)) return old;
-        return old.map(d => {
+        return old.map((d) => {
           if (d.id !== dispute.id) return d;
           return {
             ...d,
@@ -121,13 +163,16 @@ function ResolveModal({
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/disputes"] });
-    }
+    },
   });
 
   const handleAction = (status: string) => {
-    mutation.mutate({ status, adminNotes }, {
-      onSuccess: () => toast({ title: t("disputes.disputeUpdated") })
-    });
+    mutation.mutate(
+      { status, adminNotes },
+      {
+        onSuccess: () => toast({ title: t("disputes.disputeUpdated") }),
+      },
+    );
     onClose();
   };
 
@@ -136,8 +181,9 @@ function ResolveModal({
       <DialogHeader>
         <DialogTitle>{t("disputes.resolveDispute")}</DialogTitle>
         <DialogDescription>
-          {t('disputes.resolveDescription', { name: dispute.repName })} <strong>{dispute.repName}</strong>. The payout will return to "Approved" status
-          and the rep will be notified with your notes.
+          {t("disputes.resolveDescription", { name: dispute.repName })}{" "}
+          <strong>{dispute.repName}</strong>. The payout will return to "Approved" status and the
+          rep will be notified with your notes.
         </DialogDescription>
       </DialogHeader>
 
@@ -148,18 +194,23 @@ function ResolveModal({
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">{t("disputes.payoutPeriod")}</span>
               <span className="font-medium">
-                {format(new Date(dispute.payout.periodStart), "MMM d")}–{format(new Date(dispute.payout.periodEnd), "MMM d, yyyy")}
+                {format(new Date(dispute.payout.periodStart), "MMM d")}–
+                {format(new Date(dispute.payout.periodEnd), "MMM d, yyyy")}
               </span>
             </div>
           )}
           {dispute.payout && (
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">{t("disputes.amount")}</span>
-              <span className="font-semibold">{formatCurrency(dispute.payout.finalAmount, dispute.payout.currency)}</span>
+              <span className="font-semibold">
+                {formatCurrency(dispute.payout.finalAmount, dispute.payout.currency)}
+              </span>
             </div>
           )}
           <div className="border-t border-border/60 pt-2 mt-2">
-            <p className="text-xs font-semibold text-muted-foreground mb-1">{t("disputes.repsReason")}</p>
+            <p className="text-xs font-semibold text-muted-foreground mb-1">
+              {t("disputes.repsReason")}
+            </p>
             <p className="text-sm leading-relaxed">{dispute.reason}</p>
           </div>
         </div>
@@ -176,16 +227,14 @@ function ResolveModal({
       </div>
 
       <DialogFooter className="gap-2">
-        <Button variant="outline" onClick={onClose}>{t("common.cancel")}</Button>
-        <Button
-          variant="outline"
-          onClick={() => handleAction("under_review")}
-        >
-          <Clock className="mr-2 size-4" />{t('disputes.markUnderReview')}
+        <Button variant="outline" onClick={onClose}>
+          {t("common.cancel")}
         </Button>
-        <Button
-          onClick={() => handleAction("resolved")}
-        >
+        <Button variant="outline" onClick={() => handleAction("under_review")}>
+          <Clock className="mr-2 size-4" />
+          {t("disputes.markUnderReview")}
+        </Button>
+        <Button onClick={() => handleAction("resolved")}>
           <CheckCircle2 className="mr-2 size-4" />
           Resolve
         </Button>
@@ -203,14 +252,21 @@ function DisputeRow({ dispute, onAction }: { dispute: Dispute; onAction: (d: Dis
     <>
       <TableRow className={dispute.status === "resolved" ? "opacity-60" : ""}>
         <TableCell>
-          <button onClick={() => setExpanded(v => !v)} className="text-muted-foreground hover:text-foreground">
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="text-muted-foreground hover:text-foreground"
+          >
             {expanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
           </button>
         </TableCell>
         <TableCell>
           <div className="flex items-center gap-2">
             <div className="size-7 rounded-full bg-primary/10 text-primary text-[10px] font-semibold flex items-center justify-center shrink-0">
-              {dispute.repName.split(" ").map(n => n[0]).join("").slice(0, 2)}
+              {dispute.repName
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .slice(0, 2)}
             </div>
             <span className="text-sm font-medium">{dispute.repName}</span>
           </div>
@@ -221,18 +277,27 @@ function DisputeRow({ dispute, onAction }: { dispute: Dispute; onAction: (d: Dis
             : ":"}
         </TableCell>
         <TableCell className="text-sm tabular-nums font-medium">
-          {dispute.payout ? formatCurrency(dispute.payout.finalAmount, dispute.payout.currency) : ":"}
+          {dispute.payout
+            ? formatCurrency(dispute.payout.finalAmount, dispute.payout.currency)
+            : ":"}
         </TableCell>
         <TableCell className="max-w-[200px]">
           <p className="text-sm text-muted-foreground truncate">{dispute.reason}</p>
         </TableCell>
-        <TableCell><DisputeStatusBadge status={dispute.status} /></TableCell>
+        <TableCell>
+          <DisputeStatusBadge status={dispute.status} />
+        </TableCell>
         <TableCell className="text-sm text-muted-foreground">
           {format(new Date(dispute.createdAt), "MMM d, yyyy")}
         </TableCell>
         <TableCell className="text-right">
           {dispute.status !== "resolved" && (
-            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => onAction(dispute)}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs"
+              onClick={() => onAction(dispute)}
+            >
               Review
             </Button>
           )}
@@ -246,21 +311,30 @@ function DisputeRow({ dispute, onAction }: { dispute: Dispute; onAction: (d: Dis
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
             >
-            <div className="space-y-2 text-sm">
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">{t("disputes.reason")}</p>
-                <p className="text-sm whitespace-pre-wrap">{dispute.reason}</p>
-              </div>
-              {dispute.adminNotes && (
+              <div className="space-y-2 text-sm">
                 <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">{t("disputes.adminNotes")}</p>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{dispute.adminNotes}</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">
+                    {t("disputes.reason")}
+                  </p>
+                  <p className="text-sm whitespace-pre-wrap">{dispute.reason}</p>
                 </div>
-              )}
-              {dispute.resolvedAt && (
-                <p className="text-xs text-muted-foreground">{t('disputes.resolvedOn', { date: '' })} {format(new Date(dispute.resolvedAt), "MMM d, yyyy 'at' h:mm a")}</p>
-              )}
-            </div>
+                {dispute.adminNotes && (
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">
+                      {t("disputes.adminNotes")}
+                    </p>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                      {dispute.adminNotes}
+                    </p>
+                  </div>
+                )}
+                {dispute.resolvedAt && (
+                  <p className="text-xs text-muted-foreground">
+                    {t("disputes.resolvedOn", { date: "" })}{" "}
+                    {format(new Date(dispute.resolvedAt), "MMM d, yyyy 'at' h:mm a")}
+                  </p>
+                )}
+              </div>
             </motion.div>
           </TableCell>
         </TableRow>
@@ -272,7 +346,12 @@ function DisputeRow({ dispute, onAction }: { dispute: Dispute; onAction: (d: Dis
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export function DisputesPage() {
   const { t } = useTranslation();
-  usePageMeta({ title: t("disputes.title"), description: t("disputes.description"), keywords: "commission disputes, payout disputes, rep disputes, commission disputes resolution", robots: "noindex, nofollow" });
+  usePageMeta({
+    title: t("disputes.title"),
+    description: t("disputes.description"),
+    keywords: "commission disputes, payout disputes, rep disputes, commission disputes resolution",
+    robots: "noindex, nofollow",
+  });
   const { activeWorkspace } = useWorkspace();
   const { hasPermission, isLoading: roleLoading } = useRole();
   const { sub, loading: subLoading } = useBillingStatus();
@@ -285,22 +364,22 @@ export function DisputesPage() {
   const plan = sub?.plan ?? "free";
   const isGrowthPlus = ["growth", "annual", "pro"].includes(plan);
 
-  const { data: disputesResult, isLoading, error } = useQuery({
+  const { data: disputesResult, isLoading } = useQuery({
     queryKey: ["/api/disputes", page, workspaceId],
     queryFn: () => {
       const sp = new URLSearchParams();
       sp.set("page", String(page));
       sp.set("limit", String(LIMIT));
-      return apiFetch(`/api/disputes?${sp}`) as Promise<{ data: Dispute[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>;
+      return apiFetch(`/api/disputes?${sp}`) as Promise<{
+        data: Dispute[];
+        pagination: { page: number; limit: number; total: number; totalPages: number };
+      }>;
     },
     enabled: Boolean(workspaceId) && hasPermission("disputes", "read") && !roleLoading,
   });
 
   const disputes = disputesResult?.data ?? [];
   const pagination = disputesResult?.pagination;
-
-  // Debug: log the actual response shape
-  console.log("[disputes] disputesResult:", disputesResult, "error:", error);
 
   if (roleLoading || subLoading) {
     return (
@@ -321,7 +400,9 @@ export function DisputesPage() {
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-4 w-16 ml-auto" />
           </div>
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full" />)}
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-12 w-full" />
+          ))}
         </div>
       </div>
     );
@@ -332,7 +413,7 @@ export function DisputesPage() {
       <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
         <AlertTriangle className="size-10 text-muted-foreground" />
         <h2 className="text-lg font-semibold">{t("common.accessDenied")}</h2>
-        <p className="text-sm text-muted-foreground">{t('disputes.noPermission')}</p>
+        <p className="text-sm text-muted-foreground">{t("disputes.noPermission")}</p>
       </div>
     );
   }
@@ -341,8 +422,12 @@ export function DisputesPage() {
     return (
       <div className="space-y-6">
         <div>
-          <p className="text-[12px] font-semibold text-primary mb-1">{t("disputes.operations") || "Operations"}</p>
-          <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">{t("disputes.title")}</h1>
+          <p className="text-[12px] font-semibold text-primary mb-1">
+            {t("disputes.operations") || "Operations"}
+          </p>
+          <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">
+            {t("disputes.title")}
+          </h1>
         </div>
         <Card className="border-primary/20 bg-primary/5">
           <CardHeader className="pb-3">
@@ -350,12 +435,12 @@ export function DisputesPage() {
               <MessageSquare className="size-4 text-primary" />
               Dispute Management : Growth Feature
             </CardTitle>
-            <CardDescription>
-              {t('disputes.growthRequired')}
-            </CardDescription>
+            <CardDescription>{t("disputes.growthRequired")}</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button asChild><Link href="/dash/billing">{t("disputes.upgradeToGrowth")}</Link></Button>
+            <Button asChild>
+              <Link href="/dash/billing">{t("disputes.upgradeToGrowth")}</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -371,15 +456,17 @@ export function DisputesPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <p className="text-[12px] font-semibold text-primary mb-1">Operations</p>
-          <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">Dispute Management</h1>
+          <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">
+            Dispute Management
+          </h1>
           <p className="text-[14px] text-muted-foreground mt-1 leading-relaxed">
-            {t('disputes.description')}
+            {t("disputes.description")}
           </p>
         </div>
         {openDisputes.length > 0 && (
           <div className="flex items-center gap-2 px-3 h-10 rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-sm font-semibold border border-red-200/50 shadow-sm">
             <AlertTriangle className="size-4" />
-            {openDisputes.length} {t('disputes.openDisputesCount', { count: openDisputes.length })}
+            {openDisputes.length} {t("disputes.openDisputesCount", { count: openDisputes.length })}
           </div>
         )}
       </div>
@@ -388,51 +475,55 @@ export function DisputesPage() {
       <Card>
         <CardHeader className="pb-3 border-b border-border">
           <CardTitle className="text-sm font-semibold">{t("disputes.openDisputes")}</CardTitle>
-          <CardDescription className="text-xs">{t('disputes.openDisputesDescription')}</CardDescription>
+          <CardDescription className="text-xs">
+            {t("disputes.openDisputesDescription")}
+          </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           {isLoading ? (
             <div className="p-5 space-y-2">
-              {[1, 2].map(i => <Skeleton key={i} className="h-12 w-full" />)}
+              {[1, 2].map((i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
             </div>
           ) : openDisputes.length === 0 ? (
             <div className="text-center py-12">
               <CheckCircle2 className="size-10 text-green-500 mx-auto mb-3" />
               <h3 className="text-base font-semibold">{t("disputes.noOpenDisputes")}</h3>
-              <p className="text-sm text-muted-foreground mt-1">{t('disputes.allResolved')}</p>
+              <p className="text-sm text-muted-foreground mt-1">{t("disputes.allResolved")}</p>
             </div>
           ) : (
             <>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-8" />
-                  <TableHead>{t("disputes.table.rep")}</TableHead>
-                  <TableHead>{t("disputes.table.period")}</TableHead>
-                  <TableHead>{t("disputes.table.amount")}</TableHead>
-                  <TableHead>{t("disputes.table.reason")}</TableHead>
-                  <TableHead>{t("disputes.table.status")}</TableHead>
-                  <TableHead>{t("disputes.table.submitted")}</TableHead>
-                  <TableHead className="text-right">{t("common.actions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {openDisputes.map(d => (
-                  <DisputeRow key={d.id} dispute={d} onAction={setResolveTarget} />
-                ))}
-              </TableBody>
-            </Table>
-            {pagination ? (
-              <div className="border-t px-4 py-3">
-                <DataPagination
-                  page={page}
-                  totalPages={pagination.totalPages}
-                  total={pagination.total}
-                  limit={LIMIT}
-                  onPageChange={setPage}
-                />
-              </div>
-            ) : null}
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-8" />
+                    <TableHead>{t("disputes.table.rep")}</TableHead>
+                    <TableHead>{t("disputes.table.period")}</TableHead>
+                    <TableHead>{t("disputes.table.amount")}</TableHead>
+                    <TableHead>{t("disputes.table.reason")}</TableHead>
+                    <TableHead>{t("disputes.table.status")}</TableHead>
+                    <TableHead>{t("disputes.table.submitted")}</TableHead>
+                    <TableHead className="text-right">{t("common.actions")}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {openDisputes.map((d) => (
+                    <DisputeRow key={d.id} dispute={d} onAction={setResolveTarget} />
+                  ))}
+                </TableBody>
+              </Table>
+              {pagination ? (
+                <div className="border-t px-4 py-3">
+                  <DataPagination
+                    page={page}
+                    totalPages={pagination.totalPages}
+                    total={pagination.total}
+                    limit={LIMIT}
+                    onPageChange={setPage}
+                  />
+                </div>
+              ) : null}
             </>
           )}
         </CardContent>
@@ -442,36 +533,40 @@ export function DisputesPage() {
       {resolvedDisputes.length > 0 && (
         <div>
           <button
-            onClick={() => setShowResolved(v => !v)}
+            onClick={() => setShowResolved((v) => !v)}
             className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-3"
           >
-            {showResolved ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
-            {t('disputes.resolvedDisputes', { count: resolvedDisputes.length })}
+            {showResolved ? (
+              <ChevronDown className="size-4" />
+            ) : (
+              <ChevronRight className="size-4" />
+            )}
+            {t("disputes.resolvedDisputes", { count: resolvedDisputes.length })}
           </button>
 
           {showResolved && (
             <Card className="border-border opacity-80">
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-8" />
-                      <TableHead>Rep</TableHead>
-                      <TableHead>Period</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Reason</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Submitted</TableHead>
-                      <TableHead />
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {resolvedDisputes.map(d => (
-                      <DisputeRow key={d.id} dispute={d} onAction={setResolveTarget} />
-                    ))}
-                  </TableBody>
-                </Table>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-8" />
+                        <TableHead>Rep</TableHead>
+                        <TableHead>Period</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Reason</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Submitted</TableHead>
+                        <TableHead />
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {resolvedDisputes.map((d) => (
+                        <DisputeRow key={d.id} dispute={d} onAction={setResolveTarget} />
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               </CardContent>
             </Card>
@@ -482,7 +577,11 @@ export function DisputesPage() {
       {/* Resolve modal */}
       <Dialog open={!!resolveTarget} onOpenChange={() => setResolveTarget(null)}>
         {resolveTarget && (
-          <ResolveModal dispute={resolveTarget} workspaceId={workspaceId} onClose={() => setResolveTarget(null)} />
+          <ResolveModal
+            dispute={resolveTarget}
+            workspaceId={workspaceId}
+            onClose={() => setResolveTarget(null)}
+          />
         )}
       </Dialog>
     </div>

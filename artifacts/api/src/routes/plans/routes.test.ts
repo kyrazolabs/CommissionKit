@@ -1,7 +1,7 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, mock } from "bun:test";
+import { afterAll, beforeAll, beforeEach, describe, expect, mock, test } from "bun:test";
 import mongoose from "mongoose";
-import { setupTestDB, teardownTestDB, clearCollections } from "../../../test/setup-db";
 import request from "supertest";
+import { clearCollections, setupTestDB, teardownTestDB } from "../../../test/setup-db";
 
 const TEST_USER_ID = "test-user-001";
 const TEST_USER_EMAIL = "admin@test.com";
@@ -9,8 +9,12 @@ const TEST_USER_EMAIL = "admin@test.com";
 // ── Mock heavy dependencies ────────────────────────────────────────────────────
 mock.module("@workspace/queue", () => ({
   getRedisClient: () => ({
-    get: async () => null, setex: async () => "OK", del: async () => 1,
-    scan: async () => ["0", []], on: () => {}, quit: async () => "OK",
+    get: async () => null,
+    setex: async () => "OK",
+    del: async () => 1,
+    scan: async () => ["0", []],
+    on: () => {},
+    quit: async () => "OK",
   }),
   sendHighPriorityEmail: () => Promise.resolve(),
   sendMediumPriorityEmail: () => Promise.resolve(),
@@ -33,7 +37,11 @@ mock.module("@workspace/queue", () => ({
   syncDealsQueue: { add: () => Promise.resolve() },
   webhookIngressQueue: { add: () => Promise.resolve() },
   syncEgressQueue: { add: () => Promise.resolve() },
-  PRIORITY_QUEUE_MAP: { high: { add: () => Promise.resolve() }, medium: { add: () => Promise.resolve() }, low: { add: () => Promise.resolve() } },
+  PRIORITY_QUEUE_MAP: {
+    high: { add: () => Promise.resolve() },
+    medium: { add: () => Promise.resolve() },
+    low: { add: () => Promise.resolve() },
+  },
 }));
 mock.module("../../lib/auth", () => ({
   auth: {
@@ -43,18 +51,20 @@ mock.module("../../lib/auth", () => ({
   findUserById: mock(() => Promise.resolve(null)),
 }));
 
-
-
 mock.module("../../lib/bull-board", () => ({
   secureBullBoard: (req: any, res: any, next: any) => next(),
-  serverAdapter: { getRouter: () => ((() => {}) as any) },
+  serverAdapter: { getRouter: () => (() => {}) as any },
 }));
 
 mock.module("stripe", () => ({
   default: class StripeMock {
     constructor() {}
     subscriptions = { create: () => Promise.resolve({ id: "sub_123", status: "active" }) };
-    checkout = { sessions: { create: () => Promise.resolve({ url: "https://checkout.stripe.com/test", id: "cs_test" }) } };
+    checkout = {
+      sessions: {
+        create: () => Promise.resolve({ url: "https://checkout.stripe.com/test", id: "cs_test" }),
+      },
+    };
     webhooks = { constructEvent: () => ({ type: "checkout.session.completed" }) };
   },
 }));
@@ -123,9 +133,18 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await clearCollections();
-  const ws = await Workspace.create({ slug: "test-ws", name: "Test Workspace", ownerId: TEST_USER_ID });
+  const ws = await Workspace.create({
+    slug: "test-ws",
+    name: "Test Workspace",
+    ownerId: TEST_USER_ID,
+  });
   workspaceId = ws._id.toString();
-  await WorkspaceMember.create({ workspaceId: ws._id, userId: TEST_USER_ID, email: TEST_USER_EMAIL, role: "owner" });
+  await WorkspaceMember.create({
+    workspaceId: ws._id,
+    userId: TEST_USER_ID,
+    email: TEST_USER_EMAIL,
+    role: "owner",
+  });
 });
 
 const authHeader = () => ({ "X-Workspace-ID": workspaceId });
@@ -193,10 +212,14 @@ describe("POST /api/plans", () => {
   });
 
   test("creates plan with accelerator fields", async () => {
-    const res = await request(app)
-      .post("/api/plans")
-      .set(authHeader())
-      .send({ name: "Accelerator Plan", type: "flat", flatRate: 3, acceleratorThreshold: 10000, acceleratorRate: 10, clawbackDays: 30 });
+    const res = await request(app).post("/api/plans").set(authHeader()).send({
+      name: "Accelerator Plan",
+      type: "flat",
+      flatRate: 3,
+      acceleratorThreshold: 10000,
+      acceleratorRate: 10,
+      clawbackDays: 30,
+    });
 
     expect(res.status).toBe(201);
     expect(res.body.acceleratorThreshold).toBe(10000);

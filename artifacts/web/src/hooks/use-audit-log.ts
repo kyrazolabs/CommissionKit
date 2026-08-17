@@ -1,15 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams } from "wouter";
 import { useTranslation } from "react-i18next";
-import { apiFetch } from "@/lib/api";
+import { useSearchParams } from "wouter";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { apiFetch } from "@/lib/api";
 import type { AuditEvent, AuditFilters, AuditLogResponse } from "@/types/audit-log";
 
-function buildAuditLogParams(
-  filters: AuditFilters,
-  page: number,
-  limit: number
-): string {
+function buildAuditLogParams(filters: AuditFilters, page: number, limit: number): string {
   const params = new URLSearchParams();
   params.set("page", String(page));
   params.set("limit", String(limit));
@@ -25,11 +21,7 @@ function buildAuditLogParams(
   return params.toString();
 }
 
-export function useAuditLog(
-  filters: AuditFilters,
-  page: number,
-  limit = 25
-) {
+export function useAuditLog(filters: AuditFilters, page: number, limit = 25) {
   const { activeWorkspace } = useWorkspace();
   const { t } = useTranslation();
 
@@ -109,7 +101,8 @@ export function useAuditLogFilters() {
     }
 
     if (partial.resourceTypes !== undefined) {
-      if (partial.resourceTypes.length > 0) next.set("resourceTypes", partial.resourceTypes.join(","));
+      if (partial.resourceTypes.length > 0)
+        next.set("resourceTypes", partial.resourceTypes.join(","));
       else next.delete("resourceTypes");
     }
 

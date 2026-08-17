@@ -10,7 +10,8 @@ interface PageMeta {
 }
 
 const APP_NAME = "CommissionKit";
-const DEFAULT_DESCRIPTION = "Automate sales commissions for your team. Track reps, deals, and payouts — all in one place.";
+const DEFAULT_DESCRIPTION =
+  "Automate sales commissions for your team. Track reps, deals, and payouts — all in one place.";
 
 /**
  * Imperatively updates <title>, meta description, and robots tag for
@@ -24,7 +25,8 @@ export function usePageMeta({ title, description, robots, keywords }: PageMeta) 
 
   useEffect(() => {
     // Title
-    const fullTitle = title === APP_NAME || title.endsWith(` — ${APP_NAME}`) ? title : `${title} — ${APP_NAME}`;
+    const fullTitle =
+      title === APP_NAME || title.endsWith(` — ${APP_NAME}`) ? title : `${title} — ${APP_NAME}`;
     document.title = fullTitle;
 
     // Meta description

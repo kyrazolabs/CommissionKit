@@ -8,7 +8,7 @@ class PluginRegistry {
       console.warn(`[PluginRegistry] Overwriting existing plugin: ${plugin.name}`);
     }
     this.plugins.set(plugin.name, plugin);
-    console.log(`[PluginRegistry] Registered: ${plugin.name} v${plugin.version}`);
+    console.info(`[PluginRegistry] Registered: ${plugin.name} v${plugin.version}`);
   }
 
   get(name: string): CKitPlugin | undefined {

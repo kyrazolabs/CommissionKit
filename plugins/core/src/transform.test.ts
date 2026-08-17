@@ -1,5 +1,10 @@
-import { describe, test, expect } from "bun:test";
-import { normalizeCurrency, derivePeriod, derivePaymentStatus, generateAccessCode } from "./transform";
+import { describe, expect, test } from "bun:test";
+import {
+  derivePaymentStatus,
+  derivePeriod,
+  generateAccessCode,
+  normalizeCurrency,
+} from "./transform";
 
 describe("normalizeCurrency", () => {
   test("returns 3-letter code as-is", () => {

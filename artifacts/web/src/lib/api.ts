@@ -3,7 +3,7 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const url = endpoint.startsWith("http") ? endpoint : `${API_URL}${endpoint}`;
   const workspaceId = localStorage.getItem("ck_active_workspace");
-  
+
   const res = await fetch(url, {
     ...options,
     headers: {
@@ -52,7 +52,10 @@ export interface PaginatedResult<T> {
   totalCount: number;
 }
 
-export async function paginatedFetch<T>(endpoint: string, options: RequestInit = {}): Promise<PaginatedResult<T>> {
+export async function paginatedFetch<T>(
+  endpoint: string,
+  options: RequestInit = {},
+): Promise<PaginatedResult<T>> {
   const url = endpoint.startsWith("http") ? endpoint : `${API_URL}${endpoint}`;
   const workspaceId = localStorage.getItem("ck_active_workspace");
 
@@ -81,7 +84,7 @@ export async function paginatedFetch<T>(endpoint: string, options: RequestInit =
     return { data: [] as T[], totalCount: 0 };
   }
 
-  const data = await res.json() as T[];
+  const data = (await res.json()) as T[];
   const totalCount = parseInt(res.headers.get("X-Total-Count") || "0", 10);
   return { data, totalCount };
 }

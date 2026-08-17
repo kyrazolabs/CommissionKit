@@ -20,6 +20,7 @@
       "*.js",
       "*.mjs",
       "*.cjs",
+      "!**/*.css",
       "!**/node_modules",
       "!**/.next",
       "!**/dist",
@@ -39,10 +40,28 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "suspicious": { "noExplicitAny": { "level": "warn" } },
+      "a11y": {
+        "useButtonType": "warn",
+        "noSvgWithoutTitle": "warn",
+        "useSemanticElements": "warn",
+        "noStaticElementInteractions": "warn",
+        "useKeyWithClickEvents": "warn",
+        "useFocusableInteractive": "warn",
+        "useAriaPropsForRole": "warn",
+        "noRedundantRoles": "warn",
+        "noLabelWithoutControl": "warn",
+        "noAutofocus": "warn",
+        "useAriaPropsSupportedByRole": "warn",
+        "noAmbiguousAnchorText": "warn",
+        "useValidAnchor": "warn"
+      },
+      "suspicious": {
+        "noExplicitAny": "warn",
+        "useIterableCallbackReturn": "warn"
+      },
       "correctness": {
-        "noUnusedVariables": { "level": "warn" },
-        "noUnusedImports": { "level": "warn" }
+        "noUnusedVariables": "warn",
+        "noUnusedImports": "warn"
       }
     }
   },
@@ -61,7 +80,21 @@
             "noConsole": {
               "level": "error",
               "options": {
-                "allow": ["assert", "count", "debug", "dir", "error", "group", "groupEnd", "info", "table", "time", "timeEnd", "trace", "warn"]
+                "allow": [
+                  "assert",
+                  "count",
+                  "debug",
+                  "dir",
+                  "error",
+                  "group",
+                  "groupEnd",
+                  "info",
+                  "table",
+                  "time",
+                  "timeEnd",
+                  "trace",
+                  "warn"
+                ]
               }
             }
           }

@@ -1,6 +1,6 @@
-import { useState, useCallback, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useListReps, useListPlans, useListDeals } from "@workspace/api-client-react";
+import { useListDeals, useListPlans, useListReps } from "@workspace/api-client-react";
+import { useCallback, useMemo, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { useWorkspace } from "./use-workspace";
 
@@ -53,15 +53,16 @@ export function useSetupChecklist(): UseSetupChecklistReturn {
   const { data: dealsData } = useListDeals();
 
   // Step completion status - derived from live data
-  const steps = useMemo(() => ({
-    reps: countItems(repsData) > 0,
-    plans: countItems(plansData) > 0,
-    deals: countItems(dealsData) > 0,
-  }), [repsData, plansData, dealsData]);
+  const steps = useMemo(
+    () => ({
+      reps: countItems(repsData) > 0,
+      plans: countItems(plansData) > 0,
+      deals: countItems(dealsData) > 0,
+    }),
+    [repsData, plansData, dealsData],
+  );
 
-  const completedCount = useMemo(() =>
-    Object.values(steps).filter(Boolean).length
-  , [steps]);
+  const completedCount = useMemo(() => Object.values(steps).filter(Boolean).length, [steps]);
 
   const allComplete = completedCount === 3;
 
