@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeAll, mock } from "bun:test";
+import { beforeAll, describe, expect, mock, test } from "bun:test";
 import request from "supertest";
 
 const sendEmailMock = mock(() => Promise.resolve());
@@ -33,7 +33,11 @@ mock.module("@workspace/queue", () => ({
   syncDealsQueue: { add: () => Promise.resolve() },
   webhookIngressQueue: { add: () => Promise.resolve() },
   syncEgressQueue: { add: () => Promise.resolve() },
-  PRIORITY_QUEUE_MAP: { high: { add: () => Promise.resolve() }, medium: { add: () => Promise.resolve() }, low: { add: () => Promise.resolve() } },
+  PRIORITY_QUEUE_MAP: {
+    high: { add: () => Promise.resolve() },
+    medium: { add: () => Promise.resolve() },
+    low: { add: () => Promise.resolve() },
+  },
 }));
 
 describe("POST /api/apply", () => {
@@ -73,7 +77,8 @@ describe("POST /api/apply", () => {
       linkedinUrl: "https://linkedin.com/in/janedoe",
       location: "Dubai, UAE",
       experience: "5 years of B2B SaaS sales in the GCC region.",
-      pitch: "I know many HR and finance leaders who struggle with commission tracking. I can introduce them to CommissionKit and run demos.",
+      pitch:
+        "I know many HR and finance leaders who struggle with commission tracking. I can introduce them to CommissionKit and run demos.",
       agreedToTerms: true,
       position: "sales-representative",
     });

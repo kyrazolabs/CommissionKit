@@ -1,4 +1,4 @@
-import { describe, test, expect, mock } from "bun:test";
+import { describe, expect, mock, test } from "bun:test";
 
 const mockSendMail = mock(() => Promise.resolve({ messageId: "msg_123" }));
 const mockVerify = mock(() => Promise.resolve(true));

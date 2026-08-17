@@ -1,17 +1,17 @@
-import { useState, useEffect } from "react";
+import { MessageSquare, Star, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { X, Star, MessageSquare } from "lucide-react";
-import { apiFetch } from "@/lib/api";
-import { toast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
+import { apiFetch } from "@/lib/api";
 
 const STORAGE_KEY = "ck-feedback-last-shown";
 
@@ -105,10 +105,21 @@ export function FeedbackDialog({ open, onClose }: FeedbackDialogProps) {
           {error && <p className="text-sm text-destructive">{error}</p>}
 
           <div className="flex gap-2 pt-2">
-            <Button type="button" variant="ghost" onClick={handleClose} disabled={submitting} className="flex-1">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleClose}
+              disabled={submitting}
+              className="flex-1"
+            >
               {t("common.cancel")}
             </Button>
-            <Button type="button" onClick={handleSubmit} disabled={submitting || rating === 0} className="flex-1">
+            <Button
+              type="button"
+              onClick={handleSubmit}
+              disabled={submitting || rating === 0}
+              className="flex-1"
+            >
               {submitting ? t("feedback.submitting") : t("feedback.submit")}
             </Button>
           </div>
@@ -144,11 +155,17 @@ export function useFeedbackPrompt() {
 
   const banner = !bannerDismissed ? (
     <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-lg border border-card-border bg-card text-sm">
-      <button onClick={handleOpen} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors flex-1 text-left">
+      <button
+        onClick={handleOpen}
+        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors flex-1 text-left"
+      >
         <MessageSquare className="size-3.5 shrink-0 text-primary" />
         <span>{t("feedback.promptBanner")}</span>
       </button>
-      <button onClick={handleDismiss} className="shrink-0 text-muted-foreground hover:text-foreground transition-colors">
+      <button
+        onClick={handleDismiss}
+        className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+      >
         <X className="size-3.5" />
       </button>
     </div>

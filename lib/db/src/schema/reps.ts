@@ -1,26 +1,33 @@
-import mongoose, { Schema, model, Types } from "mongoose";
+import type mongoose from "mongoose";
+import { model, Schema, type Types } from "mongoose";
 import { z } from "zod";
 import { auditPlugin } from "../plugins/audit.js";
 
-const RepSchema = new Schema({
-  workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
-  name: { type: String, required: true },
-  email: { type: String, required: true },
-  role: { type: String, required: true, default: "Sales Rep" },
-  planId: { type: Schema.Types.ObjectId, ref: "Plan" },
-  portalAccessCode: { type: String, unique: true, sparse: true },
-  portalUsername: { type: String, unique: true, sparse: true },
-  externalId: { type: String, index: true, sparse: true },
-  sourceSystem: { type: String },
-  syncHash: { type: String },
-  lastSyncedAt: { type: Date },
-  metadata: { type: Schema.Types.Mixed },
-  isSampleData: { type: Boolean, default: false },
-}, { timestamps: { createdAt: true, updatedAt: false } });
+const RepSchema = new Schema(
+  {
+    workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
+    name: { type: String, required: true },
+    email: { type: String, required: true },
+    role: { type: String, required: true, default: "Sales Rep" },
+    planId: { type: Schema.Types.ObjectId, ref: "Plan" },
+    portalAccessCode: { type: String, unique: true, sparse: true },
+    portalUsername: { type: String, unique: true, sparse: true },
+    externalId: { type: String, index: true, sparse: true },
+    sourceSystem: { type: String },
+    syncHash: { type: String },
+    lastSyncedAt: { type: Date },
+    metadata: { type: Schema.Types.Mixed },
+    isSampleData: { type: Boolean, default: false },
+  },
+  { timestamps: { createdAt: true, updatedAt: false } },
+);
 
 RepSchema.index(
   { workspaceId: 1, sourceSystem: 1, externalId: 1 },
-  { unique: true, partialFilterExpression: { sourceSystem: { $type: "string" }, externalId: { $type: "string" } } },
+  {
+    unique: true,
+    partialFilterExpression: { sourceSystem: { $type: "string" }, externalId: { $type: "string" } },
+  },
 );
 
 RepSchema.plugin(auditPlugin({ resourceType: "rep", resourceNameField: "name" }));

@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv, randomBytes, createHash, timingSafeEqual } from "crypto";
+import { createCipheriv, createDecipheriv, createHash, randomBytes, timingSafeEqual } from "crypto";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16;
@@ -27,7 +27,9 @@ function deriveKey(): Buffer {
   );
 }
 
-export function encryptConfig(config: Record<string, unknown> | null | undefined): string | undefined {
+export function encryptConfig(
+  config: Record<string, unknown> | null | undefined,
+): string | undefined {
   if (config == null) return undefined;
 
   const key = deriveKey();
@@ -84,7 +86,11 @@ const SENSITIVE_FIELDS = new Set([
 export function stripSensitiveFields(config: Record<string, unknown>): Record<string, unknown> {
   const stripped: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(config)) {
-    if (SENSITIVE_FIELDS.has(key) || key.toLowerCase().includes("secret") || key.toLowerCase().includes("password")) {
+    if (
+      SENSITIVE_FIELDS.has(key) ||
+      key.toLowerCase().includes("secret") ||
+      key.toLowerCase().includes("password")
+    ) {
       stripped[key] = typeof value === "string" && value.length > 0 ? "••••••••" : null;
     } else if (typeof value === "object" && value !== null && !Array.isArray(value)) {
       stripped[key] = stripSensitiveFields(value as Record<string, unknown>);

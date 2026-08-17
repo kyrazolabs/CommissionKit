@@ -1,23 +1,38 @@
-import { describe, test, expect, mock, beforeEach } from "bun:test";
+import { beforeEach, describe, expect, mock, test } from "bun:test";
 
 // Mock localStorage
 const store: Record<string, string> = {};
 const localStorageMock = {
   getItem: (key: string) => store[key] ?? null,
-  setItem: (key: string, value: string) => { store[key] = value; },
-  removeItem: (key: string) => { delete store[key]; },
-  clear: () => { Object.keys(store).forEach(k => delete store[k]); },
+  setItem: (key: string, value: string) => {
+    store[key] = value;
+  },
+  removeItem: (key: string) => {
+    delete store[key];
+  },
+  clear: () => {
+    Object.keys(store).forEach((k) => delete store[k]);
+  },
 };
 Object.defineProperty(globalThis, "localStorage", { value: localStorageMock });
 
-const mockFetch = mock(() => Promise.resolve(new Response('{"data":"ok"}', { status: 200, headers: { "Content-Type": "application/json" } })));
+const mockFetch = mock(() =>
+  Promise.resolve(
+    new Response('{"data":"ok"}', { status: 200, headers: { "Content-Type": "application/json" } }),
+  ),
+);
 globalThis.fetch = mockFetch as any;
 
 describe("apiFetch", () => {
   beforeEach(() => {
     store["ck_active_workspace"] = "ws1";
     mockFetch.mockReset();
-    mockFetch.mockResolvedValue(new Response('{"data":"ok"}', { status: 200, headers: { "Content-Type": "application/json" } }));
+    mockFetch.mockResolvedValue(
+      new Response('{"data":"ok"}', {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
   });
 
   test("adds Content-Type and X-Workspace-ID headers", async () => {
@@ -39,7 +54,12 @@ describe("apiFetch", () => {
   });
 
   test("throws on non-ok response", async () => {
-    mockFetch.mockResolvedValueOnce(new Response(JSON.stringify({ error: "Not found" }), { status: 404, headers: { "Content-Type": "application/json" } }));
+    mockFetch.mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: "Not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
     const { apiFetch } = await import("./api");
     await expect(apiFetch("/api/notfound")).rejects.toThrow("Not found");
   });
@@ -56,7 +76,12 @@ describe("paginatedFetch", () => {
   beforeEach(() => {
     store["ck_active_workspace"] = "ws1";
     mockFetch.mockReset();
-    mockFetch.mockResolvedValue(new Response('[]', { status: 200, headers: { "Content-Type": "application/json", "X-Total-Count": "10" } }));
+    mockFetch.mockResolvedValue(
+      new Response("[]", {
+        status: 200,
+        headers: { "Content-Type": "application/json", "X-Total-Count": "10" },
+      }),
+    );
   });
 
   test("returns data array and totalCount", async () => {
@@ -67,7 +92,12 @@ describe("paginatedFetch", () => {
   });
 
   test("throws on error", async () => {
-    mockFetch.mockResolvedValueOnce(new Response(JSON.stringify({ error: "Bad request" }), { status: 400, headers: { "Content-Type": "application/json" } }));
+    mockFetch.mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: "Bad request" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
     const { paginatedFetch } = await import("./api");
     await expect(paginatedFetch("/api/error")).rejects.toThrow("Bad request");
   });

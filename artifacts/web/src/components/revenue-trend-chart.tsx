@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
 import {
-  LineChart,
-  Line,
   CartesianGrid,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -64,7 +64,9 @@ export function RevenueTrendChart({ data, currency, className }: RevenueTrendCha
               dataKey="period"
               tickFormatter={(val) => {
                 const [y, m] = val.split("-");
-                return new Date(Number(y), Number(m) - 1, 1).toLocaleString("en", { month: "short" });
+                return new Date(Number(y), Number(m) - 1, 1).toLocaleString("en", {
+                  month: "short",
+                });
               }}
               tick={{ fontSize: 11 }}
               stroke="hsl(var(--muted-foreground))"

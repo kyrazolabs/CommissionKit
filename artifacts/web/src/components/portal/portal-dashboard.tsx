@@ -1,27 +1,28 @@
-import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import {
-  LineChart,
-  Line,
+  AlertOctagon,
+  ArrowDownToLine,
+  Briefcase,
+  Clock,
+  DollarSign,
+  Layers,
+  TrendingUp,
+  Wallet,
+} from "lucide-react";
+import { useTranslation } from "react-i18next";
+import {
   CartesianGrid,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
-import {
-  AlertOctagon,
-  Briefcase,
-  DollarSign,
-  TrendingUp,
-  Wallet,
-  Layers,
-  Clock,
-  ArrowDownToLine,
-} from "lucide-react";
-
-import { Card } from "@/components/ui/card";
+import { SortableTableHead } from "@/components/sortable-table-head";
+import { StatCard } from "@/components/stat-card";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -30,8 +31,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { StatCard } from "@/components/stat-card";
-import { SortableTableHead } from "@/components/sortable-table-head";
 import { useTableSort } from "@/hooks/use-table-sort";
 import { formatCurrency, formatPercent } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -89,9 +88,7 @@ interface PortalDashboardProps {
   onDispute: (payout: PortalPayout) => void;
 }
 
-function statusBadgeVariant(
-  status: string,
-): "default" | "secondary" | "destructive" | "outline" {
+function statusBadgeVariant(status: string): "default" | "secondary" | "destructive" | "outline" {
   switch (status) {
     case "completed":
     case "paid":
@@ -110,19 +107,16 @@ function statusBadgeVariant(
 function EarningsTooltip({ active, payload, label, currency }: any) {
   if (!active || !payload?.length) return null;
   const [year, month] = (label || "").split("-");
-  const d = new Date(year, month - 1)
-  const monthLabel = month && year ? `${d.toLocaleString("en", { month: "short" })} ${year}` : label;
+  const d = new Date(year, month - 1);
+  const monthLabel =
+    month && year ? `${d.toLocaleString("en", { month: "short" })} ${year}` : label;
   return (
     <div className="rounded-lg border border-card-border bg-card px-3 py-2 shadow-sm">
       <p className="text-xs font-semibold text-foreground mb-1">{monthLabel}</p>
       {payload.map((p: any) => (
         <p key={p.name} className="text-xs text-muted-foreground">
-          {p.name === "totalCommission"
-            ? "Commission: "
-            : `${p.name}: `}
-          <span className="font-medium text-foreground">
-            {formatCurrency(p.value, currency)}
-          </span>
+          {p.name === "totalCommission" ? "Commission: " : `${p.name}: `}
+          <span className="font-medium text-foreground">{formatCurrency(p.value, currency)}</span>
         </p>
       ))}
     </div>
@@ -156,14 +150,11 @@ export function PortalDashboard({
 }: PortalDashboardProps) {
   const { t } = useTranslation();
 
-  const {
-    sort,
-    getSortHandler,
-    sortedData,
-  } = useTableSort<"dealName" | "closeDate" | "dealAmount" | "rateApplied" | "commissionAmount">("commissionAmount", "desc");
+  const { sort, getSortHandler, sortedData } = useTableSort<
+    "dealName" | "closeDate" | "dealAmount" | "rateApplied" | "commissionAmount"
+  >("commissionAmount", "desc");
 
-  const showCurrencyBreakdown =
-    (summary.currencySummaries?.length ?? 0) > 1;
+  const showCurrencyBreakdown = (summary.currencySummaries?.length ?? 0) > 1;
 
   // Always compute last 6 months, filling empty months with 0
   const last6Months = (() => {
@@ -173,7 +164,11 @@ export function PortalDashboard({
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const periodStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       const existing = (summary.monthlyHistory || []).find((m) => m.period === periodStr);
-      months.push(existing ? { ...existing, totalDeals: (existing as any).totalDeals ?? 0 } : { period: periodStr, totalCommission: 0, totalDeals: 0 });
+      months.push(
+        existing
+          ? { ...existing, totalDeals: (existing as any).totalDeals ?? 0 }
+          : { period: periodStr, totalCommission: 0, totalDeals: 0 },
+      );
     }
     return months;
   })();
@@ -186,7 +181,12 @@ export function PortalDashboard({
     .filter((p) => p.status === "paid")
     .reduce((s, p) => s + (p.finalAmount || p.commissionAmount || 0), 0);
   const ytdPaid = payouts
-    .filter((p) => p.status === "paid" && p.paymentDate && new Date(p.paymentDate).getFullYear() === new Date().getFullYear())
+    .filter(
+      (p) =>
+        p.status === "paid" &&
+        p.paymentDate &&
+        new Date(p.paymentDate).getFullYear() === new Date().getFullYear(),
+    )
     .reduce((s, p) => s + (p.finalAmount || p.commissionAmount || 0), 0);
 
   return (
@@ -222,30 +222,44 @@ export function PortalDashboard({
           <div className="px-5 py-4">
             <div className="flex items-center gap-1.5 mb-1">
               <Layers className="size-3.5 text-muted-foreground" />
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t("portal.plan", "Plan")}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {t("portal.plan", "Plan")}
+              </p>
             </div>
             <p className="text-sm font-medium text-foreground">{summary.planName || "—"}</p>
           </div>
           <div className="px-5 py-4">
             <div className="flex items-center gap-1.5 mb-1">
               <Clock className="size-3.5 text-amber-500" />
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t("portal.outstanding", "Outstanding")}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {t("portal.outstanding", "Outstanding")}
+              </p>
             </div>
-            <p className="text-sm font-semibold text-foreground tabular-nums">{formatCurrency(totalOwed, summary.currency)}</p>
+            <p className="text-sm font-semibold text-foreground tabular-nums">
+              {formatCurrency(totalOwed, summary.currency)}
+            </p>
           </div>
           <div className="px-5 py-4">
             <div className="flex items-center gap-1.5 mb-1">
               <ArrowDownToLine className="size-3.5 text-green-500" />
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t("portal.totalPaid", "Total Paid")}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {t("portal.totalPaid", "Total Paid")}
+              </p>
             </div>
-            <p className="text-sm font-semibold text-foreground tabular-nums">{formatCurrency(totalPaidLifetime, summary.currency)}</p>
+            <p className="text-sm font-semibold text-foreground tabular-nums">
+              {formatCurrency(totalPaidLifetime, summary.currency)}
+            </p>
           </div>
           <div className="px-5 py-4">
             <div className="flex items-center gap-1.5 mb-1">
               <TrendingUp className="size-3.5 text-primary" />
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t("portal.ytdPaid", "YTD Paid")}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {t("portal.ytdPaid", "YTD Paid")}
+              </p>
             </div>
-            <p className="text-sm font-semibold text-foreground tabular-nums">{formatCurrency(ytdPaid, summary.currency)}</p>
+            <p className="text-sm font-semibold text-foreground tabular-nums">
+              {formatCurrency(ytdPaid, summary.currency)}
+            </p>
           </div>
         </div>
       </Card>
@@ -276,8 +290,7 @@ export function PortalDashboard({
                       {formatCurrency(cs.totalCommission, cs.currency)}
                     </p>
                     <p className="text-xs text-muted-foreground tabular-nums">
-                      {t("portal.onRevenue", "on")}{" "}
-                      {formatCurrency(cs.totalRevenue, cs.currency)}
+                      {t("portal.onRevenue", "on")} {formatCurrency(cs.totalRevenue, cs.currency)}
                     </p>
                   </div>
                 </div>
@@ -351,51 +364,52 @@ export function PortalDashboard({
         </div>
         <div className="px-5 pb-4">
           {sortedData(summary.dealBreakdown ?? [], (row) => row.commissionAmount).length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <SortableTableHead
-                      column="dealName"
-                      label={t("portal.deal", "Deal")}
-                      sortColumn={sort.column}
-                      sortDirection={sort.direction}
-                      onSort={getSortHandler}
-                    />
-                    <SortableTableHead
-                      column="closeDate"
-                      label={t("portal.date", "Date")}
-                      sortColumn={sort.column}
-                      sortDirection={sort.direction}
-                      onSort={getSortHandler}
-                    />
-                    <SortableTableHead
-                      column="dealAmount"
-                      label={t("portal.amount", "Amount")}
-                      sortColumn={sort.column}
-                      sortDirection={sort.direction}
-                      onSort={getSortHandler}
-                      className="text-right"
-                    />
-                    <SortableTableHead
-                      column="rateApplied"
-                      label={t("portal.rate", "Rate")}
-                      sortColumn={sort.column}
-                      sortDirection={sort.direction}
-                      onSort={getSortHandler}
-                      className="text-right"
-                    />
-                    <SortableTableHead
-                      column="commissionAmount"
-                      label={t("portal.commission", "Commission")}
-                      sortColumn={sort.column}
-                      sortDirection={sort.direction}
-                      onSort={getSortHandler}
-                      className="text-right"
-                    />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sortedData(summary.dealBreakdown ?? [], (row) => row.commissionAmount).map((deal) => (
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <SortableTableHead
+                    column="dealName"
+                    label={t("portal.deal", "Deal")}
+                    sortColumn={sort.column}
+                    sortDirection={sort.direction}
+                    onSort={getSortHandler}
+                  />
+                  <SortableTableHead
+                    column="closeDate"
+                    label={t("portal.date", "Date")}
+                    sortColumn={sort.column}
+                    sortDirection={sort.direction}
+                    onSort={getSortHandler}
+                  />
+                  <SortableTableHead
+                    column="dealAmount"
+                    label={t("portal.amount", "Amount")}
+                    sortColumn={sort.column}
+                    sortDirection={sort.direction}
+                    onSort={getSortHandler}
+                    className="text-right"
+                  />
+                  <SortableTableHead
+                    column="rateApplied"
+                    label={t("portal.rate", "Rate")}
+                    sortColumn={sort.column}
+                    sortDirection={sort.direction}
+                    onSort={getSortHandler}
+                    className="text-right"
+                  />
+                  <SortableTableHead
+                    column="commissionAmount"
+                    label={t("portal.commission", "Commission")}
+                    sortColumn={sort.column}
+                    sortDirection={sort.direction}
+                    onSort={getSortHandler}
+                    className="text-right"
+                  />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sortedData(summary.dealBreakdown ?? [], (row) => row.commissionAmount).map(
+                  (deal) => (
                     <TableRow key={deal.dealId}>
                       <TableCell className="font-medium">
                         <p className="truncate max-w-[200px]">{deal.dealName}</p>
@@ -418,9 +432,10 @@ export function PortalDashboard({
                         {formatCurrency(deal.commissionAmount, deal.currency)}
                       </TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  ),
+                )}
+              </TableBody>
+            </Table>
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-center gap-2">
               <Briefcase className="size-8 text-muted-foreground" />
@@ -441,79 +456,72 @@ export function PortalDashboard({
         </div>
         <div className="px-5  pb-4">
           {payouts.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      {t("portal.period", "Period")}
-                    </TableHead>
-                    <TableHead className="text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      {t("portal.commission", "Commission")}
-                    </TableHead>
-                    <TableHead className="text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      {t("portal.adjustments", "Adjustments")}
-                    </TableHead>
-                    <TableHead className="text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      {t("portal.final", "Final")}
-                    </TableHead>
-                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      {t("portal.status", "Status")}
-                    </TableHead>
-                    <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      {t("portal.paymentDate", "Payment Date")}
-                    </TableHead>
-                    <TableHead />
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t("portal.period", "Period")}
+                  </TableHead>
+                  <TableHead className="text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t("portal.commission", "Commission")}
+                  </TableHead>
+                  <TableHead className="text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t("portal.adjustments", "Adjustments")}
+                  </TableHead>
+                  <TableHead className="text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t("portal.final", "Final")}
+                  </TableHead>
+                  <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t("portal.status", "Status")}
+                  </TableHead>
+                  <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t("portal.paymentDate", "Payment Date")}
+                  </TableHead>
+                  <TableHead />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {payouts.map((payout) => (
+                  <TableRow key={payout.id}>
+                    <TableCell className="font-medium text-sm">{payout.period}</TableCell>
+                    <TableCell className="text-right tabular-nums text-sm">
+                      {formatCurrency(payout.commissionAmount, payout.currency)}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums text-sm text-muted-foreground">
+                      {payout.adjustments !== undefined
+                        ? formatCurrency(payout.adjustments, payout.currency)
+                        : "—"}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums text-sm font-semibold">
+                      {formatCurrency(payout.finalAmount, payout.currency)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={statusBadgeVariant(payout.status)}>{payout.status}</Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {payout.paymentDate ? formatDateSafe(payout.paymentDate, "MMM d, yyyy") : "—"}
+                    </TableCell>
+                    <TableCell>
+                      {(payout.status === "pending" || payout.status === "approved") && (
+                        <button
+                          type="button"
+                          onClick={() => onDispute(payout)}
+                          className={cn(
+                            "inline-flex items-center gap-1 text-xs font-medium",
+                            "text-muted-foreground hover:text-foreground",
+                            "transition-colors duration-200",
+                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-1.5 py-0.5",
+                          )}
+                        >
+                          <AlertOctagon className="size-3.5" />
+                          {t("portal.dispute", "Dispute")}
+                        </button>
+                      )}
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {payouts.map((payout) => (
-                    <TableRow key={payout.id}>
-                      <TableCell className="font-medium text-sm">
-                        {payout.period}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums text-sm">
-                        {formatCurrency(payout.commissionAmount, payout.currency)}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums text-sm text-muted-foreground">
-                        {payout.adjustments !== undefined
-                          ? formatCurrency(payout.adjustments, payout.currency)
-                          : "—"}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums text-sm font-semibold">
-                        {formatCurrency(payout.finalAmount, payout.currency)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={statusBadgeVariant(payout.status)}>
-                          {payout.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {payout.paymentDate
-                          ? formatDateSafe(payout.paymentDate, "MMM d, yyyy")
-                          : "—"}
-                      </TableCell>
-                      <TableCell>
-                        {(payout.status === "pending" ||
-                          payout.status === "approved") && (
-                          <button
-                            type="button"
-                            onClick={() => onDispute(payout)}
-                            className={cn(
-                              "inline-flex items-center gap-1 text-xs font-medium",
-                              "text-muted-foreground hover:text-foreground",
-                              "transition-colors duration-200",
-                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-1.5 py-0.5",
-                            )}
-                          >
-                            <AlertOctagon className="size-3.5" />
-                            {t("portal.dispute", "Dispute")}
-                          </button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                ))}
+              </TableBody>
+            </Table>
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-center gap-2">
               <Wallet className="size-8 text-muted-foreground" />

@@ -1,23 +1,19 @@
-import {
-  BasePlugin,
-  PluginHttpClient,
-  derivePaymentStatus,
-} from "@workspace/plugins-core";
 import type {
   ConnectionConfig,
   ConnectionTestResult,
   FetchOptions,
-  NormalizedRep,
-  NormalizedDeal,
   IngresEvent,
-  WebhookRequest,
   JsonSchema,
+  NormalizedDeal,
+  NormalizedRep,
   PluginUIMetadata,
+  WebhookRequest,
 } from "@workspace/plugins-core";
-import { CustomConnectorConfigSchema, type CustomConnectorConfig } from "./config-parser";
-import { jsonpathGet } from "./jsonpath";
-import { createPaginationState, getPaginationParams, advancePage } from "./pagination";
+import { BasePlugin, derivePaymentStatus, PluginHttpClient } from "@workspace/plugins-core";
 import { getAuthHeaders, refreshOAuthToken } from "./auth";
+import { type CustomConnectorConfig, CustomConnectorConfigSchema } from "./config-parser";
+import { jsonpathGet } from "./jsonpath";
+import { advancePage, createPaginationState, getPaginationParams } from "./pagination";
 
 // Compute field helpers: $div:1000000:path applies division to extracted value
 function resolveFieldValue(item: any, fieldDef: string): any {
@@ -60,7 +56,8 @@ export class CustomConnector extends BasePlugin {
   readonly name = "custom";
   readonly displayName = "Custom REST API";
   readonly version = "1.0.0";
-  readonly description = "Connect CKit to any ERP or CRM that exposes a REST API. Configure field mappings, authentication, and pagination — no code needed.";
+  readonly description =
+    "Connect CKit to any ERP or CRM that exposes a REST API. Configure field mappings, authentication, and pagination — no code needed.";
   readonly icon = "plug";
 
   private parseConfig(config: ConnectionConfig): CustomConnectorConfig | null {
@@ -85,7 +82,10 @@ export class CustomConnector extends BasePlugin {
       }
 
       const start = Date.now();
-      const response = await fetch(parsed.baseUrl, { headers, signal: AbortSignal.timeout(15_000) });
+      const response = await fetch(parsed.baseUrl, {
+        headers,
+        signal: AbortSignal.timeout(15_000),
+      });
       const latency = Date.now() - start;
 
       if (!response.ok) {
@@ -128,12 +128,13 @@ export class CustomConnector extends BasePlugin {
       parsed.pagination || DEFAULT_PAGINATION,
       parsed.responsePath,
       options,
-      (item, fields) => ({
-        externalId: String(resolveFieldValue(item, fields.externalId || "id") || ""),
-        name: resolveFieldValue(item, fields.name || "name") || "",
-        email: resolveFieldValue(item, fields.email || "email") || "",
-        role: fields.role ? resolveFieldValue(item, fields.role) : undefined,
-      }) as NormalizedRep,
+      (item, fields) =>
+        ({
+          externalId: String(resolveFieldValue(item, fields.externalId || "id") || ""),
+          name: resolveFieldValue(item, fields.name || "name") || "",
+          email: resolveFieldValue(item, fields.email || "email") || "",
+          role: fields.role ? resolveFieldValue(item, fields.role) : undefined,
+        }) as NormalizedRep,
     );
   }
 
@@ -165,17 +166,23 @@ export class CustomConnector extends BasePlugin {
       options,
       (item, fields) => {
         const rawStage = resolveFieldValue(item, fields.stage || "stage");
-        const rawPaymentStatus = fields.paymentStatus ? resolveFieldValue(item, fields.paymentStatus) : undefined;
+        const rawPaymentStatus = fields.paymentStatus
+          ? resolveFieldValue(item, fields.paymentStatus)
+          : undefined;
 
         // Invert paymentStatusMapping: config is CKit→raw[], derivePaymentStatus expects raw→CKit
-        const paymentMapping = entity.paymentStatusMapping ? invertPaymentStatusMapping(entity.paymentStatusMapping as any) : undefined;
+        const paymentMapping = entity.paymentStatusMapping
+          ? invertPaymentStatusMapping(entity.paymentStatusMapping as any)
+          : undefined;
 
         return {
           externalId: String(resolveFieldValue(item, fields.externalId || "id") || ""),
           repExternalId: String(resolveFieldValue(item, fields.repExternalId || "repId") || ""),
           name: resolveFieldValue(item, fields.name || "name") || "",
           amount: Number(resolveFieldValue(item, fields.amount || "amount")) || 0,
-          closeDate: new Date(resolveFieldValue(item, fields.closeDate || "closeDate") || Date.now()),
+          closeDate: new Date(
+            resolveFieldValue(item, fields.closeDate || "closeDate") || Date.now(),
+          ),
           stage: rawStage || "closed_won",
           currency: fields.currency ? resolveFieldValue(item, fields.currency) : undefined,
           paymentStatus: rawPaymentStatus
@@ -207,7 +214,7 @@ export class CustomConnector extends BasePlugin {
     options: FetchOptions | undefined,
     mapFn: (item: any, fields: Record<string, string>) => T,
   ): Promise<T[]> {
-    let headers = getAuthHeaders(authConfig);
+    const headers = getAuthHeaders(authConfig);
 
     if (authConfig.type === "oauth2") {
       const token = await refreshOAuthToken(authConfig);
@@ -254,11 +261,17 @@ export class CustomConnector extends BasePlugin {
         // Try common wrapper keys (may contain arrays or nested objects)
         const wrappers = [items.data, items.results, items.items, items.records, items];
         for (const wrapper of wrappers) {
-          if (Array.isArray(wrapper)) { list = wrapper; break; }
+          if (Array.isArray(wrapper)) {
+            list = wrapper;
+            break;
+          }
           if (wrapper && typeof wrapper === "object") {
             // Check if any key inside the wrapper is an array
             for (const key of Object.keys(wrapper)) {
-              if (Array.isArray(wrapper[key])) { list = wrapper[key]; break; }
+              if (Array.isArray(wrapper[key])) {
+                list = wrapper[key];
+                break;
+              }
             }
             if (list.length > 0) break;
           }
@@ -268,14 +281,16 @@ export class CustomConnector extends BasePlugin {
 
       // Diagnostic
       if (process.env.NODE_ENV !== "production" && pageNum === 1) {
-        const topKeys = items && typeof items === "object" ? Object.keys(items).join(", ") : "not an object";
+        const topKeys =
+          items && typeof items === "object" ? Object.keys(items).join(", ") : "not an object";
       }
 
       // Diagnostic logging
       if (process.env.NODE_ENV !== "production") {
-        const statusMsg = list.length > 0
-          ? `${list.length} records, sample keys: ${Object.keys(list[0]).slice(0, 8).join(", ")}`
-          : "0 records (empty or auto-detection failed)";
+        const statusMsg =
+          list.length > 0
+            ? `${list.length} records, sample keys: ${Object.keys(list[0]).slice(0, 8).join(", ")}`
+            : "0 records (empty or auto-detection failed)";
       }
 
       for (const item of list) {

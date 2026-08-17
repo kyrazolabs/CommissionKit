@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import "dotenv/config";
-import path from "path";
 import dotenv from "dotenv";
+import path from "path";
 
 dotenv.config({ path: path.join(process.cwd(), "artifacts/api/.env") });
 
@@ -10,9 +10,17 @@ const MONGO_URL = process.env.MONGO_URL!;
 async function main() {
   await mongoose.connect(MONGO_URL);
   const db = mongoose.connection.db;
-  
-  const collections = ["user", "session", "account", "verification", "organization", "member", "invitation"];
-  
+
+  const collections = [
+    "user",
+    "session",
+    "account",
+    "verification",
+    "organization",
+    "member",
+    "invitation",
+  ];
+
   for (const name of collections) {
     const existing = await db.listCollections({ name }).toArray();
     if (existing.length === 0) {
@@ -22,7 +30,7 @@ async function main() {
       console.log(`Collection already exists: ${name}`);
     }
   }
-  
+
   process.exit(0);
 }
 

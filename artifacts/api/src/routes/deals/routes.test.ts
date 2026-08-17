@@ -1,7 +1,7 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, mock } from "bun:test";
+import { afterAll, beforeAll, beforeEach, describe, expect, mock, test } from "bun:test";
 import mongoose from "mongoose";
-import { setupTestDB, teardownTestDB, clearCollections } from "../../../test/setup-db";
 import request from "supertest";
+import { clearCollections, setupTestDB, teardownTestDB } from "../../../test/setup-db";
 
 const TEST_USER_ID = "test-user-001";
 const TEST_USER_EMAIL = "admin@test.com";
@@ -9,8 +9,12 @@ const TEST_USER_EMAIL = "admin@test.com";
 // ── Mock heavy dependencies ────────────────────────────────────────────────────
 mock.module("@workspace/queue", () => ({
   getRedisClient: () => ({
-    get: async () => null, setex: async () => "OK", del: async () => 1,
-    scan: async () => ["0", []], on: () => {}, quit: async () => "OK",
+    get: async () => null,
+    setex: async () => "OK",
+    del: async () => 1,
+    scan: async () => ["0", []],
+    on: () => {},
+    quit: async () => "OK",
   }),
   sendHighPriorityEmail: () => Promise.resolve(),
   sendMediumPriorityEmail: () => Promise.resolve(),
@@ -33,7 +37,11 @@ mock.module("@workspace/queue", () => ({
   syncDealsQueue: { add: () => Promise.resolve() },
   webhookIngressQueue: { add: () => Promise.resolve() },
   syncEgressQueue: { add: () => Promise.resolve() },
-  PRIORITY_QUEUE_MAP: { high: { add: () => Promise.resolve() }, medium: { add: () => Promise.resolve() }, low: { add: () => Promise.resolve() } },
+  PRIORITY_QUEUE_MAP: {
+    high: { add: () => Promise.resolve() },
+    medium: { add: () => Promise.resolve() },
+    low: { add: () => Promise.resolve() },
+  },
 }));
 mock.module("../../lib/auth", () => ({
   auth: {
@@ -43,18 +51,20 @@ mock.module("../../lib/auth", () => ({
   findUserById: mock(() => Promise.resolve(null)),
 }));
 
-
-
 mock.module("../../lib/bull-board", () => ({
   secureBullBoard: (req: any, res: any, next: any) => next(),
-  serverAdapter: { getRouter: () => ((() => {}) as any) },
+  serverAdapter: { getRouter: () => (() => {}) as any },
 }));
 
 mock.module("stripe", () => ({
   default: class StripeMock {
     constructor() {}
     subscriptions = { create: () => Promise.resolve({ id: "sub_123", status: "active" }) };
-    checkout = { sessions: { create: () => Promise.resolve({ url: "https://checkout.stripe.com/test", id: "cs_test" }) } };
+    checkout = {
+      sessions: {
+        create: () => Promise.resolve({ url: "https://checkout.stripe.com/test", id: "cs_test" }),
+      },
+    };
     webhooks = { constructEvent: () => ({ type: "checkout.session.completed" }) };
   },
 }));
@@ -126,9 +136,18 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await clearCollections();
-  const ws = await Workspace.create({ slug: "test-ws", name: "Test Workspace", ownerId: TEST_USER_ID });
+  const ws = await Workspace.create({
+    slug: "test-ws",
+    name: "Test Workspace",
+    ownerId: TEST_USER_ID,
+  });
   workspaceId = ws._id.toString();
-  await WorkspaceMember.create({ workspaceId: ws._id, userId: TEST_USER_ID, email: TEST_USER_EMAIL, role: "owner" });
+  await WorkspaceMember.create({
+    workspaceId: ws._id,
+    userId: TEST_USER_ID,
+    email: TEST_USER_EMAIL,
+    role: "owner",
+  });
   const rep = await Rep.create({ workspaceId: ws._id, name: "Test Rep", email: "rep@test.com" });
   testRepId = rep._id;
 });
@@ -153,8 +172,24 @@ describe("GET /api/deals", () => {
   });
 
   test("returns deals with rep names populated", async () => {
-    await Deal.create({ workspaceId, repId: testRepId, name: "Deal A", amount: 5000, closeDate: "2024-03-01", period: "2024-03", stage: "closed_won" });
-    await Deal.create({ workspaceId, repId: testRepId, name: "Deal B", amount: 8000, closeDate: "2024-03-05", period: "2024-03", stage: "closed_won" });
+    await Deal.create({
+      workspaceId,
+      repId: testRepId,
+      name: "Deal A",
+      amount: 5000,
+      closeDate: "2024-03-01",
+      period: "2024-03",
+      stage: "closed_won",
+    });
+    await Deal.create({
+      workspaceId,
+      repId: testRepId,
+      name: "Deal B",
+      amount: 8000,
+      closeDate: "2024-03-05",
+      period: "2024-03",
+      stage: "closed_won",
+    });
 
     const res = await request(app).get("/api/deals").set(authHeader());
     expect(res.status).toBe(200);
@@ -164,8 +199,24 @@ describe("GET /api/deals", () => {
 
   test("filters by repId query parameter", async () => {
     const otherRep = await Rep.create({ workspaceId, name: "Other Rep", email: "other@test.com" });
-    await Deal.create({ workspaceId, repId: testRepId, name: "Rep1 Deal", amount: 1000, closeDate: "2024-03-01", period: "2024-03", stage: "closed_won" });
-    await Deal.create({ workspaceId, repId: otherRep._id, name: "Rep2 Deal", amount: 2000, closeDate: "2024-03-02", period: "2024-03", stage: "closed_won" });
+    await Deal.create({
+      workspaceId,
+      repId: testRepId,
+      name: "Rep1 Deal",
+      amount: 1000,
+      closeDate: "2024-03-01",
+      period: "2024-03",
+      stage: "closed_won",
+    });
+    await Deal.create({
+      workspaceId,
+      repId: otherRep._id,
+      name: "Rep2 Deal",
+      amount: 2000,
+      closeDate: "2024-03-02",
+      period: "2024-03",
+      stage: "closed_won",
+    });
 
     const res = await request(app).get(`/api/deals?repId=${testRepId}`).set(authHeader());
     expect(res.status).toBe(200);
@@ -174,8 +225,26 @@ describe("GET /api/deals", () => {
   });
 
   test("filters by paymentStatus", async () => {
-    await Deal.create({ workspaceId, repId: testRepId, name: "Paid Deal", amount: 1000, closeDate: "2024-03-01", period: "2024-03", stage: "closed_won", paymentStatus: "paid" });
-    await Deal.create({ workspaceId, repId: testRepId, name: "Unpaid Deal", amount: 2000, closeDate: "2024-03-02", period: "2024-03", stage: "closed_won", paymentStatus: "unpaid" });
+    await Deal.create({
+      workspaceId,
+      repId: testRepId,
+      name: "Paid Deal",
+      amount: 1000,
+      closeDate: "2024-03-01",
+      period: "2024-03",
+      stage: "closed_won",
+      paymentStatus: "paid",
+    });
+    await Deal.create({
+      workspaceId,
+      repId: testRepId,
+      name: "Unpaid Deal",
+      amount: 2000,
+      closeDate: "2024-03-02",
+      period: "2024-03",
+      stage: "closed_won",
+      paymentStatus: "unpaid",
+    });
 
     const res = await request(app).get("/api/deals?paymentStatus=paid").set(authHeader());
     expect(res.status).toBe(200);
@@ -186,10 +255,7 @@ describe("GET /api/deals", () => {
 
 describe("POST /api/deals", () => {
   test("creates a deal with defaults", async () => {
-    const res = await request(app)
-      .post("/api/deals")
-      .set(authHeader())
-      .send(validDeal());
+    const res = await request(app).post("/api/deals").set(authHeader()).send(validDeal());
 
     expect(res.status).toBe(201);
     expect(res.body.name).toBe("Enterprise Sale");
@@ -250,8 +316,24 @@ describe("POST /api/deals/import", () => {
       .send({
         period: "2024-03",
         deals: [
-          { repId: testRepId.toString(), name: "Import A", amount: 1000, closeDate: "2024-03-01", period: "2024-03", stage: "closed_won", currency: "USD" },
-          { repId: testRepId.toString(), name: "Import B", amount: 2000, closeDate: "2024-03-02", period: "2024-03", stage: "closed_won", currency: "USD" },
+          {
+            repId: testRepId.toString(),
+            name: "Import A",
+            amount: 1000,
+            closeDate: "2024-03-01",
+            period: "2024-03",
+            stage: "closed_won",
+            currency: "USD",
+          },
+          {
+            repId: testRepId.toString(),
+            name: "Import B",
+            amount: 2000,
+            closeDate: "2024-03-02",
+            period: "2024-03",
+            stage: "closed_won",
+            currency: "USD",
+          },
         ],
       });
 
@@ -268,8 +350,24 @@ describe("POST /api/deals/import", () => {
       .send({
         period: "2024-03",
         deals: [
-          { repId: testRepId.toString(), name: "Valid", amount: 1000, closeDate: "2024-03-01", period: "2024-03", stage: "closed_won", currency: "USD" },
-          { repId: new mongoose.Types.ObjectId().toString(), name: "Invalid Rep", amount: 2000, closeDate: "2024-03-02", period: "2024-03", stage: "closed_won", currency: "USD" },
+          {
+            repId: testRepId.toString(),
+            name: "Valid",
+            amount: 1000,
+            closeDate: "2024-03-01",
+            period: "2024-03",
+            stage: "closed_won",
+            currency: "USD",
+          },
+          {
+            repId: new mongoose.Types.ObjectId().toString(),
+            name: "Invalid Rep",
+            amount: 2000,
+            closeDate: "2024-03-02",
+            period: "2024-03",
+            stage: "closed_won",
+            currency: "USD",
+          },
         ],
       });
 
@@ -286,7 +384,15 @@ describe("POST /api/deals/import", () => {
       .send({
         period: "2024-03",
         deals: [
-          { repId: testRepId.toString(), name: "Pending A", amount: 1000, closeDate: "", period: "2024-03", stage: "pending", currency: "USD" },
+          {
+            repId: testRepId.toString(),
+            name: "Pending A",
+            amount: 1000,
+            closeDate: "",
+            period: "2024-03",
+            stage: "pending",
+            currency: "USD",
+          },
         ],
       });
 
@@ -302,7 +408,15 @@ describe("POST /api/deals/import", () => {
       .send({
         period: "2024-03",
         deals: [
-          { repId: testRepId.toString(), name: "Closed No Date", amount: 1000, closeDate: "", period: "2024-03", stage: "closed_won", currency: "USD" },
+          {
+            repId: testRepId.toString(),
+            name: "Closed No Date",
+            amount: 1000,
+            closeDate: "",
+            period: "2024-03",
+            stage: "closed_won",
+            currency: "USD",
+          },
         ],
       });
 
@@ -315,7 +429,15 @@ describe("POST /api/deals/import", () => {
 
 describe("DELETE /api/deals/:id", () => {
   test("deletes deal and returns 204", async () => {
-    const deal = await Deal.create({ workspaceId, repId: testRepId, name: "ToDelete", amount: 5000, closeDate: "2024-03-01", period: "2024-03", stage: "closed_won" });
+    const deal = await Deal.create({
+      workspaceId,
+      repId: testRepId,
+      name: "ToDelete",
+      amount: 5000,
+      closeDate: "2024-03-01",
+      period: "2024-03",
+      stage: "closed_won",
+    });
 
     const res = await request(app).delete(`/api/deals/${deal._id}`).set(authHeader());
     expect(res.status).toBe(204);
@@ -326,12 +448,25 @@ describe("DELETE /api/deals/:id", () => {
 
 describe("PUT /api/deals/:id", () => {
   test("updates a deal", async () => {
-    const deal = await Deal.create({ workspaceId, repId: testRepId, name: "Old Name", amount: 5000, closeDate: "2024-03-01", period: "2024-03", stage: "closed_won" });
+    const deal = await Deal.create({
+      workspaceId,
+      repId: testRepId,
+      name: "Old Name",
+      amount: 5000,
+      closeDate: "2024-03-01",
+      period: "2024-03",
+      stage: "closed_won",
+    });
 
-    const res = await request(app)
-      .put(`/api/deals/${deal._id}`)
-      .set(authHeader())
-      .send({ repId: testRepId.toString(), name: "New Name", amount: 8000, closeDate: "2024-03-15", period: "2024-03", stage: "closed_won", currency: "USD" });
+    const res = await request(app).put(`/api/deals/${deal._id}`).set(authHeader()).send({
+      repId: testRepId.toString(),
+      name: "New Name",
+      amount: 8000,
+      closeDate: "2024-03-15",
+      period: "2024-03",
+      stage: "closed_won",
+      currency: "USD",
+    });
 
     expect(res.status).toBe(200);
     expect(res.body.name).toBe("New Name");
@@ -339,23 +474,52 @@ describe("PUT /api/deals/:id", () => {
   });
 
   test("blocks editing paid deals", async () => {
-    const deal = await Deal.create({ workspaceId, repId: testRepId, name: "Paid Deal", amount: 5000, closeDate: "2024-03-01", period: "2024-03", stage: "closed_won", paymentStatus: "paid" });
+    const deal = await Deal.create({
+      workspaceId,
+      repId: testRepId,
+      name: "Paid Deal",
+      amount: 5000,
+      closeDate: "2024-03-01",
+      period: "2024-03",
+      stage: "closed_won",
+      paymentStatus: "paid",
+    });
 
-    const res = await request(app)
-      .put(`/api/deals/${deal._id}`)
-      .set(authHeader())
-      .send({ repId: testRepId.toString(), name: "Edited Paid", amount: 10000, closeDate: "2024-03-15", period: "2024-03", stage: "closed_won", currency: "USD" });
+    const res = await request(app).put(`/api/deals/${deal._id}`).set(authHeader()).send({
+      repId: testRepId.toString(),
+      name: "Edited Paid",
+      amount: 10000,
+      closeDate: "2024-03-15",
+      period: "2024-03",
+      stage: "closed_won",
+      currency: "USD",
+    });
 
     expect(res.status).toBe(400);
   });
 
   test("auto-sets stage to closed_won when marking paid", async () => {
-    const deal = await Deal.create({ workspaceId, repId: testRepId, name: "Mark Paid", amount: 5000, closeDate: "2024-03-01", period: "2024-03", stage: "pending", paymentStatus: "unpaid" });
+    const deal = await Deal.create({
+      workspaceId,
+      repId: testRepId,
+      name: "Mark Paid",
+      amount: 5000,
+      closeDate: "2024-03-01",
+      period: "2024-03",
+      stage: "pending",
+      paymentStatus: "unpaid",
+    });
 
-    const res = await request(app)
-      .put(`/api/deals/${deal._id}`)
-      .set(authHeader())
-      .send({ repId: testRepId.toString(), name: "Mark Paid", amount: 5000, closeDate: "2024-03-01", period: "2024-03", stage: "pending", currency: "USD", paymentStatus: "paid" });
+    const res = await request(app).put(`/api/deals/${deal._id}`).set(authHeader()).send({
+      repId: testRepId.toString(),
+      name: "Mark Paid",
+      amount: 5000,
+      closeDate: "2024-03-01",
+      period: "2024-03",
+      stage: "pending",
+      currency: "USD",
+      paymentStatus: "paid",
+    });
 
     expect(res.status).toBe(200);
     expect(res.body.stage).toBe("closed_won");
@@ -363,21 +527,39 @@ describe("PUT /api/deals/:id", () => {
 
   test("returns 404 for non-existent deal", async () => {
     const fakeId = new mongoose.Types.ObjectId();
-    const res = await request(app)
-      .put(`/api/deals/${fakeId}`)
-      .set(authHeader())
-      .send({ repId: testRepId.toString(), name: "Ghost", amount: 5000, closeDate: "2024-03-01", period: "2024-03", stage: "closed_won", currency: "USD" });
+    const res = await request(app).put(`/api/deals/${fakeId}`).set(authHeader()).send({
+      repId: testRepId.toString(),
+      name: "Ghost",
+      amount: 5000,
+      closeDate: "2024-03-01",
+      period: "2024-03",
+      stage: "closed_won",
+      currency: "USD",
+    });
 
     expect(res.status).toBe(404);
   });
 
   test("rejects updating to a closed stage without a close date", async () => {
-    const deal = await Deal.create({ workspaceId, repId: testRepId, name: "Pending Deal", amount: 5000, closeDate: "", period: "2024-03", stage: "pending" });
+    const deal = await Deal.create({
+      workspaceId,
+      repId: testRepId,
+      name: "Pending Deal",
+      amount: 5000,
+      closeDate: "",
+      period: "2024-03",
+      stage: "pending",
+    });
 
-    const res = await request(app)
-      .put(`/api/deals/${deal._id}`)
-      .set(authHeader())
-      .send({ repId: testRepId.toString(), name: "Pending Deal", amount: 5000, closeDate: "", period: "2024-03", stage: "closed_won", currency: "USD" });
+    const res = await request(app).put(`/api/deals/${deal._id}`).set(authHeader()).send({
+      repId: testRepId.toString(),
+      name: "Pending Deal",
+      amount: 5000,
+      closeDate: "",
+      period: "2024-03",
+      stage: "closed_won",
+      currency: "USD",
+    });
 
     expect(res.status).toBe(400);
     expect(res.body.error).toContain("Close date is required");

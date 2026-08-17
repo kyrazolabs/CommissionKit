@@ -10,8 +10,8 @@ export function requirePermission(ctx: WorkspaceContext, required: string, actio
   if (!hasPermission(ctx, required)) {
     throw new Error(
       `Permission denied: this API key does not have "${required}" permission. ` +
-      `Current permissions: ${ctx.permissions.join(", ") || "none"}. ` +
-      `Action: ${action}`
+        `Current permissions: ${ctx.permissions.join(", ") || "none"}. ` +
+        `Action: ${action}`,
     );
   }
 }

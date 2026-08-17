@@ -1,10 +1,4 @@
-import { 
-  WorkspaceSubscription, 
-  WorkspaceMember, 
-  Rep, 
-  Plan, 
-  getPlanLimits 
-} from "@workspace/db";
+import { getPlanLimits, Plan, Rep, WorkspaceMember, WorkspaceSubscription } from "@workspace/db";
 import { Types } from "mongoose";
 
 /**
@@ -12,26 +6,27 @@ import { Types } from "mongoose";
  */
 export async function checkLimits(
   workspaceId: string,
-  resource: "members" | "reps" | "plans"
+  resource: "members" | "reps" | "plans",
 ): Promise<{ allowed: boolean; limit: number; current: number }> {
   // 1. Get current plan
-  const sub = await WorkspaceSubscription.findOne({ 
+  const sub = await WorkspaceSubscription.findOne({
     workspaceId: new Types.ObjectId(workspaceId),
-    status: { $in: ["active", "trialing", "past_due"] } // Allow past_due to keep current data but maybe block additions? 
-                                                      // Usually SaaS allows past_due to have access but not add new stuff.
+    status: { $in: ["active", "trialing", "past_due"] }, // Allow past_due to keep current data but maybe block additions?
+    // Usually SaaS allows past_due to have access but not add new stuff.
   });
-  
+
   const plan = sub?.plan || "free";
   const limits = getPlanLimits(plan);
-  const extraRepSeats =
-    (sub as { extraRepSeats?: number } | null | undefined)?.extraRepSeats ?? 0;
+  const extraRepSeats = (sub as { extraRepSeats?: number } | null | undefined)?.extraRepSeats ?? 0;
 
   let current = 0;
   let limit = 0;
 
   switch (resource) {
     case "members":
-      current = await WorkspaceMember.countDocuments({ workspaceId: new Types.ObjectId(workspaceId) });
+      current = await WorkspaceMember.countDocuments({
+        workspaceId: new Types.ObjectId(workspaceId),
+      });
       limit = limits.maxMembers;
       break;
     case "reps":

@@ -1,17 +1,17 @@
-import { Worker, type SandboxedJob } from "bullmq";
+import { type SandboxedJob, Worker } from "bullmq";
 import { getRedisClient } from "./connection.js";
-import { sendMail } from "./mailer.js";
-import { mailSendQueue } from "./queues.js";
-import type { MailSendPayload } from "./schemas.js";
 import {
+  COMMISSION_CALC_QUEUE,
+  EXCHANGE_RATE_QUEUE,
   MAIL_HIGH_QUEUE,
   MAIL_LOW_QUEUE,
   MAIL_MEDIUM_QUEUE,
   MAIL_SEND_QUEUE,
-  COMMISSION_CALC_QUEUE,
-  EXCHANGE_RATE_QUEUE,
 } from "./constants.js";
 import { fetchAndSaveRates } from "./exchangeRateService.js";
+import { sendMail } from "./mailer.js";
+import { mailSendQueue } from "./queues.js";
+import type { MailSendPayload } from "./schemas.js";
 
 const WORKER_OPTS = {
   connection: getRedisClient(),
@@ -89,7 +89,7 @@ export const smtpWorker = new Worker<MailSendPayload>(
 export const exchangeRateWorker = new Worker(
   EXCHANGE_RATE_QUEUE,
   async (job) => {
-    console.log(`[Worker:ExchangeRate] Processing job ${job.id}`);
+    console.info(`[Worker:ExchangeRate] Processing job ${job.id}`);
     const { connectDB } = await import("@workspace/db");
     await connectDB();
     await fetchAndSaveRates();
@@ -112,7 +112,8 @@ function attachHandlers(worker: Worker, name: string) {
       console.error(
         `[Worker:${name}] Job ${job.id} permanently failed after ${job.attemptsMade} attempts:`,
         err.message,
-        "\nPayload:", JSON.stringify(job.data, null, 2),
+        "\nPayload:",
+        JSON.stringify(job.data, null, 2),
       );
       // TODO: push to Sentry / DLQ notification here
     }
@@ -123,10 +124,10 @@ function attachHandlers(worker: Worker, name: string) {
   });
 }
 
-attachHandlers(highWorker,   "High");
+attachHandlers(highWorker, "High");
 attachHandlers(mediumWorker, "Medium");
-attachHandlers(lowWorker,    "Low");
-attachHandlers(smtpWorker,   "SMTP");
+attachHandlers(lowWorker, "Low");
+attachHandlers(smtpWorker, "SMTP");
 attachHandlers(exchangeRateWorker, "ExchangeRate");
 
 /**

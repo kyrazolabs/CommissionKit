@@ -1,5 +1,5 @@
-import { describe, test, expect, mock, beforeEach, afterEach } from "bun:test";
-import { render, waitFor, cleanup, screen, act } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import React from "react";
 
 // Mock localStorage
@@ -10,10 +10,16 @@ function clearStore() {
 Object.defineProperty(globalThis, "localStorage", {
   value: {
     getItem: (key: string) => store[key] ?? null,
-    setItem: (key: string, value: string) => { store[key] = value; },
-    removeItem: (key: string) => { delete store[key]; },
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
     clear: clearStore,
-    get length() { return Object.keys(store).length; },
+    get length() {
+      return Object.keys(store).length;
+    },
     key: (i: number) => Object.keys(store)[i] ?? null,
   },
   writable: true,
@@ -30,11 +36,14 @@ mock.module("@tanstack/react-query", () => ({
   useQuery: () => ({ data: [], isLoading: false }),
 }));
 
-// Mock API client hooks
+// Mock API client hooks — return values are controllable per-test via these mocks.
+const mockUseListReps = mock(() => ({ data: [], isLoading: false }));
+const mockUseListPlans = mock(() => ({ data: [], isLoading: false }));
+const mockUseListDeals = mock(() => ({ data: [], isLoading: false }));
 mock.module("@workspace/api-client-react", () => ({
-  useListReps: () => ({ data: [], isLoading: false }),
-  useListPlans: () => ({ data: [], isLoading: false }),
-  useListDeals: () => ({ data: [], isLoading: false }),
+  useListReps: (...args: unknown[]) => mockUseListReps(...args),
+  useListPlans: (...args: unknown[]) => mockUseListPlans(...args),
+  useListDeals: (...args: unknown[]) => mockUseListDeals(...args),
   setWorkspaceId: mock(() => {}),
   setAuthTokenGetter: mock(() => {}),
   setBaseUrl: mock(() => {}),
@@ -72,6 +81,12 @@ describe("useSetupChecklist", () => {
     mockApiFetch.mockResolvedValue({ seeded: true });
     queryClientMock.invalidateQueries.mockReset();
     queryClientMock.invalidateQueries.mockResolvedValue(undefined);
+    mockUseListReps.mockReset();
+    mockUseListReps.mockReturnValue({ data: [], isLoading: false });
+    mockUseListPlans.mockReset();
+    mockUseListPlans.mockReturnValue({ data: [], isLoading: false });
+    mockUseListDeals.mockReset();
+    mockUseListDeals.mockReturnValue({ data: [], isLoading: false });
   });
 
   afterEach(() => {
@@ -113,10 +128,10 @@ describe("useSetupChecklist", () => {
       await hookRef.dismiss();
     });
 
-    expect(mockApiFetch).toHaveBeenCalledWith(
-      "/api/workspaces/ws1/onboarding",
-      { method: "PATCH", body: JSON.stringify({ action: "dismiss" }) },
-    );
+    expect(mockApiFetch).toHaveBeenCalledWith("/api/workspaces/ws1/onboarding", {
+      method: "PATCH",
+      body: JSON.stringify({ action: "dismiss" }),
+    });
   });
 
   test("complete calls API PATCH with complete action", async () => {
@@ -135,10 +150,10 @@ describe("useSetupChecklist", () => {
       await hookRef.complete();
     });
 
-    expect(mockApiFetch).toHaveBeenCalledWith(
-      "/api/workspaces/ws1/onboarding",
-      { method: "PATCH", body: JSON.stringify({ action: "complete" }) },
-    );
+    expect(mockApiFetch).toHaveBeenCalledWith("/api/workspaces/ws1/onboarding", {
+      method: "PATCH",
+      body: JSON.stringify({ action: "complete" }),
+    });
   });
 
   test("loadSampleData calls API and invalidates queries", async () => {
@@ -169,5 +184,34 @@ describe("useSetupChecklist", () => {
 
     expect(hookRef.isSeeding).toBe(false);
     expect(queryClientMock.invalidateQueries).toHaveBeenCalled();
+  });
+
+  test("detects all steps complete from paginated reps/deals and array plans", async () => {
+    mockUseListReps.mockReturnValue({
+      data: { data: [{ id: "r1" }], pagination: { total: 1 } },
+      isLoading: false,
+    });
+    mockUseListDeals.mockReturnValue({
+      data: { data: [{ id: "d1" }], pagination: { total: 1 } },
+      isLoading: false,
+    });
+    mockUseListPlans.mockReturnValue({ data: [{ id: "p1" }], isLoading: false });
+
+    const { useSetupChecklist } = await import("@/hooks/use-setup-checklist");
+    let captured: any = null;
+
+    function TestComp() {
+      const hook = useSetupChecklist();
+      captured = hook;
+      return null;
+    }
+
+    render(React.createElement(TestComp));
+
+    expect(captured.steps.reps).toBe(true);
+    expect(captured.steps.plans).toBe(true);
+    expect(captured.steps.deals).toBe(true);
+    expect(captured.completedCount).toBe(3);
+    expect(captured.allComplete).toBe(true);
   });
 });

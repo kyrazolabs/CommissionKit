@@ -4,9 +4,9 @@
 
 - **Language**: TypeScript everywhere.
 - **Runtime / Package Manager**: Bun only. Do not use npm, yarn, or pnpm.
-- **Formatting**: Prettier (configured at repo root).
+- **Formatting & Linting**: Biome (see `biome.json` at repo root). Run `bun run lint` (check) and `bun run lint:fix` / `bun run format` (fix). `bun run build` runs `biome check` before typecheck. Prettier is retained only as an Orval codegen peer dependency, not the source formatter.
 - **Testing**: Bun's built-in test runner only. No Jest/Vitest/Mocha.
-- **Linting**: TypeScript `strictNullChecks: true`, no implicit any.
+- **Linting rules**: `noConsole` is an error in production source (`console.log` is forbidden — use Pino `logger` or `console.info`/`warn`/`error`). `noExplicitAny`, `noUnusedVariables`, `noUnusedImports`, and accessibility rules are `warn`-level. TypeScript strictness: `strictNullChecks: true`, `noImplicitAny: true`.
 
 ## Monorepo Conventions
 

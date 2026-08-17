@@ -1,31 +1,40 @@
-"use client"
+"use client";
 
+import { useQueryClient } from "@tanstack/react-query";
+import { getListRunsQueryKey, useCreateRun } from "@workspace/api-client-react";
+import { format, parseISO } from "date-fns";
+import { CalendarDays, Loader2, PlayCircle } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useQueryClient } from "@tanstack/react-query";
-import { 
-  getListRunsQueryKey,
-  useCreateRun
-} from "@workspace/api-client-react";
-import { Button } from "@/components/ui/button";
-import { PlayCircle, CalendarDays, Loader2 } from "lucide-react";
-import { format, parseISO } from "date-fns";
 import { HelpTooltip } from "@/components/help-tooltip";
-import { useToast } from "@/hooks/use-toast";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { MonthPicker } from "@/components/ui/month-picker";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
-export function RunCalculationDialog({ isProcessing, trigger }: { isProcessing: boolean; trigger?: React.ReactNode }) {
+export function RunCalculationDialog({
+  isProcessing,
+  trigger,
+}: {
+  isProcessing: boolean;
+  trigger?: React.ReactNode;
+}) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [period, setPeriod] = useState<string>(() => format(new Date(), "yyyy-MM"));
@@ -39,24 +48,34 @@ export function RunCalculationDialog({ isProcessing, trigger }: { isProcessing: 
     if (paymentStatusFilter !== "all") {
       data.paymentStatuses = [paymentStatusFilter];
     }
-    createMutation.mutate({ data }, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListRunsQueryKey() });
-        toast({ title: t("runs.calculationQueued"), description: `Commission calculation for ${period} has been started.` });
-        setOpen(false);
+    createMutation.mutate(
+      { data },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListRunsQueryKey() });
+          toast({
+            title: t("runs.calculationQueued"),
+            description: `Commission calculation for ${period} has been started.`,
+          });
+          setOpen(false);
+        },
+        onError: (err: any) => {
+          toast({
+            title: t("runs.runFailed"),
+            description: err.message || t("common.somethingWentWrong"),
+            variant: "destructive",
+          });
+        },
       },
-      onError: (err: any) => {
-        toast({ title: t("runs.runFailed"), description: err.message || t("common.somethingWentWrong"), variant: "destructive" });
-      }
-    });
+    );
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger ?? (
-          <Button 
-            className="bg-primary hover:bg-primary/90 text-primary-foreground" 
+          <Button
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
             disabled={isProcessing}
           >
             {isProcessing ? (
@@ -77,7 +96,8 @@ export function RunCalculationDialog({ isProcessing, trigger }: { isProcessing: 
         <DialogHeader>
           <DialogTitle>Trigger Commission Calculation</DialogTitle>
           <DialogDescription className="flex items-center gap-1.5">
-            This will process all closed won deals for the specified period and calculate rep commissions.
+            This will process all closed won deals for the specified period and calculate rep
+            commissions.
             <HelpTooltip content="Calculating a run takes a 'snapshot' of current deals and plans. If you add deals later, you'll need to run it again to update totals." />
           </DialogDescription>
         </DialogHeader>
@@ -85,7 +105,7 @@ export function RunCalculationDialog({ isProcessing, trigger }: { isProcessing: 
           <div className="grid gap-2">
             <Label htmlFor="period">Calculation Period (YYYY-MM)</Label>
             <div className="flex items-center gap-2">
-              <MonthPicker 
+              <MonthPicker
                 value={period}
                 onChange={setPeriod}
                 placeholder={t("common.pickMonth")}
@@ -112,11 +132,14 @@ export function RunCalculationDialog({ isProcessing, trigger }: { isProcessing: 
             </p>
           </div>
           <p className="text-xs text-muted-foreground">
-            Warning: Running for a period that already has a calculation will create a new run record.
+            Warning: Running for a period that already has a calculation will create a new run
+            record.
           </p>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
           <Button onClick={handleRun} disabled={createMutation.isPending}>
             {createMutation.isPending ? t("runs.processing3") : t("runs.startCalculation")}
           </Button>

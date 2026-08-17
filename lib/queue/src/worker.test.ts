@@ -1,4 +1,4 @@
-import { describe, test, expect, mock, beforeEach } from "bun:test";
+import { beforeEach, describe, expect, mock, test } from "bun:test";
 
 const mockAddForQueue = mock(() => Promise.resolve({ id: "job-1" }));
 const mockSendMail = mock(() =>
@@ -74,7 +74,10 @@ describe("Priority routing workers", () => {
     const { highWorker } = await import("./worker");
     const handler = (highWorker as any)._callbacks?.["process"];
     if (handler) {
-      const job = { id: "job-high", data: { to: "high@example.com", subject: "Test", html: "<p>Hi</p>" } };
+      const job = {
+        id: "job-high",
+        data: { to: "high@example.com", subject: "Test", html: "<p>Hi</p>" },
+      };
       await handler(job);
       expect(mockAddForQueue).toHaveBeenCalled();
       const callArgs = mockAddForQueue.mock.calls[0];
@@ -88,7 +91,10 @@ describe("Priority routing workers", () => {
     const { mediumWorker } = await import("./worker");
     const handler = (mediumWorker as any)._callbacks?.["process"];
     if (handler) {
-      const job = { id: "job-med", data: { to: "med@example.com", subject: "Test", html: "<p>Hi</p>" } };
+      const job = {
+        id: "job-med",
+        data: { to: "med@example.com", subject: "Test", html: "<p>Hi</p>" },
+      };
       await handler(job);
       const calls = mockAddForQueue.mock.calls;
       const lastCall = calls[calls.length - 1];
@@ -101,7 +107,10 @@ describe("Priority routing workers", () => {
     const { lowWorker } = await import("./worker");
     const handler = (lowWorker as any)._callbacks?.["process"];
     if (handler) {
-      const job = { id: "job-low", data: { to: "low@example.com", subject: "Test", html: "<p>Hi</p>" } };
+      const job = {
+        id: "job-low",
+        data: { to: "low@example.com", subject: "Test", html: "<p>Hi</p>" },
+      };
       await handler(job);
       const calls = mockAddForQueue.mock.calls;
       const lastCall = calls[calls.length - 1];
@@ -117,7 +126,11 @@ describe("SMTP execution worker", () => {
     const { smtpWorker } = await import("./worker");
     const handler = (smtpWorker as any)._callbacks?.["process"];
     if (handler) {
-      const payload = { to: "recipient@example.com", subject: "Invoice", html: "<p>Invoice attached</p>" };
+      const payload = {
+        to: "recipient@example.com",
+        subject: "Invoice",
+        html: "<p>Invoice attached</p>",
+      };
       const job = { id: "job-smtp", data: payload };
       const result = await handler(job);
       expect(mockSendMail).toHaveBeenCalledWith(payload);

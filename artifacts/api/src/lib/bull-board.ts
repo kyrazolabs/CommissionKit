@@ -1,20 +1,14 @@
 // src/lib/bull-board.ts
 // @ts-nocheck — Bun dedup issue with @bull-board/api
 
-import path from "path";
-import fs from "fs";
-
 import { createBullBoard } from "@bull-board/api";
-import { ExpressAdapter } from "@bull-board/express";
 import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
-
-import { calcWorker } from "../workers/calc-worker";
+import { ExpressAdapter } from "@bull-board/express";
+import { COMMISSION_CALC_QUEUE, getRedisClient } from "@workspace/queue";
 import { Queue } from "bullmq";
-
-import {
-  COMMISSION_CALC_QUEUE,
-  getRedisClient,
-} from "@workspace/queue";
+import fs from "fs";
+import path from "path";
+import { calcWorker } from "../workers/calc-worker";
 import { logger } from "./logger";
 
 // Walk node_modules to find @bull-board/ui (transitive dep, not directly importable)
@@ -37,9 +31,7 @@ const BULL_BOARD_USERNAME = process.env.BULL_BOARD_USERNAME;
 const BULL_BOARD_PASSWORD = process.env.BULL_BOARD_PASSWORD;
 
 if (!BULL_BOARD_USERNAME || !BULL_BOARD_PASSWORD) {
-  throw new Error(
-    "Missing BULL_BOARD_USERNAME or BULL_BOARD_PASSWORD environment variables",
-  );
+  throw new Error("Missing BULL_BOARD_USERNAME or BULL_BOARD_PASSWORD environment variables");
 }
 
 const serverAdapter = new ExpressAdapter();
@@ -50,7 +42,7 @@ export const commissionQueue = new Queue(COMMISSION_CALC_QUEUE, {
   connection: getRedisClient(),
   prefix: "ck",
 });
-// @ts-ignore
+// @ts-expect-error
 createBullBoard({
   queues: [
     new BullMQAdapter(commissionQueue, {
@@ -68,9 +60,7 @@ createBullBoard({
  */
 export function secureBullBoard(req: any, res: any, next: any) {
   // Optional IP allowlist
-  const allowedIps = (
-    process.env.BULL_BOARD_ALLOWED_IPS || ""
-  )
+  const allowedIps = (process.env.BULL_BOARD_ALLOWED_IPS || "")
     .split(",")
     .map((ip) => ip.trim())
     .filter(Boolean);
@@ -80,10 +70,7 @@ export function secureBullBoard(req: any, res: any, next: any) {
     req.headers["x-forwarded-for"]?.split(",")[0] ||
     req.socket.remoteAddress;
 
-  if (
-    allowedIps.length > 0 &&
-    !allowedIps.includes(clientIp)
-  ) {
+  if (allowedIps.length > 0 && !allowedIps.includes(clientIp)) {
     logger.warn(
       {
         ip: clientIp,
@@ -100,10 +87,7 @@ export function secureBullBoard(req: any, res: any, next: any) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith("Basic ")) {
-    res.setHeader(
-      "WWW-Authenticate",
-      'Basic realm="Bull Board"',
-    );
+    res.setHeader("WWW-Authenticate", 'Basic realm="Bull Board"');
 
     return res.status(401).json({
       error: "Unauthorized",
@@ -113,18 +97,13 @@ export function secureBullBoard(req: any, res: any, next: any) {
 
   const base64Credentials = authHeader.split(" ")[1];
 
-  const credentials = Buffer.from(
-    base64Credentials,
-    "base64",
-  ).toString("utf8");
+  const credentials = Buffer.from(base64Credentials, "base64").toString("utf8");
 
   const [username, password] = credentials.split(":");
 
-  const validUser =
-    username === BULL_BOARD_USERNAME;
+  const validUser = username === BULL_BOARD_USERNAME;
 
-  const validPassword =
-    password === BULL_BOARD_PASSWORD;
+  const validPassword = password === BULL_BOARD_PASSWORD;
 
   if (!validUser || !validPassword) {
     logger.warn(
@@ -135,10 +114,7 @@ export function secureBullBoard(req: any, res: any, next: any) {
       "[BullBoard] Failed login attempt",
     );
 
-    res.setHeader(
-      "WWW-Authenticate",
-      'Basic realm="Bull Board"',
-    );
+    res.setHeader("WWW-Authenticate", 'Basic realm="Bull Board"');
 
     return res.status(401).json({
       error: "Unauthorized",

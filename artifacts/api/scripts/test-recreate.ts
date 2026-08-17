@@ -1,5 +1,5 @@
-import { auth } from "../src/lib/auth.js";
 import mongoose from "mongoose";
+import { auth } from "../src/lib/auth.js";
 import "dotenv/config";
 
 async function run() {
@@ -17,9 +17,7 @@ async function run() {
     });
 
     if (existingUser) {
-      console.log(
-        "Found existing user! Deleting old user, accounts, and sessions...",
-      );
+      console.log("Found existing user! Deleting old user, accounts, and sessions...");
       const userId = existingUser._id.toString(); // Better auth stores ID as string
       // Wait, let's check what ID format better auth uses in mongo
       const actualId = existingUser.id || existingUser._id.toString();

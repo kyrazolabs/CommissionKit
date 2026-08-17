@@ -1,23 +1,23 @@
-import { useState, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { Key, Plus, Trash2, Copy, Check, AlertTriangle, Loader2, Bot, ExternalLink } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiFetch } from "@/lib/api";
-import { cn } from "@/lib/utils";
-import { useSyncStore } from "@/hooks/use-sync-store";
-import { toast } from "sonner";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  AlertTriangle,
+  Bot,
+  Check,
+  Copy,
+  ExternalLink,
+  Key,
+  Loader2,
+  Plus,
+  Trash2,
+} from "lucide-react";
+import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Dialog,
   DialogContent,
@@ -26,7 +26,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -35,6 +36,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useSyncStore } from "@/hooks/use-sync-store";
+import { apiFetch } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 interface ApiKey {
   id: string;
@@ -123,7 +127,11 @@ export default function SettingsApiKeys() {
   const [keyExpires, setKeyExpires] = useState("");
   const [createError, setCreateError] = useState("");
 
-  const { data: keysResp, isLoading, isError } = useQuery({
+  const {
+    data: keysResp,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["api-keys"],
     queryFn: (): Promise<ApiKeysApiResponse> => apiFetch("/api/api-keys"),
   });
@@ -131,8 +139,7 @@ export default function SettingsApiKeys() {
   const keys: ApiKey[] = keysResp?.data ?? [];
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) =>
-      apiFetch(`/api/api-keys/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) => apiFetch(`/api/api-keys/${id}`, { method: "DELETE" }),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ["api-keys"] });
       const previous = queryClient.getQueryData(["api-keys"]);
@@ -177,9 +184,7 @@ export default function SettingsApiKeys() {
 
   const togglePermission = useCallback((permId: string) => {
     setSelectedPermissions((prev) =>
-      prev.includes(permId)
-        ? prev.filter((p) => p !== permId)
-        : [...prev, permId],
+      prev.includes(permId) ? prev.filter((p) => p !== permId) : [...prev, permId],
     );
   }, []);
 
@@ -234,14 +239,9 @@ export default function SettingsApiKeys() {
               <Key className="size-4 text-primary" />
               {t("settings.apiKeys.title")}
             </CardTitle>
-            <CardDescription>
-              {t("settings.apiKeys.description")}
-            </CardDescription>
+            <CardDescription>{t("settings.apiKeys.description")}</CardDescription>
           </div>
-          <Button
-            onClick={() => setIsCreateOpen(true)}
-            className="shrink-0"
-          >
+          <Button onClick={() => setIsCreateOpen(true)} className="shrink-0">
             <Plus className="size-4" />
             {t("settings.apiKeys.createButton")}
           </Button>
@@ -256,7 +256,9 @@ export default function SettingsApiKeys() {
           ) : isError ? (
             <div className="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
               <AlertTriangle className="size-8" />
-              <p className="text-sm">{t("settings.apiKeys.loadError") || "Failed to load API keys"}</p>
+              <p className="text-sm">
+                {t("settings.apiKeys.loadError") || "Failed to load API keys"}
+              </p>
             </div>
           ) : keys.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
@@ -338,36 +340,38 @@ export default function SettingsApiKeys() {
       </Card>
 
       {/* Create API Key Dialog */}
-      <Dialog open={isCreateOpen} onOpenChange={(open) => {
-        if (!open) handleCloseCreate();
-        else setIsCreateOpen(true);
-      }}>
+      <Dialog
+        open={isCreateOpen}
+        onOpenChange={(open) => {
+          if (!open) handleCloseCreate();
+          else setIsCreateOpen(true);
+        }}
+      >
         <DialogContent>
           {!createdKey ? (
             <>
               <DialogHeader>
                 <DialogTitle>{t("settings.apiKeys.createButton")}</DialogTitle>
                 <DialogDescription>
-                  {t("settings.apiKeys.createDescription") || "Create a new API key for programmatic access to your workspace."}
+                  {t("settings.apiKeys.createDescription") ||
+                    "Create a new API key for programmatic access to your workspace."}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-2">
                 <div className="space-y-2">
-                  <Label htmlFor="key-name">
-                    {t("settings.apiKeys.keyNameLabel")}
-                  </Label>
+                  <Label htmlFor="key-name">{t("settings.apiKeys.keyNameLabel")}</Label>
                   <Input
                     id="key-name"
                     value={keyName}
                     onChange={(e) => setKeyName(e.target.value)}
-                    placeholder={t("settings.apiKeys.keyNamePlaceholder") || "e.g. AI Assistant, CLI Tool"}
+                    placeholder={
+                      t("settings.apiKeys.keyNamePlaceholder") || "e.g. AI Assistant, CLI Tool"
+                    }
                     maxLength={100}
                   />
                 </div>
                 <div className="space-y-3">
-                  <Label>
-                    {t("settings.apiKeys.permissionsLabel")}
-                  </Label>
+                  <Label>{t("settings.apiKeys.permissionsLabel")}</Label>
                   <div className="space-y-2">
                     {PERMISSION_OPTIONS.map((option) => (
                       <label
@@ -390,26 +394,21 @@ export default function SettingsApiKeys() {
                           <p className="text-sm font-medium text-foreground">
                             {t(option.labelKey)}
                           </p>
-                          <p className="text-xs text-muted-foreground">
-                            {t(option.descKey)}
-                          </p>
-                          <p className="text-[11px] font-mono text-muted-foreground">
-                            {option.id}
-                          </p>
+                          <p className="text-xs text-muted-foreground">{t(option.descKey)}</p>
+                          <p className="text-[11px] font-mono text-muted-foreground">{option.id}</p>
                         </div>
                       </label>
                     ))}
                   </div>
                   {selectedPermissions.length === 0 && (
                     <p className="text-xs text-amber-600 dark:text-amber-400">
-                      Select at least one permission. If none is selected, <code className="text-[11px]">read:all</code> will be used.
+                      Select at least one permission. If none is selected,{" "}
+                      <code className="text-[11px]">read:all</code> will be used.
                     </p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="key-expires">
-                    {t("settings.apiKeys.expiresLabel")}
-                  </Label>
+                  <Label htmlFor="key-expires">{t("settings.apiKeys.expiresLabel")}</Label>
                   <Input
                     id="key-expires"
                     value={keyExpires}
@@ -417,9 +416,7 @@ export default function SettingsApiKeys() {
                     placeholder="YYYY-MM-DD"
                   />
                 </div>
-                {createError && (
-                  <p className="text-sm text-destructive">{createError}</p>
-                )}
+                {createError && <p className="text-sm text-destructive">{createError}</p>}
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={handleCloseCreate}>
@@ -429,9 +426,7 @@ export default function SettingsApiKeys() {
                   onClick={handleCreate}
                   disabled={!keyName.trim() || createMutation.isPending}
                 >
-                  {createMutation.isPending && (
-                    <Loader2 className="size-4 mr-2 animate-spin" />
-                  )}
+                  {createMutation.isPending && <Loader2 className="size-4 mr-2 animate-spin" />}
                   {t("settings.apiKeys.createConfirm") || "Create Key"}
                 </Button>
               </DialogFooter>
@@ -440,16 +435,15 @@ export default function SettingsApiKeys() {
             <>
               <DialogHeader>
                 <DialogTitle>{t("settings.apiKeys.keyCreated")}</DialogTitle>
-                <DialogDescription>
-                  {t("settings.apiKeys.keyCreatedDescription")}
-                </DialogDescription>
+                <DialogDescription>{t("settings.apiKeys.keyCreatedDescription")}</DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-2">
                 <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800/30 dark:bg-amber-900/20">
                   <div className="flex items-center gap-2 mb-2">
                     <AlertTriangle className="size-4 text-amber-600 dark:text-amber-400" />
                     <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
-                      {t("settings.apiKeys.copyWarning") || "Copy this key now — it will not be shown again"}
+                      {t("settings.apiKeys.copyWarning") ||
+                        "Copy this key now — it will not be shown again"}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 mt-3">
@@ -474,24 +468,34 @@ export default function SettingsApiKeys() {
                 </div>
                 <div className="text-sm space-y-1 text-muted-foreground">
                   <p>
-                    <span className="font-medium text-foreground">{t("settings.apiKeys.name")}:</span>{" "}
+                    <span className="font-medium text-foreground">
+                      {t("settings.apiKeys.name")}:
+                    </span>{" "}
                     {createdKey.name}
                   </p>
                   <p>
-                    <span className="font-medium text-foreground">{t("settings.apiKeys.prefix")}:</span>{" "}
+                    <span className="font-medium text-foreground">
+                      {t("settings.apiKeys.prefix")}:
+                    </span>{" "}
                     <code className="text-xs">{createdKey.prefix}</code>
                   </p>
                   <p>
-                    <span className="font-medium text-foreground">{t("settings.apiKeys.permissionsHeader")}:</span>{" "}
+                    <span className="font-medium text-foreground">
+                      {t("settings.apiKeys.permissionsHeader")}:
+                    </span>{" "}
                     {createdKey.permissions.join(", ")}
                   </p>
                   <p>
-                    <span className="font-medium text-foreground">{t("settings.apiKeys.created")}:</span>{" "}
+                    <span className="font-medium text-foreground">
+                      {t("settings.apiKeys.created")}:
+                    </span>{" "}
                     {formatDate(createdKey.createdAt)}
                   </p>
                   {createdKey.expiresAt && (
                     <p>
-                      <span className="font-medium text-foreground">{t("settings.apiKeys.expiresLabel")}:</span>{" "}
+                      <span className="font-medium text-foreground">
+                        {t("settings.apiKeys.expiresLabel")}:
+                      </span>{" "}
                       {formatDate(createdKey.expiresAt)}
                     </p>
                   )}
@@ -500,8 +504,8 @@ export default function SettingsApiKeys() {
               <DialogFooter>
                 <Button onClick={handleCloseCreate} disabled={!keyCopied}>
                   {keyCopied
-                    ? (t("common.done") || "Done")
-                    : (t("settings.apiKeys.copyFirst") || "Copy key to continue")}
+                    ? t("common.done") || "Done"
+                    : t("settings.apiKeys.copyFirst") || "Copy key to continue"}
                 </Button>
               </DialogFooter>
             </>
@@ -531,9 +535,7 @@ export default function SettingsApiKeys() {
             <Bot className="size-4 text-primary" />
             {t("settings.mcp.title")}
           </CardTitle>
-          <CardDescription>
-            {t("settings.mcp.description")}
-          </CardDescription>
+          <CardDescription>{t("settings.mcp.description")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           {/* Endpoint URL */}
@@ -583,7 +585,9 @@ export default function SettingsApiKeys() {
                 size="sm"
                 className="absolute top-3 right-3 h-7 text-xs gap-1.5"
                 onClick={() => {
-                  navigator.clipboard.writeText(`{\n  "mcpServers": {\n    "commissionkit": {\n      "url": "https://app.commissionkit.co/api/mcp",\n      "headers": {\n        "Authorization": "Bearer YOUR_API_KEY"\n      }\n    }\n  }\n}`);
+                  navigator.clipboard.writeText(
+                    `{\n  "mcpServers": {\n    "commissionkit": {\n      "url": "https://app.commissionkit.co/api/mcp",\n      "headers": {\n        "Authorization": "Bearer YOUR_API_KEY"\n      }\n    }\n  }\n}`,
+                  );
                   toast.success(t("settings.mcp.configCopied") || "Config copied to clipboard");
                 }}
               >
@@ -594,9 +598,7 @@ export default function SettingsApiKeys() {
           </div>
 
           {/* Compatible clients */}
-          <p className="text-xs text-muted-foreground">
-            {t("settings.mcp.compatibleClients")}
-          </p>
+          <p className="text-xs text-muted-foreground">{t("settings.mcp.compatibleClients")}</p>
 
           {/* Docs link */}
           <a

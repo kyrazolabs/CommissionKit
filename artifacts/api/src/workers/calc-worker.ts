@@ -1,21 +1,12 @@
+import { CommissionResult, CommissionRun, Workspace, WorkspaceMember } from "@workspace/db";
+import { commissionRunTemplate } from "@workspace/email-templates";
+import type { CommissionCalcPayload } from "@workspace/queue";
+import { COMMISSION_CALC_QUEUE, getRedisClient, sendMediumPriorityEmail } from "@workspace/queue";
 import { Worker } from "bullmq";
 import { Types } from "mongoose";
-import {
-  CommissionRun,
-  CommissionResult,
-  Workspace,
-  WorkspaceMember,
-} from "@workspace/db";
-import {
-  getRedisClient,
-  COMMISSION_CALC_QUEUE,
-  sendMediumPriorityEmail,
-} from "@workspace/queue";
-import { commissionRunTemplate } from "@workspace/email-templates";
-import { createNotification } from "../lib/notify";
-import type { CommissionCalcPayload } from "@workspace/queue";
-import { getEngine } from "./engines/registry";
 import { logger } from "../lib/logger";
+import { createNotification } from "../lib/notify";
+import { getEngine } from "./engines/registry";
 
 const WORKER_OPTS = {
   connection: getRedisClient(),
@@ -37,7 +28,7 @@ const WORKER_OPTS = {
       type: "exponential",
       delay: 5000,
     },
-  }
+  },
 };
 
 /**
@@ -50,9 +41,7 @@ export const calcWorker = new Worker<CommissionCalcPayload>(
     const { workspaceId, runId, period } = job.data;
     const { connectDB } = await import("@workspace/db");
     await connectDB();
-    logger.info(
-      `[Worker:Calc] Processing run ${runId} for workspace ${workspaceId}`,
-    );
+    logger.info(`[Worker:Calc] Processing run ${runId} for workspace ${workspaceId}`);
 
     const run = await CommissionRun.findById(runId);
     if (!run) throw new Error("Run not found");
@@ -108,9 +97,7 @@ export const calcWorker = new Worker<CommissionCalcPayload>(
         status: "completed",
         error: null,
       });
-      logger.info(
-        `[Worker:Calc] Saved completed run ${runId} with ${totalItems} results`,
-      );
+      logger.info(`[Worker:Calc] Saved completed run ${runId} with ${totalItems} results`);
 
       // Notify admins
       const adminMembers = await WorkspaceMember.find({
@@ -121,10 +108,10 @@ export const calcWorker = new Worker<CommissionCalcPayload>(
 
       const totalPaid = `${wsCurrency} ${totalCommission.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
       const [py, pm] = period.split("-");
-      const periodLabel = new Date(
-        Number(py),
-        Number(pm) - 1,
-      ).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      const periodLabel = new Date(Number(py), Number(pm) - 1).toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric",
+      });
       const APP_URL = process.env.APP_URL || "http://localhost:3000";
       const runUrl = `${APP_URL}/runs/${run._id}`;
 
@@ -166,9 +153,7 @@ export const calcWorker = new Worker<CommissionCalcPayload>(
               message: `${periodLabel} run finished — ${totalPaid} across ${involvedReps.size} reps.`,
               href: runUrl,
               meta: { runId: String(run._id), period },
-            }).catch((e) =>
-              logger.error({ err: e }, "[Worker:Calc] Notification error"),
-            );
+            }).catch((e) => logger.error({ err: e }, "[Worker:Calc] Notification error"));
           }
         }
       } catch (notifyErr) {

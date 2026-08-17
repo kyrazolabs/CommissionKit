@@ -1,13 +1,14 @@
-import { useState, useRef, useEffect, forwardRef } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 function cleanNumber(value: string): string {
-  let cleaned = value.replace(/[^0-9.\-]/g, "");
+  let cleaned = value.replace(/[^0-9.-]/g, "");
   const hasMinus = cleaned.startsWith("-");
   cleaned = cleaned.replace(/-/g, "");
   const dotIndex = cleaned.indexOf(".");
   if (dotIndex !== -1) {
-    cleaned = cleaned.substring(0, dotIndex + 1) + cleaned.substring(dotIndex + 1).replace(/\./g, "");
+    cleaned =
+      cleaned.substring(0, dotIndex + 1) + cleaned.substring(dotIndex + 1).replace(/\./g, "");
   }
   return hasMinus ? "-" + cleaned : cleaned;
 }
@@ -26,7 +27,10 @@ function formatLive(value: string, decimals: number): string {
 
   if (dotIdx !== -1) {
     intPart = abs.substring(0, dotIdx);
-    decPart = abs.substring(dotIdx + 1).replace(/\./g, "").substring(0, decimals);
+    decPart = abs
+      .substring(dotIdx + 1)
+      .replace(/\./g, "")
+      .substring(0, decimals);
   }
 
   const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -52,7 +56,10 @@ function getCursorAfterFormat(rawBeforeCursorLen: number, formatted: string): nu
   return pos;
 }
 
-function createEvent(e: React.ChangeEvent<HTMLInputElement>, raw: string): React.ChangeEvent<HTMLInputElement> {
+function createEvent(
+  e: React.ChangeEvent<HTMLInputElement>,
+  raw: string,
+): React.ChangeEvent<HTMLInputElement> {
   return {
     ...e,
     target: { ...e.target, value: raw },
@@ -60,7 +67,8 @@ function createEvent(e: React.ChangeEvent<HTMLInputElement>, raw: string): React
   } as React.ChangeEvent<HTMLInputElement>;
 }
 
-export interface NumberInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "value" | "onChange"> {
+export interface NumberInputProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "value" | "onChange"> {
   value?: string | number;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   decimals?: number;
@@ -111,7 +119,9 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
       const cursor = getCursorAfterFormat(pending, displayValue);
       try {
         el.setSelectionRange(cursor, cursor);
-      } catch { /* ignore for invalid positions */ }
+      } catch {
+        /* ignore for invalid positions */
+      }
     });
 
     useEffect(() => {
@@ -129,12 +139,12 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
         onBlur={handleBlur}
         className={cn(
           "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-          className
+          className,
         )}
         {...props}
       />
     );
-  }
+  },
 );
 
 NumberInput.displayName = "NumberInput";

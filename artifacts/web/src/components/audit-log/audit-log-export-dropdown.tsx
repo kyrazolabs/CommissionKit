@@ -1,5 +1,7 @@
+import { Download, FileDown, LoaderCircle } from "lucide-react";
 import { useState } from "react";
-import { Download, LoaderCircle, FileDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,8 +13,6 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { MonthPicker } from "@/components/ui/month-picker";
-import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { rawFetch } from "@/lib/api";
 import type { AuditFilters } from "@/types/audit-log";
@@ -38,7 +38,8 @@ export function AuditLogExportDropdown({ filters }: AuditLogExportDropdownProps)
       if (filters.search) params.set("search", filters.search);
       if (filters.userId) params.set("userId", filters.userId);
       if (filters.actions.length > 0) params.set("action", filters.actions.join(","));
-      if (filters.resourceTypes.length > 0) params.set("resourceType", filters.resourceTypes.join(","));
+      if (filters.resourceTypes.length > 0)
+        params.set("resourceType", filters.resourceTypes.join(","));
 
       const res = await rawFetch(`/api/audit-log/export?${params.toString()}`);
       if (!res.ok) throw new Error(await res.text());
@@ -93,11 +94,7 @@ export function AuditLogExportDropdown({ filters }: AuditLogExportDropdownProps)
             <Button variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => exportAs("csv")}
-              disabled={!!loading}
-            >
+            <Button variant="outline" onClick={() => exportAs("csv")} disabled={!!loading}>
               {loading === "csv" ? (
                 <LoaderCircle className="mr-2 size-4 animate-spin" />
               ) : (

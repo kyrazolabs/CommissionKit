@@ -1,6 +1,6 @@
-import { useWorkspace } from "./use-workspace";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "../lib/api";
+import { useWorkspace } from "./use-workspace";
 
 export type OrgRole = "owner" | "admin" | "member";
 

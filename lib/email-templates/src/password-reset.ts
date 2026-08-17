@@ -1,4 +1,4 @@
-import { baseTemplate, btn, h1, p, muted, divider, warningBox } from "./base.js";
+import { baseTemplate, btn, divider, h1, muted, p, warningBox } from "./base.js";
 
 export interface PasswordResetTemplateProps {
   name?: string;

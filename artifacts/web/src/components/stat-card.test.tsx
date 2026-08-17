@@ -1,8 +1,8 @@
-import { describe, test, expect, afterEach, mock } from "bun:test";
-import { render, screen, cleanup } from "@testing-library/react";
+import { afterEach, describe, expect, mock, test } from "bun:test";
+import { cleanup, render, screen } from "@testing-library/react";
+import { DollarSign } from "lucide-react";
 import React from "react";
 import { StatCard } from "./stat-card";
-import { DollarSign } from "lucide-react";
 
 // Mock HelpTooltip
 mock.module("@/components/help-tooltip", () => ({
@@ -22,7 +22,7 @@ describe("StatCard", () => {
         value: "$12,500",
         icon: DollarSign,
         tooltip: "Total revenue this period",
-      })
+      }),
     );
     expect(container.textContent).toContain("Total Revenue");
     expect(container.textContent).toContain("$12,500");
@@ -35,7 +35,7 @@ describe("StatCard", () => {
         value: "24",
         icon: DollarSign,
         tooltip: "Deals closed",
-      })
+      }),
     );
     expect(container.querySelector(".bg-secondary")).not.toBeNull();
   });
@@ -49,7 +49,7 @@ describe("StatCard", () => {
         tooltip: "Total commissions",
         trend: 15.2,
         trendLabel: "vs last period",
-      })
+      }),
     );
     expect(container.textContent).toContain("+15.2%");
     expect(container.textContent).toContain("vs last period");
@@ -64,7 +64,7 @@ describe("StatCard", () => {
         tooltip: "Active reps",
         trend: null,
         trendLabel: "This period",
-      })
+      }),
     );
     expect(container.textContent).toContain("Active Reps");
     expect(container.textContent).toContain("10");
@@ -80,7 +80,7 @@ describe("StatCard", () => {
         tooltip: "Pipeline revenue",
         trend: 8.4,
         trendLabel: "vs last period",
-      })
+      }),
     );
     expect(container.textContent).toContain("vs last period");
   });
@@ -93,7 +93,7 @@ describe("StatCard", () => {
         icon: DollarSign,
         tooltip: "Test tooltip",
         className: "custom-card-class",
-      })
+      }),
     );
     const card = container.querySelector(".custom-card-class");
     expect(card).not.toBeNull();

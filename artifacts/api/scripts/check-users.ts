@@ -5,9 +5,12 @@ async function run() {
   await mongoose.connect(process.env.MONGO_URL!);
   const db = mongoose.connection.db;
 
-  const reps = await db?.collection("reps").find({ portalUsername: { $exists: true } }).toArray();
+  const reps = await db
+    ?.collection("reps")
+    .find({ portalUsername: { $exists: true } })
+    .toArray();
   console.log(`Found ${reps?.length} reps with portalUsername.`);
-  
+
   if (reps && reps.length > 0) {
     for (const rep of reps) {
       console.log(`Rep: ${rep.name}, Username: ${rep.portalUsername}`);
@@ -21,7 +24,7 @@ async function run() {
   } else {
     console.log("No reps have a portalUsername set yet. Have you clicked 'Send Portal Link'?");
   }
-  
+
   process.exit(0);
 }
 

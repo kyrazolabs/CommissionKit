@@ -1,17 +1,22 @@
+import { Eye, EyeOff, Loader2, Lock, ShieldAlert } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Lock, Eye, EyeOff, Loader2, ShieldAlert } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { portalFetch, setPortalToken } from "@/lib/portal-fetch";
+import { cn } from "@/lib/utils";
 
 interface PortalAuthProps {
   accessCode: string;
   workspaceName?: string;
-  onLogin: (username: string, password: string, mustChangePassword: boolean, workspaceName: string) => void;
+  onLogin: (
+    username: string,
+    password: string,
+    mustChangePassword: boolean,
+    workspaceName: string,
+  ) => void;
 }
 
 export function PortalAuth({ accessCode, workspaceName, onLogin }: PortalAuthProps) {
@@ -39,7 +44,7 @@ export function PortalAuth({ accessCode, workspaceName, onLogin }: PortalAuthPro
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username: username.trim(), password }),
-        }
+        },
       );
 
       const data = await res.json();
@@ -52,7 +57,12 @@ export function PortalAuth({ accessCode, workspaceName, onLogin }: PortalAuthPro
       setPortalToken(accessCode, data.token);
 
       // Notify parent — parent will handle refresh / password-change flow
-      onLogin(username.trim(), password, data.mustChangePassword ?? false, data.workspaceName ?? "");
+      onLogin(
+        username.trim(),
+        password,
+        data.mustChangePassword ?? false,
+        data.workspaceName ?? "",
+      );
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -78,7 +88,9 @@ export function PortalAuth({ accessCode, workspaceName, onLogin }: PortalAuthPro
           <CardContent className="space-y-4 pt-4">
             {workspaceName && (
               <div className="text-xs text-muted-foreground text-center pb-1">
-                <span className="font-medium text-foreground">{t("portal.public.workspace") ?? "Workspace"}: </span>
+                <span className="font-medium text-foreground">
+                  {t("portal.public.workspace") ?? "Workspace"}:{" "}
+                </span>
                 <span>{workspaceName}</span>
               </div>
             )}
@@ -119,11 +131,7 @@ export function PortalAuth({ accessCode, workspaceName, onLogin }: PortalAuthPro
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   tabIndex={-1}
                 >
-                  {showPassword ? (
-                    <EyeOff className="size-4" />
-                  ) : (
-                    <Eye className="size-4" />
-                  )}
+                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                 </button>
               </div>
             </div>
@@ -140,9 +148,7 @@ export function PortalAuth({ accessCode, workspaceName, onLogin }: PortalAuthPro
               className="w-full"
               disabled={isLoading || !username.trim() || !password.trim()}
             >
-              {isLoading ? (
-                <Loader2 className="mr-2 size-4 animate-spin" />
-              ) : null}
+              {isLoading ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
               {t("portal.public.accessPortal")}
             </Button>
           </div>

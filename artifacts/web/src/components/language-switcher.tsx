@@ -1,15 +1,15 @@
+import { Languages } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { SUPPORTED_LANGS } from "@/i18n";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Languages } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { SUPPORTED_LANGS } from "@/i18n";
 import { Analytics } from "@/lib/analytics";
+import { cn } from "@/lib/utils";
 
 export function LanguageSwitcher() {
   const { i18n } = useTranslation();

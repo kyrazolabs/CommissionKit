@@ -1,8 +1,13 @@
-import { Worker } from "bullmq";
 import { IntegrationConnection, IntegrationSync } from "@workspace/db";
-import { getRedisClient, WEBHOOK_INGRESS_QUEUE, syncRepsQueue, syncDealsQueue } from "@workspace/queue";
-import type { WebhookIngressPayload } from "@workspace/queue";
 import { pluginRegistry } from "@workspace/plugins-core";
+import type { WebhookIngressPayload } from "@workspace/queue";
+import {
+  getRedisClient,
+  syncDealsQueue,
+  syncRepsQueue,
+  WEBHOOK_INGRESS_QUEUE,
+} from "@workspace/queue";
+import { Worker } from "bullmq";
 import { logger } from "../lib/logger";
 
 const WORKER_OPTS = {

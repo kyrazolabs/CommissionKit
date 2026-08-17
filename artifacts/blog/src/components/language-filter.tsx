@@ -11,7 +11,12 @@ interface LanguageFilterProps {
   className?: string;
 }
 
-export function LanguageFilter({ availableLanguages, t, onFilterChange, className }: LanguageFilterProps) {
+export function LanguageFilter({
+  availableLanguages,
+  t,
+  onFilterChange,
+  className,
+}: LanguageFilterProps) {
   const [active, setActive] = useState<string>("all");
 
   const tabs = [
@@ -29,7 +34,7 @@ export function LanguageFilter({ availableLanguages, t, onFilterChange, classNam
       className={cn(
         "flex items-center gap-1 p-1 bg-muted/50 rounded-lg border border-border/50",
         "overflow-x-auto scrollbar-thin",
-        className
+        className,
       )}
       role="tablist"
       aria-label={t.filterByLanguage}
@@ -47,7 +52,7 @@ export function LanguageFilter({ availableLanguages, t, onFilterChange, classNam
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               isActive
                 ? "bg-primary text-primary-foreground shadow-xs"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted",
             )}
           >
             {tab.label}

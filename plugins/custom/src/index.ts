@@ -1,3 +1,3 @@
-export { CustomConnector } from "./connector";
-export { CustomConnectorConfigSchema } from "./config-parser";
 export type { CustomConnectorConfig } from "./config-parser";
+export { CustomConnectorConfigSchema } from "./config-parser";
+export { CustomConnector } from "./connector";

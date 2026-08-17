@@ -1,14 +1,7 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Check, ChevronDown } from "lucide-react"
-
-import { cn } from "@/lib/utils"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+import { Check, ChevronDown } from "lucide-react";
+import * as React from "react";
 import {
   Command,
   CommandEmpty,
@@ -16,14 +9,16 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
+} from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 interface MultiSelectProps {
-  options: { value: string; label: string }[]
-  selected: string[]
-  onChange: (selected: string[]) => void
-  placeholder?: string
-  className?: string
+  options: { value: string; label: string }[];
+  selected: string[];
+  onChange: (selected: string[]) => void;
+  placeholder?: string;
+  className?: string;
 }
 
 export function MultiSelect({
@@ -33,11 +28,9 @@ export function MultiSelect({
   placeholder = "Select...",
   className,
 }: MultiSelectProps) {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = React.useState(false);
 
-  const selectedLabels = options
-    .filter((o) => selected.includes(o.value))
-    .map((o) => o.label)
+  const selectedLabels = options.filter((o) => selected.includes(o.value)).map((o) => o.label);
 
   const triggerLabel =
     selected.length === 0
@@ -46,13 +39,13 @@ export function MultiSelect({
         ? selectedLabels[0]
         : selected.length === 2
           ? selectedLabels.join(", ")
-          : `${selected.length} selected`
+          : `${selected.length} selected`;
 
   function handleSelect(value: string) {
     const newSelected = selected.includes(value)
       ? selected.filter((v) => v !== value)
-      : [...selected, value]
-    onChange(newSelected)
+      : [...selected, value];
+    onChange(newSelected);
   }
 
   return (
@@ -66,7 +59,7 @@ export function MultiSelect({
             "disabled:cursor-not-allowed disabled:opacity-50",
             "[&>span]:line-clamp-1",
             open && "ring-1 ring-ring",
-            className
+            className,
           )}
         >
           <span className={cn("line-clamp-1", selected.length === 0 && "text-muted-foreground")}>
@@ -82,7 +75,7 @@ export function MultiSelect({
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup>
               {options.map((option) => {
-                const isSelected = selected.includes(option.value)
+                const isSelected = selected.includes(option.value);
                 return (
                   <CommandItem
                     key={option.value}
@@ -95,19 +88,19 @@ export function MultiSelect({
                         "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border",
                         isSelected
                           ? "bg-primary text-primary-foreground border-primary"
-                          : "border-muted-foreground/50"
+                          : "border-muted-foreground/50",
                       )}
                     >
                       {isSelected && <Check className="h-3 w-3" />}
                     </span>
                     <span className="flex-1">{option.label}</span>
                   </CommandItem>
-                )
+                );
               })}
             </CommandGroup>
           </CommandList>
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

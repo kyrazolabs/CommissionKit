@@ -1,19 +1,19 @@
-import { Navbar } from "./landing/Navbar";
-import { Footer } from "./landing/Footer";
-import { usePageMeta } from "@/hooks/use-page-meta";
 import {
-  Building2,
-  BarChart3,
-  ArrowRightLeft,
-  Rocket,
-  Factory,
-  Users,
-  CreditCard,
-  Globe,
   ArrowRight,
-  Zap,
+  ArrowRightLeft,
+  BarChart3,
+  Building2,
+  CreditCard,
+  Factory,
+  Globe,
+  Rocket,
   ShieldCheck,
+  Users,
+  Zap,
 } from "lucide-react";
+import { usePageMeta } from "@/hooks/use-page-meta";
+import { Footer } from "./landing/Footer";
+import { Navbar } from "./landing/Navbar";
 
 const SOLUTIONS = [
   {
@@ -106,7 +106,8 @@ export function SolutionsPage() {
     title: "Solutions — CommissionKit",
     description:
       "Commission management solutions for finance teams, sales ops, startups, and enterprises. Automate commissions at any scale.",
-    keywords: "sales performance management software, manage sales performance, sales performance management, commission software, sales commission management software",
+    keywords:
+      "sales performance management software, manage sales performance, sales performance management, commission software, sales commission management software",
     robots: "index, follow",
   });
 
@@ -124,8 +125,8 @@ export function SolutionsPage() {
               Commission Management for Every Team
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Whether you are a 5-person startup or a 5,000-person enterprise, CommissionKit
-              adapts to your commission structure — not the other way around.
+              Whether you are a 5-person startup or a 5,000-person enterprise, CommissionKit adapts
+              to your commission structure — not the other way around.
             </p>
           </div>
 
@@ -161,7 +162,8 @@ export function SolutionsPage() {
                 Why Teams Choose CommissionKit
               </h2>
               <p className="text-muted-foreground">
-                Purpose-built for commission management — not a repurposed spreadsheet or generic tool.
+                Purpose-built for commission management — not a repurposed spreadsheet or generic
+                tool.
               </p>
             </div>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">

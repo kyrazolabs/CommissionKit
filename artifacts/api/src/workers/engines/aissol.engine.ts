@@ -1,11 +1,13 @@
-import type { CalcEngine, CalcEngineInput, CalcEngineOutput, CalcEngineResult, EngineFeature } from "./CalcEngine";
+import { AissolCommissionMatrix, AissolInvoice, AissolProject } from "@workspace/db/schema/aissol";
 import { Types } from "mongoose";
-import {
-  AissolCommissionMatrix,
-  AissolProject,
-  AissolInvoice,
-} from "@workspace/db/schema/aissol";
 import { logger } from "../../lib/logger";
+import type {
+  CalcEngine,
+  CalcEngineInput,
+  CalcEngineOutput,
+  CalcEngineResult,
+  EngineFeature,
+} from "./CalcEngine";
 
 function determineSlab(value: number, slabs: { index: number; max: number | null }[]): number {
   for (const slab of slabs) {
@@ -15,7 +17,10 @@ function determineSlab(value: number, slabs: { index: number; max: number | null
   return slabs[slabs.length - 1]?.index ?? 0;
 }
 
-function determineGmBracket(gmPercent: number, brackets: { key: string; max: number | null }[]): string {
+function determineGmBracket(
+  gmPercent: number,
+  brackets: { key: string; max: number | null }[],
+): string {
   for (const bracket of brackets) {
     if (bracket.max === null) return bracket.key;
     if (gmPercent < bracket.max) return bracket.key;
@@ -30,9 +35,24 @@ export class AissolEngine implements CalcEngine {
   features(): EngineFeature {
     return {
       navItems: [
-        { name: "Matrix", href: "/dash/enterprise/matrix", icon: "Grid3X3", replaces: "/dash/plans" },
-        { name: "Projects", href: "/dash/enterprise/projects", icon: "FolderKanban", replaces: "/dash/deals" },
-        { name: "Reports", href: "/dash/enterprise/reports", icon: "PieChart", replaces: "/dash/reports" },
+        {
+          name: "Matrix",
+          href: "/dash/enterprise/matrix",
+          icon: "Grid3X3",
+          replaces: "/dash/plans",
+        },
+        {
+          name: "Projects",
+          href: "/dash/enterprise/projects",
+          icon: "FolderKanban",
+          replaces: "/dash/deals",
+        },
+        {
+          name: "Reports",
+          href: "/dash/enterprise/reports",
+          icon: "PieChart",
+          replaces: "/dash/reports",
+        },
       ],
     };
   }
@@ -40,9 +60,7 @@ export class AissolEngine implements CalcEngine {
   async calculate(input: CalcEngineInput): Promise<CalcEngineOutput> {
     const { workspaceId, period } = input;
 
-    logger.info(
-      `[Engine:AISSOL] Calculating run ${input.runId} for workspace ${workspaceId}`,
-    );
+    logger.info(`[Engine:AISSOL] Calculating run ${input.runId} for workspace ${workspaceId}`);
 
     const matrix = await AissolCommissionMatrix.findOne({
       workspaceId: new Types.ObjectId(workspaceId),
@@ -85,7 +103,9 @@ export class AissolEngine implements CalcEngine {
       invoiceQuery.paymentStatus = { $in: input.paymentStatuses };
     }
     const invoices = await AissolInvoice.find(invoiceQuery);
-    logger.info(`[Engine:AISSOL] Found ${invoices.length} invoices for ${projects.length} projects`);
+    logger.info(
+      `[Engine:AISSOL] Found ${invoices.length} invoices for ${projects.length} projects`,
+    );
 
     const projectMap = new Map(projects.map((p) => [p._id.toString(), p]));
     const invoicesByProject = new Map<string, typeof invoices>();
@@ -106,9 +126,7 @@ export class AissolEngine implements CalcEngine {
 
       const slabIdx = determineSlab(totalValue, slabs);
       const slabDef = slabs[slabIdx] ?? { index: slabIdx, label: `Slab ${slabIdx}` };
-      const gmPercent = totalValue > 0
-        ? ((totalValue - totalCost) / totalValue) * 100
-        : 0;
+      const gmPercent = totalValue > 0 ? ((totalValue - totalCost) / totalValue) * 100 : 0;
       const gmBracket = determineGmBracket(gmPercent, gmBrackets);
 
       const slabRates = rates[String(slabIdx)];
@@ -126,9 +144,7 @@ export class AissolEngine implements CalcEngine {
       const projectInvoices = invoicesByProject.get(project._id.toString()) ?? [];
 
       if (projectInvoices.length === 0) {
-        logger.warn(
-          `[Engine:AISSOL] No invoices found for project ${project.name}. Skipping.`,
-        );
+        logger.warn(`[Engine:AISSOL] No invoices found for project ${project.name}. Skipping.`);
         skippedProjects++;
         continue;
       }

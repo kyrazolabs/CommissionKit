@@ -1,15 +1,26 @@
-import { describe, test, expect, beforeEach, afterEach } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { CustomConnector } from "../connector";
 import { mockFetchSingle, originalFetch } from "./setup";
 
 describe("CustomConnector — responsePath auto-detection", () => {
   let connector: CustomConnector;
-  beforeEach(() => { connector = new CustomConnector(); });
-  afterEach(() => { globalThis.fetch = originalFetch; });
+  beforeEach(() => {
+    connector = new CustomConnector();
+  });
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
 
   const baseReps = {
-    baseUrl: "https://api.example.com", auth: { type: "bearer" as const, token: "t" },
-    entities: { reps: { enabled: true, endpoint: "/users", fields: { externalId: "id", name: "name", email: "id" } } },
+    baseUrl: "https://api.example.com",
+    auth: { type: "bearer" as const, token: "t" },
+    entities: {
+      reps: {
+        enabled: true,
+        endpoint: "/users",
+        fields: { externalId: "id", name: "name", email: "id" },
+      },
+    },
   };
 
   test("direct array response (no auto-detection needed)", async () => {

@@ -1,33 +1,59 @@
-import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSyncStore } from "@/hooks/use-sync-store";
-import { 
-  useListPlans, getListPlansQueryKey, 
-  useCreatePlan, useUpdatePlan, useDeletePlan 
+import {
+  getListPlansQueryKey,
+  useCreatePlan,
+  useDeletePlan,
+  useListPlans,
+  useUpdatePlan,
 } from "@workspace/api-client-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { NumberInput } from "@/components/number-input";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Plus, Edit, Trash, FileText, Layers, Zap, Trash2 } from "lucide-react";
-import { formatCurrency, formatPercent } from "@/lib/format";
+import { Edit, FileText, Layers, Plus, Trash, Trash2, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { HelpTooltip } from "@/components/help-tooltip";
+import { NumberInput } from "@/components/number-input";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/hooks/use-toast";
-import { useRole } from "@/hooks/use-role";
 import { useBillingStatus } from "@/hooks/use-billing-status";
+import { usePageMeta } from "@/hooks/use-page-meta";
+import { useRole } from "@/hooks/use-role";
+import { useSyncStore } from "@/hooks/use-sync-store";
+import { useToast } from "@/hooks/use-toast";
 
 import { useWorkspace } from "@/hooks/use-workspace";
-import { usePageMeta } from "@/hooks/use-page-meta";
-
+import { formatCurrency, formatPercent } from "@/lib/format";
 
 export function PlansPage() {
   const { t } = useTranslation();
-  usePageMeta({ title: t("plans.title"), description: "Create and manage commission plans for your sales team.", robots: "noindex, nofollow" });
+  usePageMeta({
+    title: t("plans.title"),
+    description: "Create and manage commission plans for your sales team.",
+    robots: "noindex, nofollow",
+  });
   const { activeWorkspace } = useWorkspace();
   const currency = activeWorkspace?.currency || "USD";
   const { data: plans, isLoading } = useListPlans({ query: { queryKey: getListPlansQueryKey() } });
@@ -44,7 +70,9 @@ export function PlansPage() {
           <Skeleton className="h-4 w-64" />
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-48 w-full rounded-2xl" />)}
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-48 w-full rounded-2xl" />
+          ))}
         </div>
       </div>
     );
@@ -60,7 +88,8 @@ export function PlansPage() {
     );
   }
 
-  const isLimitReached = limits.plans !== -1 && Array.isArray(plans) && plans.length >= limits.plans;
+  const isLimitReached =
+    limits.plans !== -1 && Array.isArray(plans) && plans.length >= limits.plans;
 
   return (
     <div className="space-y-6">
@@ -71,7 +100,7 @@ export function PlansPage() {
           <p className="text-muted-foreground">{t("plans.description")}</p>
         </div>
         {hasPermission("plans", "create") && (
-          <Button 
+          <Button
             onClick={() => setIsCreateOpen(true)}
             disabled={isLimitReached}
             title={isLimitReached ? t("common.limitReachedUpgrade") : ""}
@@ -86,23 +115,29 @@ export function PlansPage() {
 
       {isLoading ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map(i => (
+          {[1, 2, 3].map((i) => (
             <Card key={i}>
-              <CardHeader><Skeleton className="size-6/4 mb-2" /><Skeleton className="size-4/2" /></CardHeader>
-              <CardContent><Skeleton className="h-24 w-full" /></CardContent>
+              <CardHeader>
+                <Skeleton className="size-6/4 mb-2" />
+                <Skeleton className="size-4/2" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-24 w-full" />
+              </CardContent>
             </Card>
           ))}
         </div>
-      ) : (!Array.isArray(plans) || plans.length === 0) ? (
+      ) : !Array.isArray(plans) || plans.length === 0 ? (
         <div className="text-center py-16 bg-muted/30 rounded-xl border border-dashed">
           <div className="bg-muted size-12 rounded-full flex items-center justify-center mx-auto mb-4">
             <FileText className="size-6 text-muted-foreground" />
           </div>
           <h3 className="text-lg font-medium">No plans created</h3>
           <p className="text-sm text-muted-foreground mt-1 mb-6 max-w-sm mx-auto">
-            Build your first commission plan to assign to sales representatives. Support for flat rates, tiers, and accelerators.
+            Build your first commission plan to assign to sales representatives. Support for flat
+            rates, tiers, and accelerators.
           </p>
-          <Button 
+          <Button
             onClick={() => setIsCreateOpen(true)}
             disabled={isLimitReached}
             title={isLimitReached ? t("common.limitReachedUpgrade") : ""}
@@ -122,7 +157,7 @@ export function PlansPage() {
   );
 }
 
-function PlanCard({ plan, sub, currency }: { plan: any, sub: any, currency: string }) {
+function PlanCard({ plan, sub, currency }: { plan: any; sub: any; currency: string }) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -132,19 +167,19 @@ function PlanCard({ plan, sub, currency }: { plan: any, sub: any, currency: stri
     mutation: {
       onMutate: async (variables) => {
         const { id } = variables;
-        await queryClient.cancelQueries({ queryKey: ['/api/plans'] });
-        const previousPlans = queryClient.getQueryData<any[]>(['/api/plans']);
+        await queryClient.cancelQueries({ queryKey: ["/api/plans"] });
+        const previousPlans = queryClient.getQueryData<any[]>(["/api/plans"]);
 
-        queryClient.setQueryData<any[]>(['/api/plans'], (old) => {
+        queryClient.setQueryData<any[]>(["/api/plans"], (old) => {
           if (!old) return [];
-          return old.filter(p => p.id !== id);
+          return old.filter((p) => p.id !== id);
         });
 
         return { previousPlans };
       },
       onError: (err, variables, context: any) => {
         if (context?.previousPlans) {
-          queryClient.setQueryData(['/api/plans'], context.previousPlans);
+          queryClient.setQueryData(["/api/plans"], context.previousPlans);
         }
         useSyncStore.getState().setSyncError(true);
         toast({
@@ -159,8 +194,8 @@ function PlanCard({ plan, sub, currency }: { plan: any, sub: any, currency: stri
       },
       onSettled: () => {
         queryClient.invalidateQueries({ queryKey: getListPlansQueryKey() });
-      }
-    }
+      },
+    },
   });
 
   const handleDelete = () => {
@@ -170,10 +205,14 @@ function PlanCard({ plan, sub, currency }: { plan: any, sub: any, currency: stri
 
   const getPlanIcon = () => {
     switch (plan.type) {
-      case "flat": return <FileText className="size-5 text-blue-500" />;
-      case "tiered": return <Layers className="size-5 text-indigo-500" />;
-      case "accelerator": return <Zap className="size-5 text-amber-500" />;
-      default: return <FileText className="size-5" />;
+      case "flat":
+        return <FileText className="size-5 text-blue-500" />;
+      case "tiered":
+        return <Layers className="size-5 text-indigo-500" />;
+      case "accelerator":
+        return <Zap className="size-5 text-amber-500" />;
+      default:
+        return <FileText className="size-5" />;
     }
   };
 
@@ -187,11 +226,15 @@ function PlanCard({ plan, sub, currency }: { plan: any, sub: any, currency: stri
               <CardTitle className="text-lg">{plan.name}</CardTitle>
               <div className="flex items-center gap-1.5">
                 <CardDescription className="capitalize">{plan.type} Plan</CardDescription>
-                <HelpTooltip content={
-                  plan.type === "flat" ? "A single fixed rate applied to every deal amount." :
-                  plan.type === "tiered" ? "Different marginal rates apply to portions of the deal as it passes each tier boundary (like tax brackets)." :
-                  "A higher rate is applied to the full deal amount when it exceeds the accelerator threshold."
-                } />
+                <HelpTooltip
+                  content={
+                    plan.type === "flat"
+                      ? "A single fixed rate applied to every deal amount."
+                      : plan.type === "tiered"
+                        ? "Different marginal rates apply to portions of the deal as it passes each tier boundary (like tax brackets)."
+                        : "A higher rate is applied to the full deal amount when it exceeds the accelerator threshold."
+                  }
+                />
               </div>
             </div>
           </div>
@@ -215,21 +258,31 @@ function PlanCard({ plan, sub, currency }: { plan: any, sub: any, currency: stri
               <div className="bg-primary/10 border border-primary/20 p-3 rounded-lg">
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-sm font-medium text-primary">Accelerator Rate</span>
-                  <span className="font-semibold text-primary">{formatPercent(plan.acceleratorRate || 0)}</span>
+                  <span className="font-semibold text-primary">
+                    {formatPercent(plan.acceleratorRate || 0)}
+                  </span>
                 </div>
-                <p className="text-xs text-primary/80">Applied above {formatCurrency(plan.acceleratorThreshold || 0, currency)}</p>
+                <p className="text-xs text-primary/80">
+                  Applied above {formatCurrency(plan.acceleratorThreshold || 0, currency)}
+                </p>
               </div>
             </div>
           )}
 
           {plan.type === "tiered" && plan.tiers && (
             <div className="space-y-2">
-              <span className="text-sm font-medium text-muted-foreground block mb-2">Tiers Structure</span>
+              <span className="text-sm font-medium text-muted-foreground block mb-2">
+                Tiers Structure
+              </span>
               <div className="space-y-1">
                 {plan.tiers?.map((tier: any, i: number) => (
-                  <div key={tier.id || i} className="flex justify-between items-center text-sm p-2 bg-muted/30 rounded border border-border/50">
+                  <div
+                    key={tier.id || i}
+                    className="flex justify-between items-center text-sm p-2 bg-muted/30 rounded border border-border/50"
+                  >
                     <span className="text-muted-foreground">
-                      {formatCurrency(tier.fromAmount, currency)} {tier.toAmount ? `- ${formatCurrency(tier.toAmount, currency)}` : '+'}
+                      {formatCurrency(tier.fromAmount, currency)}{" "}
+                      {tier.toAmount ? `- ${formatCurrency(tier.toAmount, currency)}` : "+"}
                     </span>
                     <span className="font-semibold">{formatPercent(tier.rate)}</span>
                   </div>
@@ -253,28 +306,46 @@ function PlanCard({ plan, sub, currency }: { plan: any, sub: any, currency: stri
             <Button variant="outline" size="sm" onClick={() => setIsEditOpen(true)}>
               <Edit className="size-4 mr-2" /> Edit
             </Button>
-          ) : <div />}
+          ) : (
+            <div />
+          )}
           {hasPermission("plans", "delete") && (
-            <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10 hover:text-destructive aspect-square p-1" onClick={() => setIsDeleteOpen(true)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive aspect-square p-1"
+              onClick={() => setIsDeleteOpen(true)}
+            >
               <Trash className="size-4" />
             </Button>
           )}
         </CardFooter>
       )}
 
-      <PlanFormDialog open={isEditOpen} onOpenChange={setIsEditOpen} initialData={plan} sub={sub} currency={currency} />
+      <PlanFormDialog
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        initialData={plan}
+        sub={sub}
+        currency={currency}
+      />
 
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Plan</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete <strong>{plan.name}</strong>? This action cannot be undone. Reps assigned to this plan will need a new plan.
+              Are you sure you want to delete <strong>{plan.name}</strong>? This action cannot be
+              undone. Reps assigned to this plan will need a new plan.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+            <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Delete
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -286,17 +357,27 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
   const isEditing = !!initialData;
   const [name, setName] = useState(initialData?.name || "");
   const [type, setType] = useState<"flat" | "tiered" | "accelerator">(initialData?.type || "flat");
-  
-  const [flatRate, setFlatRate] = useState(initialData?.flatRate ? (initialData.flatRate * 100).toString() : "5");
-  
-  const [acceleratorThreshold, setAcceleratorThreshold] = useState(initialData?.acceleratorThreshold?.toString() || "100000");
-  const [acceleratorRate, setAcceleratorRate] = useState(initialData?.acceleratorRate ? (initialData.acceleratorRate * 100).toString() : "10");
-  
+
+  const [flatRate, setFlatRate] = useState(
+    initialData?.flatRate ? (initialData.flatRate * 100).toString() : "5",
+  );
+
+  const [acceleratorThreshold, setAcceleratorThreshold] = useState(
+    initialData?.acceleratorThreshold?.toString() || "100000",
+  );
+  const [acceleratorRate, setAcceleratorRate] = useState(
+    initialData?.acceleratorRate ? (initialData.acceleratorRate * 100).toString() : "10",
+  );
+
   const [clawbackDays, setClawbackDays] = useState(initialData?.clawbackDays?.toString() || "");
-  
-  const [tiers, setTiers] = useState<any[]>(initialData?.tiers ? 
-    initialData.tiers.map((t: any) => ({ ...t, rate: (t.rate * 100).toString() })) : 
-    [{ fromAmount: "0", toAmount: "50000", rate: "5" }, { fromAmount: "50000", toAmount: "", rate: "8" }]
+
+  const [tiers, setTiers] = useState<any[]>(
+    initialData?.tiers
+      ? initialData.tiers.map((t: any) => ({ ...t, rate: (t.rate * 100).toString() }))
+      : [
+          { fromAmount: "0", toAmount: "50000", rate: "5" },
+          { fromAmount: "50000", toAmount: "", rate: "8" },
+        ],
   );
 
   const queryClient = useQueryClient();
@@ -305,8 +386,8 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
     mutation: {
       onMutate: async (variables) => {
         const newPlan = variables.data;
-        await queryClient.cancelQueries({ queryKey: ['/api/plans'] });
-        const previousPlans = queryClient.getQueryData<any[]>(['/api/plans']);
+        await queryClient.cancelQueries({ queryKey: ["/api/plans"] });
+        const previousPlans = queryClient.getQueryData<any[]>(["/api/plans"]);
 
         const tempId = `temp-plan-${Date.now()}`;
         const optimisticPlan = {
@@ -314,7 +395,7 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
           ...newPlan,
         };
 
-        queryClient.setQueryData<any[]>(['/api/plans'], (old) => {
+        queryClient.setQueryData<any[]>(["/api/plans"], (old) => {
           if (!old) return [optimisticPlan];
           return [optimisticPlan, ...old];
         });
@@ -323,7 +404,7 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
       },
       onError: (err, variables, context: any) => {
         if (context?.previousPlans) {
-          queryClient.setQueryData(['/api/plans'], context.previousPlans);
+          queryClient.setQueryData(["/api/plans"], context.previousPlans);
         }
         useSyncStore.getState().setSyncError(true);
         toast({
@@ -339,27 +420,27 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
       },
       onSettled: () => {
         queryClient.invalidateQueries({ queryKey: getListPlansQueryKey() });
-      }
-    }
+      },
+    },
   });
 
   const updateMutation = useUpdatePlan({
     mutation: {
       onMutate: async (variables) => {
         const { id, data } = variables;
-        await queryClient.cancelQueries({ queryKey: ['/api/plans'] });
-        const previousPlans = queryClient.getQueryData<any[]>(['/api/plans']);
+        await queryClient.cancelQueries({ queryKey: ["/api/plans"] });
+        const previousPlans = queryClient.getQueryData<any[]>(["/api/plans"]);
 
-        queryClient.setQueryData<any[]>(['/api/plans'], (old) => {
+        queryClient.setQueryData<any[]>(["/api/plans"], (old) => {
           if (!old) return [];
-          return old.map(plan => plan.id === id ? { ...plan, ...data } : plan);
+          return old.map((plan) => (plan.id === id ? { ...plan, ...data } : plan));
         });
 
         return { previousPlans };
       },
       onError: (err, variables, context: any) => {
         if (context?.previousPlans) {
-          queryClient.setQueryData(['/api/plans'], context.previousPlans);
+          queryClient.setQueryData(["/api/plans"], context.previousPlans);
         }
         useSyncStore.getState().setSyncError(true);
         toast({
@@ -375,8 +456,8 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
       },
       onSettled: () => {
         queryClient.invalidateQueries({ queryKey: getListPlansQueryKey() });
-      }
-    }
+      },
+    },
   });
 
   // Reset form when dialog opens
@@ -391,7 +472,9 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
       }
       if (initialData.type === "accelerator") {
         setAcceleratorThreshold(initialData.acceleratorThreshold?.toString() || "100000");
-        setAcceleratorRate(initialData.acceleratorRate ? (initialData.acceleratorRate * 100).toString() : "10");
+        setAcceleratorRate(
+          initialData.acceleratorRate ? (initialData.acceleratorRate * 100).toString() : "10",
+        );
       }
     }
   }, [open, isEditing, initialData]);
@@ -400,9 +483,13 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    let payload: any = { name, type, clawbackDays: clawbackDays ? parseInt(clawbackDays, 10) : null };
-    
+
+    const payload: any = {
+      name,
+      type,
+      clawbackDays: clawbackDays ? parseInt(clawbackDays, 10) : null,
+    };
+
     if (type === "flat") {
       payload.flatRate = parseFloat(flatRate) / 100;
     } else if (type === "accelerator") {
@@ -410,10 +497,10 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
       payload.acceleratorThreshold = parseFloat(acceleratorThreshold);
       payload.acceleratorRate = parseFloat(acceleratorRate) / 100;
     } else if (type === "tiered") {
-      payload.tiers = tiers.map(t => ({
+      payload.tiers = tiers.map((t) => ({
         fromAmount: parseFloat(t.fromAmount),
         toAmount: t.toAmount ? parseFloat(t.toAmount) : null,
-        rate: parseFloat(t.rate) / 100
+        rate: parseFloat(t.rate) / 100,
       }));
     }
 
@@ -421,14 +508,17 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
       updateMutation.mutate({ id: initialData.id, data: payload as any });
       onOpenChange(false);
     } else {
-      createMutation.mutate({ data: payload as any }, {
-        onSuccess: () => {
-          setName("");
-          setType("flat");
-          setFlatRate("5");
-          setClawbackDays("");
-        }
-      });
+      createMutation.mutate(
+        { data: payload as any },
+        {
+          onSuccess: () => {
+            setName("");
+            setType("flat");
+            setFlatRate("5");
+            setClawbackDays("");
+          },
+        },
+      );
       onOpenChange(false);
     }
   };
@@ -443,13 +533,19 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
               Configure how commissions are calculated for deals.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid gap-6 py-4">
             <div className="grid gap-2">
               <Label htmlFor="planName">Plan Name</Label>
-              <Input id="planName" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Q3 Enterprise AE" required />
+              <Input
+                id="planName"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Q3 Enterprise AE"
+                required
+              />
             </div>
-            
+
             <div className="grid gap-2">
               <Label>Plan Type</Label>
               <Select value={type} onValueChange={(val: any) => setType(val)}>
@@ -469,16 +565,25 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="clawbackDays">Clawback Period (Days) {!isGrowthPlus && <span className="text-[10px] text-primary ml-1">(Growth feature)</span>}</Label>
-              <NumberInput 
-                id="clawbackDays" 
+              <Label htmlFor="clawbackDays">
+                Clawback Period (Days){" "}
+                {!isGrowthPlus && (
+                  <span className="text-[10px] text-primary ml-1">(Growth feature)</span>
+                )}
+              </Label>
+              <NumberInput
+                id="clawbackDays"
                 decimals={0}
-                placeholder="e.g. 30" 
-                value={clawbackDays} 
-                onChange={e => setClawbackDays(e.target.value)}
+                placeholder="e.g. 30"
+                value={clawbackDays}
+                onChange={(e) => setClawbackDays(e.target.value)}
                 disabled={!isGrowthPlus}
               />
-              {!isGrowthPlus && <p className="text-[10px] text-muted-foreground">Upgrade to Growth to enable automatic commission clawbacks.</p>}
+              {!isGrowthPlus && (
+                <p className="text-[10px] text-muted-foreground">
+                  Upgrade to Growth to enable automatic commission clawbacks.
+                </p>
+              )}
             </div>
 
             <div className="bg-muted/30 p-4 rounded-lg border">
@@ -486,7 +591,12 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
                 <div className="grid gap-2">
                   <Label>Commission Rate (%)</Label>
                   <div className="relative">
-                    <NumberInput decimals={2} value={flatRate} onChange={e => setFlatRate(e.target.value)} required />
+                    <NumberInput
+                      decimals={2}
+                      value={flatRate}
+                      onChange={(e) => setFlatRate(e.target.value)}
+                      required
+                    />
                     <span className="absolute right-3 top-2.5 text-muted-foreground">%</span>
                   </div>
                 </div>
@@ -497,21 +607,38 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
                   <div className="grid gap-2">
                     <Label>Base Rate (%)</Label>
                     <div className="relative">
-                      <NumberInput decimals={2} value={flatRate} onChange={e => setFlatRate(e.target.value)} required />
+                      <NumberInput
+                        decimals={2}
+                        value={flatRate}
+                        onChange={(e) => setFlatRate(e.target.value)}
+                        required
+                      />
                       <span className="absolute right-3 top-2.5 text-muted-foreground">%</span>
                     </div>
                   </div>
                   <div className="grid gap-2">
                     <Label>Accelerator Threshold ({currency})</Label>
                     <div className="relative">
-                      <span className="absolute left-3 top-2.5 text-muted-foreground font-mono text-xs">{currency}</span>
-                      <NumberInput className="pl-12" value={acceleratorThreshold} onChange={e => setAcceleratorThreshold(e.target.value)} required />
+                      <span className="absolute left-3 top-2.5 text-muted-foreground font-mono text-xs">
+                        {currency}
+                      </span>
+                      <NumberInput
+                        className="pl-12"
+                        value={acceleratorThreshold}
+                        onChange={(e) => setAcceleratorThreshold(e.target.value)}
+                        required
+                      />
                     </div>
                   </div>
                   <div className="grid gap-2">
                     <Label>Accelerator Rate (%)</Label>
                     <div className="relative">
-                      <NumberInput decimals={2} value={acceleratorRate} onChange={e => setAcceleratorRate(e.target.value)} required />
+                      <NumberInput
+                        decimals={2}
+                        value={acceleratorRate}
+                        onChange={(e) => setAcceleratorRate(e.target.value)}
+                        required
+                      />
                       <span className="absolute right-3 top-2.5 text-muted-foreground">%</span>
                     </div>
                   </div>
@@ -525,35 +652,57 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
                     {tiers.map((tier, index) => (
                       <div key={index} className="flex gap-2 items-start">
                         <div className="grid flex-1 gap-1">
-                          <span className="text-xs text-muted-foreground block">From ({currency})</span>
-                          <NumberInput value={tier.fromAmount} onChange={e => {
-                            const newTiers = [...tiers];
-                            newTiers[index].fromAmount = e.target.value;
-                            setTiers(newTiers);
-                          }} required />
+                          <span className="text-xs text-muted-foreground block">
+                            From ({currency})
+                          </span>
+                          <NumberInput
+                            value={tier.fromAmount}
+                            onChange={(e) => {
+                              const newTiers = [...tiers];
+                              newTiers[index].fromAmount = e.target.value;
+                              setTiers(newTiers);
+                            }}
+                            required
+                          />
                         </div>
                         <div className="grid flex-1 gap-1">
-                          <span className="text-xs text-muted-foreground block">To ({currency})</span>
-                          <NumberInput placeholder="Infinity" value={tier.toAmount} onChange={e => {
-                            const newTiers = [...tiers];
-                            newTiers[index].toAmount = e.target.value;
-                            if (e.target.value && index < newTiers.length - 1) {
-                              newTiers[index + 1].fromAmount = e.target.value;
-                            }
-                            setTiers(newTiers);
-                          }} />
+                          <span className="text-xs text-muted-foreground block">
+                            To ({currency})
+                          </span>
+                          <NumberInput
+                            placeholder="Infinity"
+                            value={tier.toAmount}
+                            onChange={(e) => {
+                              const newTiers = [...tiers];
+                              newTiers[index].toAmount = e.target.value;
+                              if (e.target.value && index < newTiers.length - 1) {
+                                newTiers[index + 1].fromAmount = e.target.value;
+                              }
+                              setTiers(newTiers);
+                            }}
+                          />
                         </div>
                         <div className="grid flex-1 gap-1">
                           <span className="text-xs text-muted-foreground block">Rate (%)</span>
-                          <NumberInput decimals={2} value={tier.rate} onChange={e => {
-                            const newTiers = [...tiers];
-                            newTiers[index].rate = e.target.value;
-                            setTiers(newTiers);
-                          }} required />
+                          <NumberInput
+                            decimals={2}
+                            value={tier.rate}
+                            onChange={(e) => {
+                              const newTiers = [...tiers];
+                              newTiers[index].rate = e.target.value;
+                              setTiers(newTiers);
+                            }}
+                            required
+                          />
                         </div>
                         {tiers.length > 1 && (
                           <div className="pt-5">
-                            <Button type="button" variant="ghost" size="icon" onClick={() => setTiers(tiers.filter((_, i) => i !== index))}>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setTiers(tiers.filter((_, i) => i !== index))}
+                            >
                               <Trash2 className="size-4 text-destructive" />
                             </Button>
                           </div>
@@ -561,20 +710,28 @@ function PlanFormDialog({ open, onOpenChange, initialData, sub, currency }: any)
                       </div>
                     ))}
                   </div>
-                  <Button type="button" variant="outline" size="sm" onClick={() => setTiers(prev => {
-                    const lastTo = prev.length > 0 ? prev[prev.length - 1].toAmount : "";
-                    return [...prev, { fromAmount: lastTo, toAmount: "", rate: "" }];
-                  })}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setTiers((prev) => {
+                        const lastTo = prev.length > 0 ? prev[prev.length - 1].toAmount : "";
+                        return [...prev, { fromAmount: lastTo, toAmount: "", rate: "" }];
+                      })
+                    }
+                  >
                     <Plus className="size-4 mr-2" /> Add Tier
                   </Button>
                 </div>
               )}
             </div>
-
           </div>
-          
+
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
             <Button type="submit">Save Plan</Button>
           </DialogFooter>
         </form>

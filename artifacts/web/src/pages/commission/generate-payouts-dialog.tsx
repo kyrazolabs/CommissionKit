@@ -1,5 +1,8 @@
-import { useState, useMemo } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { DollarSign, FileText, Loader2, Users } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -8,12 +11,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { formatCurrency } from "@/lib/format";
 import { apiFetch } from "@/lib/api";
-import { DollarSign, Loader2, Users, FileText } from "lucide-react";
+import { formatCurrency } from "@/lib/format";
 
 interface RepTotal {
   repId: string;
@@ -43,7 +43,7 @@ export function GeneratePayoutsDialog({
   const queryClient = useQueryClient();
 
   const [selectedRepIds, setSelectedRepIds] = useState<Set<string>>(
-    () => new Set(repTotals.map((r) => r.repId))
+    () => new Set(repTotals.map((r) => r.repId)),
   );
   const [lastOpenRepTotalsKey, setLastOpenRepTotalsKey] = useState("");
 
@@ -79,7 +79,7 @@ export function GeneratePayoutsDialog({
       repTotals
         .filter((r) => selectedRepIds.has(r.repId))
         .reduce((sum, r) => sum + r.totalCommission, 0),
-    [repTotals, selectedRepIds]
+    [repTotals, selectedRepIds],
   );
 
   const selectedCount = selectedRepIds.size;
@@ -98,9 +98,7 @@ export function GeneratePayoutsDialog({
       const skipped = data?.skipped?.length ?? 0;
       toast({
         title: `Created ${created} payout${created !== 1 ? "s" : ""}`,
-        description: skipped
-          ? `${skipped} already existed`
-          : undefined,
+        description: skipped ? `${skipped} already existed` : undefined,
       });
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: ["payouts"] });
@@ -122,9 +120,7 @@ export function GeneratePayoutsDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Generate Payouts</DialogTitle>
-          <DialogDescription>
-            Create payouts for reps from this commission run.
-          </DialogDescription>
+          <DialogDescription>Create payouts for reps from this commission run.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -150,9 +146,7 @@ export function GeneratePayoutsDialog({
             onClick={toggleAll}
             className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            {selectedRepIds.size === repTotals.length
-              ? "Deselect All"
-              : "Select All"}
+            {selectedRepIds.size === repTotals.length ? "Deselect All" : "Select All"}
           </button>
 
           {/* Rep list */}
@@ -167,9 +161,7 @@ export function GeneratePayoutsDialog({
                   onCheckedChange={() => toggleRep(rep.repId)}
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {rep.repName}
-                  </p>
+                  <p className="text-sm font-medium text-foreground truncate">{rep.repName}</p>
                   <p className="text-xs text-muted-foreground">
                     {rep.dealCount} deal{rep.dealCount !== 1 ? "s" : ""}
                   </p>
@@ -194,17 +186,12 @@ export function GeneratePayoutsDialog({
 
           {/* Info note */}
           <p className="text-xs text-muted-foreground">
-            Payouts will be created as pending and can be reviewed on the
-            Payouts page.
+            Payouts will be created as pending and can be reviewed on the Payouts page.
           </p>
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => setOpen(false)}
-            disabled={mutation.isPending}
-          >
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={mutation.isPending}>
             Cancel
           </Button>
           <Button

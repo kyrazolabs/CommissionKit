@@ -1,8 +1,8 @@
 import "./instrument"; // MUST be first
 import "./i18n"; // i18n init — must be before first render
 
-import { hydrateRoot, createRoot } from "react-dom/client";
 import { reactErrorHandler } from "@sentry/react";
+import { createRoot, hydrateRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import App from "./App";
 import "./index.css";
@@ -29,4 +29,3 @@ if (container.hasChildNodes()) {
     </HelmetProvider>,
   );
 }
-

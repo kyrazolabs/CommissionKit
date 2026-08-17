@@ -1,11 +1,16 @@
-import { Cpu, Globe, Cable, Infinity } from "lucide-react";
-import { useInView, fadeIn } from "./hooks";
+import { Cable, Cpu, Globe, Infinity as InfinityIcon } from "lucide-react";
+import { fadeIn, useInView } from "./hooks";
 
 const STATS = [
   { icon: Cpu, value: "3", label: "Commission Engines", sub: "Flat, tiered, accelerator" },
   { icon: Globe, value: "170+", label: "Currencies", sub: "Exchange rate snapshots" },
   { icon: Cable, value: "4", label: "CRM Connectors", sub: "Odoo, Salesforce, HubSpot, Custom" },
-  { icon: Infinity, value: "Unlimited", label: "Calculation Runs", sub: "Process anytime, no limits" },
+  {
+    icon: InfinityIcon,
+    value: "Unlimited",
+    label: "Calculation Runs",
+    sub: "Process anytime, no limits",
+  },
 ];
 
 const LOGOS = [
@@ -58,7 +63,9 @@ export function SocialProof() {
                 <span className="text-sm font-semibold tracking-tight">{l.label}</span>
               </div>
             ))}
-            <span className="text-sm font-semibold text-muted-foreground/70">+ custom REST API</span>
+            <span className="text-sm font-semibold text-muted-foreground/70">
+              + custom REST API
+            </span>
           </div>
         </div>
 

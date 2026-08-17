@@ -31,4 +31,3 @@ export const SYNC_EGRESS_QUEUE = "{ck-sync-egress}";
 
 // ─── Audit log queue ─────────────────────────────────────────────────────────
 export const AUDIT_LOG_QUEUE = "{ck-audit-log}";
-

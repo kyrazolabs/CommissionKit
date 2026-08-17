@@ -1,8 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useWorkspace } from "./use-workspace";
-import { useAuth } from "./use-auth";
-
+import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from "./use-auth";
+import { useWorkspace } from "./use-workspace";
 
 export interface AppNotification {
   id: string;
@@ -65,16 +64,17 @@ export function useNotifications() {
     };
   }, [fetch]);
 
-  const markRead = useCallback(async (id: string) => {
-    if (!activeWorkspace?.id) return;
-    await apiFetch(`/api/notifications/${id}/read`, {
-      method: "PATCH",
-    });
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
-    );
-    setUnreadCount((c) => Math.max(0, c - 1));
-  }, [activeWorkspace?.id]);
+  const markRead = useCallback(
+    async (id: string) => {
+      if (!activeWorkspace?.id) return;
+      await apiFetch(`/api/notifications/${id}/read`, {
+        method: "PATCH",
+      });
+      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+      setUnreadCount((c) => Math.max(0, c - 1));
+    },
+    [activeWorkspace?.id],
+  );
 
   const markAllRead = useCallback(async () => {
     if (!activeWorkspace?.id) return;
@@ -85,17 +85,20 @@ export function useNotifications() {
     setUnreadCount(0);
   }, [activeWorkspace?.id]);
 
-  const dismiss = useCallback(async (id: string) => {
-    if (!activeWorkspace?.id) return;
-    await apiFetch(`/api/notifications/${id}`, {
-      method: "DELETE",
-    });
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-    setUnreadCount((c) => {
-      const was = notifications.find((n) => n.id === id);
-      return was && !was.read ? Math.max(0, c - 1) : c;
-    });
-  }, [activeWorkspace?.id, notifications]);
+  const dismiss = useCallback(
+    async (id: string) => {
+      if (!activeWorkspace?.id) return;
+      await apiFetch(`/api/notifications/${id}`, {
+        method: "DELETE",
+      });
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+      setUnreadCount((c) => {
+        const was = notifications.find((n) => n.id === id);
+        return was && !was.read ? Math.max(0, c - 1) : c;
+      });
+    },
+    [activeWorkspace?.id, notifications],
+  );
 
   return { notifications, unreadCount, loading, markRead, markAllRead, dismiss, refresh: fetch };
 }

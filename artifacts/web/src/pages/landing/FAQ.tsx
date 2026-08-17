@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { useInView, fadeIn } from "./hooks";
 import { ChevronDown } from "lucide-react";
+import { useState } from "react";
+import { fadeIn, useInView } from "./hooks";
 
 const FAQS = [
   {
@@ -58,21 +58,18 @@ function FAQItem({ q, a }: { q: string; a: string }) {
         onClick={() => setOpen(!open)}
         className="w-full text-left py-6 flex items-center justify-between gap-4 focus:outline-none"
       >
-        <span className="text-base font-semibold text-foreground leading-snug">
-          {q}
-        </span>
+        <span className="text-base font-semibold text-foreground leading-snug">{q}</span>
         <ChevronDown
-          className={`size-5 text-muted-foreground shrink-0 transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"
-            }`}
+          className={`size-5 text-muted-foreground shrink-0 transition-transform duration-300 ${
+            open ? "rotate-180" : "rotate-0"
+          }`}
         />
       </button>
       <div
         className="overflow-hidden transition-all duration-300 ease-in-out"
         style={{ maxHeight: open ? 300 : 0, opacity: open ? 1 : 0 }}
       >
-        <p className="text-sm text-muted-foreground leading-relaxed pb-6">
-          {a}
-        </p>
+        <p className="text-sm text-muted-foreground leading-relaxed pb-6">{a}</p>
       </div>
     </div>
   );
@@ -85,9 +82,7 @@ export function FAQ() {
     <section className="bg-background py-24 px-6 border-b border-border/60" id="faq">
       <div ref={ref} className="max-w-3xl mx-auto" style={fadeIn(inView)}>
         <div className="text-center mb-16">
-          <p className="text-[11px] font-bold tracking-widest uppercase text-primary mb-4">
-            FAQ
-          </p>
+          <p className="text-[11px] font-bold tracking-widest uppercase text-primary mb-4">FAQ</p>
           <h2 className="text-3xl sm:text-4xl lg:text-[40px] font-bold leading-tight text-foreground tracking-tight font-display">
             Questions we get asked a lot
           </h2>
@@ -102,7 +97,10 @@ export function FAQ() {
         <div className="text-center mt-12">
           <p className="text-sm text-muted-foreground font-medium">
             Still have questions?{" "}
-            <a href="mailto:hello@commissionkit.co" className="text-primary hover:text-primary/80 underline underline-offset-4">
+            <a
+              href="mailto:hello@commissionkit.co"
+              className="text-primary hover:text-primary/80 underline underline-offset-4"
+            >
               We're here to help.
             </a>
           </p>

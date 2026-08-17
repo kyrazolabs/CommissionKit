@@ -1,4 +1,5 @@
-import { type ReactNode } from "react";
+import { Loader2 } from "lucide-react";
+import type { ReactNode } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,7 +10,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2 } from "lucide-react";
 
 type ConfirmDialogProps = {
   open: boolean;
@@ -19,7 +19,7 @@ type ConfirmDialogProps = {
   confirmLabel?: string;
   cancelLabel?: string;
   variant?: "destructive" | "default";
-  size?: "default" |"md" |"sm" |"lg" |"icon";
+  size?: "default" | "md" | "sm" | "lg" | "icon";
   onConfirm: () => void;
   loading?: boolean;
 };
@@ -32,7 +32,7 @@ export function ConfirmDialog({
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
   variant = "destructive",
-  size = 'sm',
+  size = "sm",
   onConfirm,
   loading = false,
 }: ConfirmDialogProps) {
@@ -53,7 +53,6 @@ export function ConfirmDialog({
             onClick={onConfirm}
             disabled={loading}
             variant={variant === "destructive" ? "destructive" : "outline"}
-            
           >
             {confirmLabel}
           </AlertDialogAction>

@@ -1,7 +1,7 @@
-import { useInView, fadeIn } from "./hooks";
-import { useCalendly } from "@/hooks/use-calendly";
 import { Button } from "@/components/ui/button";
+import { useCalendly } from "@/hooks/use-calendly";
 import { Analytics } from "@/lib/analytics";
+import { fadeIn, useInView } from "./hooks";
 
 export function Demo() {
   const { ref, inView } = useInView();
@@ -20,7 +20,8 @@ export function Demo() {
           </h2>
 
           <p className="text-lg text-muted-foreground mb-10 max-w-lg mx-auto">
-            Book a 20-minute walkthrough. We'll show you how it works with your actual commission structure, not a canned demo.
+            Book a 20-minute walkthrough. We'll show you how it works with your actual commission
+            structure, not a canned demo.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
@@ -41,10 +42,7 @@ export function Demo() {
               className="font-bold bg-background/60 backdrop-blur-sm shadow-sm px-8 text-base h-9"
               asChild
             >
-              <a
-                href="/register"
-                onClick={() => Analytics.landingCTAClick("demo_trial")}
-              >
+              <a href="/register" onClick={() => Analytics.landingCTAClick("demo_trial")}>
                 Start free trial
               </a>
             </Button>

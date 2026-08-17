@@ -72,7 +72,13 @@ export interface WebhookRequest {
 }
 
 export interface IngresEvent {
-  type: "rep.created" | "rep.updated" | "rep.deleted" | "deal.created" | "deal.updated" | "deal.deleted";
+  type:
+    | "rep.created"
+    | "rep.updated"
+    | "rep.deleted"
+    | "deal.created"
+    | "deal.updated"
+    | "deal.deleted";
   externalId: string;
   workspaceId: string;
   timestamp: Date;
@@ -164,14 +170,30 @@ export interface CKitPlugin {
   testConnection(config: ConnectionConfig): Promise<ConnectionTestResult>;
   getStatus(workspaceId: string): Promise<ConnectionStatus>;
 
-  fetchReps(workspaceId: string, config: ConnectionConfig, options?: FetchOptions): Promise<NormalizedRep[]>;
-  fetchDeals(workspaceId: string, config: ConnectionConfig, options?: FetchOptions): Promise<NormalizedDeal[]>;
+  fetchReps(
+    workspaceId: string,
+    config: ConnectionConfig,
+    options?: FetchOptions,
+  ): Promise<NormalizedRep[]>;
+  fetchDeals(
+    workspaceId: string,
+    config: ConnectionConfig,
+    options?: FetchOptions,
+  ): Promise<NormalizedDeal[]>;
 
   verifyWebhook(req: WebhookRequest, secret: string): Promise<void>;
   parseWebhook(payload: unknown): IngresEvent[];
 
-  writeBackCommission?(workspaceId: string, config: ConnectionConfig, results: CommissionWriteBack[]): Promise<WriteBackResult[]>;
-  writeBackPayoutStatus?(workspaceId: string, config: ConnectionConfig, payouts: PayoutWriteBack[]): Promise<WriteBackResult[]>;
+  writeBackCommission?(
+    workspaceId: string,
+    config: ConnectionConfig,
+    results: CommissionWriteBack[],
+  ): Promise<WriteBackResult[]>;
+  writeBackPayoutStatus?(
+    workspaceId: string,
+    config: ConnectionConfig,
+    payouts: PayoutWriteBack[],
+  ): Promise<WriteBackResult[]>;
   refreshTokens?(config: ConnectionConfig): Promise<ConnectionConfig>;
 
   getSettingsSchema(): JsonSchema;

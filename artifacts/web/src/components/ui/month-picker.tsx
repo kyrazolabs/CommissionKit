@@ -1,28 +1,20 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { format, getYear, setMonth, setYear } from "date-fns"
-import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react"
-
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+import { format, getYear, setMonth, setYear } from "date-fns";
+import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import * as React from "react";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 interface MonthPickerProps {
-  value?: string // yyyy-MM
-  onChange?: (value: string) => void
-  placeholder?: string
-  className?: string
+  value?: string; // yyyy-MM
+  onChange?: (value: string) => void;
+  placeholder?: string;
+  className?: string;
 }
 
-const MONTHS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-]
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export function MonthPicker({
   value,
@@ -31,24 +23,24 @@ export function MonthPicker({
   className,
 }: MonthPickerProps) {
   const date = React.useMemo(() => {
-    if (!value) return new Date()
-    const [y, m] = value.split("-").map(Number)
-    return new Date(y, m - 1, 1)
-  }, [value])
+    if (!value) return new Date();
+    const [y, m] = value.split("-").map(Number);
+    return new Date(y, m - 1, 1);
+  }, [value]);
 
-  const [viewDate, setViewDate] = React.useState(date)
+  const [viewDate, setViewDate] = React.useState(date);
 
-  const handlePrevYear = () => setViewDate(setYear(viewDate, getYear(viewDate) - 1))
-  const handleNextYear = () => setViewDate(setYear(viewDate, getYear(viewDate) + 1))
+  const handlePrevYear = () => setViewDate(setYear(viewDate, getYear(viewDate) - 1));
+  const handleNextYear = () => setViewDate(setYear(viewDate, getYear(viewDate) + 1));
 
   const handleMonthSelect = (monthIndex: number) => {
-    const newDate = setMonth(viewDate, monthIndex)
-    onChange?.(format(newDate, "yyyy-MM"))
-  }
+    const newDate = setMonth(viewDate, monthIndex);
+    onChange?.(format(newDate, "yyyy-MM"));
+  };
 
-  const currentYear = getYear(viewDate)
-  const selectedMonth = value ? date.getMonth() : -1
-  const selectedYear = value ? date.getFullYear() : -1
+  const currentYear = getYear(viewDate);
+  const selectedMonth = value ? date.getMonth() : -1;
+  const selectedYear = value ? date.getFullYear() : -1;
 
   return (
     <Popover>
@@ -58,7 +50,7 @@ export function MonthPicker({
           className={cn(
             "w-full justify-start text-left font-normal h-9 rounded-md border border-input bg-transparent px-3 py-1 shadow-sm hover:bg-transparent no-click",
             !value && "text-muted-foreground",
-            className
+            className,
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
@@ -72,22 +64,20 @@ export function MonthPicker({
             size="icon"
             className="size-7"
             onClick={(e) => {
-              e.preventDefault()
-              handlePrevYear()
+              e.preventDefault();
+              handlePrevYear();
             }}
           >
             <ChevronLeft className="size-4" />
           </Button>
-          <div className="text-sm font-semibold">
-            {currentYear}
-          </div>
+          <div className="text-sm font-semibold">{currentYear}</div>
           <Button
             variant="ghost"
             size="icon"
             className="size-7"
             onClick={(e) => {
-              e.preventDefault()
-              handleNextYear()
+              e.preventDefault();
+              handleNextYear();
             }}
           >
             <ChevronRight className="size-4" />
@@ -95,26 +85,26 @@ export function MonthPicker({
         </div>
         <div className="grid grid-cols-3 gap-2">
           {MONTHS.map((month, index) => {
-            const isSelected = selectedYear === currentYear && selectedMonth === index
+            const isSelected = selectedYear === currentYear && selectedMonth === index;
             return (
               <Button
                 key={month}
                 variant={isSelected ? "default" : "ghost"}
                 className={cn(
                   "h-6 w-full text-sm font-normal",
-                  isSelected && "bg-primary text-primary-foreground hover:bg-primary/90"
+                  isSelected && "bg-primary text-primary-foreground hover:bg-primary/90",
                 )}
                 onClick={(e) => {
-                  e.preventDefault()
-                  handleMonthSelect(index)
+                  e.preventDefault();
+                  handleMonthSelect(index);
                 }}
               >
                 {month}
               </Button>
-            )
+            );
           })}
         </div>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

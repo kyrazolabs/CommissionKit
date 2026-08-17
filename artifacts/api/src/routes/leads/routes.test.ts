@@ -1,7 +1,7 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, mock } from "bun:test";
-import request from "supertest";
-import express from "express";
+import { afterAll, beforeAll, beforeEach, describe, expect, mock, test } from "bun:test";
 import { Lead } from "@workspace/db/schema";
+import express from "express";
+import request from "supertest";
 import { setupTestDB, teardownTestDB } from "../../../test/setup-db";
 
 const sendEmailMock = mock(() => Promise.resolve());
@@ -9,7 +9,8 @@ const sendEmailMock = mock(() => Promise.resolve());
 // In-memory mock of the rate-limiter middleware so the lead rate limit can be exercised
 // without depending on a real Redis server or rate-limiter-flexible internals.
 let leadRateLimitPoints = 5;
-const rateLimiterPath = "/root/workspaces/CommissionKit/artifacts/api/src/middleware/rate-limiter.ts";
+const rateLimiterPath =
+  "/root/workspaces/CommissionKit/artifacts/api/src/middleware/rate-limiter.ts";
 mock.module(rateLimiterPath, () => ({
   defaultRateLimit: (_req: any, _res: any, next: any) => next(),
   authRateLimit: (_req: any, _res: any, next: any) => next(),
@@ -20,7 +21,9 @@ mock.module(rateLimiterPath, () => ({
       res.setHeader("X-RateLimit-Limit", 5);
       res.setHeader("X-RateLimit-Remaining", 0);
       res.setHeader("Retry-After", "3600");
-      res.status(429).json({ error: "TooManyRequests", message: "Rate limit exceeded. Please slow down." });
+      res
+        .status(429)
+        .json({ error: "TooManyRequests", message: "Rate limit exceeded. Please slow down." });
       return;
     }
     leadRateLimitPoints--;
@@ -58,10 +61,12 @@ mock.module("@workspace/queue", () => ({
   syncDealsQueue: { add: () => Promise.resolve() },
   webhookIngressQueue: { add: () => Promise.resolve() },
   syncEgressQueue: { add: () => Promise.resolve() },
-  PRIORITY_QUEUE_MAP: { high: { add: () => Promise.resolve() }, medium: { add: () => Promise.resolve() }, low: { add: () => Promise.resolve() } },
+  PRIORITY_QUEUE_MAP: {
+    high: { add: () => Promise.resolve() },
+    medium: { add: () => Promise.resolve() },
+    low: { add: () => Promise.resolve() },
+  },
 }));
-
-
 
 describe("POST /api/leads", () => {
   let app: any;
@@ -180,10 +185,12 @@ describe("POST /api/leads", () => {
 
   test("rate limits after 5 submissions from the same IP", async () => {
     for (let i = 0; i < 5; i++) {
-      const res = await request(app).post("/api/leads").send({
-        email: `lead${i}@example.com`,
-        source: "calculator",
-      });
+      const res = await request(app)
+        .post("/api/leads")
+        .send({
+          email: `lead${i}@example.com`,
+          source: "calculator",
+        });
       expect(res.status).toBe(200);
     }
 

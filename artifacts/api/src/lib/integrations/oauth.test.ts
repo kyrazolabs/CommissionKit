@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeAll, beforeEach, mock } from "bun:test";
+import { beforeAll, beforeEach, describe, expect, mock, test } from "bun:test";
 import { pluginRegistry } from "@workspace/plugins-core";
 import { SalesforceConnector } from "@workspace/plugins-salesforce";
 
@@ -225,15 +225,22 @@ describe("worker call sequence (manual Salesforce connection)", () => {
     globalThis.fetch = mock(async (url: string, init?: RequestInit) => {
       const urlStr = String(url);
       if (urlStr.includes("oauth2/token")) {
-        return new Response(JSON.stringify({
-          access_token: "authed-token",
-          instance_url: "https://x.my.salesforce.com",
-        }), { headers: { "Content-Type": "application/json" } });
+        return new Response(
+          JSON.stringify({
+            access_token: "authed-token",
+            instance_url: "https://x.my.salesforce.com",
+          }),
+          { headers: { "Content-Type": "application/json" } },
+        );
       }
-      return new Response(JSON.stringify({
-        records: [{ Id: "u1", Name: "Alice", Email: "a@b.com", UserRole: { Name: "Sales Rep" } }],
-        totalSize: 1, done: true,
-      }), { headers: { "Content-Type": "application/json" } });
+      return new Response(
+        JSON.stringify({
+          records: [{ Id: "u1", Name: "Alice", Email: "a@b.com", UserRole: { Name: "Sales Rep" } }],
+          totalSize: 1,
+          done: true,
+        }),
+        { headers: { "Content-Type": "application/json" } },
+      );
     });
 
     const conn = {
@@ -283,7 +290,9 @@ describe("buildOAuthStartUrl", () => {
   });
 
   test("throws for unknown connector", () => {
-    expect(() => oauthMod.buildOAuthStartUrl("nope", "https://x/cb", "st")).toThrow("Unknown OAuth connector");
+    expect(() => oauthMod.buildOAuthStartUrl("nope", "https://x/cb", "st")).toThrow(
+      "Unknown OAuth connector",
+    );
   });
 });
 
@@ -294,10 +303,14 @@ describe("handleOAuthCallback", () => {
   });
 
   test("exchanges code and persists oauth connection", async () => {
-    globalThis.fetch = mock(async () =>
-      new Response(JSON.stringify({ access_token: "at", refresh_token: "rt", expires_in: 1800 }), {
-        headers: { "Content-Type": "application/json" },
-      }),
+    globalThis.fetch = mock(
+      async () =>
+        new Response(
+          JSON.stringify({ access_token: "at", refresh_token: "rt", expires_in: 1800 }),
+          {
+            headers: { "Content-Type": "application/json" },
+          },
+        ),
     );
 
     const state = oauthMod.signState("ws-1", "hubspot");
@@ -320,10 +333,14 @@ describe("handleOAuthCallback", () => {
   });
 
   test("calls plugin.init and writes an audit event", async () => {
-    globalThis.fetch = mock(async () =>
-      new Response(JSON.stringify({ access_token: "at", refresh_token: "rt", expires_in: 1800 }), {
-        headers: { "Content-Type": "application/json" },
-      }),
+    globalThis.fetch = mock(
+      async () =>
+        new Response(
+          JSON.stringify({ access_token: "at", refresh_token: "rt", expires_in: 1800 }),
+          {
+            headers: { "Content-Type": "application/json" },
+          },
+        ),
     );
 
     const state = oauthMod.signState("ws-1", "hubspot");

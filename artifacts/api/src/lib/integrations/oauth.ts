@@ -1,11 +1,11 @@
-import { createHmac, createHash, randomBytes } from "crypto";
 import { IntegrationConnection } from "@workspace/db";
 import type { CKitPlugin, ConnectionConfig } from "@workspace/plugins-core";
 import { pluginRegistry } from "@workspace/plugins-core";
 import { HubSpotClient } from "@workspace/plugins-hubspot";
 import { SalesforceClient } from "@workspace/plugins-salesforce";
-import { decryptConfig, encryptConfig } from "../crypto";
+import { createHash, createHmac, randomBytes } from "crypto";
 import { logAudit } from "../../lib/audit";
+import { decryptConfig, encryptConfig } from "../crypto";
 import { logger } from "../logger";
 import { startSyncs } from "./sync";
 
@@ -28,11 +28,17 @@ export function computeCodeChallenge(verifier: string): string {
 }
 
 export function signState(workspaceId: string, connector: string, codeVerifier?: string): string {
-  const body = codeVerifier ? `${workspaceId}:${connector}:${codeVerifier}` : `${workspaceId}:${connector}`;
+  const body = codeVerifier
+    ? `${workspaceId}:${connector}:${codeVerifier}`
+    : `${workspaceId}:${connector}`;
   return `${body}.${hmac(body)}`;
 }
 
-export function verifyState(state: string): { workspaceId: string; connector: string; codeVerifier?: string } {
+export function verifyState(state: string): {
+  workspaceId: string;
+  connector: string;
+  codeVerifier?: string;
+} {
   const [body, sig] = String(state || "").split(".");
   if (!body || !sig || hmac(body) !== sig) throw new Error("Invalid OAuth state");
   const parts = body.split(":");
@@ -50,7 +56,10 @@ interface IntegrationConnectionLike {
   metadata?: unknown;
 }
 
-export async function ensureFreshConfig(conn: IntegrationConnectionLike, plugin: CKitPlugin): Promise<ConnectionConfig> {
+export async function ensureFreshConfig(
+  conn: IntegrationConnectionLike,
+  plugin: CKitPlugin,
+): Promise<ConnectionConfig> {
   const config = decryptConfig(conn.config as string) ?? {};
   if (config.authType !== "oauth") return { ...config, _metadata: conn.metadata ?? {} };
   // Manual connections (clientId/clientSecret, no refresh token) authenticate per-request.
@@ -59,14 +68,24 @@ export async function ensureFreshConfig(conn: IntegrationConnectionLike, plugin:
   const expiresAt = Number(config.expiresAt) || 0;
   if (expiresAt > Date.now() + 5 * 60 * 1000) return { ...config, _metadata: conn.metadata ?? {} };
   if (!plugin.refreshTokens) throw new Error("Connector does not support token refresh");
-  logger.info({ workspaceId: conn.workspaceId, connector: conn.connectorName }, "[OAuth] Refreshing access token");
+  logger.info(
+    { workspaceId: conn.workspaceId, connector: conn.connectorName },
+    "[OAuth] Refreshing access token",
+  );
   const patch = await plugin.refreshTokens(config);
   const merged = { ...config, ...patch };
-  await IntegrationConnection.updateOne({ _id: conn._id } as any, { config: encryptConfig(merged) });
+  await IntegrationConnection.updateOne({ _id: conn._id } as any, {
+    config: encryptConfig(merged),
+  });
   return { ...merged, _metadata: conn.metadata ?? {} };
 }
 
-export function buildOAuthStartUrl(connector: string, redirectUri: string, state: string, codeChallenge?: string): string {
+export function buildOAuthStartUrl(
+  connector: string,
+  redirectUri: string,
+  state: string,
+  codeChallenge?: string,
+): string {
   if (connector === "hubspot") {
     const clientId = process.env.HUBSPOT_CLIENT_ID;
     if (!clientId) throw new Error("HubSpot OAuth not configured (HUBSPOT_CLIENT_ID)");
@@ -76,7 +95,13 @@ export function buildOAuthStartUrl(connector: string, redirectUri: string, state
     const clientId = process.env.SALESFORCE_CLIENT_ID;
     if (!clientId) throw new Error("Salesforce OAuth not configured (SALESFORCE_CLIENT_ID)");
     const instanceUrl = process.env.SALESFORCE_INSTANCE_URL || "https://login.salesforce.com";
-    return SalesforceClient.buildAuthorizeUrl(instanceUrl, clientId, redirectUri, state, codeChallenge);
+    return SalesforceClient.buildAuthorizeUrl(
+      instanceUrl,
+      clientId,
+      redirectUri,
+      state,
+      codeChallenge,
+    );
   }
   throw new Error(`Unknown OAuth connector: ${connector}`);
 }
@@ -102,16 +127,25 @@ export async function handleOAuthCallback(
   if (connector === "hubspot") {
     const clientId = process.env.HUBSPOT_CLIENT_ID;
     const clientSecret = process.env.HUBSPOT_CLIENT_SECRET;
-    if (!clientId || !clientSecret) throw new Error("HubSpot OAuth not configured (HUBSPOT_CLIENT_ID/SECRET)");
+    if (!clientId || !clientSecret)
+      throw new Error("HubSpot OAuth not configured (HUBSPOT_CLIENT_ID/SECRET)");
     if (!redirect) throw new Error("HubSpot redirect URI not configured");
     tokens = await HubSpotClient.exchangeCode(clientId, clientSecret, redirect, code);
   } else if (connector === "salesforce") {
     const clientId = process.env.SALESFORCE_CLIENT_ID;
     const clientSecret = process.env.SALESFORCE_CLIENT_SECRET;
-    if (!clientId || !clientSecret) throw new Error("Salesforce OAuth not configured (SALESFORCE_CLIENT_ID/SECRET)");
+    if (!clientId || !clientSecret)
+      throw new Error("Salesforce OAuth not configured (SALESFORCE_CLIENT_ID/SECRET)");
     if (!redirect) throw new Error("Salesforce redirect URI not configured");
     const instanceUrl = process.env.SALESFORCE_INSTANCE_URL || "https://login.salesforce.com";
-    tokens = await SalesforceClient.exchangeCode(instanceUrl, clientId, clientSecret, redirect, code, codeVerifier);
+    tokens = await SalesforceClient.exchangeCode(
+      instanceUrl,
+      clientId,
+      clientSecret,
+      redirect,
+      code,
+      codeVerifier,
+    );
   } else {
     throw new Error(`Unknown OAuth connector: ${connector}`);
   }

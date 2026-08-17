@@ -1,16 +1,23 @@
-import { describe, test, expect, beforeEach, afterEach } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { CustomConnector } from "../connector";
 import { mockFetchSingle, originalFetch } from "./setup";
 
 describe("CustomConnector — config parsing", () => {
   let connector: CustomConnector;
-  beforeEach(() => { connector = new CustomConnector(); });
-  afterEach(() => { globalThis.fetch = originalFetch; });
+  beforeEach(() => {
+    connector = new CustomConnector();
+  });
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
 
   describe("testConnection", () => {
     test("success with valid bearer config", async () => {
       mockFetchSingle({ ok: true }, 200);
-      const r = await connector.testConnection({ baseUrl: "https://api.example.com", auth: { type: "bearer", token: "t" } });
+      const r = await connector.testConnection({
+        baseUrl: "https://api.example.com",
+        auth: { type: "bearer", token: "t" },
+      });
       expect(r.success).toBe(true);
       expect(r.message).toBe("Successfully connected");
       expect(r.details?.endpoint).toBe("https://api.example.com");
@@ -30,7 +37,10 @@ describe("CustomConnector — config parsing", () => {
     });
 
     test("failure with invalid baseUrl (not a URL)", async () => {
-      const r = await connector.testConnection({ baseUrl: "not-a-url", auth: { type: "bearer", token: "t" } });
+      const r = await connector.testConnection({
+        baseUrl: "not-a-url",
+        auth: { type: "bearer", token: "t" },
+      });
       expect(r.success).toBe(false);
     });
 
@@ -41,21 +51,30 @@ describe("CustomConnector — config parsing", () => {
 
     test("failure with HTTP 404", async () => {
       mockFetchSingle({}, 404);
-      const r = await connector.testConnection({ baseUrl: "https://api.example.com", auth: { type: "bearer", token: "t" } });
+      const r = await connector.testConnection({
+        baseUrl: "https://api.example.com",
+        auth: { type: "bearer", token: "t" },
+      });
       expect(r.success).toBe(false);
       expect(r.message).toContain("HTTP 404");
     });
 
     test("failure with HTTP 403", async () => {
       mockFetchSingle({}, 403);
-      const r = await connector.testConnection({ baseUrl: "https://api.example.com", auth: { type: "bearer", token: "t" } });
+      const r = await connector.testConnection({
+        baseUrl: "https://api.example.com",
+        auth: { type: "bearer", token: "t" },
+      });
       expect(r.success).toBe(false);
       expect(r.message).toContain("HTTP 403");
     });
 
     test("failure with network error", async () => {
-      globalThis.fetch = (() => Promise.reject(new Error("Connection refused")));
-      const r = await connector.testConnection({ baseUrl: "https://api.example.com", auth: { type: "bearer", token: "t" } });
+      globalThis.fetch = () => Promise.reject(new Error("Connection refused"));
+      const r = await connector.testConnection({
+        baseUrl: "https://api.example.com",
+        auth: { type: "bearer", token: "t" },
+      });
       expect(r.success).toBe(false);
       expect(r.message).toContain("Connection refused");
     });
@@ -68,7 +87,10 @@ describe("CustomConnector — config parsing", () => {
     });
 
     test("returns [] for invalid baseUrl", async () => {
-      const r = await connector.fetchReps("ws", { baseUrl: "ftp://bad", auth: { type: "bearer", token: "t" } });
+      const r = await connector.fetchReps("ws", {
+        baseUrl: "ftp://bad",
+        auth: { type: "bearer", token: "t" },
+      });
       expect(r).toEqual([]);
     });
 

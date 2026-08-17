@@ -1,21 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { ArrowRight, BookOpen, Check, ExternalLink, LoaderCircle, Mail, Zap } from "lucide-react";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Mail,
-  LoaderCircle,
-  Check,
-  Zap,
-  BookOpen,
-  ExternalLink,
-} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { trackCtaView, trackCtaClick, trackSubscribe } from "@/lib/analytics";
+import { trackCtaClick, trackCtaView, trackSubscribe } from "@/lib/analytics";
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://commissionkit.co";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://commissionkit.co";
 
 // ─── Funnel stage configs ───────────────────────────────────────────────────
 
@@ -34,10 +25,16 @@ interface FunnelStage {
   action: string;
 }
 
-const STAGE_CONFIGS: Record<string, Record<string, Omit<FunnelStage, "primaryHref" | "secondaryHref"> & {
-  primaryHrefTemplate: string;
-  secondaryHrefTemplate?: string;
-}>> = {
+const STAGE_CONFIGS: Record<
+  string,
+  Record<
+    string,
+    Omit<FunnelStage, "primaryHref" | "secondaryHref"> & {
+      primaryHrefTemplate: string;
+      secondaryHrefTemplate?: string;
+    }
+  >
+> = {
   odoo: {
     tofu: {
       funnel: "odoo",
@@ -54,8 +51,7 @@ const STAGE_CONFIGS: Record<string, Record<string, Omit<FunnelStage, "primaryHre
     mofu2: {
       funnel: "odoo",
       stage: "mofu2",
-      heading:
-        "Ready to automate your Odoo commission workflow?",
+      heading: "Ready to automate your Odoo commission workflow?",
       description:
         "Learn how to connect Odoo to CommissionKit in under 15 minutes — no spreadsheets, no custom modules, no manual exports.",
       primaryLabel: "See the Step-by-Step Guide",
@@ -66,8 +62,7 @@ const STAGE_CONFIGS: Record<string, Record<string, Omit<FunnelStage, "primaryHre
     mofu1: {
       funnel: "odoo",
       stage: "mofu1",
-      heading:
-        "Start automating your Odoo commissions today",
+      heading: "Start automating your Odoo commissions today",
       description:
         "Connect your Odoo instance, sync your sales orders, and run your first commission calculation — all in under 15 minutes. 3 reps free, no credit card required.",
       primaryLabel: "Start Free Trial",
@@ -84,10 +79,7 @@ const STAGE_CONFIGS: Record<string, Record<string, Omit<FunnelStage, "primaryHre
 
 // ─── Determine funnel stage from tags ────────────────────────────────────────
 
-function detectStage(
-  tags: string[],
-  lang: string,
-): FunnelStage | null {
+function detectStage(tags: string[], lang: string): FunnelStage | null {
   const lower = tags.map((t) => t.toLowerCase());
 
   // ── Odoo funnel ──────────────────────────────────────────────────────
@@ -160,8 +152,7 @@ export function FunnelCTA({ slug, tags, lang }: FunnelCTAProps) {
 
   // ── Funnel Stage CTA ─────────────────────────────────────────────────
   if (stage) {
-    const primaryIsExternal =
-      stage.primaryExternal || stage.primaryHref.startsWith("http");
+    const primaryIsExternal = stage.primaryExternal || stage.primaryHref.startsWith("http");
 
     return (
       <div className="mt-16 pt-8">
@@ -173,36 +164,22 @@ export function FunnelCTA({ slug, tags, lang }: FunnelCTAProps) {
             <h3 className="text-2xl font-bold text-foreground mb-2 tracking-tight">
               {stage.heading}
             </h3>
-            <p className="text-sm text-muted-foreground mb-6 max-w-md">
-              {stage.description}
-            </p>
+            <p className="text-sm text-muted-foreground mb-6 max-w-md">{stage.description}</p>
 
             <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
               {primaryIsExternal ? (
-                <Button
-                  className="w-full font-semibold"
-                  asChild
-                  onClick={handleClick}
-                >
+                <Button className="w-full font-semibold" asChild onClick={handleClick}>
                   <a
                     href={stage.primaryHref}
                     target={stage.primaryHref.startsWith("http") ? "_blank" : undefined}
-                    rel={
-                      stage.primaryHref.startsWith("http")
-                        ? "noopener noreferrer"
-                        : undefined
-                    }
+                    rel={stage.primaryHref.startsWith("http") ? "noopener noreferrer" : undefined}
                   >
                     {stage.primaryLabel}
                     <ArrowRight className="size-4 ml-1" />
                   </a>
                 </Button>
               ) : (
-                <Button
-                  className="w-full font-semibold"
-                  asChild
-                  onClick={handleClick}
-                >
+                <Button className="w-full font-semibold" asChild onClick={handleClick}>
                   <Link href={stage.primaryHref}>
                     {stage.primaryLabel}
                     <ArrowRight className="size-4 ml-1" />
@@ -220,14 +197,12 @@ export function FunnelCTA({ slug, tags, lang }: FunnelCTAProps) {
                   <a
                     href={stage.secondaryHref}
                     target={
-                      stage.secondaryExternal ||
-                      stage.secondaryHref?.startsWith("http")
+                      stage.secondaryExternal || stage.secondaryHref?.startsWith("http")
                         ? "_blank"
                         : undefined
                     }
                     rel={
-                      stage.secondaryExternal ||
-                      stage.secondaryHref?.startsWith("http")
+                      stage.secondaryExternal || stage.secondaryHref?.startsWith("http")
                         ? "noopener noreferrer"
                         : undefined
                     }
@@ -252,9 +227,7 @@ export function FunnelCTA({ slug, tags, lang }: FunnelCTAProps) {
 
 function EmailCaptureCTA({ slug }: { slug: string }) {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
@@ -299,12 +272,10 @@ function EmailCaptureCTA({ slug }: { slug: string }) {
                   <Check className="size-5" />
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-foreground">
-                Thanks! Check your inbox.
-              </h3>
+              <h3 className="text-2xl font-bold text-foreground">Thanks! Check your inbox.</h3>
               <p className="text-sm text-muted-foreground">
-                We'll send you practical commission insights every couple
-                of weeks. No spam — unsubscribe anytime.
+                We'll send you practical commission insights every couple of weeks. No spam —
+                unsubscribe anytime.
               </p>
             </div>
           ) : (
@@ -316,15 +287,11 @@ function EmailCaptureCTA({ slug }: { slug: string }) {
                 Get practical commission insights
               </h3>
               <p className="text-sm text-muted-foreground mb-6 max-w-md">
-                Join finance and RevOps leaders getting actionable tips on
-                commission plan design, rep motivation, and automation —
-                once or twice a month, no fluff.
+                Join finance and RevOps leaders getting actionable tips on commission plan design,
+                rep motivation, and automation — once or twice a month, no fluff.
               </p>
 
-              <form
-                onSubmit={handleSubmit}
-                className="flex w-full max-w-sm gap-2"
-              >
+              <form onSubmit={handleSubmit} className="flex w-full max-w-sm gap-2">
                 <div className="relative flex-1">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
                   <input

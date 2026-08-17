@@ -1,10 +1,10 @@
-import { useInView, fadeIn } from "./hooks";
 import { Check, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Analytics } from "@/lib/analytics";
+import { fadeIn, useInView } from "./hooks";
 
 const PLANS = [
   {
@@ -83,10 +83,16 @@ export function Pricing() {
         <div className="mb-8 max-w-5xl mx-auto" style={fadeIn(inView)}>
           <div className="inline-flex w-full items-center justify-between gap-4 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/30 px-6 py-4">
             <div>
-              <p className="text-sm font-semibold text-foreground">Founding member pricing — locked in for life</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Lock in today's price forever. You'll never pay more, even as we add features.</p>
+              <p className="text-sm font-semibold text-foreground">
+                Founding member pricing — locked in for life
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Lock in today's price forever. You'll never pay more, even as we add features.
+              </p>
             </div>
-            <span className="shrink-0 rounded-full bg-primary/20 px-3 py-1.5 text-[11px] font-bold text-primary uppercase tracking-wider">Founding member</span>
+            <span className="shrink-0 rounded-full bg-primary/20 px-3 py-1.5 text-[11px] font-bold text-primary uppercase tracking-wider">
+              Founding member
+            </span>
           </div>
         </div>
 
@@ -95,7 +101,8 @@ export function Pricing() {
             Simple, predictable pricing
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Choose the plan that fits your team. <br /> <span className="text-primary font-medium">Includes a 14-day free trial.</span>
+            Choose the plan that fits your team. <br />{" "}
+            <span className="text-primary font-medium">Includes a 14-day free trial.</span>
           </p>
         </div>
 
@@ -103,7 +110,7 @@ export function Pricing() {
         <div className="flex items-center justify-center gap-3 mb-16" style={fadeIn(inView, 100)}>
           <Label
             htmlFor="billing-toggle"
-            className={`text-sm font-medium ${!payYearly ? 'text-foreground' : 'text-muted-foreground'}`}
+            className={`text-sm font-medium ${!payYearly ? "text-foreground" : "text-muted-foreground"}`}
           >
             Monthly
           </Label>
@@ -114,11 +121,13 @@ export function Pricing() {
               onCheckedChange={(v) => setPayYearly(v === true)}
               className="size-4"
             />
-            <span className="text-[11px] font-bold text-primary uppercase tracking-wider">Save 17%</span>
+            <span className="text-[11px] font-bold text-primary uppercase tracking-wider">
+              Save 17%
+            </span>
           </div>
           <Label
             htmlFor="billing-toggle"
-            className={`text-sm font-medium ${payYearly ? 'text-foreground' : 'text-muted-foreground'}`}
+            className={`text-sm font-medium ${payYearly ? "text-foreground" : "text-muted-foreground"}`}
           >
             Yearly
           </Label>
@@ -153,12 +162,16 @@ export function Pricing() {
 
                 <div className="mb-6">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-extrabold text-primary tracking-tight">${discountPrice}</span>
+                    <span className="text-4xl font-extrabold text-primary tracking-tight">
+                      ${discountPrice}
+                    </span>
                     <span className="text-sm text-muted-foreground">{period}</span>
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-lg text-muted-foreground line-through">${price}</span>
-                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">FOUNDING PRICE</span>
+                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                      FOUNDING PRICE
+                    </span>
                   </div>
                   {payYearly && (
                     <p className="text-[11px] font-bold text-primary mt-1">
@@ -181,10 +194,14 @@ export function Pricing() {
                 <Button
                   size="lg"
                   variant={plan.highlighted ? "default" : "outline"}
-                  className={`w-full font-bold ${plan.highlighted ? 'shadow-sm' : ''}`}
+                  className={`w-full font-bold ${plan.highlighted ? "shadow-sm" : ""}`}
                   onClick={() => Analytics.landingPricingCTAClick(plan.id)}
                 >
-                  {plan.id === "pro" ? "Contact Sales" : plan.highlighted ? "Start Free Trial" : "Get Started"}
+                  {plan.id === "pro"
+                    ? "Contact Sales"
+                    : plan.highlighted
+                      ? "Start Free Trial"
+                      : "Get Started"}
                 </Button>
               </div>
             );
@@ -197,19 +214,37 @@ export function Pricing() {
             <div>
               <h3 className="text-xl font-bold text-foreground mb-1">Business</h3>
               <p className="text-sm text-muted-foreground mb-4 md:mb-0">
-                Custom commission engines, SSO/SAML, dedicated infrastructure, and priority support for large organizations.
+                Custom commission engines, SSO/SAML, dedicated infrastructure, and priority support
+                for large organizations.
               </p>
               <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-foreground">
-                <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> Unlimited reps & members</li>
-                <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> SAML/SSO & SCIM</li>
-                <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> Custom Commission Engine</li>
-                <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> Dedicated account manager</li>
-                <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> Custom legal & SLA terms</li>
-                <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> On-premise deployment option</li>
+                <li className="flex items-center gap-2">
+                  <Check className="size-4 text-primary shrink-0" /> Unlimited reps & members
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="size-4 text-primary shrink-0" /> SAML/SSO & SCIM
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="size-4 text-primary shrink-0" /> Custom Commission Engine
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="size-4 text-primary shrink-0" /> Dedicated account manager
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="size-4 text-primary shrink-0" /> Custom legal & SLA terms
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="size-4 text-primary shrink-0" /> On-premise deployment option
+                </li>
               </ul>
             </div>
             <Button size="md" className="font-bold shadow-sm shrink-0" asChild>
-              <a href="mailto:sales@commissionkit.co" onClick={() => Analytics.landingPricingCTAClick("business")}>Contact Sales</a>
+              <a
+                href="mailto:sales@commissionkit.co"
+                onClick={() => Analytics.landingPricingCTAClick("business")}
+              >
+                Contact Sales
+              </a>
             </Button>
           </div>
         </div>
@@ -219,9 +254,15 @@ export function Pricing() {
           <p className="text-sm font-medium inline-flex items-center gap-2 bg-muted/50 px-4 py-2 rounded-lg border">
             <Plus className="size-4 inline-block" />
             <span className="text-primary font-bold">${payYearly ? "32" : "3.20"}</span>
-            <span className="text-muted-foreground">per additional rep/{payYearly ? "year" : "month"}</span>
-            <span className="text-xs text-muted-foreground line-through">${payYearly ? "79.99" : "7.99"}</span>
-            <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">FOUNDING PRICE</span>
+            <span className="text-muted-foreground">
+              per additional rep/{payYearly ? "year" : "month"}
+            </span>
+            <span className="text-xs text-muted-foreground line-through">
+              ${payYearly ? "79.99" : "7.99"}
+            </span>
+            <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+              FOUNDING PRICE
+            </span>
           </p>
         </div>
       </div>

@@ -1,15 +1,29 @@
-import { useState, useEffect } from "react";
-import { Navbar } from "@/pages/landing/Navbar";
-import { Footer } from "@/pages/landing/Footer";
-import { usePageMeta } from "@/hooks/use-page-meta";
+import {
+  ArrowRight,
+  BarChart3,
+  Calculator,
+  Check,
+  DollarSign,
+  LoaderCircle,
+  Mail,
+  Percent,
+  Shield,
+  Trash2,
+  TrendingUp,
+  Users,
+  X,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Check, Calculator, ArrowRight, Percent, DollarSign, TrendingUp, BarChart3, Users, Shield, Trash2, Mail, LoaderCircle, X } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { usePageMeta } from "@/hooks/use-page-meta";
 import { Analytics } from "@/lib/analytics";
+import { Footer } from "@/pages/landing/Footer";
+import { Navbar } from "@/pages/landing/Navbar";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 
@@ -91,8 +105,10 @@ function calculateCommission(
       const commission = applicable * (tier.rate / 100);
       totalCommission += commission;
       lines.push(
-        `${tier.rate.toFixed(2)}% on ${formatCurrency(applicable)}`
-        + (tier.to !== null ? ` (${formatCurrency(tier.from)} – ${formatCurrency(tier.to)})` : ` (${formatCurrency(tier.from)}+)`),
+        `${tier.rate.toFixed(2)}% on ${formatCurrency(applicable)}` +
+          (tier.to !== null
+            ? ` (${formatCurrency(tier.from)} – ${formatCurrency(tier.to)})`
+            : ` (${formatCurrency(tier.from)}+)`),
       );
       remaining -= applicable;
     }
@@ -110,7 +126,11 @@ function calculateCommission(
 }
 
 function formatCurrency(n: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(n);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+  }).format(n);
 }
 
 function formatPercent(n: number) {
@@ -120,14 +140,18 @@ function formatPercent(n: number) {
 export function CommissionCalculator() {
   usePageMeta({
     title: "Free Sales Commission Calculator",
-    description: "Calculate sales commissions instantly with our free online calculator. Supports flat rate, tiered, and accelerator commission structures. No signup required.",
-    keywords: "commission pay calculator, calculating commissions, calculator commission, commissions calculator, payroll commission calculator, commission on sales calculator, sales commission calculator, sales and commission calculator",
+    description:
+      "Calculate sales commissions instantly with our free online calculator. Supports flat rate, tiered, and accelerator commission structures. No signup required.",
+    keywords:
+      "commission pay calculator, calculating commissions, calculator commission, commissions calculator, payroll commission calculator, commission on sales calculator, sales commission calculator, sales and commission calculator",
     robots: "index, follow",
   });
 
   useEffect(() => {
     document.documentElement.style.scrollBehavior = "smooth";
-    return () => { document.documentElement.style.scrollBehavior = "smooth"; };
+    return () => {
+      document.documentElement.style.scrollBehavior = "smooth";
+    };
   }, []);
 
   const [planType, setPlanType] = useState<PlanType>("flat");
@@ -161,14 +185,16 @@ export function CommissionCalculator() {
 
     Analytics.calculatorUsed();
 
-    setResult(calculateCommission(
-      amount,
-      planType,
-      parseFloat(flatRate) || 0,
-      parseFloat(threshold) || 0,
-      parseFloat(accelRate) || 0,
-      tiers,
-    ));
+    setResult(
+      calculateCommission(
+        amount,
+        planType,
+        parseFloat(flatRate) || 0,
+        parseFloat(threshold) || 0,
+        parseFloat(accelRate) || 0,
+        tiers,
+      ),
+    );
     setCalculated(true);
   }
 
@@ -212,7 +238,11 @@ export function CommissionCalculator() {
       await fetch(`${API_URL}/api/leads`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: trimmedEmail, name: leadName.trim() || undefined, source: "calculator" }),
+        body: JSON.stringify({
+          email: trimmedEmail,
+          name: leadName.trim() || undefined,
+          source: "calculator",
+        }),
       });
       setLeadCaptured(true);
     } catch {
@@ -229,7 +259,10 @@ export function CommissionCalculator() {
       {/* Hero */}
       <section className="bg-transparent border-b border-border/60">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-32 pb-12 sm:pb-16 text-center">
-          <Badge variant="secondary" className="mb-5 sm:mb-6 text-primary bg-primary/10 border-primary/20 hover:bg-primary/15">
+          <Badge
+            variant="secondary"
+            className="mb-5 sm:mb-6 text-primary bg-primary/10 border-primary/20 hover:bg-primary/15"
+          >
             <Calculator className="size-3.5 mr-1.5" />
             Free Tool — No Signup Required
           </Badge>
@@ -237,7 +270,8 @@ export function CommissionCalculator() {
             Sales Commission Calculator
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-            See exactly what your reps earn. Choose from flat rate, tiered, or accelerator commission plans and get an instant breakdown.
+            See exactly what your reps earn. Choose from flat rate, tiered, or accelerator
+            commission plans and get an instant breakdown.
           </p>
         </div>
       </section>
@@ -245,7 +279,14 @@ export function CommissionCalculator() {
       {/* Calculator */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 -mt-6 sm:-mt-8 pb-12 sm:pb-16">
         <Card className="overflow-hidden">
-          <Tabs value={planType} onValueChange={(v) => { setPlanType(v as PlanType); setCalculated(false); setResult(null); }}>
+          <Tabs
+            value={planType}
+            onValueChange={(v) => {
+              setPlanType(v as PlanType);
+              setCalculated(false);
+              setResult(null);
+            }}
+          >
             <TabsList className="w-full rounded-none border-b border-card-border bg-muted/30 p-0 h-auto grid grid-cols-3">
               {(["flat", "tiered", "accelerator"] as const).map((t) => (
                 <TabsTrigger
@@ -253,9 +294,15 @@ export function CommissionCalculator() {
                   value={t}
                   className="rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-primary/[0.03] py-4 px-4 h-auto text-center flex-col gap-0.5"
                 >
-                  <span className="text-xs sm:text-sm font-medium capitalize">{t === "flat" ? "Flat Rate" : t === "tiered" ? "Tiered" : "Base + Accelerator"}</span>
+                  <span className="text-xs sm:text-sm font-medium capitalize">
+                    {t === "flat" ? "Flat Rate" : t === "tiered" ? "Tiered" : "Base + Accelerator"}
+                  </span>
                   <span className="hidden md:inline text-xs text-muted-foreground/70 font-normal">
-                    {t === "flat" ? "A single percentage on every deal" : t === "tiered" ? "Marginal rates like tax brackets" : "Higher rate on the full deal above a threshold"}
+                    {t === "flat"
+                      ? "A single percentage on every deal"
+                      : t === "tiered"
+                        ? "Marginal rates like tax brackets"
+                        : "Higher rate on the full deal above a threshold"}
                   </span>
                 </TabsTrigger>
               ))}
@@ -264,19 +311,42 @@ export function CommissionCalculator() {
             <form onSubmit={handleCalculate}>
               <CardContent className="p-5 sm:p-6 md:p-8">
                 <div className="w-full sm:max-w-xs mb-6">
-                  <Label htmlFor="deal-amount" className="text-sm font-medium text-foreground">Deal Amount</Label>
+                  <Label htmlFor="deal-amount" className="text-sm font-medium text-foreground">
+                    Deal Amount
+                  </Label>
                   <div className="relative mt-1.5">
                     <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                    <Input id="deal-amount" type="number" step="any" min="0" value={dealAmount} onChange={(e) => setDealAmount(e.target.value)} className="pl-9" placeholder="50000" />
+                    <Input
+                      id="deal-amount"
+                      type="number"
+                      step="any"
+                      min="0"
+                      value={dealAmount}
+                      onChange={(e) => setDealAmount(e.target.value)}
+                      className="pl-9"
+                      placeholder="50000"
+                    />
                   </div>
                 </div>
 
                 <TabsContent value="flat" className="mt-0">
                   <div className="w-full sm:max-w-xs">
-                    <Label htmlFor="flat-rate" className="text-sm font-medium text-foreground">Commission Rate</Label>
+                    <Label htmlFor="flat-rate" className="text-sm font-medium text-foreground">
+                      Commission Rate
+                    </Label>
                     <div className="relative mt-1.5">
                       <Percent className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                      <Input id="flat-rate" type="number" step="any" min="0" max="100" value={flatRate} onChange={(e) => setFlatRate(e.target.value)} className="pl-9" placeholder="5" />
+                      <Input
+                        id="flat-rate"
+                        type="number"
+                        step="any"
+                        min="0"
+                        max="100"
+                        value={flatRate}
+                        onChange={(e) => setFlatRate(e.target.value)}
+                        className="pl-9"
+                        placeholder="5"
+                      />
                     </div>
                   </div>
                 </TabsContent>
@@ -290,48 +360,124 @@ export function CommissionCalculator() {
                     <span className="w-8" />
                   </div>
                   {tiers.map((tier, i) => (
-                    <div key={i} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-1 sm:gap-2 items-center">
+                    <div
+                      key={i}
+                      className="grid grid-cols-[1fr_1fr_1fr_auto] gap-1 sm:gap-2 items-center"
+                    >
                       <div className="relative">
                         <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
-                        <Input type="number" step="any" min="0" value={tier.from} onChange={(e) => updateTier(i, "from", parseFloat(e.target.value) || 0)} className="pl-7 text-sm" />
+                        <Input
+                          type="number"
+                          step="any"
+                          min="0"
+                          value={tier.from}
+                          onChange={(e) => updateTier(i, "from", parseFloat(e.target.value) || 0)}
+                          className="pl-7 text-sm"
+                        />
                       </div>
                       <div className="relative">
                         <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
-                        <Input type="number" step="any" min="0" value={tier.to ?? ""} onChange={(e) => updateTier(i, "to", e.target.value ? parseFloat(e.target.value) : null)} className="pl-7 text-sm" placeholder="∞" />
+                        <Input
+                          type="number"
+                          step="any"
+                          min="0"
+                          value={tier.to ?? ""}
+                          onChange={(e) =>
+                            updateTier(i, "to", e.target.value ? parseFloat(e.target.value) : null)
+                          }
+                          className="pl-7 text-sm"
+                          placeholder="∞"
+                        />
                       </div>
                       <div className="relative">
                         <Percent className="absolute left-2 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
-                        <Input type="number" step="any" min="0" max="100" value={tier.rate} onChange={(e) => updateTier(i, "rate", parseFloat(e.target.value) || 0)} className="pl-7 text-sm" />
+                        <Input
+                          type="number"
+                          step="any"
+                          min="0"
+                          max="100"
+                          value={tier.rate}
+                          onChange={(e) => updateTier(i, "rate", parseFloat(e.target.value) || 0)}
+                          className="pl-7 text-sm"
+                        />
                       </div>
-                      <Button type="button" variant="ghost" size="icon" className="size-8 sm:size-9" onClick={() => removeTier(i)} disabled={tiers.length <= 1}>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 sm:size-9"
+                        onClick={() => removeTier(i)}
+                        disabled={tiers.length <= 1}
+                      >
                         <Trash2 className="size-3.5 sm:size-4 text-destructive" />
                       </Button>
                     </div>
                   ))}
-                  <button type="button" onClick={addTier} className="text-sm text-primary font-medium hover:text-primary/80 transition-colors mt-1 px-2">+ Add tier</button>
+                  <button
+                    type="button"
+                    onClick={addTier}
+                    className="text-sm text-primary font-medium hover:text-primary/80 transition-colors mt-1 px-2"
+                  >
+                    + Add tier
+                  </button>
                 </TabsContent>
 
                 <TabsContent value="accelerator" className="mt-0">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <Label htmlFor="flat-rate" className="text-sm font-medium text-foreground">Base Rate</Label>
+                      <Label htmlFor="flat-rate" className="text-sm font-medium text-foreground">
+                        Base Rate
+                      </Label>
                       <div className="relative mt-1.5">
                         <Percent className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                        <Input id="flat-rate" type="number" step="any" min="0" max="100" value={flatRate} onChange={(e) => setFlatRate(e.target.value)} className="pl-9" placeholder="5" />
+                        <Input
+                          id="flat-rate"
+                          type="number"
+                          step="any"
+                          min="0"
+                          max="100"
+                          value={flatRate}
+                          onChange={(e) => setFlatRate(e.target.value)}
+                          className="pl-9"
+                          placeholder="5"
+                        />
                       </div>
                     </div>
                     <div>
-                      <Label htmlFor="threshold" className="text-sm font-medium text-foreground">Accelerator Threshold</Label>
+                      <Label htmlFor="threshold" className="text-sm font-medium text-foreground">
+                        Accelerator Threshold
+                      </Label>
                       <div className="relative mt-1.5">
                         <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                        <Input id="threshold" type="number" step="any" min="0" value={threshold} onChange={(e) => setThreshold(e.target.value)} className="pl-9" placeholder="25000" />
+                        <Input
+                          id="threshold"
+                          type="number"
+                          step="any"
+                          min="0"
+                          value={threshold}
+                          onChange={(e) => setThreshold(e.target.value)}
+                          className="pl-9"
+                          placeholder="25000"
+                        />
                       </div>
                     </div>
                     <div>
-                      <Label htmlFor="accel-rate" className="text-sm font-medium text-foreground">Accelerator Rate</Label>
+                      <Label htmlFor="accel-rate" className="text-sm font-medium text-foreground">
+                        Accelerator Rate
+                      </Label>
                       <div className="relative mt-1.5">
                         <Percent className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                        <Input id="accel-rate" type="number" step="any" min="0" max="100" value={accelRate} onChange={(e) => setAccelRate(e.target.value)} className="pl-9" placeholder="10" />
+                        <Input
+                          id="accel-rate"
+                          type="number"
+                          step="any"
+                          min="0"
+                          max="100"
+                          value={accelRate}
+                          onChange={(e) => setAccelRate(e.target.value)}
+                          className="pl-9"
+                          placeholder="10"
+                        />
                       </div>
                     </div>
                   </div>
@@ -360,26 +506,43 @@ export function CommissionCalculator() {
               <CardContent className="p-5 sm:p-6 md:p-8">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6">
                   <div className="text-center p-3 sm:p-4 rounded-xl bg-primary/5 border border-primary/10">
-                    <p className="text-xs sm:text-sm text-muted-foreground font-medium mb-1">Commission</p>
-                    <p className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">{formatCurrency(result.commission)}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground font-medium mb-1">
+                      Commission
+                    </p>
+                    <p className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+                      {formatCurrency(result.commission)}
+                    </p>
                   </div>
                   <div className="text-center p-3 sm:p-4 rounded-xl bg-muted/30 border border-border/60">
-                    <p className="text-xs sm:text-sm text-muted-foreground font-medium mb-1">Effective Rate</p>
-                    <p className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">{formatPercent(result.effectiveRate)}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground font-medium mb-1">
+                      Effective Rate
+                    </p>
+                    <p className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+                      {formatPercent(result.effectiveRate)}
+                    </p>
                   </div>
                   <div className="text-center p-3 sm:p-4 rounded-xl bg-muted/30 border border-border/60">
-                    <p className="text-xs sm:text-sm text-muted-foreground font-medium mb-1">Deal Amount</p>
-                    <p className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">{formatCurrency(amount)}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground font-medium mb-1">
+                      Deal Amount
+                    </p>
+                    <p className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+                      {formatCurrency(amount)}
+                    </p>
                   </div>
                 </div>
 
                 {/* Breakdown + gated sections — only when lead is captured */}
                 {leadCaptured && result.breakdown.length > 0 && (
                   <div className="border-t border-border/60 pt-5 sm:pt-6">
-                    <h3 className="text-sm font-semibold text-foreground mb-3">Calculation Breakdown</h3>
+                    <h3 className="text-sm font-semibold text-foreground mb-3">
+                      Calculation Breakdown
+                    </h3>
                     <ul className="space-y-2">
                       {result.breakdown.map((line, i) => (
-                        <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
+                        <li
+                          key={i}
+                          className="flex items-start gap-3 text-sm text-muted-foreground"
+                        >
                           <ArrowRight className="size-4 text-primary shrink-0 mt-0.5" />
                           {line}
                         </li>
@@ -403,7 +566,8 @@ export function CommissionCalculator() {
                     See the Full Breakdown
                   </h2>
                   <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto mb-6">
-                    Enter your email to unlock the complete calculation details and see how CommissionKit can automate this for you.
+                    Enter your email to unlock the complete calculation details and see how
+                    CommissionKit can automate this for you.
                   </p>
                   <form onSubmit={handleLeadSubmit} className="max-w-sm mx-auto space-y-3">
                     <div className="relative">
@@ -424,9 +588,7 @@ export function CommissionCalculator() {
                       placeholder="Your name (optional)"
                       aria-label="Your name"
                     />
-                    {leadError && (
-                      <p className="text-xs text-destructive text-left">{leadError}</p>
-                    )}
+                    {leadError && <p className="text-xs text-destructive text-left">{leadError}</p>}
                     <Button
                       type="submit"
                       className="w-full font-bold shadow-sm"
@@ -456,35 +618,48 @@ export function CommissionCalculator() {
                       Automate This Entire Process
                     </h2>
                     <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto mb-6 sm:mb-8">
-                      Stop calculating commissions manually. CommissionKit automates everything — from deal tracking to payouts.
+                      Stop calculating commissions manually. CommissionKit automates everything —
+                      from deal tracking to payouts.
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8 text-left">
                       <Card className="border-border/60">
                         <CardContent className="p-3 sm:p-4">
                           <BarChart3 className="size-5 text-primary mb-2" />
-                          <h4 className="font-semibold text-foreground text-sm">Import & Track Deals</h4>
-                          <p className="text-xs text-muted-foreground mt-1">Bulk import from CSV or XLSX.</p>
+                          <h4 className="font-semibold text-foreground text-sm">
+                            Import & Track Deals
+                          </h4>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Bulk import from CSV or XLSX.
+                          </p>
                         </CardContent>
                       </Card>
                       <Card className="border-border/60">
                         <CardContent className="p-3 sm:p-4">
                           <TrendingUp className="size-5 text-primary mb-2" />
                           <h4 className="font-semibold text-foreground text-sm">Auto-Calculate</h4>
-                          <p className="text-xs text-muted-foreground mt-1">Run period-based calculations in one click.</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Run period-based calculations in one click.
+                          </p>
                         </CardContent>
                       </Card>
                       <Card className="border-border/60">
                         <CardContent className="p-3 sm:p-4">
                           <Users className="size-5 text-primary mb-2" />
-                          <h4 className="font-semibold text-foreground text-sm">Rep Self-Service</h4>
-                          <p className="text-xs text-muted-foreground mt-1">Give every rep a portal to view their earnings.</p>
+                          <h4 className="font-semibold text-foreground text-sm">
+                            Rep Self-Service
+                          </h4>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Give every rep a portal to view their earnings.
+                          </p>
                         </CardContent>
                       </Card>
                     </div>
                     <Button className="font-bold shadow-sm w-full sm:w-auto" asChild>
                       <a href="/register">Start Your Free Trial</a>
                     </Button>
-                    <p className="text-xs text-muted-foreground mt-3">No credit card required · 14-day free trial · Cancel anytime</p>
+                    <p className="text-xs text-muted-foreground mt-3">
+                      No credit card required · 14-day free trial · Cancel anytime
+                    </p>
                   </CardContent>
                 </Card>
 
@@ -495,11 +670,23 @@ export function CommissionCalculator() {
                         <div className="flex size-8 sm:size-10 rounded-lg bg-red-100 dark:bg-red-900/20 items-center justify-center">
                           <X className="size-4 sm:size-5 text-red-500" />
                         </div>
-                        <h3 className="font-semibold text-foreground text-sm sm:text-base">Doing It Manually</h3>
+                        <h3 className="font-semibold text-foreground text-sm sm:text-base">
+                          Doing It Manually
+                        </h3>
                       </div>
                       <ul className="space-y-2">
-                        {["Error-prone spreadsheets", "Missed deals and commissions", "Reps can't see their earnings", "Hours wasted every pay period"].map((item) => (
-                          <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground"><X className="size-4 text-red-400 shrink-0" /> {item}</li>
+                        {[
+                          "Error-prone spreadsheets",
+                          "Missed deals and commissions",
+                          "Reps can't see their earnings",
+                          "Hours wasted every pay period",
+                        ].map((item) => (
+                          <li
+                            key={item}
+                            className="flex items-center gap-2 text-sm text-muted-foreground"
+                          >
+                            <X className="size-4 text-red-400 shrink-0" /> {item}
+                          </li>
                         ))}
                       </ul>
                     </CardContent>
@@ -510,11 +697,23 @@ export function CommissionCalculator() {
                         <div className="flex size-8 sm:size-10 rounded-lg bg-primary/10 items-center justify-center">
                           <Check className="size-4 sm:size-5 text-primary" />
                         </div>
-                        <h3 className="font-semibold text-foreground text-sm sm:text-base">With CommissionKit</h3>
+                        <h3 className="font-semibold text-foreground text-sm sm:text-base">
+                          With CommissionKit
+                        </h3>
                       </div>
                       <ul className="space-y-2">
-                        {["Automated, error-free calculations", "Every deal tracked and attributed", "Real-time rep visibility via portal", "Payouts done in minutes, not days"].map((item) => (
-                          <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground"><Check className="size-4 text-primary shrink-0" /> {item}</li>
+                        {[
+                          "Automated, error-free calculations",
+                          "Every deal tracked and attributed",
+                          "Real-time rep visibility via portal",
+                          "Payouts done in minutes, not days",
+                        ].map((item) => (
+                          <li
+                            key={item}
+                            className="flex items-center gap-2 text-sm text-muted-foreground"
+                          >
+                            <Check className="size-4 text-primary shrink-0" /> {item}
+                          </li>
                         ))}
                       </ul>
                     </CardContent>
@@ -522,12 +721,19 @@ export function CommissionCalculator() {
                 </div>
 
                 <div className="text-center border-t border-border/60 pt-8 sm:pt-10">
-                  <Badge variant="secondary" className="mb-4 text-primary bg-primary/10 border-primary/20 hover:bg-primary/15">
+                  <Badge
+                    variant="secondary"
+                    className="mb-4 text-primary bg-primary/10 border-primary/20 hover:bg-primary/15"
+                  >
                     <Shield className="size-3.5 mr-1.5" />
                     14-Day Free Trial
                   </Badge>
-                  <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2">Ready to simplify your commission process?</h3>
-                  <p className="text-sm sm:text-base text-muted-foreground mb-6">Join teams that trust CommissionKit to manage millions in commissions.</p>
+                  <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2">
+                    Ready to simplify your commission process?
+                  </h3>
+                  <p className="text-sm sm:text-base text-muted-foreground mb-6">
+                    Join teams that trust CommissionKit to manage millions in commissions.
+                  </p>
                   <Button className="font-bold shadow-sm w-full sm:w-auto" asChild>
                     <a href="/register">Get Started Free</a>
                   </Button>
@@ -543,9 +749,7 @@ export function CommissionCalculator() {
   return (
     <>
       <Navbar />
-      <main className="pt-16">
-        {content}
-      </main>
+      <main className="pt-16">{content}</main>
       <Footer />
     </>
   );

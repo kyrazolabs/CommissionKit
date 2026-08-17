@@ -1,4 +1,4 @@
-import { baseTemplate, btn, h1, p, muted, divider, cardSection } from "./base.js";
+import { baseTemplate, btn, cardSection, divider, h1, muted, p } from "./base.js";
 
 export interface InvitationTemplateProps {
   /** Name of the person being invited */
@@ -27,14 +27,7 @@ const ROLE_LABELS: Record<string, { label: string; description: string }> = {
 };
 
 export function invitationTemplate(props: InvitationTemplateProps): string {
-  const {
-    inviteeName,
-    inviterName,
-    workspaceName,
-    role,
-    acceptUrl,
-    expiresAt,
-  } = props;
+  const { inviteeName, inviterName, workspaceName, role, acceptUrl, expiresAt } = props;
 
   const roleMeta = ROLE_LABELS[role] ?? ROLE_LABELS.member;
   const greeting = inviteeName ? `Hi ${inviteeName},` : "Hi there,";

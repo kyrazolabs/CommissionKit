@@ -1,12 +1,4 @@
-import {
-  baseTemplate,
-  h1,
-  h2,
-  p,
-  divider,
-  infoBox,
-  cardSection,
-} from "./base.js";
+import { baseTemplate, cardSection, divider, h1, h2, infoBox, p } from "./base.js";
 
 function escapeHtml(str: string): string {
   return str
@@ -29,9 +21,7 @@ export interface ApplicationTemplateProps {
   submittedAt: string;
 }
 
-export function applicationTemplate(
-  props: ApplicationTemplateProps,
-): string {
+export function applicationTemplate(props: ApplicationTemplateProps): string {
   const {
     fullName,
     email,

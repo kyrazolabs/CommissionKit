@@ -1,7 +1,7 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, mock } from "bun:test";
-import { setupTestDB, teardownTestDB, clearCollections } from "../../../test/setup-db";
+import { afterAll, beforeAll, beforeEach, describe, expect, mock, test } from "bun:test";
 import mongoose from "mongoose";
 import request from "supertest";
+import { clearCollections, setupTestDB, teardownTestDB } from "../../../test/setup-db";
 
 const TEST_USER_ID = "test-user-001";
 const TEST_USER_EMAIL = "admin@test.com";
@@ -9,8 +9,12 @@ const TEST_USER_EMAIL = "admin@test.com";
 // ── Mock heavy dependencies ────────────────────────────────────────────────────
 mock.module("@workspace/queue", () => ({
   getRedisClient: () => ({
-    get: async () => null, setex: async () => "OK", del: async () => 1,
-    scan: async () => ["0", []], on: () => {}, quit: async () => "OK",
+    get: async () => null,
+    setex: async () => "OK",
+    del: async () => 1,
+    scan: async () => ["0", []],
+    on: () => {},
+    quit: async () => "OK",
   }),
   sendHighPriorityEmail: () => Promise.resolve(),
   sendMediumPriorityEmail: () => Promise.resolve(),
@@ -33,7 +37,11 @@ mock.module("@workspace/queue", () => ({
   syncDealsQueue: { add: () => Promise.resolve() },
   webhookIngressQueue: { add: () => Promise.resolve() },
   syncEgressQueue: { add: () => Promise.resolve() },
-  PRIORITY_QUEUE_MAP: { high: { add: () => Promise.resolve() }, medium: { add: () => Promise.resolve() }, low: { add: () => Promise.resolve() } },
+  PRIORITY_QUEUE_MAP: {
+    high: { add: () => Promise.resolve() },
+    medium: { add: () => Promise.resolve() },
+    low: { add: () => Promise.resolve() },
+  },
 }));
 mock.module("../../lib/auth", () => ({
   auth: {
@@ -43,18 +51,20 @@ mock.module("../../lib/auth", () => ({
   findUserById: mock(() => Promise.resolve(null)),
 }));
 
-
-
 mock.module("../../lib/bull-board", () => ({
   secureBullBoard: (req: any, res: any, next: any) => next(),
-  serverAdapter: { getRouter: () => ((() => {}) as any) },
+  serverAdapter: { getRouter: () => (() => {}) as any },
 }));
 
 mock.module("stripe", () => ({
   default: class StripeMock {
     constructor() {}
     subscriptions = { create: () => Promise.resolve({ id: "sub_123", status: "active" }) };
-    checkout = { sessions: { create: () => Promise.resolve({ url: "https://checkout.stripe.com/test", id: "cs_test" }) } };
+    checkout = {
+      sessions: {
+        create: () => Promise.resolve({ url: "https://checkout.stripe.com/test", id: "cs_test" }),
+      },
+    };
     webhooks = { constructEvent: () => ({ type: "checkout.session.completed" }) };
   },
 }));
@@ -126,10 +136,24 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await clearCollections();
-  const ws = await Workspace.create({ slug: "test-ws", name: "Test Workspace", ownerId: TEST_USER_ID });
+  const ws = await Workspace.create({
+    slug: "test-ws",
+    name: "Test Workspace",
+    ownerId: TEST_USER_ID,
+  });
   workspaceId = ws._id.toString();
-  await WorkspaceMember.create({ workspaceId: ws._id, userId: TEST_USER_ID, email: TEST_USER_EMAIL, role: "owner" });
-  await WorkspaceSubscription.create({ workspaceId: ws._id, plan: "growth", status: "active", isLifetime: true });
+  await WorkspaceMember.create({
+    workspaceId: ws._id,
+    userId: TEST_USER_ID,
+    email: TEST_USER_EMAIL,
+    role: "owner",
+  });
+  await WorkspaceSubscription.create({
+    workspaceId: ws._id,
+    plan: "growth",
+    status: "active",
+    isLifetime: true,
+  });
   const rep = await Rep.create({ workspaceId: ws._id, name: "Test Rep", email: "rep@test.com" });
   testRepId = rep._id;
 });
@@ -145,9 +169,14 @@ describe("GET /api/payouts", () => {
 
   test("returns payouts with rep names populated", async () => {
     await Payout.create({
-      workspaceId, repId: testRepId, periodStart: new Date("2024-03-01"),
-      periodEnd: new Date("2024-03-31"), commissionAmount: 2500, finalAmount: 2500,
-      currency: "USD", status: "pending",
+      workspaceId,
+      repId: testRepId,
+      periodStart: new Date("2024-03-01"),
+      periodEnd: new Date("2024-03-31"),
+      commissionAmount: 2500,
+      finalAmount: 2500,
+      currency: "USD",
+      status: "pending",
       statusHistory: [{ status: "pending", changedAt: new Date(), changedBy: TEST_USER_ID }],
     });
 
@@ -160,15 +189,25 @@ describe("GET /api/payouts", () => {
 
   test("filters by status", async () => {
     await Payout.create({
-      workspaceId, repId: testRepId, periodStart: new Date("2024-03-01"),
-      periodEnd: new Date("2024-03-31"), commissionAmount: 1000, finalAmount: 1000,
-      currency: "USD", status: "pending",
+      workspaceId,
+      repId: testRepId,
+      periodStart: new Date("2024-03-01"),
+      periodEnd: new Date("2024-03-31"),
+      commissionAmount: 1000,
+      finalAmount: 1000,
+      currency: "USD",
+      status: "pending",
       statusHistory: [{ status: "pending", changedAt: new Date(), changedBy: TEST_USER_ID }],
     });
     await Payout.create({
-      workspaceId, repId: testRepId, periodStart: new Date("2024-02-01"),
-      periodEnd: new Date("2024-02-28"), commissionAmount: 2000, finalAmount: 2000,
-      currency: "USD", status: "paid",
+      workspaceId,
+      repId: testRepId,
+      periodStart: new Date("2024-02-01"),
+      periodEnd: new Date("2024-02-28"),
+      commissionAmount: 2000,
+      finalAmount: 2000,
+      currency: "USD",
+      status: "paid",
       statusHistory: [{ status: "paid", changedAt: new Date(), changedBy: TEST_USER_ID }],
     });
 
@@ -181,15 +220,12 @@ describe("GET /api/payouts", () => {
 
 describe("POST /api/payouts", () => {
   test("creates a single payout", async () => {
-    const res = await request(app)
-      .post("/api/payouts")
-      .set(authHeader())
-      .send({
-        repId: testRepId.toString(),
-        periodStart: "2024-03-01T00:00:00.000Z",
-        periodEnd: "2024-03-31T23:59:59.999Z",
-        commissionAmount: 3000,
-      });
+    const res = await request(app).post("/api/payouts").set(authHeader()).send({
+      repId: testRepId.toString(),
+      periodStart: "2024-03-01T00:00:00.000Z",
+      periodEnd: "2024-03-31T23:59:59.999Z",
+      commissionAmount: 3000,
+    });
 
     expect(res.status).toBe(201);
     expect(res.body.created.length).toBe(1);
@@ -204,8 +240,18 @@ describe("POST /api/payouts", () => {
       .post("/api/payouts")
       .set(authHeader())
       .send([
-        { repId: testRepId.toString(), periodStart: "2024-03-01T00:00:00.000Z", periodEnd: "2024-03-31T23:59:59.999Z", commissionAmount: 1000 },
-        { repId: rep2._id.toString(), periodStart: "2024-03-01T00:00:00.000Z", periodEnd: "2024-03-31T23:59:59.999Z", commissionAmount: 2000 },
+        {
+          repId: testRepId.toString(),
+          periodStart: "2024-03-01T00:00:00.000Z",
+          periodEnd: "2024-03-31T23:59:59.999Z",
+          commissionAmount: 1000,
+        },
+        {
+          repId: rep2._id.toString(),
+          periodStart: "2024-03-01T00:00:00.000Z",
+          periodEnd: "2024-03-31T23:59:59.999Z",
+          commissionAmount: 2000,
+        },
       ]);
 
     expect(res.status).toBe(201);
@@ -225,9 +271,14 @@ describe("POST /api/payouts", () => {
 describe("GET /api/payouts/:id", () => {
   test("returns payout by id", async () => {
     const payout = await Payout.create({
-      workspaceId, repId: testRepId, periodStart: new Date("2024-03-01"),
-      periodEnd: new Date("2024-03-31"), commissionAmount: 1500, finalAmount: 1500,
-      currency: "USD", status: "approved",
+      workspaceId,
+      repId: testRepId,
+      periodStart: new Date("2024-03-01"),
+      periodEnd: new Date("2024-03-31"),
+      commissionAmount: 1500,
+      finalAmount: 1500,
+      currency: "USD",
+      status: "approved",
       statusHistory: [{ status: "approved", changedAt: new Date(), changedBy: TEST_USER_ID }],
     });
 
@@ -246,9 +297,14 @@ describe("GET /api/payouts/:id", () => {
 describe("PATCH /api/payouts/:id/status", () => {
   test("updates payout status to approved", async () => {
     const payout = await Payout.create({
-      workspaceId, repId: testRepId, periodStart: new Date("2024-03-01"),
-      periodEnd: new Date("2024-03-31"), commissionAmount: 2000, finalAmount: 2000,
-      currency: "USD", status: "pending",
+      workspaceId,
+      repId: testRepId,
+      periodStart: new Date("2024-03-01"),
+      periodEnd: new Date("2024-03-31"),
+      commissionAmount: 2000,
+      finalAmount: 2000,
+      currency: "USD",
+      status: "pending",
       statusHistory: [{ status: "pending", changedAt: new Date(), changedBy: TEST_USER_ID }],
     });
 
@@ -263,9 +319,14 @@ describe("PATCH /api/payouts/:id/status", () => {
 
   test("returns 400 for invalid status value", async () => {
     const payout = await Payout.create({
-      workspaceId, repId: testRepId, periodStart: new Date("2024-03-01"),
-      periodEnd: new Date("2024-03-31"), commissionAmount: 2000, finalAmount: 2000,
-      currency: "USD", status: "pending",
+      workspaceId,
+      repId: testRepId,
+      periodStart: new Date("2024-03-01"),
+      periodEnd: new Date("2024-03-31"),
+      commissionAmount: 2000,
+      finalAmount: 2000,
+      currency: "USD",
+      status: "pending",
       statusHistory: [{ status: "pending", changedAt: new Date(), changedBy: TEST_USER_ID }],
     });
 
@@ -279,9 +340,14 @@ describe("PATCH /api/payouts/:id/status", () => {
 
   test("blocks modifying already paid payout", async () => {
     const payout = await Payout.create({
-      workspaceId, repId: testRepId, periodStart: new Date("2024-03-01"),
-      periodEnd: new Date("2024-03-31"), commissionAmount: 2000, finalAmount: 2000,
-      currency: "USD", status: "paid",
+      workspaceId,
+      repId: testRepId,
+      periodStart: new Date("2024-03-01"),
+      periodEnd: new Date("2024-03-31"),
+      commissionAmount: 2000,
+      finalAmount: 2000,
+      currency: "USD",
+      status: "paid",
       statusHistory: [{ status: "paid", changedAt: new Date(), changedBy: TEST_USER_ID }],
     });
 
@@ -297,9 +363,14 @@ describe("PATCH /api/payouts/:id/status", () => {
 describe("PATCH /api/payouts/:id/adjust", () => {
   test("adds positive adjustment to payout", async () => {
     const payout = await Payout.create({
-      workspaceId, repId: testRepId, periodStart: new Date("2024-03-01"),
-      periodEnd: new Date("2024-03-31"), commissionAmount: 2000, finalAmount: 2000,
-      currency: "USD", status: "pending",
+      workspaceId,
+      repId: testRepId,
+      periodStart: new Date("2024-03-01"),
+      periodEnd: new Date("2024-03-31"),
+      commissionAmount: 2000,
+      finalAmount: 2000,
+      currency: "USD",
+      status: "pending",
       statusHistory: [{ status: "pending", changedAt: new Date(), changedBy: TEST_USER_ID }],
     });
 
@@ -315,9 +386,14 @@ describe("PATCH /api/payouts/:id/adjust", () => {
 
   test("applies negative adjustment (clawback)", async () => {
     const payout = await Payout.create({
-      workspaceId, repId: testRepId, periodStart: new Date("2024-03-01"),
-      periodEnd: new Date("2024-03-31"), commissionAmount: 2000, finalAmount: 2000,
-      currency: "USD", status: "pending",
+      workspaceId,
+      repId: testRepId,
+      periodStart: new Date("2024-03-01"),
+      periodEnd: new Date("2024-03-31"),
+      commissionAmount: 2000,
+      finalAmount: 2000,
+      currency: "USD",
+      status: "pending",
       statusHistory: [{ status: "pending", changedAt: new Date(), changedBy: TEST_USER_ID }],
     });
 
@@ -333,9 +409,14 @@ describe("PATCH /api/payouts/:id/adjust", () => {
 
   test("returns 400 for non-numeric amount", async () => {
     const payout = await Payout.create({
-      workspaceId, repId: testRepId, periodStart: new Date("2024-03-01"),
-      periodEnd: new Date("2024-03-31"), commissionAmount: 2000, finalAmount: 2000,
-      currency: "USD", status: "pending",
+      workspaceId,
+      repId: testRepId,
+      periodStart: new Date("2024-03-01"),
+      periodEnd: new Date("2024-03-31"),
+      commissionAmount: 2000,
+      finalAmount: 2000,
+      currency: "USD",
+      status: "pending",
       statusHistory: [{ status: "pending", changedAt: new Date(), changedBy: TEST_USER_ID }],
     });
 
@@ -351,15 +432,25 @@ describe("PATCH /api/payouts/:id/adjust", () => {
 describe("POST /api/payouts/bulk-approve", () => {
   test("bulk approves pending payouts", async () => {
     const p1 = await Payout.create({
-      workspaceId, repId: testRepId, periodStart: new Date("2024-03-01"),
-      periodEnd: new Date("2024-03-31"), commissionAmount: 1000, finalAmount: 1000,
-      currency: "USD", status: "pending",
+      workspaceId,
+      repId: testRepId,
+      periodStart: new Date("2024-03-01"),
+      periodEnd: new Date("2024-03-31"),
+      commissionAmount: 1000,
+      finalAmount: 1000,
+      currency: "USD",
+      status: "pending",
       statusHistory: [{ status: "pending", changedAt: new Date(), changedBy: TEST_USER_ID }],
     });
     const p2 = await Payout.create({
-      workspaceId, repId: testRepId, periodStart: new Date("2024-02-01"),
-      periodEnd: new Date("2024-02-28"), commissionAmount: 2000, finalAmount: 2000,
-      currency: "USD", status: "pending",
+      workspaceId,
+      repId: testRepId,
+      periodStart: new Date("2024-02-01"),
+      periodEnd: new Date("2024-02-28"),
+      commissionAmount: 2000,
+      finalAmount: 2000,
+      currency: "USD",
+      status: "pending",
       statusHistory: [{ status: "pending", changedAt: new Date(), changedBy: TEST_USER_ID }],
     });
 
@@ -373,10 +464,7 @@ describe("POST /api/payouts/bulk-approve", () => {
   });
 
   test("returns 400 when no ids provided", async () => {
-    const res = await request(app)
-      .post("/api/payouts/bulk-approve")
-      .set(authHeader())
-      .send({});
+    const res = await request(app).post("/api/payouts/bulk-approve").set(authHeader()).send({});
 
     expect(res.status).toBe(400);
   });

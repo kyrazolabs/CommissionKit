@@ -59,7 +59,12 @@ export class HubSpotClient {
     this.accessToken = accessToken;
   }
 
-  static async exchangeCode(clientId: string, clientSecret: string, redirectUri: string, code: string): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
+  static async exchangeCode(
+    clientId: string,
+    clientSecret: string,
+    redirectUri: string,
+    code: string,
+  ): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
     const params = new URLSearchParams({
       grant_type: "authorization_code",
       client_id: clientId,
@@ -74,7 +79,11 @@ export class HubSpotClient {
     });
     if (!res.ok) throw new Error(`OAuth code exchange failed: HTTP ${res.status}`);
     const data = (await res.json()) as TokenResponse;
-    return { accessToken: data.access_token, refreshToken: data.refresh_token, expiresIn: data.expires_in };
+    return {
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
+      expiresIn: data.expires_in,
+    };
   }
 
   static buildAuthorizeUrl(clientId: string, redirectUri: string, state: string): string {
@@ -88,7 +97,11 @@ export class HubSpotClient {
     return `https://app.hubspot.com/oauth/authorize?${params.toString().replace(/\+/g, "%20")}`;
   }
 
-  static async refreshAccessToken(clientId: string, clientSecret: string, refreshToken: string): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
+  static async refreshAccessToken(
+    clientId: string,
+    clientSecret: string,
+    refreshToken: string,
+  ): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
     const params = new URLSearchParams({
       grant_type: "refresh_token",
       client_id: clientId,
@@ -102,7 +115,11 @@ export class HubSpotClient {
     });
     if (!res.ok) throw new Error(`HubSpot token refresh failed: HTTP ${res.status}`);
     const data = (await res.json()) as TokenResponse;
-    return { accessToken: data.access_token, refreshToken: data.refresh_token, expiresIn: data.expires_in };
+    return {
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
+      expiresIn: data.expires_in,
+    };
   }
 
   async getOwners(): Promise<HubSpotOwner[]> {
@@ -118,10 +135,7 @@ export class HubSpotClient {
     return owners.filter((o) => !o.archived);
   }
 
-  async getDeals(
-    closedWonStageIds?: string[],
-    modifiedAfter?: Date,
-  ): Promise<HubSpotDeal[]> {
+  async getDeals(closedWonStageIds?: string[], modifiedAfter?: Date): Promise<HubSpotDeal[]> {
     const filterGroups: any[] = [];
     const filters: any[] = [];
 
@@ -146,9 +160,15 @@ export class HubSpotClient {
     }
 
     const properties = [
-      "dealname", "amount", "closedate", "dealstage",
-      "hubspot_owner_id", "description", "pipeline",
-      "deal_currency_code", "hs_lastmodifieddate",
+      "dealname",
+      "amount",
+      "closedate",
+      "dealstage",
+      "hubspot_owner_id",
+      "description",
+      "pipeline",
+      "deal_currency_code",
+      "hs_lastmodifieddate",
     ];
 
     const deals: HubSpotDeal[] = [];
@@ -159,7 +179,10 @@ export class HubSpotClient {
       if (filterGroups.length > 0) body.filterGroups = filterGroups;
       if (after) body.after = after;
 
-      const res = await this.post<SearchResponse>(`${HUBSPOT_API}/crm/v3/objects/deals/search`, body);
+      const res = await this.post<SearchResponse>(
+        `${HUBSPOT_API}/crm/v3/objects/deals/search`,
+        body,
+      );
       if (!res.results) break;
       deals.push(...res.results);
       after = res.paging?.next?.after;

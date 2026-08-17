@@ -1,13 +1,14 @@
-import mongoose, { Schema, model, Types } from "mongoose";
+import type mongoose from "mongoose";
+import { model, Schema, type Types } from "mongoose";
 import { z } from "zod";
 import { auditPlugin } from "../plugins/audit.js";
 
 const DisputeSchema = new Schema(
   {
     workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
-    payoutId:    { type: Schema.Types.ObjectId, ref: "Payout", required: true },
-    repId:       { type: Schema.Types.ObjectId, ref: "Rep", required: true },
-    reason:      { type: String, required: true },
+    payoutId: { type: Schema.Types.ObjectId, ref: "Payout", required: true },
+    repId: { type: Schema.Types.ObjectId, ref: "Rep", required: true },
+    reason: { type: String, required: true },
     status: {
       type: String,
       enum: ["open", "under_review", "resolved"],
@@ -42,10 +43,10 @@ export type Dispute = mongoose.Document & {
 
 export const createDisputeSchema = z.object({
   payoutId: z.string().min(1),
-  reason:   z.string().min(10, "Please provide a detailed reason (min 10 characters)."),
+  reason: z.string().min(10, "Please provide a detailed reason (min 10 characters)."),
 });
 
 export const updateDisputeSchema = z.object({
-  status:     z.enum(["open", "under_review", "resolved"]).optional(),
+  status: z.enum(["open", "under_review", "resolved"]).optional(),
   adminNotes: z.string().optional(),
 });

@@ -1,11 +1,11 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { WorkspaceContext } from "../context";
+import { dashboardTools } from "./dashboard.tool";
 import { dealTools } from "./deals.tool";
+import { disputeTools } from "./disputes.tool";
+import { payoutTools } from "./payouts.tool";
 import { repTools } from "./reps.tool";
 import { runTools } from "./runs.tool";
-import { payoutTools } from "./payouts.tool";
-import { disputeTools } from "./disputes.tool";
-import { dashboardTools } from "./dashboard.tool";
 
 export function createMcpServer(ctx: WorkspaceContext): McpServer {
   const server = new McpServer({

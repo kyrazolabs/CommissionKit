@@ -1,4 +1,4 @@
-import { describe, test, expect, mock, beforeAll } from "bun:test";
+import { beforeAll, describe, expect, mock, test } from "bun:test";
 import { normalizeStage, ODOO_STAGE_MAP, OdooConnector } from "./connector";
 
 describe("normalizeStage", () => {
@@ -23,9 +23,9 @@ describe("normalizeStage", () => {
 
 describe("ODOO_STAGE_MAP", () => {
   test("contains all expected Odoo states", () => {
-    expect(Object.keys(ODOO_STAGE_MAP)).toEqual(expect.arrayContaining([
-      "draft", "sent", "sale", "done", "cancel",
-    ]));
+    expect(Object.keys(ODOO_STAGE_MAP)).toEqual(
+      expect.arrayContaining(["draft", "sent", "sale", "done", "cancel"]),
+    );
   });
 
   test("only maps to valid CKit stages", () => {

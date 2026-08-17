@@ -1,2 +1,2 @@
-export { SalesforceConnector } from "./connector";
 export { SalesforceClient } from "./client";
+export { SalesforceConnector } from "./connector";

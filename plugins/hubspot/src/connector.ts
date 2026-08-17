@@ -1,16 +1,16 @@
-import { BasePlugin } from "@workspace/plugins-core";
 import type {
   ConnectionConfig,
   ConnectionTestResult,
   FetchOptions,
-  NormalizedRep,
-  NormalizedDeal,
   IngresEvent,
-  WebhookRequest,
   JsonSchema,
-  PluginUIMetadata,
+  NormalizedDeal,
+  NormalizedRep,
   PaymentStatus,
+  PluginUIMetadata,
+  WebhookRequest,
 } from "@workspace/plugins-core";
+import { BasePlugin } from "@workspace/plugins-core";
 import { HubSpotClient } from "./client";
 
 interface HubSpotConfig {
@@ -33,7 +33,8 @@ export class HubSpotConnector extends BasePlugin {
   readonly name = "hubspot";
   readonly displayName = "HubSpot CRM";
   readonly version = "1.0.0";
-  readonly description = "Connect CKit to your HubSpot CRM. Syncs sales reps (owners) and deals automatically.";
+  readonly description =
+    "Connect CKit to your HubSpot CRM. Syncs sales reps (owners) and deals automatically.";
   readonly icon = "sprout";
 
   private parseConfig(config: ConnectionConfig): HubSpotConfig {
@@ -105,7 +106,9 @@ export class HubSpotConnector extends BasePlugin {
     try {
       // Use saved stage mapping from metadata, or auto-discover, or fall back to all
       let closedWonStageIds = c.closedWonStageIds;
-      const savedMapping = (config as any)._metadata?.stageMapping as Record<string, string> | undefined;
+      const savedMapping = (config as any)._metadata?.stageMapping as
+        | Record<string, string>
+        | undefined;
       const paymentDefault = ((config as any)._metadata?.defaultPaymentStatus as string) || "paid";
       const syncStageFilter = (config as any)._metadata?.stageFilter as string[] | undefined;
 
@@ -128,38 +131,44 @@ export class HubSpotConnector extends BasePlugin {
       }
 
       // If syncClosedOnly but no stages found, sync ALL deals instead of none
-      const stageFilter = (c.syncClosedOnly !== false && closedWonStageIds && closedWonStageIds.length > 0)
-        ? closedWonStageIds
-        : undefined;
+      const stageFilter =
+        c.syncClosedOnly !== false && closedWonStageIds && closedWonStageIds.length > 0
+          ? closedWonStageIds
+          : undefined;
 
       const deals = await client.getDeals(stageFilter, options?.modifiedAfter);
 
       return deals
         .filter((d) => d.properties.hubspot_owner_id)
         .map((d) => {
-        const p = d.properties;
-        const amount = parseFloat(p.amount) || 0;
-        const stage = savedMapping?.[p.dealstage] || normalizeHubSpotStage(p.dealstage);
+          const p = d.properties;
+          const amount = parseFloat(p.amount) || 0;
+          const stage = savedMapping?.[p.dealstage] || normalizeHubSpotStage(p.dealstage);
 
-        return {
-          externalId: d.id,
-          repExternalId: p.hubspot_owner_id || "",
-          name: p.dealname || "Untitled Deal",
-          amount,
-          closeDate: p.closedate ? new Date(p.closedate) : new Date(),
-          stage,
-          currency: (p.deal_currency_code || "USD").toUpperCase(),
-          paymentStatus: (stage === "closed_won" ? paymentDefault : "unpaid") as PaymentStatus,
-          notes: p.description || undefined,
-          metadata: {
-            hubspotDealId: d.id,
-            hubspotPipeline: p.pipeline,
-            hubspotStage: p.dealstage,
-            hubspotLastModified: p.hs_lastmodifieddate,
-          },
-        };
-      })
-      .filter((d: any) => !syncStageFilter || syncStageFilter.length === 0 || syncStageFilter.includes(d.metadata.hubspotStage));
+          return {
+            externalId: d.id,
+            repExternalId: p.hubspot_owner_id || "",
+            name: p.dealname || "Untitled Deal",
+            amount,
+            closeDate: p.closedate ? new Date(p.closedate) : new Date(),
+            stage,
+            currency: (p.deal_currency_code || "USD").toUpperCase(),
+            paymentStatus: (stage === "closed_won" ? paymentDefault : "unpaid") as PaymentStatus,
+            notes: p.description || undefined,
+            metadata: {
+              hubspotDealId: d.id,
+              hubspotPipeline: p.pipeline,
+              hubspotStage: p.dealstage,
+              hubspotLastModified: p.hs_lastmodifieddate,
+            },
+          };
+        })
+        .filter(
+          (d: any) =>
+            !syncStageFilter ||
+            syncStageFilter.length === 0 ||
+            syncStageFilter.includes(d.metadata.hubspotStage),
+        );
     } catch {
       return [];
     }
@@ -172,10 +181,19 @@ export class HubSpotConnector extends BasePlugin {
   async refreshTokens(config: ConnectionConfig): Promise<ConnectionConfig> {
     const clientId = process.env.HUBSPOT_CLIENT_ID;
     const clientSecret = process.env.HUBSPOT_CLIENT_SECRET;
-    if (!clientId || !clientSecret) throw new Error("HubSpot OAuth not configured (HUBSPOT_CLIENT_ID/SECRET)");
+    if (!clientId || !clientSecret)
+      throw new Error("HubSpot OAuth not configured (HUBSPOT_CLIENT_ID/SECRET)");
     if (!config.refreshToken) throw new Error("HubSpot refresh token missing");
-    const t = await HubSpotClient.refreshAccessToken(clientId, clientSecret, config.refreshToken as string);
-    return { accessToken: t.accessToken, refreshToken: t.refreshToken, expiresAt: Date.now() + t.expiresIn * 1000 };
+    const t = await HubSpotClient.refreshAccessToken(
+      clientId,
+      clientSecret,
+      config.refreshToken as string,
+    );
+    return {
+      accessToken: t.accessToken,
+      refreshToken: t.refreshToken,
+      expiresAt: Date.now() + t.expiresIn * 1000,
+    };
   }
 
   parseWebhook(_payload: unknown): IngresEvent[] {

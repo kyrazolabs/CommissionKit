@@ -12,7 +12,9 @@ export function registerEngine(engine: CalcEngine): void {
 export function getEngine(name: string): CalcEngine {
   const engine = registry.get(name);
   if (!engine) {
-    throw new Error(`Unknown commission engine: "${name}". Available: ${[...registry.keys()].join(", ")}`);
+    throw new Error(
+      `Unknown commission engine: "${name}". Available: ${[...registry.keys()].join(", ")}`,
+    );
   }
   return engine;
 }

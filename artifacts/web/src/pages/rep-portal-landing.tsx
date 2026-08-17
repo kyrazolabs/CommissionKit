@@ -1,14 +1,3 @@
-import { useState } from "react";
-import { Helmet } from "react-helmet-async";
-import {
-  LineChart,
-  Line,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import {
   AlertOctagon,
   ArrowRight,
@@ -32,10 +21,22 @@ import {
   Wallet,
   Zap,
 } from "lucide-react";
-
+import { useState } from "react";
+import { Helmet } from "react-helmet-async";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { RepAvatar } from "@/components/rep-avatar";
+import { StatCard } from "@/components/stat-card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -44,14 +45,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  formatCurrency,
-  formatPercent,
-} from "@/lib/format";
-import { cn } from "@/lib/utils";
-import { StatCard } from "@/components/stat-card";
-import { RepAvatar } from "@/components/rep-avatar";
 import { usePageMeta } from "@/hooks/use-page-meta";
+import { formatCurrency, formatPercent } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { Footer } from "@/pages/landing/Footer";
 import { Navbar } from "@/pages/landing/Navbar";
 
@@ -68,14 +64,78 @@ const SAMPLE_SUMMARY = {
   totalRevenue: 415_000,
   totalDeals: 8,
   dealBreakdown: [
-    { dealId: "d1", dealName: "Enterprise Suite Renewal", dealAmount: 120_000, closeDate: "2026-07-08", rateApplied: 0.05, commissionAmount: 6_000, currency: "USD" },
-    { dealId: "d2", dealName: "Pro Plan Expansion", dealAmount: 85_000, closeDate: "2026-07-15", rateApplied: 0.04, commissionAmount: 3_400, currency: "USD" },
-    { dealId: "d3", dealName: "Starter Onboarding", dealAmount: 36_000, closeDate: "2026-07-22", rateApplied: 0.03, commissionAmount: 1_080, currency: "USD" },
-    { dealId: "d4", dealName: "Mid-Market Upsell", dealAmount: 74_000, closeDate: "2026-07-28", rateApplied: 0.045, commissionAmount: 1_970, currency: "USD" },
-    { dealId: "d5", dealName: "SMB Add-on", dealAmount: 24_000, closeDate: "2026-07-30", rateApplied: 0.03, commissionAmount: 720, currency: "USD" },
-    { dealId: "d6", dealName: "Support Extension", dealAmount: 48_000, closeDate: "2026-07-18", rateApplied: 0.04, commissionAmount: 1_920, currency: "USD" },
-    { dealId: "d7", dealName: "Security Module", dealAmount: 18_000, closeDate: "2026-07-05", rateApplied: 0.03, commissionAmount: 540, currency: "USD" },
-    { dealId: "d8", dealName: "Analytics Bundle", dealAmount: 10_000, closeDate: "2026-07-12", rateApplied: 0.02, commissionAmount: 200, currency: "USD" },
+    {
+      dealId: "d1",
+      dealName: "Enterprise Suite Renewal",
+      dealAmount: 120_000,
+      closeDate: "2026-07-08",
+      rateApplied: 0.05,
+      commissionAmount: 6_000,
+      currency: "USD",
+    },
+    {
+      dealId: "d2",
+      dealName: "Pro Plan Expansion",
+      dealAmount: 85_000,
+      closeDate: "2026-07-15",
+      rateApplied: 0.04,
+      commissionAmount: 3_400,
+      currency: "USD",
+    },
+    {
+      dealId: "d3",
+      dealName: "Starter Onboarding",
+      dealAmount: 36_000,
+      closeDate: "2026-07-22",
+      rateApplied: 0.03,
+      commissionAmount: 1_080,
+      currency: "USD",
+    },
+    {
+      dealId: "d4",
+      dealName: "Mid-Market Upsell",
+      dealAmount: 74_000,
+      closeDate: "2026-07-28",
+      rateApplied: 0.045,
+      commissionAmount: 1_970,
+      currency: "USD",
+    },
+    {
+      dealId: "d5",
+      dealName: "SMB Add-on",
+      dealAmount: 24_000,
+      closeDate: "2026-07-30",
+      rateApplied: 0.03,
+      commissionAmount: 720,
+      currency: "USD",
+    },
+    {
+      dealId: "d6",
+      dealName: "Support Extension",
+      dealAmount: 48_000,
+      closeDate: "2026-07-18",
+      rateApplied: 0.04,
+      commissionAmount: 1_920,
+      currency: "USD",
+    },
+    {
+      dealId: "d7",
+      dealName: "Security Module",
+      dealAmount: 18_000,
+      closeDate: "2026-07-05",
+      rateApplied: 0.03,
+      commissionAmount: 540,
+      currency: "USD",
+    },
+    {
+      dealId: "d8",
+      dealName: "Analytics Bundle",
+      dealAmount: 10_000,
+      closeDate: "2026-07-12",
+      rateApplied: 0.02,
+      commissionAmount: 200,
+      currency: "USD",
+    },
   ] satisfies Array<{
     dealId: string;
     dealName: string;
@@ -97,10 +157,46 @@ const SAMPLE_SUMMARY = {
 };
 
 const SAMPLE_PAYOUTS = [
-  { id: "p1", period: "2026-07", commissionAmount: 12_450, adjustments: 0, finalAmount: 12_450, status: "paid", paymentDate: "2026-08-15", currency: "USD" },
-  { id: "p2", period: "2026-06", commissionAmount: 11_200, adjustments: -250, finalAmount: 10_950, status: "paid", paymentDate: "2026-07-15", currency: "USD" },
-  { id: "p3", period: "2026-05", commissionAmount: 9_400, adjustments: 0, finalAmount: 9_400, status: "paid", paymentDate: "2026-06-15", currency: "USD" },
-  { id: "p4", period: "2026-04", commissionAmount: 5_100, adjustments: 0, finalAmount: 5_100, status: "paid", paymentDate: "2026-05-15", currency: "USD" },
+  {
+    id: "p1",
+    period: "2026-07",
+    commissionAmount: 12_450,
+    adjustments: 0,
+    finalAmount: 12_450,
+    status: "paid",
+    paymentDate: "2026-08-15",
+    currency: "USD",
+  },
+  {
+    id: "p2",
+    period: "2026-06",
+    commissionAmount: 11_200,
+    adjustments: -250,
+    finalAmount: 10_950,
+    status: "paid",
+    paymentDate: "2026-07-15",
+    currency: "USD",
+  },
+  {
+    id: "p3",
+    period: "2026-05",
+    commissionAmount: 9_400,
+    adjustments: 0,
+    finalAmount: 9_400,
+    status: "paid",
+    paymentDate: "2026-06-15",
+    currency: "USD",
+  },
+  {
+    id: "p4",
+    period: "2026-04",
+    commissionAmount: 5_100,
+    adjustments: 0,
+    finalAmount: 5_100,
+    status: "paid",
+    paymentDate: "2026-05-15",
+    currency: "USD",
+  },
 ];
 
 // ─── Demo Dashboard ─────────────────────────────────────────────────────────────
@@ -113,7 +209,7 @@ function DemoDashboard() {
     for (let i = 5; i >= 0; i--) {
       const d = new Date(2026, 7 - i, 1);
       const periodStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      const existing = SAMPLE_SUMMARY.monthlyHistory.find(m => m.period === periodStr);
+      const existing = SAMPLE_SUMMARY.monthlyHistory.find((m) => m.period === periodStr);
       months.push(existing ?? { period: periodStr, totalCommission: 0 });
     }
     return months;
@@ -139,7 +235,10 @@ function DemoDashboard() {
             <p className="text-sm text-muted-foreground">{SAMPLE_SUMMARY.email}</p>
           </div>
         </div>
-        <Badge variant="outline" className="self-start sm:self-auto border-primary/30 text-primary font-medium">
+        <Badge
+          variant="outline"
+          className="self-start sm:self-auto border-primary/30 text-primary font-medium"
+        >
           {SAMPLE_SUMMARY.planName}
         </Badge>
       </div>
@@ -172,7 +271,9 @@ function DemoDashboard() {
         <div className="px-5 pt-5 pb-0">
           <div className="flex items-center gap-2 mb-1">
             <Wallet className="size-4 text-primary" />
-            <h3 className="text-[15px] font-semibold leading-snug tracking-tight">Earnings History</h3>
+            <h3 className="text-[15px] font-semibold leading-snug tracking-tight">
+              Earnings History
+            </h3>
           </div>
           <p className="text-xs text-muted-foreground">Commission earned over the last 6 months</p>
         </div>
@@ -206,7 +307,10 @@ function DemoDashboard() {
                   axisLine={false}
                 />
                 <Tooltip
-                  formatter={(v: number) => [formatCurrency(v, SAMPLE_SUMMARY.currency), "Commission"]}
+                  formatter={(v: number) => [
+                    formatCurrency(v, SAMPLE_SUMMARY.currency),
+                    "Commission",
+                  ]}
                   labelFormatter={(l) => {
                     const [y, m] = (l as string).split("-");
                     const d = new Date(+y, +m - 1, 1);
@@ -239,7 +343,9 @@ function DemoDashboard() {
         <div className="px-5 pt-5 pb-0">
           <div className="flex items-center gap-2 mb-1">
             <Layers className="size-4 text-primary" />
-            <h3 className="text-[15px] font-semibold leading-snug tracking-tight">Deal Breakdown</h3>
+            <h3 className="text-[15px] font-semibold leading-snug tracking-tight">
+              Deal Breakdown
+            </h3>
           </div>
           <p className="text-xs text-muted-foreground">Per-deal commission for July 2026</p>
         </div>
@@ -280,7 +386,9 @@ function DemoDashboard() {
         <div className="px-5 pt-5 pb-0">
           <div className="flex items-center gap-2 mb-1">
             <Wallet className="size-4 text-primary" />
-            <h3 className="text-[15px] font-semibold leading-snug tracking-tight">Payout History</h3>
+            <h3 className="text-[15px] font-semibold leading-snug tracking-tight">
+              Payout History
+            </h3>
           </div>
           <p className="text-xs text-muted-foreground">Recent commission payouts</p>
         </div>
@@ -303,10 +411,16 @@ function DemoDashboard() {
                   <TableCell className="text-right text-sm tabular-nums">
                     {formatCurrency(p.commissionAmount, p.currency)}
                   </TableCell>
-                  <TableCell className={cn(
-                    "text-right text-sm tabular-nums",
-                    p.adjustments < 0 ? "text-destructive" : p.adjustments > 0 ? "text-green-600" : "text-muted-foreground"
-                  )}>
+                  <TableCell
+                    className={cn(
+                      "text-right text-sm tabular-nums",
+                      p.adjustments < 0
+                        ? "text-destructive"
+                        : p.adjustments > 0
+                          ? "text-green-600"
+                          : "text-muted-foreground",
+                    )}
+                  >
                     {p.adjustments !== 0
                       ? `${p.adjustments > 0 ? "+" : ""}${formatCurrency(p.adjustments, p.currency)}`
                       : "—"}
@@ -315,10 +429,12 @@ function DemoDashboard() {
                     {formatCurrency(p.finalAmount, p.currency)}
                   </TableCell>
                   <TableCell>
-                    <span className={cn(
-                      "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold",
-                      PAYOUT_STATUS_CLASSES[p.status] ?? PAYOUT_STATUS_CLASSES.pending
-                    )}>
+                    <span
+                      className={cn(
+                        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold",
+                        PAYOUT_STATUS_CLASSES[p.status] ?? PAYOUT_STATUS_CLASSES.pending,
+                      )}
+                    >
                       {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
                     </span>
                   </TableCell>
@@ -345,9 +461,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
         onClick={() => setOpen(!open)}
         className="w-full text-left py-6 flex items-center justify-between gap-4 focus:outline-none"
       >
-        <span className="text-base font-semibold text-foreground leading-snug">
-          {question}
-        </span>
+        <span className="text-base font-semibold text-foreground leading-snug">{question}</span>
         <ChevronDown
           className={`size-5 text-muted-foreground shrink-0 transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"}`}
         />
@@ -356,9 +470,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
         className="overflow-hidden transition-all duration-300 ease-in-out"
         style={{ maxHeight: open ? 300 : 0, opacity: open ? 1 : 0 }}
       >
-        <p className="text-sm text-muted-foreground leading-relaxed pb-6">
-          {answer}
-        </p>
+        <p className="text-sm text-muted-foreground leading-relaxed pb-6">{answer}</p>
       </div>
     </div>
   );
@@ -386,13 +498,9 @@ function HowStep({
         <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/15 flex items-center justify-center shrink-0">
           <Icon className="size-4 text-primary" />
         </div>
-        <h3 className="text-lg font-semibold text-foreground tracking-tight">
-          {title}
-        </h3>
+        <h3 className="text-lg font-semibold text-foreground tracking-tight">{title}</h3>
       </div>
-      <p className="text-sm text-muted-foreground leading-relaxed relative">
-        {description}
-      </p>
+      <p className="text-sm text-muted-foreground leading-relaxed relative">{description}</p>
     </div>
   );
 }
@@ -424,15 +532,20 @@ function FeatureCard({
 export function RepPortalLanding() {
   usePageMeta({
     title: "Sales Rep Portal — CommissionKit",
-    description: "Give every salesperson a login-free dashboard showing their commission earnings, deal-by-deal breakdowns, and payout history. They check it themselves.",
-    keywords: "sales commission portal, rep commission dashboard, commission transparency software, sales rep portal software, commission tracking with rep portal, self-service commission portal, reduce commission disputes, commission management software with rep portal, real-time commission visibility, sales rep commission tracking, how to give reps commission visibility, commission dispute resolution, self-serve commission dashboard for sales reps, commission software with dispute management, sales rep portal with access code login",
+    description:
+      "Give every salesperson a login-free dashboard showing their commission earnings, deal-by-deal breakdowns, and payout history. They check it themselves.",
+    keywords:
+      "sales commission portal, rep commission dashboard, commission transparency software, sales rep portal software, commission tracking with rep portal, self-service commission portal, reduce commission disputes, commission management software with rep portal, real-time commission visibility, sales rep commission tracking, how to give reps commission visibility, commission dispute resolution, self-serve commission dashboard for sales reps, commission software with dispute management, sales rep portal with access code login",
   });
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Helmet>
         <title>Sales Rep Portal — CommissionKit</title>
-        <meta name="description" content="Give every salesperson a login-free dashboard showing their commission earnings, deal-by-deal breakdowns, and payout history. They check it themselves. Your finance team stops answering the same question 40 times a month." />
+        <meta
+          name="description"
+          content="Give every salesperson a login-free dashboard showing their commission earnings, deal-by-deal breakdowns, and payout history. They check it themselves. Your finance team stops answering the same question 40 times a month."
+        />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://commissionkit.co/portal" />
       </Helmet>
@@ -447,7 +560,9 @@ export function RepPortalLanding() {
               Your reps shouldn't need to ask what they earned.
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-              The Rep Portal gives every salesperson a login-free dashboard showing their commission earnings, deal-by-deal breakdowns, and payout history. They check it themselves. Your finance team stops answering the same question 40 times a month.
+              The Rep Portal gives every salesperson a login-free dashboard showing their commission
+              earnings, deal-by-deal breakdowns, and payout history. They check it themselves. Your
+              finance team stops answering the same question 40 times a month.
             </p>
             <div className="flex flex-row gap-3 justify-center">
               <a href="/register">
@@ -469,7 +584,9 @@ export function RepPortalLanding() {
         <section className="bg-muted/30 border-y border-card-border">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
             <div className="text-center mb-10">
-              <p className="text-xs font-bold tracking-widest uppercase text-primary mb-4">Live demo</p>
+              <p className="text-xs font-bold tracking-widest uppercase text-primary mb-4">
+                Live demo
+              </p>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold tracking-tight mb-3">
                 See it in action
               </h2>
@@ -498,7 +615,9 @@ export function RepPortalLanding() {
         {/* ── Feature Grid ──────────────────────────────────────────────── */}
         <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
           <div className="text-center mb-10">
-            <p className="text-xs font-bold tracking-widest uppercase text-primary mb-4">Features</p>
+            <p className="text-xs font-bold tracking-widest uppercase text-primary mb-4">
+              Features
+            </p>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold tracking-tight mb-3">
               Everything a rep needs to know
             </h2>
@@ -551,7 +670,14 @@ export function RepPortalLanding() {
                 The question that eats your finance team's week
               </h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                You know the one. "Hey, what's my commission for this month?" It comes from reps over Slack, email, text, and in person. Sometimes the same rep asks twice in one week. Finance pulls up a spreadsheet, cross-references the deal list, checks the plan rules, and sends back a number. Then the rep asks about a specific deal. Then another rep asks the same thing. We built the Rep Portal because this cycle shouldn't exist. The data is already in CommissionKit. The calculation already happened. The only missing piece was giving reps a way to see it themselves. Now when a rep asks "what did I earn?", the answer is: log in and check.
+                You know the one. "Hey, what's my commission for this month?" It comes from reps
+                over Slack, email, text, and in person. Sometimes the same rep asks twice in one
+                week. Finance pulls up a spreadsheet, cross-references the deal list, checks the
+                plan rules, and sends back a number. Then the rep asks about a specific deal. Then
+                another rep asks the same thing. We built the Rep Portal because this cycle
+                shouldn't exist. The data is already in CommissionKit. The calculation already
+                happened. The only missing piece was giving reps a way to see it themselves. Now
+                when a rep asks "what did I earn?", the answer is: log in and check.
               </p>
             </div>
           </div>
@@ -561,7 +687,9 @@ export function RepPortalLanding() {
         <section className="bg-background py-24 px-6 border-b border-border/60">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
-              <p className="text-xs font-bold tracking-widest uppercase text-primary mb-4">How it works</p>
+              <p className="text-xs font-bold tracking-widest uppercase text-primary mb-4">
+                How it works
+              </p>
               <h2 className="text-3xl sm:text-4xl lg:text-[44px] font-bold leading-[0.95] text-foreground tracking-tight font-display">
                 How the Rep Portal works
               </h2>
@@ -600,7 +728,15 @@ export function RepPortalLanding() {
                 Built for teams who ate commission accuracy seriously
               </h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                CommissionKit is made by a small team that spent years watching sales organizations struggle with spreadsheet-based commission tracking. We built the Rep Portal because transparency isn't a nice-to-have. Reps who can see their earnings trust the numbers. Reps who trust the numbers spend less time questioning them and more time selling. Your data stays yours. Portal access is scoped to each rep's own records. Access codes can be regenerated or revoked at any time. All portal sessions use separate JWT authentication, isolated from your main workspace. We're self-funded, which means we answer to our users, not to investors asking us to ship faster than we should.
+                CommissionKit is made by a small team that spent years watching sales organizations
+                struggle with spreadsheet-based commission tracking. We built the Rep Portal because
+                transparency isn't a nice-to-have. Reps who can see their earnings trust the
+                numbers. Reps who trust the numbers spend less time questioning them and more time
+                selling. Your data stays yours. Portal access is scoped to each rep's own records.
+                Access codes can be regenerated or revoked at any time. All portal sessions use
+                separate JWT authentication, isolated from your main workspace. We're self-funded,
+                which means we answer to our users, not to investors asking us to ship faster than
+                we should.
               </p>
             </div>
           </div>
@@ -610,9 +746,7 @@ export function RepPortalLanding() {
         <section className="bg-background py-24 px-6 border-b border-border/60">
           <div className="max-w-190 mx-auto">
             <div className="text-center mb-16">
-              <p className="text-xs font-bold tracking-widest uppercase text-primary mb-4">
-                FAQ
-              </p>
+              <p className="text-xs font-bold tracking-widest uppercase text-primary mb-4">FAQ</p>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-[0.95] text-foreground tracking-tight font-display">
                 Questions we get asked a lot
               </h2>
@@ -650,7 +784,9 @@ export function RepPortalLanding() {
                 Stop being your reps' commission calculator.
               </h2>
               <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
-                Set up CommissionKit in under 30 minutes. Import your deals, configure your plans, run your first calculation. Then give every rep their access code and watch the "what's my commission?" messages stop. Free for 14 days. No credit card required.
+                Set up CommissionKit in under 30 minutes. Import your deals, configure your plans,
+                run your first calculation. Then give every rep their access code and watch the
+                "what's my commission?" messages stop. Free for 14 days. No credit card required.
               </p>
             </div>
             <div className="flex flex-row gap-3 justify-center">

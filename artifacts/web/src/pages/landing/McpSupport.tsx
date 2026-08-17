@@ -1,12 +1,27 @@
-import { Bot, ArrowRight } from "lucide-react";
-import { useInView, fadeIn } from "./hooks";
+import { ArrowRight, Bot } from "lucide-react";
+import { fadeIn, useInView } from "./hooks";
 
 const AI_ASSISTANTS = [
-  { id: "chatgpt", label: "ChatGPT", img: "/imgs/chatgpt.webp", tagline: "Query deals, reps, and runs" },
+  {
+    id: "chatgpt",
+    label: "ChatGPT",
+    img: "/imgs/chatgpt.webp",
+    tagline: "Query deals, reps, and runs",
+  },
   { id: "claude", label: "Claude", img: "/imgs/claude.webp", tagline: "Read your commission data" },
   { id: "gemini", label: "Gemini", img: "/imgs/gemini.webp", tagline: "Dashboards on demand" },
-  { id: "copilot", label: "Copilot", img: "/imgs/copilot.webp", tagline: "Answers from your workspace" },
-  { id: "grok", label: "Grok", img: "/imgs/grok.webp", tagline: "Real-time answers from your data" },
+  {
+    id: "copilot",
+    label: "Copilot",
+    img: "/imgs/copilot.webp",
+    tagline: "Answers from your workspace",
+  },
+  {
+    id: "grok",
+    label: "Grok",
+    img: "/imgs/grok.webp",
+    tagline: "Real-time answers from your data",
+  },
   { id: "mcp", label: "Any MCP client", img: null, tagline: "Scoped to your workspace" },
 ];
 
@@ -27,7 +42,9 @@ export function McpSupport() {
               Your AI assistant can read your commission data, too
             </h2>
             <p className="text-base text-muted-foreground">
-              CommissionKit is an MCP server. Connect ChatGPT, Claude, or any MCP-compatible tool to query deals, reps, payouts, and runs. It is scoped to your workspace, with a full audit trail.
+              CommissionKit is an MCP server. Connect ChatGPT, Claude, or any MCP-compatible tool to
+              query deals, reps, payouts, and runs. It is scoped to your workspace, with a full
+              audit trail.
             </p>
             <a
               href="https://docs.commissionkit.co/guides/mcp"

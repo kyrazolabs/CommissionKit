@@ -1,16 +1,22 @@
+import {
+  createDisputeSchema,
+  Dispute,
+  Notification,
+  Payout,
+  Rep,
+  updateDisputeSchema,
+  Workspace,
+  WorkspaceMember,
+  WorkspaceSubscription,
+} from "@workspace/db";
+import { disputeUpdateTemplate } from "@workspace/email-templates";
+import { format } from "date-fns";
 import { Router } from "express";
 import { Types } from "mongoose";
-import {
-  Dispute, Payout, Rep, WorkspaceSubscription, Notification, WorkspaceMember,
-  createDisputeSchema, updateDisputeSchema,
-} from "@workspace/db";
-import { requirePermission, type AuthenticatedRequest } from "../../middleware/auth";
 import { logger } from "../../lib/logger";
 import { createNotification } from "../../lib/notify";
-import { disputeUpdateTemplate } from "@workspace/email-templates";
-import { Workspace } from "@workspace/db";
-import { format } from "date-fns";
 import { getUsersWithPermission } from "../../lib/rbac";
+import { type AuthenticatedRequest, requirePermission } from "../../middleware/auth";
 
 const router = Router();
 
@@ -19,7 +25,9 @@ const GROWTH_PLANS = new Set<PlanName>(["growth", "annual", "flex", "pro"]);
 
 async function getPlan(workspaceId: string): Promise<PlanName> {
   const sub = await WorkspaceSubscription.findOne({ workspaceId: new Types.ObjectId(workspaceId) });
-  const isActive = sub?.isLifetime || (sub?.status && ["active", "trialing", "past_due", "paused"].includes(sub.status));
+  const isActive =
+    sub?.isLifetime ||
+    (sub?.status && ["active", "trialing", "past_due", "paused"].includes(sub.status));
   return (isActive ? (sub?.plan ?? "free") : "free") as PlanName;
 }
 
@@ -35,14 +43,17 @@ function formatDispute(dispute: any) {
     resolvedAt: dispute.resolvedAt?.toISOString() ?? null,
     createdAt: dispute.createdAt.toISOString(),
     updatedAt: dispute.updatedAt.toISOString(),
-    payout: dispute.payoutId && typeof dispute.payoutId === "object" ? {
-      id: dispute.payoutId._id?.toString(),
-      finalAmount: dispute.payoutId.finalAmount,
-      currency: dispute.payoutId.currency,
-      periodStart: dispute.payoutId.periodStart?.toISOString(),
-      periodEnd: dispute.payoutId.periodEnd?.toISOString(),
-      status: dispute.payoutId.status,
-    } : null,
+    payout:
+      dispute.payoutId && typeof dispute.payoutId === "object"
+        ? {
+            id: dispute.payoutId._id?.toString(),
+            finalAmount: dispute.payoutId.finalAmount,
+            currency: dispute.payoutId.currency,
+            periodStart: dispute.payoutId.periodStart?.toISOString(),
+            periodEnd: dispute.payoutId.periodEnd?.toISOString(),
+            status: dispute.payoutId.status,
+          }
+        : null,
   };
 }
 
@@ -59,7 +70,7 @@ async function sendDisputeNotification(
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
     const portalUrl = `${frontendUrl}/portal/${rep.accessCode}`;
     const payout = dispute.payoutId as any;
-    const period = payout 
+    const period = payout
       ? `${format(payout.periodStart, "MMM d")}–${format(payout.periodEnd, "MMM d, yyyy")}`
       : "Unknown Period";
 
@@ -87,106 +98,196 @@ async function sendDisputeNotification(
   }
 }
 
-async function sendInAppNotification(workspaceId: string, userId: string, type: string, title: string, message: string, href?: string) {
+async function sendInAppNotification(
+  workspaceId: string,
+  userId: string,
+  type: string,
+  title: string,
+  message: string,
+  href?: string,
+) {
   try {
-    await Notification.create({ workspaceId: new Types.ObjectId(workspaceId), userId, type, title, message, href, read: false });
+    await Notification.create({
+      workspaceId: new Types.ObjectId(workspaceId),
+      userId,
+      type,
+      title,
+      message,
+      href,
+      read: false,
+    });
   } catch (err) {
     logger.warn({ err }, "Failed to create in-app notification");
   }
 }
 
 // ─── POST / — rep submits a dispute ──────────────────────────────────────────
-router.post("/", ...requirePermission("disputes", "create"), async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = req.workspaceId!;
-  if (!GROWTH_PLANS.has(await getPlan(workspaceId))) {
-    res.status(403).json({ error: "Disputes require a Growth plan or higher.", upgradeRequired: true }); return;
-  }
+router.post(
+  "/",
+  ...requirePermission("disputes", "create"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    if (!GROWTH_PLANS.has(await getPlan(workspaceId))) {
+      res
+        .status(403)
+        .json({ error: "Disputes require a Growth plan or higher.", upgradeRequired: true });
+      return;
+    }
 
-  const body = createDisputeSchema.parse(req.body);
-  const rep = await Rep.findOne({ workspaceId: new Types.ObjectId(workspaceId), email: req.userEmail });
-  if (!rep) { res.status(403).json({ error: "No rep record found for your account." }); return; }
+    const body = createDisputeSchema.parse(req.body);
+    const rep = await Rep.findOne({
+      workspaceId: new Types.ObjectId(workspaceId),
+      email: req.userEmail,
+    });
+    if (!rep) {
+      res.status(403).json({ error: "No rep record found for your account." });
+      return;
+    }
 
-  const payout = await Payout.findOne({ _id: new Types.ObjectId(body.payoutId), workspaceId: new Types.ObjectId(workspaceId), repId: rep._id });
-  if (!payout) { res.status(404).json({ error: "Payout not found or not accessible." }); return; }
-  if (!["pending", "approved"].includes(payout.status)) {
-    res.status(400).json({ error: `Only pending or approved payouts can be disputed. Status: ${payout.status}` }); return;
-  }
+    const payout = await Payout.findOne({
+      _id: new Types.ObjectId(body.payoutId),
+      workspaceId: new Types.ObjectId(workspaceId),
+      repId: rep._id,
+    });
+    if (!payout) {
+      res.status(404).json({ error: "Payout not found or not accessible." });
+      return;
+    }
+    if (!["pending", "approved"].includes(payout.status)) {
+      res.status(400).json({
+        error: `Only pending or approved payouts can be disputed. Status: ${payout.status}`,
+      });
+      return;
+    }
 
-  const existing = await Dispute.findOne({ payoutId: payout._id });
-  if (existing) { res.status(409).json({ error: "A dispute already exists for this payout." }); return; }
+    const existing = await Dispute.findOne({ payoutId: payout._id });
+    if (existing) {
+      res.status(409).json({ error: "A dispute already exists for this payout." });
+      return;
+    }
 
-  const dispute = await Dispute.create({
-    workspaceId: new Types.ObjectId(workspaceId),
-    payoutId: payout._id,
-    repId: rep._id,
-    reason: body.reason,
-    status: "open",
-  });
+    const dispute = await Dispute.create({
+      workspaceId: new Types.ObjectId(workspaceId),
+      payoutId: payout._id,
+      repId: rep._id,
+      reason: body.reason,
+      status: "open",
+    });
 
-  await Payout.findByIdAndUpdate(payout._id, {
-    status: "disputed",
-    $push: { statusHistory: { status: "disputed", changedAt: new Date(), changedBy: req.userId, note: `Dispute: ${body.reason.slice(0, 80)}` } },
-  });
+    await Payout.findByIdAndUpdate(payout._id, {
+      status: "disputed",
+      $push: {
+        statusHistory: {
+          status: "disputed",
+          changedAt: new Date(),
+          changedBy: req.userId,
+          note: `Dispute: ${body.reason.slice(0, 80)}`,
+        },
+      },
+    });
 
-  const notifyUserIds = await getUsersWithPermission(workspaceId, "disputes", "edit");
-  for (const userId of notifyUserIds) {
-    await sendInAppNotification(workspaceId, userId, "dispute_submitted", "Payout Dispute Submitted",
-      `${rep.name} has disputed their payout. Reason: ${body.reason.slice(0, 80)}`, "/disputes");
-  }
+    const notifyUserIds = await getUsersWithPermission(workspaceId, "disputes", "edit");
+    for (const userId of notifyUserIds) {
+      await sendInAppNotification(
+        workspaceId,
+        userId,
+        "dispute_submitted",
+        "Payout Dispute Submitted",
+        `${rep.name} has disputed their payout. Reason: ${body.reason.slice(0, 80)}`,
+        "/disputes",
+      );
+    }
 
-  res.status(201).json(formatDispute(dispute));
-});
+    res.status(201).json(formatDispute(dispute));
+  },
+);
 
 // ─── GET / — list disputes ────────────────────────────────────────────────────
-router.get("/", ...requirePermission("disputes", "read"), async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = req.workspaceId!;
-  const hasFullAccess = req.permissions?.has("disputes:edit") || req.permissions?.has("disputes:*") || req.permissions?.has("*");
-  const query: any = { workspaceId: new Types.ObjectId(workspaceId) };
+router.get(
+  "/",
+  ...requirePermission("disputes", "read"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const hasFullAccess =
+      req.permissions?.has("disputes:edit") ||
+      req.permissions?.has("disputes:*") ||
+      req.permissions?.has("*");
+    const query: any = { workspaceId: new Types.ObjectId(workspaceId) };
 
-  if (!hasFullAccess) {
-    const rep = await Rep.findOne({ workspaceId: new Types.ObjectId(workspaceId), email: req.userEmail });
-    if (!rep) { res.json({ data: [], pagination: { page: 1, limit: 50, total: 0, totalPages: 0 } }); return; }
-    query.repId = rep._id;
-  }
-  if (req.query.status) query.status = req.query.status;
+    if (!hasFullAccess) {
+      const rep = await Rep.findOne({
+        workspaceId: new Types.ObjectId(workspaceId),
+        email: req.userEmail,
+      });
+      if (!rep) {
+        res.json({ data: [], pagination: { page: 1, limit: 50, total: 0, totalPages: 0 } });
+        return;
+      }
+      query.repId = rep._id;
+    }
+    if (req.query.status) query.status = req.query.status;
 
-  const page = Math.max(1, Number(req.query.page) || 1);
-  const limit = Math.min(500, Math.max(1, Number(req.query.limit) || 50));
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(500, Math.max(1, Number(req.query.limit) || 50));
 
-  const [disputes, total] = await Promise.all([
-    Dispute.find(query).populate("repId").populate("payoutId").sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit),
-    Dispute.countDocuments(query),
-  ]);
+    const [disputes, total] = await Promise.all([
+      Dispute.find(query)
+        .populate("repId")
+        .populate("payoutId")
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+      Dispute.countDocuments(query),
+    ]);
 
-  res.json({
-    data: disputes.filter((d) => d.repId != null).map(formatDispute),
-    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-  });
-});
+    res.json({
+      data: disputes.filter((d) => d.repId != null).map(formatDispute),
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
+  },
+);
 
 // ─── PATCH /:id — admin updates dispute ──────────────────────────────────────
-router.patch("/:id", ...requirePermission("disputes", "edit"), async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = req.workspaceId!;
-  const body = updateDisputeSchema.parse(req.body);
+router.patch(
+  "/:id",
+  ...requirePermission("disputes", "edit"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const body = updateDisputeSchema.parse(req.body);
 
-  const dispute = await Dispute.findOne({ _id: new Types.ObjectId(req.params.id as string), workspaceId: new Types.ObjectId(workspaceId) })
-    .populate("repId").populate("payoutId");
-  if (!dispute) { res.status(404).json({ error: "Dispute not found" }); return; }
+    const dispute = await Dispute.findOne({
+      _id: new Types.ObjectId(req.params.id as string),
+      workspaceId: new Types.ObjectId(workspaceId),
+    })
+      .populate("repId")
+      .populate("payoutId");
+    if (!dispute) {
+      res.status(404).json({ error: "Dispute not found" });
+      return;
+    }
 
-  const update: any = {};
-  if (body.status) update.status = body.status;
-  if (body.adminNotes) update.adminNotes = body.adminNotes;
-  if (body.status === "resolved") update.resolvedAt = new Date();
+    const update: any = {};
+    if (body.status) update.status = body.status;
+    if (body.adminNotes) update.adminNotes = body.adminNotes;
+    if (body.status === "resolved") update.resolvedAt = new Date();
 
-  const updated = await Dispute.findByIdAndUpdate(dispute._id, { $set: update }, { new: true })
-    .populate("repId").populate("payoutId");
+    const updated = await Dispute.findByIdAndUpdate(dispute._id, { $set: update }, { new: true })
+      .populate("repId")
+      .populate("payoutId");
 
     if (body.status === "resolved") {
       const payout = dispute.payoutId as any;
       if (payout) {
         await Payout.findByIdAndUpdate(payout._id, {
           status: "approved",
-          $push: { statusHistory: { status: "approved", changedAt: new Date(), changedBy: req.userId, note: `Dispute resolved. ${body.adminNotes ?? ""}` } },
+          $push: {
+            statusHistory: {
+              status: "approved",
+              changedAt: new Date(),
+              changedBy: req.userId,
+              note: `Dispute resolved. ${body.adminNotes ?? ""}`,
+            },
+          },
         });
       }
     }
@@ -196,7 +297,8 @@ router.patch("/:id", ...requirePermission("disputes", "edit"), async (req: Authe
       await sendDisputeNotification(workspaceId, rep, updated, body.status, body.adminNotes ?? "");
     }
 
-  res.json(formatDispute(updated!));
-});
+    res.json(formatDispute(updated!));
+  },
+);
 
 export default router;

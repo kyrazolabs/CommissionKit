@@ -59,7 +59,7 @@ export class PluginHttpClient {
         try {
           const headers: Record<string, string> = {
             ...this.defaultHeaders,
-            "Accept": "application/json",
+            Accept: "application/json",
           };
 
           if (body !== undefined && method !== "GET") {
@@ -80,12 +80,13 @@ export class PluginHttpClient {
 
           if (!response.ok) {
             const errorText = await response.text().catch(() => "");
-            const isRetryable = RETRYABLE_STATUSES.has(response.status) ||
-              response.status === 403; // Rate limits may return 403 in some APIs
+            const isRetryable = RETRYABLE_STATUSES.has(response.status) || response.status === 403; // Rate limits may return 403 in some APIs
 
             if (isRetryable && attempt < this.options.maxRetries) {
-              const delay = this.options.retryDelay * Math.pow(2, attempt);
-              console.warn(`[PluginHttpClient] ${method} ${path} → ${response.status}, retrying in ${delay}ms (attempt ${attempt + 1})`);
+              const delay = this.options.retryDelay * 2 ** attempt;
+              console.warn(
+                `[PluginHttpClient] ${method} ${path} → ${response.status}, retrying in ${delay}ms (attempt ${attempt + 1})`,
+              );
               await new Promise((resolve) => setTimeout(resolve, delay));
               lastError = new Error(`HTTP ${response.status}: ${errorText}`);
               continue;
@@ -103,7 +104,7 @@ export class PluginHttpClient {
           }
           if (attempt >= this.options.maxRetries) throw err;
           lastError = err;
-          const delay = this.options.retryDelay * Math.pow(2, attempt);
+          const delay = this.options.retryDelay * 2 ** attempt;
           await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }

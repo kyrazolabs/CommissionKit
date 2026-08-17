@@ -1,10 +1,10 @@
-import { Router } from "express";
 import { ApiKey, createApiKeySchema } from "@workspace/db";
+import { Router } from "express";
 import { Types } from "mongoose";
-import { requireWorkspaceMember, type AuthenticatedRequest } from "../../middleware/auth";
 import { generateApiKey, hashKey } from "../../lib/api-keys";
-import { logger } from "../../lib/logger";
 import { logAudit } from "../../lib/audit";
+import { logger } from "../../lib/logger";
+import { type AuthenticatedRequest, requireWorkspaceMember } from "../../middleware/auth";
 
 const router = Router();
 

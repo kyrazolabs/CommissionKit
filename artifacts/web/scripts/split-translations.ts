@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, mkdirSync, existsSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const LOCALES_DIR = resolve(import.meta.dirname, "../src/i18n/locales");

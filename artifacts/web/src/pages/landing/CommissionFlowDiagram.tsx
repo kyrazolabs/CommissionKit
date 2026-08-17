@@ -1,5 +1,14 @@
 import { motion } from "framer-motion";
-import { FileSpreadsheet, Cable, Calculator, BarChart3, Wallet, Users, ArrowRight, Database } from "lucide-react";
+import {
+  ArrowRight,
+  BarChart3,
+  Cable,
+  Calculator,
+  Database,
+  FileSpreadsheet,
+  Users,
+  Wallet,
+} from "lucide-react";
 
 const NODES = [
   {
@@ -55,7 +64,9 @@ export function CommissionFlowDiagram() {
                   <Icon key={j} className={`size-3.5 sm:size-4 ${node.iconColor}`} />
                 ))}
               </div>
-              <span className={`text-[10px] sm:text-[11px] font-bold tracking-tight ${node.highlight ? "text-primary" : "text-foreground"}`}>
+              <span
+                className={`text-[10px] sm:text-[11px] font-bold tracking-tight ${node.highlight ? "text-primary" : "text-foreground"}`}
+              >
                 {node.title}
               </span>
               <span className="text-[8px] sm:text-[9px] text-muted-foreground mt-0.5 leading-tight">
@@ -109,8 +120,12 @@ export function CommissionFlowDiagram() {
             className="rounded-lg border border-card-border bg-card px-2.5 py-2 flex flex-col items-center text-center"
           >
             <item.icon className="size-3.5 text-primary mb-1" />
-            <span className="text-[10px] font-semibold text-foreground leading-tight">{item.label}</span>
-            <span className="text-[7px] text-muted-foreground mt-0.5 leading-tight">{item.sub}</span>
+            <span className="text-[10px] font-semibold text-foreground leading-tight">
+              {item.label}
+            </span>
+            <span className="text-[7px] text-muted-foreground mt-0.5 leading-tight">
+              {item.sub}
+            </span>
           </motion.div>
         ))}
       </motion.div>

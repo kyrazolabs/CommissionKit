@@ -1,19 +1,12 @@
+import { Eye, EyeOff, LoaderCircle, ShieldAlert } from "lucide-react";
 import { useState } from "react";
-import { ShieldAlert } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
-import { portalFetch, setPortalToken } from "@/lib/portal-fetch";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, LoaderCircle } from "lucide-react";
+import { portalFetch, setPortalToken } from "@/lib/portal-fetch";
+import { cn } from "@/lib/utils";
 
 interface PortalChangePasswordProps {
   accessCode: string;
@@ -53,18 +46,26 @@ export function PortalChangePassword({
     setLoading(true);
 
     try {
-      const res = await portalFetch(`${base}/api/portal/${encodeURIComponent(accessCode)}/change-password`, accessCode, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          currentPassword,
-          newPassword,
-        }),
-      });
+      const res = await portalFetch(
+        `${base}/api/portal/${encodeURIComponent(accessCode)}/change-password`,
+        accessCode,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            currentPassword,
+            newPassword,
+          }),
+        },
+      );
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || data.message || t("portal.changePasswordFailed", "Failed to change password."));
+        throw new Error(
+          data.error ||
+            data.message ||
+            t("portal.changePasswordFailed", "Failed to change password."),
+        );
       }
 
       // Save the new token — the backend returns a fresh JWT with mustChangePassword: false
@@ -75,7 +76,11 @@ export function PortalChangePassword({
 
       onComplete();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("portal.changePasswordFailed", "Failed to change password."));
+      setError(
+        err instanceof Error
+          ? err.message
+          : t("portal.changePasswordFailed", "Failed to change password."),
+      );
     } finally {
       setLoading(false);
     }
@@ -163,11 +168,7 @@ export function PortalChangePassword({
             </div>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={loading}
-          >
+          <Button type="submit" className="w-full" disabled={loading}>
             {loading ? (
               <LoaderCircle className="size-4 animate-spin" strokeWidth={2} />
             ) : (

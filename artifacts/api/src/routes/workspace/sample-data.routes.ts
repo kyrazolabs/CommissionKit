@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { requireWorkspaceMember, type AuthenticatedRequest } from "../../middleware/auth";
-import { seedSampleData, clearSampleData } from "../../lib/sample-data";
-import { logger } from "../../lib/logger";
 import { logAudit } from "../../lib/audit";
+import { logger } from "../../lib/logger";
+import { clearSampleData, seedSampleData } from "../../lib/sample-data";
+import { type AuthenticatedRequest, requireWorkspaceMember } from "../../middleware/auth";
 
 const router = Router();
 

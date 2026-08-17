@@ -1,14 +1,19 @@
+import { ArrowRight, Calculator, Check, DollarSign, Percent, Play } from "lucide-react";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Calculator, DollarSign, Percent, ArrowRight, Play, Check } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function fmtCurrency(n: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(n);
 }
 
 export function InteractiveCommissionRuns() {
@@ -23,7 +28,10 @@ export function InteractiveCommissionRuns() {
     { from: 100000, to: null, rate: 12 },
   ]);
   const [ran, setRan] = useState(false);
-  const [result, setResult] = useState<{ commission: number; breakdown: string[] }>({ commission: 0, breakdown: [] });
+  const [result, setResult] = useState<{ commission: number; breakdown: string[] }>({
+    commission: 0,
+    breakdown: [],
+  });
 
   function calc() {
     const a = parseFloat(amount) || 0;
@@ -38,9 +46,13 @@ export function InteractiveCommissionRuns() {
       const c = a * rate;
       setResult({
         commission: c,
-        breakdown: a > t
-          ? [`Deal exceeds ${fmtCurrency(t)} threshold`, `Accelerator rate of ${accelRate}% applied to full amount`]
-          : [`Deal below ${fmtCurrency(t)} threshold`, `Base rate of ${flatRate}% applied`],
+        breakdown:
+          a > t
+            ? [
+                `Deal exceeds ${fmtCurrency(t)} threshold`,
+                `Accelerator rate of ${accelRate}% applied to full amount`,
+              ]
+            : [`Deal below ${fmtCurrency(t)} threshold`, `Base rate of ${flatRate}% applied`],
       });
     } else {
       let remaining = a;
@@ -53,7 +65,9 @@ export function InteractiveCommissionRuns() {
         if (applicable <= 0) continue;
         const c = applicable * (t.rate / 100);
         total += c;
-        lines.push(`${t.rate}% on ${fmtCurrency(applicable)} (${fmtCurrency(t.from)} – ${t.to ? fmtCurrency(t.to) : "∞"})`);
+        lines.push(
+          `${t.rate}% on ${fmtCurrency(applicable)} (${fmtCurrency(t.from)} – ${t.to ? fmtCurrency(t.to) : "∞"})`,
+        );
         remaining -= applicable;
       }
       setResult({ commission: total, breakdown: lines });
@@ -68,9 +82,18 @@ export function InteractiveCommissionRuns() {
           <Play className="size-3.5 text-primary" />
         </div>
         <span className="text-[13px] font-semibold text-foreground">Commission Run Engine</span>
-        <Badge variant="secondary" className="ml-auto text-[10px]">Interactive Demo</Badge>
+        <Badge variant="secondary" className="ml-auto text-[10px]">
+          Interactive Demo
+        </Badge>
       </div>
-      <Tabs value={planType} onValueChange={(v) => { setPlanType(v as typeof planType); setRan(false); }} className="flex-1 min-h-0 flex flex-col">
+      <Tabs
+        value={planType}
+        onValueChange={(v) => {
+          setPlanType(v as typeof planType);
+          setRan(false);
+        }}
+        className="flex-1 min-h-0 flex flex-col"
+      >
         <TabsList className="w-full rounded-none border-b border-card-border bg-transparent p-0 h-auto grid grid-cols-3 shrink-0">
           {(["flat", "tiered", "accelerator"] as const).map((t) => (
             <TabsTrigger
@@ -88,7 +111,15 @@ export function InteractiveCommissionRuns() {
             <Label className="text-xs font-medium text-muted-foreground">Deal Amount</Label>
             <div className="relative mt-1">
               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-              <Input type="number" value={amount} onChange={(e) => { setAmount(e.target.value); setRan(false); }} className="pl-8 h-9 text-sm" />
+              <Input
+                type="number"
+                value={amount}
+                onChange={(e) => {
+                  setAmount(e.target.value);
+                  setRan(false);
+                }}
+                className="pl-8 h-9 text-sm"
+              />
             </div>
           </div>
 
@@ -97,7 +128,15 @@ export function InteractiveCommissionRuns() {
               <Label className="text-xs font-medium text-muted-foreground">Rate</Label>
               <div className="relative mt-1">
                 <Percent className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-                <Input type="number" value={flatRate} onChange={(e) => { setFlatRate(e.target.value); setRan(false); }} className="pl-8 h-9 text-sm" />
+                <Input
+                  type="number"
+                  value={flatRate}
+                  onChange={(e) => {
+                    setFlatRate(e.target.value);
+                    setRan(false);
+                  }}
+                  className="pl-8 h-9 text-sm"
+                />
               </div>
             </div>
           </TabsContent>
@@ -107,33 +146,54 @@ export function InteractiveCommissionRuns() {
               <div key={i} className="grid grid-cols-[1fr_1fr_1fr] gap-1.5 items-center">
                 <div className="relative">
                   <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
-                  <Input type="number" value={t.from} onChange={(e) => {
-                    const v = parseFloat(e.target.value) || 0;
-                    const next = tiers.map((x, j) => j === i ? { ...x, from: v } : x);
-                    if (i > 0 && v < tiers[i - 1].from) next[i - 1] = { ...next[i - 1], to: v };
-                    setTiers(next);
-                    setRan(false);
-                  }} className="pl-7 h-8 text-xs" />
+                  <Input
+                    type="number"
+                    value={t.from}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value) || 0;
+                      const next = tiers.map((x, j) => (j === i ? { ...x, from: v } : x));
+                      if (i > 0 && v < tiers[i - 1].from) next[i - 1] = { ...next[i - 1], to: v };
+                      setTiers(next);
+                      setRan(false);
+                    }}
+                    className="pl-7 h-8 text-xs"
+                  />
                 </div>
                 <div className="relative">
                   <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
-                  <Input type="number" value={t.to ?? ""} onChange={(e) => {
-                    const v = e.target.value ? parseFloat(e.target.value) : null;
-                    const next = tiers.map((x, j) => {
-                      if (j !== i) return x;
-                      return { ...x, to: v };
-                    });
-                    if (v !== null && i + 1 < next.length) next[i + 1] = { ...next[i + 1], from: v };
-                    setTiers(next);
-                    setRan(false);
-                  }} className="pl-7 h-8 text-xs" placeholder="∞" />
+                  <Input
+                    type="number"
+                    value={t.to ?? ""}
+                    onChange={(e) => {
+                      const v = e.target.value ? parseFloat(e.target.value) : null;
+                      const next = tiers.map((x, j) => {
+                        if (j !== i) return x;
+                        return { ...x, to: v };
+                      });
+                      if (v !== null && i + 1 < next.length)
+                        next[i + 1] = { ...next[i + 1], from: v };
+                      setTiers(next);
+                      setRan(false);
+                    }}
+                    className="pl-7 h-8 text-xs"
+                    placeholder="∞"
+                  />
                 </div>
                 <div className="relative">
                   <Percent className="absolute left-2 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
-                  <Input type="number" value={t.rate} onChange={(e) => {
-                    setTiers(tiers.map((x, j) => j === i ? { ...x, rate: parseFloat(e.target.value) || 0 } : x));
-                    setRan(false);
-                  }} className="pl-7 h-8 text-xs" />
+                  <Input
+                    type="number"
+                    value={t.rate}
+                    onChange={(e) => {
+                      setTiers(
+                        tiers.map((x, j) =>
+                          j === i ? { ...x, rate: parseFloat(e.target.value) || 0 } : x,
+                        ),
+                      );
+                      setRan(false);
+                    }}
+                    className="pl-7 h-8 text-xs"
+                  />
                 </div>
               </div>
             ))}
@@ -144,26 +204,54 @@ export function InteractiveCommissionRuns() {
               <Label className="text-xs font-medium text-muted-foreground">Base Rate</Label>
               <div className="relative mt-1">
                 <Percent className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-                <Input type="number" value={flatRate} onChange={(e) => { setFlatRate(e.target.value); setRan(false); }} className="pl-8 h-9 text-sm" />
+                <Input
+                  type="number"
+                  value={flatRate}
+                  onChange={(e) => {
+                    setFlatRate(e.target.value);
+                    setRan(false);
+                  }}
+                  className="pl-8 h-9 text-sm"
+                />
               </div>
             </div>
             <div>
               <Label className="text-xs font-medium text-muted-foreground">Threshold</Label>
               <div className="relative mt-1">
                 <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-                <Input type="number" value={threshold} onChange={(e) => { setThreshold(e.target.value); setRan(false); }} className="pl-8 h-9 text-sm" />
+                <Input
+                  type="number"
+                  value={threshold}
+                  onChange={(e) => {
+                    setThreshold(e.target.value);
+                    setRan(false);
+                  }}
+                  className="pl-8 h-9 text-sm"
+                />
               </div>
             </div>
             <div>
               <Label className="text-xs font-medium text-muted-foreground">Accelerator Rate</Label>
               <div className="relative mt-1">
                 <Percent className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-                <Input type="number" value={accelRate} onChange={(e) => { setAccelRate(e.target.value); setRan(false); }} className="pl-8 h-9 text-sm" />
+                <Input
+                  type="number"
+                  value={accelRate}
+                  onChange={(e) => {
+                    setAccelRate(e.target.value);
+                    setRan(false);
+                  }}
+                  className="pl-8 h-9 text-sm"
+                />
               </div>
             </div>
           </TabsContent>
 
-          <Button onClick={calc} className="w-full rounded-xl text-[13px] font-semibold mt-4" size="sm">
+          <Button
+            onClick={calc}
+            className="w-full rounded-xl text-[13px] font-semibold mt-4"
+            size="sm"
+          >
             <Calculator className="size-3.5 mr-1.5" />
             Calculate Commission
           </Button>
@@ -172,7 +260,9 @@ export function InteractiveCommissionRuns() {
             <div className="mt-4 p-4 rounded-xl bg-primary/5 border border-primary/10 animate-in fade-in">
               <div className="flex items-baseline gap-2 mb-3">
                 <span className="text-xs text-muted-foreground">Commission:</span>
-                <span className="text-xl font-bold text-foreground tabular-nums">{fmtCurrency(result.commission)}</span>
+                <span className="text-xl font-bold text-foreground tabular-nums">
+                  {fmtCurrency(result.commission)}
+                </span>
               </div>
               <div className="space-y-1.5">
                 {result.breakdown.map((line, i) => (

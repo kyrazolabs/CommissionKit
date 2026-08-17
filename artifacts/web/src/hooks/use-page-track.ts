@@ -26,11 +26,11 @@ export function usePageTrack() {
     const origPush = history.pushState.bind(history);
     const origReplace = history.replaceState.bind(history);
 
-    history.pushState = function (...args) {
+    history.pushState = (...args) => {
       origPush(...args);
       track();
     };
-    history.replaceState = function (...args) {
+    history.replaceState = (...args) => {
       origReplace(...args);
       track();
     };

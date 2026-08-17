@@ -19,11 +19,7 @@ function clearPortalToken(accessCode: string): void {
 
 // ─── Authenticated fetch ──────────────────────────────────────────────────────
 
-function portalFetch(
-  url: string,
-  accessCode: string,
-  init: RequestInit = {}
-): Promise<Response> {
+function portalFetch(url: string, accessCode: string, init: RequestInit = {}): Promise<Response> {
   const token = getPortalToken(accessCode);
   return fetch(url, {
     ...init,
@@ -34,7 +30,7 @@ function portalFetch(
   });
 }
 
-export { getPortalToken, setPortalToken, clearPortalToken, portalFetch };
+export { clearPortalToken, getPortalToken, portalFetch, setPortalToken };
 
 // Alias for external consumers
 export const savePortalToken = setPortalToken;

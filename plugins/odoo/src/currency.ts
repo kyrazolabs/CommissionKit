@@ -1,6 +1,6 @@
 const ODOO_CURRENCY_MAP: Record<string, string> = {
   "us dollar": "USD",
-  "euro": "EUR",
+  euro: "EUR",
   "british pound": "GBP",
   "saudi riyal": "SAR",
   "uae dirham": "AED",
@@ -27,7 +27,7 @@ const ODOO_CURRENCY_MAP: Record<string, string> = {
 };
 
 const SYMBOL_MAP: Record<string, string> = {
-  "$": "USD",
+  $: "USD",
   "€": "EUR",
   "£": "GBP",
   "¥": "JPY",
@@ -35,12 +35,12 @@ const SYMBOL_MAP: Record<string, string> = {
   "﷼": "SAR",
   "₽": "RUB",
   "₺": "TRY",
-  "R$": "BRL",
-  "CHF": "CHF",
-  "C$": "CAD",
-  "A$": "AUD",
-  "HK$": "HKD",
-  "S$": "SGD",
+  R$: "BRL",
+  CHF: "CHF",
+  C$: "CAD",
+  A$: "AUD",
+  HK$: "HKD",
+  S$: "SGD",
 };
 
 export function normalizeOdooCurrency(raw: string | undefined | null): string {

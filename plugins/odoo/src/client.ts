@@ -20,12 +20,12 @@ export class OdooClient {
   async authenticate(username: string, apiKey: string): Promise<number> {
     this.apiKey = apiKey;
 
-    const result = await this.jsonRpc<number>(
-      `${this.baseUrl}/jsonrpc`,
-      "common",
-      "authenticate",
-      [this.database, username, apiKey, {}],
-    );
+    const result = await this.jsonRpc<number>(`${this.baseUrl}/jsonrpc`, "common", "authenticate", [
+      this.database,
+      username,
+      apiKey,
+      {},
+    ]);
     this.uid = result;
     return result;
   }
@@ -41,23 +41,18 @@ export class OdooClient {
 
     // Use execute (all positional args) instead of execute_kw for max compatibility
     // search_read(domain, fields, offset=0, limit=None, order=None)
-    const result = await this.jsonRpc<any[]>(
-      `${this.baseUrl}/jsonrpc`,
-      "object",
-      "execute",
-      [
-        this.database,
-        this.uid,
-        this.apiKey,
-        model,
-        "search_read",
-        domain,
-        fields,
-        offset ?? 0,
-        limit ?? 0,
-        {},
-      ],
-    );
+    const result = await this.jsonRpc<any[]>(`${this.baseUrl}/jsonrpc`, "object", "execute", [
+      this.database,
+      this.uid,
+      this.apiKey,
+      model,
+      "search_read",
+      domain,
+      fields,
+      offset ?? 0,
+      limit ?? 0,
+      {},
+    ]);
 
     return result;
   }
@@ -65,12 +60,14 @@ export class OdooClient {
   async searchCount(model: string, domain: any[]): Promise<number> {
     this.ensureAuth();
 
-    const result = await this.jsonRpc<number>(
-      `${this.baseUrl}/jsonrpc`,
-      "object",
-      "execute_kw",
-      [this.database, this.uid, this.apiKey, model, "search_count", [domain]],
-    );
+    const result = await this.jsonRpc<number>(`${this.baseUrl}/jsonrpc`, "object", "execute_kw", [
+      this.database,
+      this.uid,
+      this.apiKey,
+      model,
+      "search_count",
+      [domain],
+    ]);
 
     return result;
   }
@@ -78,12 +75,15 @@ export class OdooClient {
   async write(model: string, ids: number[], values: Record<string, unknown>): Promise<boolean> {
     this.ensureAuth();
 
-    const result = await this.jsonRpc<boolean>(
-      `${this.baseUrl}/jsonrpc`,
-      "object",
-      "execute",
-      [this.database, this.uid, this.apiKey, model, "write", ids, values],
-    );
+    const result = await this.jsonRpc<boolean>(`${this.baseUrl}/jsonrpc`, "object", "execute", [
+      this.database,
+      this.uid,
+      this.apiKey,
+      model,
+      "write",
+      ids,
+      values,
+    ]);
 
     return result;
   }
@@ -91,12 +91,14 @@ export class OdooClient {
   async create(model: string, values: Record<string, unknown>): Promise<number> {
     this.ensureAuth();
 
-    const result = await this.jsonRpc<number>(
-      `${this.baseUrl}/jsonrpc`,
-      "object",
-      "execute",
-      [this.database, this.uid, this.apiKey, model, "create", values],
-    );
+    const result = await this.jsonRpc<number>(`${this.baseUrl}/jsonrpc`, "object", "execute", [
+      this.database,
+      this.uid,
+      this.apiKey,
+      model,
+      "create",
+      values,
+    ]);
 
     return result;
   }
@@ -129,16 +131,22 @@ export class OdooClient {
 
     if (!response.ok) {
       const text = await response.text().catch(() => "");
-      throw new Error(`Odoo HTTP ${response.status} on ${service}.${method}/${model}: ${text.slice(0, 500)}`);
+      throw new Error(
+        `Odoo HTTP ${response.status} on ${service}.${method}/${model}: ${text.slice(0, 500)}`,
+      );
     }
 
     const data = (await response.json()) as JsonRpcResponse;
 
     if (data.error) {
       const detail = data.error.data
-        ? (typeof data.error.data === "string" ? data.error.data : JSON.stringify(data.error.data).slice(0, 500))
+        ? typeof data.error.data === "string"
+          ? data.error.data
+          : JSON.stringify(data.error.data).slice(0, 500)
         : "(no detail)";
-      throw new Error(`Odoo ${service}.${method}/${model}: ${data.error.message} (code ${data.error.code}) — ${detail}`);
+      throw new Error(
+        `Odoo ${service}.${method}/${model}: ${data.error.message} (code ${data.error.code}) — ${detail}`,
+      );
     }
 
     return data.result as T;

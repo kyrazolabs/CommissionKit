@@ -1,21 +1,17 @@
+import { Workspace, WorkspaceMember, WorkspaceSubscription } from "@workspace/db";
 import { Router } from "express";
-import Stripe from "stripe";
 import { Types } from "mongoose";
+import Stripe from "stripe";
+import { logAudit } from "../../lib/audit";
+import { findUserById } from "../../lib/auth";
+import { getLatestRates } from "../../lib/exchange";
+import { logger } from "../../lib/logger";
 import {
-  WorkspaceSubscription,
-  Workspace,
-  WorkspaceMember,
-} from "@workspace/db";
-import {
+  type AuthenticatedRequest,
   requirePermission,
   requireWorkspaceMember,
-  type AuthenticatedRequest,
 } from "../../middleware/auth";
-import { logger } from "../../lib/logger";
-import { getLatestRates } from "../../lib/exchange";
-import { findUserById } from "../../lib/auth";
 import { webhookRateLimit } from "../../middleware/rate-limiter";
-import { logAudit } from "../../lib/audit";
 
 const router = Router();
 
@@ -23,15 +19,19 @@ const router = Router();
  * GET /billing/rates
  * Returns the latest exchange rates.
  */
-router.get("/rates", ...requirePermission("billing", "read"), async (req: AuthenticatedRequest, res): Promise<void> => {
-  try {
-    const rates = await getLatestRates();
-    res.json(rates);
-  } catch (err) {
-    logger.error({ err }, "Failed to fetch exchange rates");
-    res.status(500).json({ error: "Failed to fetch exchange rates" });
-  }
-});
+router.get(
+  "/rates",
+  ...requirePermission("billing", "read"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    try {
+      const rates = await getLatestRates();
+      res.json(rates);
+    } catch (err) {
+      logger.error({ err }, "Failed to fetch exchange rates");
+      res.status(500).json({ error: "Failed to fetch exchange rates" });
+    }
+  },
+);
 
 // ─── Stripe setup ──────────────────────────────────────────────────────────────
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
@@ -57,7 +57,7 @@ const PLAN_PRICE_IDS: Record<PaidPlan, { monthly?: string; yearly?: string }> = 
   },
   flex: {
     monthly: process.env.STRIPE_LEGACY_FLEX_PRICE_ID ?? "price_1TVwYcBA7ra9J8VOvNnoscbn",
-  }
+  },
 };
 
 const EXTRA_REPS_PRICE_ID = process.env.STRIPE_EXTRA_REPS_PRICE_ID;
@@ -100,11 +100,9 @@ function getIntervalFromSubscription(sub: Stripe.Subscription): "month" | "year"
   return "month";
 }
 
-function getExtraRepSeatsFromStripeItems(
-  items: Stripe.SubscriptionItem[],
-): number {
-  const ids = [EXTRA_REPS_PRICE_ID, YEARLY_EXTRA_REPS_PRICE_ID].filter(
-    (id): id is string => Boolean(id),
+function getExtraRepSeatsFromStripeItems(items: Stripe.SubscriptionItem[]): number {
+  const ids = [EXTRA_REPS_PRICE_ID, YEARLY_EXTRA_REPS_PRICE_ID].filter((id): id is string =>
+    Boolean(id),
   );
   if (ids.length === 0) return 0;
   const idSet = new Set(ids);
@@ -121,10 +119,7 @@ function findExtraRepSubscriptionItem(
 ): Stripe.SubscriptionItem | undefined {
   return items.find((i) => {
     const pid = i.price?.id;
-    return (
-      Boolean(pid) &&
-      (pid === EXTRA_REPS_PRICE_ID || pid === YEARLY_EXTRA_REPS_PRICE_ID)
-    );
+    return Boolean(pid) && (pid === EXTRA_REPS_PRICE_ID || pid === YEARLY_EXTRA_REPS_PRICE_ID);
   });
 }
 
@@ -137,13 +132,15 @@ function getExtraRepsPriceIdForDbPlan(interval: "month" | "year"): string | unde
 }
 
 /** Starting another Checkout subscription while one of these exists would double-bill the customer. */
-const STRIPE_SUB_STATUSES_BLOCKING_NEW_CHECKOUT = new Set<
-  Stripe.Subscription.Status
->(["active", "trialing", "past_due", "unpaid", "paused"]);
+const STRIPE_SUB_STATUSES_BLOCKING_NEW_CHECKOUT = new Set<Stripe.Subscription.Status>([
+  "active",
+  "trialing",
+  "past_due",
+  "unpaid",
+  "paused",
+]);
 
-function customerHasBlockingStripeSubscription(
-  subs: Stripe.Subscription[],
-): boolean {
+function customerHasBlockingStripeSubscription(subs: Stripe.Subscription[]): boolean {
   return subs.some((s) => STRIPE_SUB_STATUSES_BLOCKING_NEW_CHECKOUT.has(s.status));
 }
 
@@ -236,9 +233,7 @@ router.get(
       currentPeriodEnd: sub.currentPeriodEnd?.toISOString() ?? null,
       cancelAtPeriodEnd: sub.cancelAtPeriodEnd,
       stripeCustomerId: sub.stripeCustomerId,
-      extraRepSeats: Number(
-        (sub as { extraRepSeats?: number }).extraRepSeats ?? 0,
-      ),
+      extraRepSeats: Number((sub as { extraRepSeats?: number }).extraRepSeats ?? 0),
       trialUsed: sub.trialUsed ?? false,
     });
   },
@@ -295,8 +290,7 @@ router.post(
       }
       if (interval === "month" && !EXTRA_REPS_PRICE_ID) {
         res.status(400).json({
-          error:
-            "Extra reps add-on is not configured (missing STRIPE_EXTRA_REPS_PRICE_ID).",
+          error: "Extra reps add-on is not configured (missing STRIPE_EXTRA_REPS_PRICE_ID).",
         });
         return;
       }
@@ -403,9 +397,7 @@ router.post(
         customer: customerId,
         mode: checkoutMode,
         line_items: lineItems,
-        ...(couponId
-          ? { discounts: [{ coupon: couponId }] }
-          : { allow_promotion_codes: true }),
+        ...(couponId ? { discounts: [{ coupon: couponId }] } : { allow_promotion_codes: true }),
         metadata: {
           ...workspaceMeta,
           userId: req.userId ?? "",
@@ -463,10 +455,7 @@ router.post(
       return;
     }
 
-    const qty = Math.max(
-      0,
-      Math.min(MAX_EXTRA_REP_SEATS, Math.floor(quantity)),
-    );
+    const qty = Math.max(0, Math.min(MAX_EXTRA_REP_SEATS, Math.floor(quantity)));
 
     const record = await WorkspaceSubscription.findOne({
       workspaceId: new Types.ObjectId(workspaceId),
@@ -484,9 +473,7 @@ router.post(
       });
       return;
     }
-    if (
-      !DB_SUB_STATUSES_BLOCKING_NEW_CHECKOUT.has(String(record.status ?? ""))
-    ) {
+    if (!DB_SUB_STATUSES_BLOCKING_NEW_CHECKOUT.has(String(record.status ?? ""))) {
       res.status(400).json({
         error:
           "Subscription is not in a state that can be updated (must be active, trialing, past_due, unpaid, or paused).",
@@ -551,9 +538,7 @@ router.post(
       const refreshed = await stripe.subscriptions.retrieve(subId, {
         expand: ["items.data.price"],
       });
-      const extraRepSeats = getExtraRepSeatsFromStripeItems(
-        refreshed.items.data,
-      );
+      const extraRepSeats = getExtraRepSeatsFromStripeItems(refreshed.items.data);
 
       await WorkspaceSubscription.findOneAndUpdate(
         { workspaceId: new Types.ObjectId(workspaceId) },
@@ -563,9 +548,7 @@ router.post(
       res.json({ extraRepSeats });
     } catch (err: any) {
       logger.error({ err }, "Stripe extra-reps update error");
-      res
-        .status(500)
-        .json({ error: err.message ?? "Failed to update extra rep seats." });
+      res.status(500).json({ error: err.message ?? "Failed to update extra rep seats." });
     }
   },
 );
@@ -585,9 +568,7 @@ router.post(
       workspaceId: new Types.ObjectId(workspaceId),
     });
     if (!sub?.stripeCustomerId) {
-      res
-        .status(400)
-        .json({ error: "No Stripe customer found for this workspace." });
+      res.status(400).json({ error: "No Stripe customer found for this workspace." });
       return;
     }
 
@@ -620,11 +601,7 @@ router.post("/webhook", webhookRateLimit, async (req, res): Promise<void> => {
   if (webhookSecret && sig) {
     try {
       // Bun requires constructEventAsync due to its async SubtleCrypto implementation
-      event = await stripe.webhooks.constructEventAsync(
-        req.body as Buffer,
-        sig,
-        webhookSecret,
-      );
+      event = await stripe.webhooks.constructEventAsync(req.body as Buffer, sig, webhookSecret);
       logger.info("Stripe signature verified successfully");
     } catch (err: any) {
       logger.error({ err }, "Stripe webhook signature verification failed");
@@ -674,10 +651,7 @@ router.post("/webhook", webhookRateLimit, async (req, res): Promise<void> => {
         const customerId = session.customer as string;
 
         if (!workspaceId || !plan) {
-          logger.warn(
-            { sessionId: session.id },
-            "checkout.session.completed missing metadata",
-          );
+          logger.warn({ sessionId: session.id }, "checkout.session.completed missing metadata");
           break;
         }
 
@@ -691,7 +665,9 @@ router.post("/webhook", webhookRateLimit, async (req, res): Promise<void> => {
           try {
             const stripeSub = await stripe.subscriptions.retrieve(subscriptionId);
             extraRepSeats = getExtraRepSeatsFromStripeItems(stripeSub.items.data);
-            stripePriceId = stripeSub.items.data.find(i => Boolean(PRICE_TO_PLAN[i.price?.id ?? ""]))?.price?.id;
+            stripePriceId = stripeSub.items.data.find((i) =>
+              Boolean(PRICE_TO_PLAN[i.price?.id ?? ""]),
+            )?.price?.id;
             billingInterval = getIntervalFromSubscription(stripeSub);
           } catch (err) {
             logger.warn(
@@ -720,18 +696,23 @@ router.post("/webhook", webhookRateLimit, async (req, res): Promise<void> => {
             },
             { upsert: true, new: true },
           );
-          
+
           if (session.metadata?.isTrial === "true") {
-             await WorkspaceSubscription.findOneAndUpdate(
-               { workspaceId: new Types.ObjectId(workspaceId) },
-               { $set: { trialUsed: true } }
-             );
+            await WorkspaceSubscription.findOneAndUpdate(
+              { workspaceId: new Types.ObjectId(workspaceId) },
+              { $set: { trialUsed: true } },
+            );
           }
           logAudit("billing_changed", "billing", {
             workspaceId,
             resourceId: subscriptionId,
             resourceName: plan,
-            metadata: { event: "checkout.session.completed", plan, customerId, isTrial: session.metadata?.isTrial },
+            metadata: {
+              event: "checkout.session.completed",
+              plan,
+              customerId,
+              isTrial: session.metadata?.isTrial,
+            },
           }).catch(() => {});
 
           logger.info({ workspaceId, plan }, "Subscription activated");
@@ -750,10 +731,7 @@ router.post("/webhook", webhookRateLimit, async (req, res): Promise<void> => {
             stripeSubscriptionId: sub.id,
           });
           if (!found) {
-            logger.warn(
-              { subId: sub.id },
-              "No workspace found for subscription update",
-            );
+            logger.warn({ subId: sub.id }, "No workspace found for subscription update");
             break;
           }
           workspaceId = found.workspaceId?.toString();
@@ -761,20 +739,15 @@ router.post("/webhook", webhookRateLimit, async (req, res): Promise<void> => {
 
         const plan = getPlanFromSubscription(sub) ?? "starter";
         const extraRepSeats = getExtraRepSeatsFromStripeItems(sub.items.data);
-        const priceId = sub.items.data.find(
-          (i) => PRICE_TO_PLAN[i.price?.id ?? ""] === plan,
-        )?.price?.id ?? (plan === "flex" ? PLAN_PRICE_IDS.flex.monthly : undefined);
+        const priceId =
+          sub.items.data.find((i) => PRICE_TO_PLAN[i.price?.id ?? ""] === plan)?.price?.id ??
+          (plan === "flex" ? PLAN_PRICE_IDS.flex.monthly : undefined);
         // current_period_end moved to SubscriptionItem in Stripe SDK v22
         const baseItem =
-          sub.items.data.find((i) =>
-            Boolean(PRICE_TO_PLAN[i.price?.id ?? ""]),
-          ) ?? sub.items.data[0];
-        const itemPeriodEnd = (baseItem as any)?.current_period_end as
-          | number
-          | undefined;
-        const periodEnd = itemPeriodEnd
-          ? new Date(itemPeriodEnd * 1000)
-          : undefined;
+          sub.items.data.find((i) => Boolean(PRICE_TO_PLAN[i.price?.id ?? ""])) ??
+          sub.items.data[0];
+        const itemPeriodEnd = (baseItem as any)?.current_period_end as number | undefined;
+        const periodEnd = itemPeriodEnd ? new Date(itemPeriodEnd * 1000) : undefined;
 
         const query = workspaceId
           ? { workspaceId: new Types.ObjectId(workspaceId) }
@@ -802,10 +775,7 @@ router.post("/webhook", webhookRateLimit, async (req, res): Promise<void> => {
           }).catch(() => {});
         }
 
-        logger.info(
-          { subId: sub.id, status: sub.status, plan },
-          "Subscription updated",
-        );
+        logger.info({ subId: sub.id, status: sub.status, plan }, "Subscription updated");
         break;
       }
 
@@ -836,10 +806,7 @@ router.post("/webhook", webhookRateLimit, async (req, res): Promise<void> => {
           }).catch(() => {});
         }
 
-        logger.info(
-          { subId: sub.id },
-          "Subscription cancelled → downgraded to free",
-        );
+        logger.info({ subId: sub.id }, "Subscription cancelled → downgraded to free");
         break;
       }
 
@@ -852,10 +819,7 @@ router.post("/webhook", webhookRateLimit, async (req, res): Promise<void> => {
             { stripeSubscriptionId: subId },
             { $set: { status: "past_due" } },
           );
-          logger.warn(
-            { subId },
-            "Invoice payment failed — status set to past_due",
-          );
+          logger.warn({ subId }, "Invoice payment failed — status set to past_due");
         }
         break;
       }
@@ -877,10 +841,7 @@ router.post("/webhook", webhookRateLimit, async (req, res): Promise<void> => {
         logger.info({ type: event.type }, "Unhandled Stripe event — ignored");
     }
   } catch (err) {
-    logger.error(
-      { err, eventType: event.type },
-      "Error processing Stripe webhook",
-    );
+    logger.error({ err, eventType: event.type }, "Error processing Stripe webhook");
     // Still return 200 so Stripe doesn't retry — we log the error for manual inspection
   }
 

@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, expect, test } from "bun:test";
 
 // The calculateCommission function is not exported from standard.engine.ts.
 // We replicate the pure logic here for unit testing.
@@ -58,9 +58,7 @@ function calculateCommission(
       if (applicable <= 0) continue;
       const commission = applicable * tier.rate;
       totalCommission += commission;
-      notes.push(
-        `${(tier.rate * 100).toFixed(2)}% on ${currency} ${applicable.toFixed(2)}`,
-      );
+      notes.push(`${(tier.rate * 100).toFixed(2)}% on ${currency} ${applicable.toFixed(2)}`);
       lastRate = tier.rate;
       remaining -= applicable;
     }
@@ -86,8 +84,8 @@ describe("StandardEngine - calculateCommission", () => {
     });
 
     test("$2500 deal at 10% = $250 commission", () => {
-      const result = calculateCommission(2500, "USD", "flat", 0.10, null, null, []);
-      expect(result.rate).toBe(0.10);
+      const result = calculateCommission(2500, "USD", "flat", 0.1, null, null, []);
+      expect(result.rate).toBe(0.1);
       expect(result.commission).toBe(250);
     });
 
@@ -132,7 +130,7 @@ describe("StandardEngine - calculateCommission", () => {
     const tiers = [
       { fromAmount: 0, toAmount: 5000, rate: 0.05 },
       { fromAmount: 5000, toAmount: 10000, rate: 0.07 },
-      { fromAmount: 10000, toAmount: null, rate: 0.10 },
+      { fromAmount: 10000, toAmount: null, rate: 0.1 },
     ];
 
     test("$3000 falls entirely in first tier (5%)", () => {
@@ -186,7 +184,7 @@ describe("StandardEngine - calculateCommission", () => {
     test("very large amount", () => {
       const tiers = [
         { fromAmount: 0, toAmount: 100000, rate: 0.05 },
-        { fromAmount: 100000, toAmount: null, rate: 0.10 },
+        { fromAmount: 100000, toAmount: null, rate: 0.1 },
       ];
       const result = calculateCommission(1_000_000, "USD", "tiered", null, null, null, tiers);
       expect(result.commission).toBe(95000);

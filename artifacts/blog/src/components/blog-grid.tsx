@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { Clock } from "lucide-react";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatRelativeDate } from "@/lib/format";
@@ -34,7 +34,11 @@ export function BlogGrid({ posts, lang, t }: BlogGridProps) {
     <div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {posts.map((post) => (
-          <Link key={`${post.slug}-${post.lang}`} href={`/blog/${lang}/${post.slug}`} className="group">
+          <Link
+            key={`${post.slug}-${post.lang}`}
+            href={`/blog/${lang}/${post.slug}`}
+            className="group"
+          >
             <Card className="h-full overflow-hidden border-border hover:border-primary/20 transition-colors bg-card relative">
               {(post.image || post.coverImage) && (
                 <div className="aspect-video w-full overflow-hidden bg-muted">
@@ -59,7 +63,9 @@ export function BlogGrid({ posts, lang, t }: BlogGridProps) {
                 <h2 className="text-base font-semibold text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
                   {post.title}
                 </h2>
-                <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{post.description}</p>
+                <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                  {post.description}
+                </p>
                 <div className="flex items-center justify-between text-xs text-muted-foreground/70">
                   <span className="flex items-center gap-1">
                     <Clock className="size-3" />

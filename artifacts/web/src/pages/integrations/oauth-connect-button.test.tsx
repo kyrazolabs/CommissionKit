@@ -1,5 +1,5 @@
-import { describe, test, expect, mock, afterEach } from "bun:test";
-import { render, screen, cleanup } from "@testing-library/react";
+import { afterEach, describe, expect, mock, test } from "bun:test";
+import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import type { Connector } from "./types";
@@ -35,9 +35,7 @@ describe("OAuthConnectButton", () => {
   test("renders a Connect button for oauth-supported connectors", async () => {
     const { OAuthConnectButton } = await import("./oauth-connect-button");
     render(React.createElement(OAuthConnectButton, { connector: oauthConnector }));
-    expect(
-      screen.getByRole("button", { name: /connect hubspot/i })
-    ).toBeTruthy();
+    expect(screen.getByRole("button", { name: /connect hubspot/i })).toBeTruthy();
   });
 
   test("toggles the advanced manual credentials disclosure", async () => {
@@ -60,20 +58,16 @@ describe("OAuthConnectButton", () => {
       React.createElement(OAuthConnectButton, {
         connector: oauthConnector,
         isConnected: true,
-      })
+      }),
     );
     expect(screen.getByTestId("manual-form")).toBeTruthy();
-    expect(
-      screen.queryByRole("button", { name: /connect hubspot/i })
-    ).toBeNull();
+    expect(screen.queryByRole("button", { name: /connect hubspot/i })).toBeNull();
   });
 
   test("renders the ConnectDialog for non-oauth connectors", async () => {
     const { OAuthConnectButton } = await import("./oauth-connect-button");
     render(React.createElement(OAuthConnectButton, { connector: manualConnector }));
     expect(screen.getByTestId("manual-form")).toBeTruthy();
-    expect(
-      screen.queryByRole("button", { name: /connect odoo/i })
-    ).toBeNull();
+    expect(screen.queryByRole("button", { name: /connect odoo/i })).toBeNull();
   });
 });

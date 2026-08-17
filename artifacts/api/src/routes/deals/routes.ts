@@ -1,22 +1,19 @@
-import { Router } from "express";
-import { Deal, Rep, Plan, WorkspaceMember } from "@workspace/db";
-import { Types } from "mongoose";
 import {
   CreateDealBody,
-  UpdateDealBody,
+  DeleteDealParams,
   ImportDealsBody,
   ListDealsQueryParams,
-  DeleteDealParams,
+  UpdateDealBody,
 } from "@workspace/api-zod";
-import {
-  requirePermission,
-  type AuthenticatedRequest,
-} from "../../middleware/auth";
-import { sendMediumPriorityEmail } from "@workspace/queue";
+import { Deal, Plan, Rep, WorkspaceMember } from "@workspace/db";
 import { clawbackAlertTemplate } from "@workspace/email-templates";
-import { createNotification } from "../../lib/notify";
-import { logger } from "../../lib/logger";
+import { sendMediumPriorityEmail } from "@workspace/queue";
+import { Router } from "express";
+import { Types } from "mongoose";
 import { logAudit } from "../../lib/audit";
+import { logger } from "../../lib/logger";
+import { createNotification } from "../../lib/notify";
+import { type AuthenticatedRequest, requirePermission } from "../../middleware/auth";
 
 const router = Router();
 
@@ -57,14 +54,10 @@ router.get(
 
     if (query.search !== undefined && query.search.trim() !== "") {
       const searchRegex = new RegExp(query.search.trim(), "i");
-      conditions.$or = [
-        { name: searchRegex },
-        { repId: { $exists: true } },
-      ];
+      conditions.$or = [{ name: searchRegex }, { repId: { $exists: true } }];
       // We'll filter rep name in memory after populate
     }
-    if (query.repId !== undefined)
-      conditions.repId = new Types.ObjectId(query.repId);
+    if (query.repId !== undefined) conditions.repId = new Types.ObjectId(query.repId);
     if (query.period !== undefined) conditions.period = query.period;
     if (query.paymentStatus !== undefined) conditions.paymentStatus = query.paymentStatus;
 
@@ -73,27 +66,19 @@ router.get(
     const skip = (page - 1) * limit;
 
     const [deals, total] = await Promise.all([
-      Deal.find(conditions)
-        .populate("repId")
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit),
+      Deal.find(conditions).populate("repId").sort({ createdAt: -1 }).skip(skip).limit(limit),
       Deal.countDocuments(conditions),
     ]);
 
     let formatted = deals
       .filter((d) => d.repId != null)
-      .map((d) =>
-        formatDeal(d, (d.repId as any).name ?? "Unknown"),
-      );
+      .map((d) => formatDeal(d, (d.repId as any).name ?? "Unknown"));
 
     // Filter by rep name client-side when search is used (after populate)
     if (query.search !== undefined && query.search.trim() !== "") {
       const searchRegex = new RegExp(query.search.trim(), "i");
       formatted = formatted.filter(
-        (d) =>
-          searchRegex.test(d.name) ||
-          (d.repName && searchRegex.test(d.repName)),
+        (d) => searchRegex.test(d.name) || (d.repName && searchRegex.test(d.repName)),
       );
     }
 
@@ -174,9 +159,7 @@ router.post(
         });
         imported++;
       } catch (err) {
-        errors.push(
-          `Deal "${d.name}": ${err instanceof Error ? err.message : String(err)}`,
-        );
+        errors.push(`Deal "${d.name}": ${err instanceof Error ? err.message : String(err)}`);
         skipped++;
       }
     }
@@ -220,7 +203,10 @@ router.put(
 
     // Fetch the old deal to detect stage changes (clawback detection)
     const oldDeal = await Deal.findById(id);
-    if (!oldDeal) { res.status(404).json({ error: "Deal not found" }); return; }
+    if (!oldDeal) {
+      res.status(404).json({ error: "Deal not found" });
+      return;
+    }
 
     const update: any = {
       repId: new Types.ObjectId(body.repId),
@@ -273,7 +259,9 @@ router.put(
         if (clawbackDays > 0) {
           const closeDate = oldDeal.closeDate ? new Date(oldDeal.closeDate) : null;
           const now = new Date();
-          const daysSinceClose = closeDate ? Math.floor((now.getTime() - closeDate.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+          const daysSinceClose = closeDate
+            ? Math.floor((now.getTime() - closeDate.getTime()) / (1000 * 60 * 60 * 24))
+            : 0;
 
           if (daysSinceClose <= clawbackDays) {
             logger.info(
@@ -303,7 +291,8 @@ router.put(
                     dealName: deal.name,
                     originalAmount: `${deal.currency || "USD"} ${(oldDeal.amount || 0).toFixed(2)}`,
                     clawbackAmount: `${deal.currency || "USD"} ${clawbackAmount.toFixed(2)}`,
-                    reason: "Deal status changed from closed won to closed lost within the clawback window.",
+                    reason:
+                      "Deal status changed from closed won to closed lost within the clawback window.",
                     detailsUrl: `${process.env.APP_URL || "http://localhost:3000"}/dash/deals`,
                   }),
                 }).catch((e) => logger.error({ err: e }, "[Clawback] Email error"));
@@ -316,7 +305,11 @@ router.put(
                     title: "Clawback triggered",
                     message: `${clawbackAmount.toFixed(2)} clawed back for ${deal.name} (rep: ${rep.name})`,
                     href: `/dash/deals`,
-                    meta: { dealId: String(deal._id), repId: String(rep._id), amount: clawbackAmount },
+                    meta: {
+                      dealId: String(deal._id),
+                      repId: String(rep._id),
+                      amount: clawbackAmount,
+                    },
                   });
                 }
               }

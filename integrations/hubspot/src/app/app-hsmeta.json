@@ -9,6 +9,7 @@
       "type": "oauth",
       "redirectUrls": [
         "https://app.commissionkit.co/api/integrations/oauth/hubspot/callback",
+        "https://api.commissionkit.co/api/integrations/oauth/hubspot/callback",
         "https://staging.commissionk.it/api/integrations/oauth/hubspot/callback",
         "https://staging.commissionkit.co/api/integrations/oauth/hubspot/callback",
         "https://dev.commissionkit.co/api/integrations/oauth/hubspot/callback",

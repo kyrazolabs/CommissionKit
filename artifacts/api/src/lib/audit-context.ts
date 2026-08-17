@@ -15,7 +15,11 @@ export function getAuditContext(): AuditContext {
   return auditContext.getStore() ?? {};
 }
 
-export function setAuditUser(user: { userId?: string; userName?: string; userEmail?: string }): void {
+export function setAuditUser(user: {
+  userId?: string;
+  userName?: string;
+  userEmail?: string;
+}): void {
   const store = auditContext.getStore();
   if (!store) return;
   if (user.userId !== undefined) store.userId = user.userId;

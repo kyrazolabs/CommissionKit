@@ -1,9 +1,17 @@
-import { useEditor, EditorContent } from "@tiptap/react";
+import Placeholder from "@tiptap/extension-placeholder";
+import Underline from "@tiptap/extension-underline";
+import { EditorContent, useEditor } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
 import StarterKit from "@tiptap/starter-kit";
-import Underline from "@tiptap/extension-underline";
-import Placeholder from "@tiptap/extension-placeholder";
-import { Bold, Italic, Underline as UnderlineIcon, Heading2, Heading3, Quote, Heading4 } from "lucide-react";
+import {
+  Bold,
+  Heading2,
+  Heading3,
+  Heading4,
+  Italic,
+  Quote,
+  Underline as UnderlineIcon,
+} from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 
 interface MarkdownEditorProps {

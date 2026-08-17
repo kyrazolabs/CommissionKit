@@ -16,7 +16,11 @@ const urls = [
   { loc: "https://commissionkit.co/security", changefreq: "monthly", priority: "0.5" },
   { loc: "https://commissionkit.co/integrations/odoo", changefreq: "monthly", priority: "0.9" },
   { loc: "https://commissionkit.co/integrations/hubspot", changefreq: "monthly", priority: "0.9" },
-  { loc: "https://commissionkit.co/integrations/salesforce", changefreq: "monthly", priority: "0.9" },
+  {
+    loc: "https://commissionkit.co/integrations/salesforce",
+    changefreq: "monthly",
+    priority: "0.9",
+  },
   { loc: "https://commissionkit.co/integrations/custom", changefreq: "monthly", priority: "0.8" },
   { loc: "https://commissionkit.co/portal", changefreq: "monthly", priority: "0.9" },
   { loc: "https://commissionkit.co/careers", changefreq: "monthly", priority: "0.7" },
@@ -31,7 +35,7 @@ ${urls
     <lastmod>${today}</lastmod>
     <changefreq>${u.changefreq}</changefreq>
     <priority>${u.priority}</priority>
-  </url>`
+  </url>`,
   )
   .join("\n")}
 </urlset>

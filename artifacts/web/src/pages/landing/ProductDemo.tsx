@@ -1,12 +1,12 @@
-import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Play, Pause, RefreshCw, ArrowRight } from "lucide-react";
-import { ProductDemoFrame } from "./ProductDemoFrame";
-import { ProductDemoCursor } from "./ProductDemoCursor";
-import { SCENES, type CursorStep } from "./ProductDemo-scenes";
-import { useCalendly } from "@/hooks/use-calendly";
+import { ArrowRight, Pause, Play, RefreshCw } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useCalendly } from "@/hooks/use-calendly";
 import { Analytics } from "@/lib/analytics";
+import { type CursorStep, SCENES } from "./ProductDemo-scenes";
+import { ProductDemoCursor } from "./ProductDemoCursor";
+import { ProductDemoFrame } from "./ProductDemoFrame";
 
 export function ProductDemo() {
   const [sceneIndex, setSceneIndex] = useState(0);
@@ -68,7 +68,9 @@ export function ProductDemo() {
   }, [sceneIndex, stepIndex, paused, completed, advance]);
 
   useEffect(() => {
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, []);
 
   const restart = () => {
@@ -85,7 +87,8 @@ export function ProductDemo() {
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] pointer-events-none"
         style={{
-          background: "radial-gradient(ellipse at center, hsl(var(--primary) / 0.10), transparent 60%)",
+          background:
+            "radial-gradient(ellipse at center, hsl(var(--primary) / 0.10), transparent 60%)",
         }}
       />
 
@@ -96,7 +99,9 @@ export function ProductDemo() {
           <div className="absolute top-4 left-4 z-20 flex items-center gap-2">
             <span className="text-[11px] font-bold text-foreground">{currentScene?.title}</span>
             {currentScene?.badge && (
-              <span className="text-[9px] text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">{currentScene.badge}</span>
+              <span className="text-[9px] text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">
+                {currentScene.badge}
+              </span>
             )}
           </div>
 
@@ -111,7 +116,12 @@ export function ProductDemo() {
           {SCENES.map((_, i) => (
             <button
               key={i}
-              onClick={() => { setSceneIndex(i); setStepIndex(0); setCursorVisible(true); setCompleted(false); }}
+              onClick={() => {
+                setSceneIndex(i);
+                setStepIndex(0);
+                setCursorVisible(true);
+                setCompleted(false);
+              }}
               className={`size-2 rounded-full transition-all ${
                 i === sceneIndex
                   ? "bg-primary scale-125"
@@ -132,7 +142,11 @@ export function ProductDemo() {
           className="size-7 rounded-md bg-card/80 backdrop-blur-sm border border-card-border flex items-center justify-center hover:bg-muted transition-colors"
           aria-label={paused ? "Play" : "Pause"}
         >
-          {paused ? <Play className="size-3 text-foreground" /> : <Pause className="size-3 text-foreground" />}
+          {paused ? (
+            <Play className="size-3 text-foreground" />
+          ) : (
+            <Pause className="size-3 text-foreground" />
+          )}
         </button>
         <button
           onClick={restart}
@@ -153,9 +167,7 @@ export function ProductDemo() {
         >
           <div className="absolute inset-0 bg-background/75 backdrop-blur-sm" />
           <div className="relative z-10 text-center px-8 max-w-[260px]">
-            <h4 className="text-sm font-bold text-foreground mb-1.5">
-              That's CommissionKit
-            </h4>
+            <h4 className="text-sm font-bold text-foreground mb-1.5">That's CommissionKit</h4>
             <p className="text-[11px] text-muted-foreground mb-5 leading-relaxed">
               See it with your team's data in a 20-minute walkthrough.
             </p>

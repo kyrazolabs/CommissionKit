@@ -1,4 +1,4 @@
-import { baseTemplate, btn, h1, p, divider, infoBox, cardSection } from "./base.js";
+import { baseTemplate, btn, cardSection, divider, h1, infoBox, p } from "./base.js";
 
 export interface DisputeUpdateTemplateProps {
   repName: string;

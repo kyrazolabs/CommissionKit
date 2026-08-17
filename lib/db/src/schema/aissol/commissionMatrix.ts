@@ -1,19 +1,27 @@
-import mongoose, { Schema, model, Types } from "mongoose";
+import type mongoose from "mongoose";
+import { model, Schema, type Types } from "mongoose";
 
-const AissolCommissionMatrixSchema = new Schema({
-  workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true, unique: true },
-  slabs: [{
-    index: { type: Number, required: true },
-    label: { type: String, required: true },
-    max: { type: Number, default: null },
-  }],
-  gmBrackets: [{
-    key: { type: String, required: true },
-    label: { type: String, required: true },
-    max: { type: Number, default: null },
-  }],
-  rates: { type: Schema.Types.Mixed, required: true },
-}, { timestamps: true });
+const AissolCommissionMatrixSchema = new Schema(
+  {
+    workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true, unique: true },
+    slabs: [
+      {
+        index: { type: Number, required: true },
+        label: { type: String, required: true },
+        max: { type: Number, default: null },
+      },
+    ],
+    gmBrackets: [
+      {
+        key: { type: String, required: true },
+        label: { type: String, required: true },
+        max: { type: Number, default: null },
+      },
+    ],
+    rates: { type: Schema.Types.Mixed, required: true },
+  },
+  { timestamps: true },
+);
 
 export const AissolCommissionMatrix = model("AissolCommissionMatrix", AissolCommissionMatrixSchema);
 

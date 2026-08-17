@@ -1,5 +1,5 @@
-import { describe, test, expect } from "bun:test";
-import { sampleReps, samplePlan, sampleTiers, sampleDeals } from "./sample-data";
+import { describe, expect, test } from "bun:test";
+import { sampleDeals, samplePlan, sampleReps, sampleTiers } from "./sample-data";
 
 describe("sample-data definitions", () => {
   test("sample reps have required shape", () => {

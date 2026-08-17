@@ -1,20 +1,16 @@
-import { betterAuth } from "better-auth";
-import { mongodbAdapter } from "@better-auth/mongo-adapter";
-import { organization } from "better-auth/plugins";
-import { connectDB } from "@workspace/db";
 import { dash, sentinel } from "@better-auth/infra";
-import { admin } from "better-auth/plugins";
-import { logger } from "./logger";
+import { mongodbAdapter } from "@better-auth/mongo-adapter";
+import { connectDB } from "@workspace/db";
 import {
-  sendHighPriorityEmail,
-  sendMediumPriorityEmail,
-} from "@workspace/queue";
-import {
-  invitationTemplate,
-  welcomeTemplate,
-  passwordResetTemplate,
   emailVerificationTemplate,
+  invitationTemplate,
+  passwordResetTemplate,
+  welcomeTemplate,
 } from "@workspace/email-templates";
+import { sendHighPriorityEmail, sendMediumPriorityEmail } from "@workspace/queue";
+import { betterAuth } from "better-auth";
+import { admin, organization } from "better-auth/plugins";
+import { logger } from "./logger";
 
 // Better Auth requires a database connection.
 // We use our existing Mongoose connection for consistency.
@@ -35,24 +31,23 @@ const authAdapter = mongodbAdapter(db);
 export const auth = betterAuth({
   database: authAdapter,
   baseURL: AUTH_URL,
-  trustedOrigins: [APP_URL],
 
-      user: {
-        additionalFields: {
-          mustChangePassword: {
-            type: "boolean",
-            defaultValue: false,
-          },
-          repId: {
-            type: "string",
-            required: false,
-          },
-          lang: {
-            type: "string",
-            defaultValue: "en",
-          },
-        },
+  user: {
+    additionalFields: {
+      mustChangePassword: {
+        type: "boolean",
+        defaultValue: false,
       },
+      repId: {
+        type: "string",
+        required: false,
+      },
+      lang: {
+        type: "string",
+        defaultValue: "en",
+      },
+    },
+  },
   emailVerification: {
     sendOnSignUp: true,
     sendVerificationEmail: async ({ user, token }) => {
@@ -149,10 +144,7 @@ export const auth = betterAuth({
             },
           });
 
-          logger.info(
-            { email, orgId: org.id },
-            "Workspace invitation email enqueued",
-          );
+          logger.info({ email, orgId: org.id }, "Workspace invitation email enqueued");
         } catch (err) {
           logger.error({ err, email }, "Failed to enqueue invitation email");
         }
@@ -161,28 +153,19 @@ export const auth = betterAuth({
       hooks: {
         organization: {
           afterCreate: async ({ organization: org, member }: any) => {
-            logger.info(
-              { orgId: org.id, name: org.name },
-              "Organization created",
-            );
+            logger.info({ orgId: org.id, name: org.name }, "Organization created");
           },
         },
         member: {
           afterCreate: async ({ member, organization: org }: any) => {
-            logger.info(
-              { memberId: member.id, orgId: org.id },
-              "Member added to organization",
-            );
+            logger.info({ memberId: member.id, orgId: org.id }, "Member added to organization");
           },
         },
       },
     }),
   ],
 
-  // @ts-ignore
-  trustedOrigins: process.env.ALLOWED_ORIGINS?.split(",") || [
-    "http://localhost:3000",
-  ],
+  trustedOrigins: process.env.ALLOWED_ORIGINS?.split(",") || ["http://localhost:3000"],
   advanced: {
     useSecureCookies: process.env.NODE_ENV === "production",
     crossSubDomainCookies: {
@@ -198,21 +181,17 @@ export const auth = betterAuth({
     if (context.response.status >= 400) {
       try {
         const body = await context.response.clone().json();
-        logger.error(
-          { authError: body },
-          `Better Auth Error [${context.response.status}]`,
-        );
+        logger.error({ authError: body }, `Better Auth Error [${context.response.status}]`);
       } catch {
-        logger.error(
-          { status: context.response.status },
-          "Better Auth Error Response",
-        );
+        logger.error({ status: context.response.status }, "Better Auth Error Response");
       }
     }
   },
 });
 
-export async function findUserById(userId: string): Promise<{ id: string; name?: string; email: string } | null> {
+export async function findUserById(
+  userId: string,
+): Promise<{ id: string; name?: string; email: string } | null> {
   try {
     const user = await (authAdapter as any).findOne?.({
       model: "user",

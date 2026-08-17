@@ -62,12 +62,14 @@ export const EntityMappingSchema = z.object({
   modifiedAfterParam: z.string().optional(),
   stageFilter: StageFilterSchema.optional(),
   currencyMapping: z.record(z.string(), z.string()).optional(),
-  paymentStatusMapping: z.object({
-    paid: z.array(z.string()).optional(),
-    unpaid: z.array(z.string()).optional(),
-    partial: z.array(z.string()).optional(),
-    on_hold: z.array(z.string()).optional(),
-  }).optional(),
+  paymentStatusMapping: z
+    .object({
+      paid: z.array(z.string()).optional(),
+      unpaid: z.array(z.string()).optional(),
+      partial: z.array(z.string()).optional(),
+      on_hold: z.array(z.string()).optional(),
+    })
+    .optional(),
 });
 
 export const CustomConnectorConfigSchema = z.object({
@@ -75,10 +77,12 @@ export const CustomConnectorConfigSchema = z.object({
   auth: AuthConfigSchema,
   pagination: PaginationConfigSchema.optional(),
   responsePath: z.string().optional(),
-  entities: z.object({
-    reps: EntityMappingSchema.optional(),
-    deals: EntityMappingSchema.optional(),
-  }).optional(),
+  entities: z
+    .object({
+      reps: EntityMappingSchema.optional(),
+      deals: EntityMappingSchema.optional(),
+    })
+    .optional(),
 });
 
 export type CustomConnectorConfig = z.infer<typeof CustomConnectorConfigSchema>;

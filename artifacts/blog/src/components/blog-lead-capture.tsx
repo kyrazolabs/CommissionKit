@@ -1,12 +1,11 @@
 "use client";
 
+import { Check, LoaderCircle, Mail } from "lucide-react";
 import { useState } from "react";
-import { Mail, LoaderCircle, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { t } from "@/lib/translations";
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://commissionkit.co";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://commissionkit.co";
 
 interface Props {
   lang: string;
@@ -16,9 +15,7 @@ export function BlogLeadCapture({ lang }: Props) {
   const dict = t(lang);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
-    "idle",
-  );
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
@@ -62,9 +59,7 @@ export function BlogLeadCapture({ lang }: Props) {
                 <Check className="size-5 text-primary" />
               </div>
             </div>
-            <h3 className="text-lg font-bold text-foreground">
-              {dict.leadSuccess}
-            </h3>
+            <h3 className="text-lg font-bold text-foreground">{dict.leadSuccess}</h3>
           </div>
         ) : (
           <>
@@ -79,10 +74,7 @@ export function BlogLeadCapture({ lang }: Props) {
             <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
               {dict.leadDescription}
             </p>
-            <form
-              onSubmit={handleSubmit}
-              className="max-w-sm mx-auto space-y-3"
-            >
+            <form onSubmit={handleSubmit} className="max-w-sm mx-auto space-y-3">
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
                 <input
@@ -103,9 +95,7 @@ export function BlogLeadCapture({ lang }: Props) {
                 aria-label={dict.leadNamePlaceholder}
               />
               {status === "error" && errorMsg && (
-                <p className="text-xs text-destructive text-left">
-                  {errorMsg}
-                </p>
+                <p className="text-xs text-destructive text-left">{errorMsg}</p>
               )}
               <Button
                 type="submit"
@@ -121,9 +111,7 @@ export function BlogLeadCapture({ lang }: Props) {
                   dict.leadSubmit
                 )}
               </Button>
-              <p className="text-xs text-muted-foreground">
-                {dict.leadNoSpam}
-              </p>
+              <p className="text-xs text-muted-foreground">{dict.leadNoSpam}</p>
             </form>
           </>
         )}

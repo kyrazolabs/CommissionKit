@@ -1,12 +1,25 @@
-import { useState } from "react";
 import { LoaderCircle } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { MarkdownEditor } from "@/components/markdown-editor";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MarkdownEditor } from "@/components/markdown-editor";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { apiFetch } from "@/lib/api";
 
 interface SupportDialogProps {
@@ -26,7 +39,11 @@ export function SupportDialog({ open, onOpenChange }: SupportDialogProps) {
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
-  const [errors, setErrors] = useState<{ subject?: string; description?: string; category?: string }>({});
+  const [errors, setErrors] = useState<{
+    subject?: string;
+    description?: string;
+    category?: string;
+  }>({});
   const [submitting, setSubmitting] = useState(false);
 
   function stripHtml(html: string) {
@@ -95,7 +112,10 @@ export function SupportDialog({ open, onOpenChange }: SupportDialogProps) {
             <Input
               id="subject"
               value={subject}
-              onChange={(e) => { setSubject(e.target.value); setErrors((p) => ({ ...p, subject: undefined })); }}
+              onChange={(e) => {
+                setSubject(e.target.value);
+                setErrors((p) => ({ ...p, subject: undefined }));
+              }}
               placeholder="Brief summary of your issue"
             />
             {errors.subject && <p className="text-sm text-destructive">{errors.subject}</p>}
@@ -103,13 +123,21 @@ export function SupportDialog({ open, onOpenChange }: SupportDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="category">Category</Label>
-            <Select value={category} onValueChange={(v) => { setCategory(v); setErrors((p) => ({ ...p, category: undefined })); }}>
+            <Select
+              value={category}
+              onValueChange={(v) => {
+                setCategory(v);
+                setErrors((p) => ({ ...p, category: undefined }));
+              }}
+            >
               <SelectTrigger id="category">
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
                 {CATEGORIES.map((c) => (
-                  <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                  <SelectItem key={c.value} value={c.value}>
+                    {c.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -120,14 +148,22 @@ export function SupportDialog({ open, onOpenChange }: SupportDialogProps) {
             <Label>Description</Label>
             <MarkdownEditor
               value={description}
-              onChange={(v) => { setDescription(v); setErrors((p) => ({ ...p, description: undefined })); }}
+              onChange={(v) => {
+                setDescription(v);
+                setErrors((p) => ({ ...p, description: undefined }));
+              }}
               placeholder="Describe what's happening..."
             />
             {errors.description && <p className="text-sm text-destructive">{errors.description}</p>}
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)} disabled={submitting}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleOpenChange(false)}
+              disabled={submitting}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={submitting}>

@@ -1,17 +1,25 @@
-import { describe, test, expect, mock, beforeEach, afterEach, spyOn } from "bun:test";
-import { SalesforceConnector } from "./connector";
+import { afterEach, beforeEach, describe, expect, mock, spyOn, test } from "bun:test";
 import { SalesforceClient } from "./client";
+import { SalesforceConnector } from "./connector";
 
 describe("Salesforce — payment defaults", () => {
   let connector: SalesforceConnector;
-  beforeEach(() => { connector = new SalesforceConnector(); });
-  afterEach(() => { mock.restore(); });
+  beforeEach(() => {
+    connector = new SalesforceConnector();
+  });
+  afterEach(() => {
+    mock.restore();
+  });
 
   test("closed-won deals default to paid", async () => {
     globalThis.fetch = (async () => {
-      return new Response(JSON.stringify({
-        access_token: "at", instance_url: "https://x.my.salesforce.com",
-      }), { headers: { "Content-Type": "application/json" } });
+      return new Response(
+        JSON.stringify({
+          access_token: "at",
+          instance_url: "https://x.my.salesforce.com",
+        }),
+        { headers: { "Content-Type": "application/json" } },
+      );
     }) as any;
 
     const deals = await connector.fetchDeals("ws", {
@@ -29,18 +37,32 @@ describe("Salesforce — payment defaults", () => {
     globalThis.fetch = (async (url: string, init?: RequestInit) => {
       const urlStr = String(url);
       if (urlStr.includes("oauth2/token")) {
-        return new Response(JSON.stringify({
-          access_token: "at", instance_url: "https://x.my.salesforce.com",
-        }), { headers: { "Content-Type": "application/json" } });
+        return new Response(
+          JSON.stringify({
+            access_token: "at",
+            instance_url: "https://x.my.salesforce.com",
+          }),
+          { headers: { "Content-Type": "application/json" } },
+        );
       }
       capturedQuery = urlStr;
-      return new Response(JSON.stringify({
-        records: [{
-          Id: "opp-1", Name: "Deal", Amount: 100, CloseDate: "2024-01-01",
-          StageName: "Closed Won", OwnerId: "owner-1",
-        }],
-        totalSize: 1, done: true,
-      }), { headers: { "Content-Type": "application/json" } });
+      return new Response(
+        JSON.stringify({
+          records: [
+            {
+              Id: "opp-1",
+              Name: "Deal",
+              Amount: 100,
+              CloseDate: "2024-01-01",
+              StageName: "Closed Won",
+              OwnerId: "owner-1",
+            },
+          ],
+          totalSize: 1,
+          done: true,
+        }),
+        { headers: { "Content-Type": "application/json" } },
+      );
     }) as any;
 
     const deals = await connector.fetchDeals("ws", {
@@ -59,17 +81,31 @@ describe("Salesforce — payment defaults", () => {
     globalThis.fetch = (async (url: string, init?: RequestInit) => {
       const urlStr = String(url);
       if (urlStr.includes("oauth2/token")) {
-        return new Response(JSON.stringify({
-          access_token: "at", instance_url: "https://x.my.salesforce.com",
-        }), { headers: { "Content-Type": "application/json" } });
+        return new Response(
+          JSON.stringify({
+            access_token: "at",
+            instance_url: "https://x.my.salesforce.com",
+          }),
+          { headers: { "Content-Type": "application/json" } },
+        );
       }
-      return new Response(JSON.stringify({
-        records: [{
-          Id: "opp-1", Name: "Deal", Amount: 100, CloseDate: "2024-01-01",
-          StageName: "Closed Won", OwnerId: "owner-1",
-        }],
-        totalSize: 1, done: true,
-      }), { headers: { "Content-Type": "application/json" } });
+      return new Response(
+        JSON.stringify({
+          records: [
+            {
+              Id: "opp-1",
+              Name: "Deal",
+              Amount: 100,
+              CloseDate: "2024-01-01",
+              StageName: "Closed Won",
+              OwnerId: "owner-1",
+            },
+          ],
+          totalSize: 1,
+          done: true,
+        }),
+        { headers: { "Content-Type": "application/json" } },
+      );
     }) as any;
 
     const deals = await connector.fetchDeals("ws", {
@@ -87,17 +123,31 @@ describe("Salesforce — payment defaults", () => {
     globalThis.fetch = (async (url: string, init?: RequestInit) => {
       const urlStr = String(url);
       if (urlStr.includes("oauth2/token")) {
-        return new Response(JSON.stringify({
-          access_token: "at", instance_url: "https://x.my.salesforce.com",
-        }), { headers: { "Content-Type": "application/json" } });
+        return new Response(
+          JSON.stringify({
+            access_token: "at",
+            instance_url: "https://x.my.salesforce.com",
+          }),
+          { headers: { "Content-Type": "application/json" } },
+        );
       }
-      return new Response(JSON.stringify({
-        records: [{
-          Id: "opp-1", Name: "Deal", Amount: 100, CloseDate: "2024-01-01",
-          StageName: "Negotiation", OwnerId: "owner-1",
-        }],
-        totalSize: 1, done: true,
-      }), { headers: { "Content-Type": "application/json" } });
+      return new Response(
+        JSON.stringify({
+          records: [
+            {
+              Id: "opp-1",
+              Name: "Deal",
+              Amount: 100,
+              CloseDate: "2024-01-01",
+              StageName: "Negotiation",
+              OwnerId: "owner-1",
+            },
+          ],
+          totalSize: 1,
+          done: true,
+        }),
+        { headers: { "Content-Type": "application/json" } },
+      );
     }) as any;
 
     const deals = await connector.fetchDeals("ws", {
@@ -114,16 +164,22 @@ describe("Salesforce — payment defaults", () => {
   test("fetches reps correctly", async () => {
     globalThis.fetch = (async (url: string) => {
       if (String(url).includes("oauth2/token")) {
-        return new Response(JSON.stringify({
-          access_token: "at", instance_url: "https://x.my.salesforce.com",
-        }), { headers: { "Content-Type": "application/json" } });
+        return new Response(
+          JSON.stringify({
+            access_token: "at",
+            instance_url: "https://x.my.salesforce.com",
+          }),
+          { headers: { "Content-Type": "application/json" } },
+        );
       }
-      return new Response(JSON.stringify({
-        records: [
-          { Id: "u1", Name: "Alice", Email: "a@b.com", UserRole: { Name: "Sales Rep" } },
-        ],
-        totalSize: 1, done: true,
-      }), { headers: { "Content-Type": "application/json" } });
+      return new Response(
+        JSON.stringify({
+          records: [{ Id: "u1", Name: "Alice", Email: "a@b.com", UserRole: { Name: "Sales Rep" } }],
+          totalSize: 1,
+          done: true,
+        }),
+        { headers: { "Content-Type": "application/json" } },
+      );
     }) as any;
 
     const reps = await connector.fetchReps("ws", {
@@ -141,12 +197,14 @@ describe("Salesforce — payment defaults", () => {
     let authHeader = "";
     globalThis.fetch = (async (url: string, init?: RequestInit) => {
       authHeader = String(init?.headers?.["Authorization"] ?? init?.headers?.Authorization ?? "");
-      return new Response(JSON.stringify({
-        records: [
-          { Id: "u1", Name: "Bob", Email: "b@b.com", UserRole: { Name: "Sales Rep" } },
-        ],
-        totalSize: 1, done: true,
-      }), { headers: { "Content-Type": "application/json" } });
+      return new Response(
+        JSON.stringify({
+          records: [{ Id: "u1", Name: "Bob", Email: "b@b.com", UserRole: { Name: "Sales Rep" } }],
+          totalSize: 1,
+          done: true,
+        }),
+        { headers: { "Content-Type": "application/json" } },
+      );
     }) as any;
 
     const reps = await connector.fetchReps("ws", {
@@ -169,12 +227,14 @@ describe("Salesforce — payment defaults", () => {
     let authHeader = "";
     globalThis.fetch = mock(async (url: string, init?: RequestInit) => {
       authHeader = String(init?.headers?.["Authorization"] ?? init?.headers?.Authorization ?? "");
-      return new Response(JSON.stringify({
-        records: [
-          { Id: "u1", Name: "Alice", Email: "a@b.com", UserRole: { Name: "Sales Rep" } },
-        ],
-        totalSize: 1, done: true,
-      }), { headers: { "Content-Type": "application/json" } });
+      return new Response(
+        JSON.stringify({
+          records: [{ Id: "u1", Name: "Alice", Email: "a@b.com", UserRole: { Name: "Sales Rep" } }],
+          totalSize: 1,
+          done: true,
+        }),
+        { headers: { "Content-Type": "application/json" } },
+      );
     }) as any;
 
     const reps = await connector.fetchReps("ws", {
@@ -196,12 +256,14 @@ describe("Salesforce — payment defaults", () => {
     let authHeader = "";
     globalThis.fetch = mock(async (url: string, init?: RequestInit) => {
       authHeader = String(init?.headers?.["Authorization"] ?? init?.headers?.Authorization ?? "");
-      return new Response(JSON.stringify({
-        records: [
-          { Id: "u1", Name: "Bob", Email: "b@b.com", UserRole: { Name: "Sales Rep" } },
-        ],
-        totalSize: 1, done: true,
-      }), { headers: { "Content-Type": "application/json" } });
+      return new Response(
+        JSON.stringify({
+          records: [{ Id: "u1", Name: "Bob", Email: "b@b.com", UserRole: { Name: "Sales Rep" } }],
+          totalSize: 1,
+          done: true,
+        }),
+        { headers: { "Content-Type": "application/json" } },
+      );
     }) as any;
 
     const reps = await connector.fetchReps("ws", {
@@ -218,10 +280,14 @@ describe("Salesforce — payment defaults", () => {
 
   test("testConnection succeeds with a stored OAuth access token", async () => {
     globalThis.fetch = (async () => {
-      return new Response(JSON.stringify({
-        records: [{ Id: "u1", Name: "Carol" }],
-        totalSize: 1, done: true,
-      }), { headers: { "Content-Type": "application/json" } });
+      return new Response(
+        JSON.stringify({
+          records: [{ Id: "u1", Name: "Carol" }],
+          totalSize: 1,
+          done: true,
+        }),
+        { headers: { "Content-Type": "application/json" } },
+      );
     }) as any;
 
     const result = await connector.testConnection({
@@ -237,14 +303,22 @@ describe("Salesforce — payment defaults", () => {
   test("testConnection accepts manual clientId/clientSecret credentials", async () => {
     globalThis.fetch = (async (url: string) => {
       if (String(url).includes("oauth2/token")) {
-        return new Response(JSON.stringify({
-          access_token: "at", instance_url: "https://x.my.salesforce.com",
-        }), { headers: { "Content-Type": "application/json" } });
+        return new Response(
+          JSON.stringify({
+            access_token: "at",
+            instance_url: "https://x.my.salesforce.com",
+          }),
+          { headers: { "Content-Type": "application/json" } },
+        );
       }
-      return new Response(JSON.stringify({
-        records: [{ Id: "u1", Name: "Dan" }],
-        totalSize: 1, done: true,
-      }), { headers: { "Content-Type": "application/json" } });
+      return new Response(
+        JSON.stringify({
+          records: [{ Id: "u1", Name: "Dan" }],
+          totalSize: 1,
+          done: true,
+        }),
+        { headers: { "Content-Type": "application/json" } },
+      );
     }) as any;
 
     const result = await connector.testConnection({
