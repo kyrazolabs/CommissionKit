@@ -2,6 +2,7 @@
   "name": "workspace",
   "version": "0.0.0",
   "devDependencies": {
+    "@biomejs/biome": "^2.5.8",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
@@ -106,7 +107,11 @@
     "build": "bun run typecheck && bun run --workspaces --if-present build",
     "test": "bun test --preload ./test/dom-setup.ts",
     "typecheck:libs": "tsc --build",
-    "typecheck": "bun run typecheck:libs && bun run --workspaces --if-present --filter \"./artifacts/**\" --filter \"./scripts\" typecheck"
+    "typecheck": "bun run typecheck:libs && bun run --workspaces --if-present --filter \"./artifacts/**\" --filter \"./scripts\" typecheck",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write ."
   },
   "workspaces": {
     "packages": [
