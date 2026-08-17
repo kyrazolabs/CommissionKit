@@ -104,7 +104,7 @@
   },
   "private": true,
   "scripts": {
-    "build": "bun run typecheck && bun run --workspaces --if-present build",
+    "build": "bun run lint && bun run typecheck && bun run --workspaces --if-present build",
     "test": "bun test --preload ./test/dom-setup.ts",
     "typecheck:libs": "tsc --build",
     "typecheck": "bun run typecheck:libs && bun run --workspaces --if-present --filter \"./artifacts/**\" --filter \"./scripts\" typecheck",
