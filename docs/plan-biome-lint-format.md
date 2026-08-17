@@ -27,7 +27,7 @@ Enforce clean, readable, maintainable, and consistently formatted code across th
 ## 3. Dependencies
 
 - Add `@biomejs/biome` (latest stable) as root `devDependencies` via `bun add -d @biomejs/biome`.
-- Remove `prettier` from root `devDependencies` (installed but never configured; Biome replaces it).
+- **Keep `prettier` in root `devDependencies`.** Corrected from the earlier "remove" plan: `orval.config.ts` uses `prettier: true`, and `orval@8.5.2` declares `prettier` as a peer dependency (`>=3.0.0`). Removing it would break `bun run --filter @workspace/api-spec codegen`. Prettier is retained *solely* as Orval's codegen peer dep — Biome is the source formatter/linter.
 
 ## 4. Config & dotfiles
 
@@ -147,7 +147,7 @@ Add a `lint` job to `.github/workflows/ci.yml` (parallel with `typecheck`, depen
 - [ ] `bun run build` and `bun run typecheck` still pass.
 - [ ] `bun test` still green (no behavior change).
 - [ ] CI has a `lint` job.
-- [ ] `prettier` removed from root `devDependencies`.
+- [ ] `prettier` retained (Orval peer dep) — no breakage to `api-spec codegen`.
 - [ ] Docs updated.
 
 ## 11. Out of scope
