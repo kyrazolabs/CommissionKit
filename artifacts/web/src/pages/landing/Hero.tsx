@@ -1,15 +1,9 @@
+import { ArrowRight, Mail, ShieldCheck } from "lucide-react";
 import { useState } from "react";
-import { useInView } from "./hooks";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ShieldCheck, Mail } from "lucide-react";
 import { Analytics } from "@/lib/analytics";
-import { AnimatedWords, AnimatedBlock } from "./AnimatedText";
-
-const TRUST_METRICS = [
-  { value: "Spreadsheets", label: "→ automation", sub: "rule-based runs" },
-  { value: "Disputes", label: "→ visibility", sub: "real-time earnings" },
-  { value: "CSV wrangling", label: "→ smart import", sub: "column mapping" },
-];
+import { AnimatedBlock, AnimatedWords } from "./AnimatedText";
+import { useInView } from "./hooks";
 
 export function Hero() {
   const { ref: inViewRef, inView } = useInView();
@@ -37,7 +31,10 @@ export function Hero() {
   };
 
   return (
-    <section className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden" id="hero">
+    <section
+      className="min-h-[90vh] flex items-center justify-center px-6 relative overflow-hidden"
+      id="hero"
+    >
       {/* Ambient gradient glow */}
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[460px] pointer-events-none z-0"
@@ -57,51 +54,72 @@ export function Hero() {
         src="/decorative/right-curves.svg"
         alt=""
         aria-hidden
-        className="absolute right-0 top-1/2 -translate-y-1/2 w-[30%] max-w-[360px] opacity-[0.10] dark:opacity-[0.06] pointer-events-none z-0 -scale-x-100"
+        className="absolute right-0 top-1/2 -translate-y-1/2 w-[30%] max-w-[360px] opacity-[0.10] dark:opacity-[0.06] pointer-events-none z-0"
       />
 
-      <div ref={inViewRef} className="max-w-4xl mx-auto text-center relative z-10 py-20">
+      <div
+        ref={inViewRef}
+        className="max-w-3xl mx-auto relative z-10 py-16 lg:py-20 w-full text-center"
+      >
         {/* Positioning pill */}
         <AnimatedBlock inView={inView} delay={0} className="inline-flex">
           <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white/60 dark:bg-white/5 backdrop-blur-sm border border-border/60 text-xs font-medium text-foreground mb-6">
-            <span className="text-muted-foreground">Built for finance & RevOps teams</span>
+            <span className="text-muted-foreground">Self-serve commission platform</span>
             <span className="h-3 w-px bg-border" />
-            <span className="text-primary font-semibold">14-day free trial</span>
+            <span className="text-primary font-semibold">No demo required</span>
           </div>
         </AnimatedBlock>
 
-        <h1 className="text-5xl md:text-6xl lg:text-8xl font-bold tracking-[-0.07em] text-foreground leading-[0.95] font-display">
-          <AnimatedWords text="Run commissions in minutes " inView={inView} delay={0.15} />
-          <AnimatedWords text="Not days." className="text-primary" inView={inView} delay={0.75} />
+        <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-[-0.07em] text-foreground leading-[0.95] font-display">
+          <AnimatedWords
+            text="Start running commissions 30 minutes from now."
+            inView={inView}
+            delay={0.15}
+          />
         </h1>
 
         <AnimatedBlock inView={inView} delay={1.1} y={20}>
-          <p
-            className="text-base md:text-lg text-muted-foreground mt-6 mb-8 leading-relaxed max-w-xl mx-auto"
-          >
-            One click processes every rep, every deal, every plan — no spreadsheets, no consultants, no surprises.
+          <p className="text-base md:text-lg text-muted-foreground mt-6 mb-8 leading-relaxed max-w-xl mx-auto">
+            One click processes every rep, deal, and plan. Try it during your lunch break. No credit
+            card, no consultants, no waiting.
           </p>
         </AnimatedBlock>
 
+        {/* What CommissionKit replaces */}
+        <AnimatedBlock inView={inView} delay={1.7} y={20}>
+          <div className="inline-block rounded-xl bg-white/50 dark:bg-white/5 backdrop-blur-sm border border-border/60 px-6 py-4">
+            <p className="text-base md:text-lg font-semibold text-foreground tracking-tight">
+              Spreadsheets. Broken formulas. Angry reps. Replace all of it.
+            </p>
+            <p className="text-xs text-muted-foreground mt-1.5">
+              No more manual spreadsheets, shadow accounting, or end-of-month panic.
+            </p>
+          </div>
+        </AnimatedBlock>
+
         {/* Email capture form */}
-        <AnimatedBlock inView={inView} delay={1.3} y={20}>
+        <AnimatedBlock inView={inView} delay={1.3} y={20} className="mt-12">
           <form
             onSubmit={handleSubmit}
             className="flex flex-col sm:flex-row gap-3 justify-center items-center max-w-md mx-auto"
           >
-          <div className="focus relative w-full sm:flex-1">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none z-10" />
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your work email"
-              className="w-full h-10 pl-10 pr-3 rounded-lg bg-white/70 dark:bg-white/5 backdrop-blur-sm border border-border/60 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
-              aria-label="Email address"
-            />
-          </div>
-          <Button type="submit" size="md" className="w-full h-9 sm:w-auto font-bold shadow-lg shrink-0 group">
-              Start Free Trial
+            <div className="focus relative w-full sm:flex-1">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none z-10" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your work email"
+                className="w-full h-10 pl-10 pr-3 rounded-lg bg-white/70 dark:bg-white/5 backdrop-blur-sm border border-border/60 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+                aria-label="Email address"
+              />
+            </div>
+            <Button
+              type="submit"
+              size="md"
+              className="w-full h-9 sm:w-auto font-bold shadow-lg shrink-0 group"
+            >
+              Start Now — Free
               <ArrowRight className="ml-1.5 transition-transform group-hover:translate-x-0.5" />
             </Button>
           </form>
@@ -109,28 +127,14 @@ export function Hero() {
 
         <AnimatedBlock inView={inView} delay={1.5} y={12}>
           <p className="mt-5 text-xs text-muted-foreground/70 flex items-center justify-center gap-3 flex-wrap">
-            <span className="inline-flex items-center gap-1.5"><ShieldCheck className="size-3.5 text-primary" /> No credit card required</span>
+            <span className="inline-flex items-center gap-1.5">
+              <ShieldCheck className="size-3.5 text-primary" /> No credit card required
+            </span>
             <span className="hidden sm:inline text-border">·</span>
-            <span>Set up in under 10 minutes</span>
+            <span>Set up in under 30 minutes</span>
             <span className="hidden sm:inline text-border">·</span>
             <span>Cancel anytime</span>
           </p>
-        </AnimatedBlock>
-
-        {/* Trust metrics bar */}
-        <AnimatedBlock inView={inView} delay={1.7} y={20} className="mt-12 grid grid-cols-3 gap-3 max-w-2xl mx-auto">
-          {TRUST_METRICS.map((m) => (
-            <div
-              key={m.label}
-              className="rounded-lg bg-white/50 dark:bg-white/5 backdrop-blur-sm border border-border/60 px-3 py-3.5 text-center"
-            >
-              <div className="text-lg sm:text-xl md:text-2xl font-bold text-foreground tracking-tight font-display tabular-nums">
-                {m.value}
-              </div>
-              <div className="text-sm font-semibold text-primary mt-0.5">{m.label}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">{m.sub}</div>
-            </div>
-          ))}
         </AnimatedBlock>
       </div>
     </section>

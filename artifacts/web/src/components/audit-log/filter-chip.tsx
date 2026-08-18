@@ -18,7 +18,7 @@ export function FilterChip({ label, value, valueClassName, onRemove, className }
     <span
       className={cn(
         "inline-flex items-center gap-1 rounded-full border border-sidebar-border bg-sidebar-accent px-2.5 py-0.5 text-xs font-medium text-sidebar-accent-foreground transition-colors",
-        className
+        className,
       )}
     >
       <span className="text-muted-foreground">{label}:</span>

@@ -2,20 +2,24 @@ import "./lib/promiseall-shim";
 import "dotenv/config";
 
 import "./instrument";
-import app from "./app";
-import { logger } from "./lib/logger";
-import { decryptConfig } from "./lib/crypto";
-import { getRedisClient, verifySmtp, enqueueExchangeRateSync, enqueueLogsFlush } from "@workspace/queue";
-import { connectDB } from "@workspace/db";
-import { setAuditDispatcher, setAuditContextProvider } from "@workspace/db";
-import { enqueueAuditEvent } from "@workspace/queue";
-import { getAuditContext } from "./lib/audit-context";
-import { bootstrapEngines } from "./workers/engines/registry";
+import { connectDB, setAuditContextProvider, setAuditDispatcher } from "@workspace/db";
 import { pluginRegistry } from "@workspace/plugins-core";
 import { CustomConnector } from "@workspace/plugins-custom";
-import { OdooConnector } from "@workspace/plugins-odoo";
 import { HubSpotConnector } from "@workspace/plugins-hubspot";
+import { OdooConnector } from "@workspace/plugins-odoo";
 import { SalesforceConnector } from "@workspace/plugins-salesforce";
+import {
+  enqueueAuditEvent,
+  enqueueExchangeRateSync,
+  enqueueLogsFlush,
+  getRedisClient,
+  verifySmtp,
+} from "@workspace/queue";
+import app from "./app";
+import { getAuditContext } from "./lib/audit-context";
+import { decryptConfig } from "./lib/crypto";
+import { logger } from "./lib/logger";
+import { bootstrapEngines } from "./workers/engines/registry";
 
 // ─── Boot workers (moved to boot() function) ──────────────────────────────────
 
@@ -29,7 +33,10 @@ if (Number.isNaN(port) || port <= 0) {
 // ─── Verify SMTP on startup (non-fatal) ──────────────────────────────────────
 if (process.env.SMTP_HOST) {
   verifySmtp().catch((err) => {
-    logger.warn({ err }, "[Mailer] SMTP verification failed — emails will queue but not send until SMTP is reachable");
+    logger.warn(
+      { err },
+      "[Mailer] SMTP verification failed — emails will queue but not send until SMTP is reachable",
+    );
   });
 } else {
   logger.warn("[Mailer] SMTP_HOST not set — emails will be queued but not delivered");
@@ -69,14 +76,17 @@ async function boot() {
         const plugin = pluginRegistry.get(conn.connectorName);
         if (plugin) {
           const config = decryptConfig(conn.config as any) ?? {};
-          await plugin.init(
-            conn.workspaceId.toString(),
-            config as Record<string, unknown>,
+          await plugin.init(conn.workspaceId.toString(), config as Record<string, unknown>);
+          logger.info(
+            { workspaceId: conn.workspaceId, connector: conn.connectorName },
+            "[Boot] Rehydrated plugin connection",
           );
-          logger.info({ workspaceId: conn.workspaceId, connector: conn.connectorName }, "[Boot] Rehydrated plugin connection");
         }
       } catch (err) {
-        logger.error({ err, workspaceId: conn.workspaceId, connector: conn.connectorName }, "[Boot] Failed to rehydrate plugin");
+        logger.error(
+          { err, workspaceId: conn.workspaceId, connector: conn.connectorName },
+          "[Boot] Failed to rehydrate plugin",
+        );
       }
     }
 
@@ -91,7 +101,9 @@ async function boot() {
     await import("./workers/webhook-ingress-worker");
 
     // Restore scheduled sync jobs for connected workspaces
-    const { syncRepsQueue, syncDealsQueue, commissionCalcQueue, exchangeRateQueue } = await import("@workspace/queue");
+    const { syncRepsQueue, syncDealsQueue, commissionCalcQueue, exchangeRateQueue } = await import(
+      "@workspace/queue"
+    );
 
     // Sweep all existing scheduled-* repeatable jobs (cleanup stale ones)
     for (const q of [syncRepsQueue, syncDealsQueue, commissionCalcQueue, exchangeRateQueue]) {
@@ -111,38 +123,58 @@ async function boot() {
       // Clean up any stale repeatable jobs first
       if (repSchedule === "manual") {
         for (const ms of [600_000, 3_600_000, 86_400_000]) {
-          await syncRepsQueue.removeRepeatable(`scheduled-reps-${wsId}`, { every: ms }).catch(() => {});
+          await syncRepsQueue
+            .removeRepeatable(`scheduled-reps-${wsId}`, { every: ms })
+            .catch(() => {});
         }
       } else {
-        const repInterval = repSchedule === "realtime" ? 600_000 : repSchedule === "daily" ? 86_400_000 : 3_600_000;
-        await syncRepsQueue.add(
-          `scheduled-reps-${wsId}`,
-          { workspaceId: wsId, connectorName: conn.connectorName, trigger: "scheduled" },
-          { repeat: { every: repInterval }, jobId: `scheduled-reps-${wsId}`, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
-        ).catch(() => {});
+        const repInterval =
+          repSchedule === "realtime" ? 600_000 : repSchedule === "daily" ? 86_400_000 : 3_600_000;
+        await syncRepsQueue
+          .add(
+            `scheduled-reps-${wsId}`,
+            { workspaceId: wsId, connectorName: conn.connectorName, trigger: "scheduled" },
+            {
+              repeat: { every: repInterval },
+              jobId: `scheduled-reps-${wsId}`,
+              removeOnComplete: { age: 300 },
+              removeOnFail: { age: 300 },
+            },
+          )
+          .catch(() => {});
       }
 
       if (dealSchedule === "manual") {
         for (const ms of [600_000, 3_600_000, 86_400_000]) {
-          await syncDealsQueue.removeRepeatable(`scheduled-deals-${wsId}`, { every: ms }).catch(() => {});
+          await syncDealsQueue
+            .removeRepeatable(`scheduled-deals-${wsId}`, { every: ms })
+            .catch(() => {});
         }
       } else {
-        const dealInterval = dealSchedule === "realtime" ? 600_000 : dealSchedule === "daily" ? 86_400_000 : 3_600_000;
-        await syncDealsQueue.add(
-          `scheduled-deals-${wsId}`,
-          { workspaceId: wsId, connectorName: conn.connectorName, trigger: "scheduled" },
-          { repeat: { every: dealInterval }, jobId: `scheduled-deals-${wsId}`, removeOnComplete: { age: 300 }, removeOnFail: { age: 300 } },
-        ).catch(() => {});
+        const dealInterval =
+          dealSchedule === "realtime" ? 600_000 : dealSchedule === "daily" ? 86_400_000 : 3_600_000;
+        await syncDealsQueue
+          .add(
+            `scheduled-deals-${wsId}`,
+            { workspaceId: wsId, connectorName: conn.connectorName, trigger: "scheduled" },
+            {
+              repeat: { every: dealInterval },
+              jobId: `scheduled-deals-${wsId}`,
+              removeOnComplete: { age: 300 },
+              removeOnFail: { age: 300 },
+            },
+          )
+          .catch(() => {});
       }
     }
-    
+
     const server = app.listen(port, (err) => {
       if (err) {
         logger.error({ err }, "Error listening on port");
         process.exit(1);
       }
       logger.info({ port }, "Server listening");
-      
+
       // ─── Schedule Background Jobs ───────────────────────────────────────────────
       enqueueExchangeRateSync({ force: true }).catch((err) => {
         logger.error({ err }, "[Queue] Failed to schedule exchange rate sync on startup");
@@ -198,8 +230,7 @@ async function boot() {
     };
 
     process.on("SIGTERM", () => shutdownHandler("SIGTERM"));
-    process.on("SIGINT",  () => shutdownHandler("SIGINT"));
-
+    process.on("SIGINT", () => shutdownHandler("SIGINT"));
   } catch (err) {
     // Print raw error directly — pino fails to serialize Mongoose error objects (circular refs)
     console.error("[boot] Startup error:", err instanceof Error ? err.stack : String(err));

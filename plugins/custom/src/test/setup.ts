@@ -43,10 +43,18 @@ export function mockFetchInspect() {
     return new Response("{}", { headers: { "Content-Type": "application/json" } });
   }) as any;
   return {
-    get url() { return capturedUrl; },
-    get method() { return capturedMethod; },
-    get headers() { return capturedHeaders; },
-    get body() { return capturedBody; },
+    get url() {
+      return capturedUrl;
+    },
+    get method() {
+      return capturedMethod;
+    },
+    get headers() {
+      return capturedHeaders;
+    },
+    get body() {
+      return capturedBody;
+    },
   };
 }
 
@@ -57,9 +65,27 @@ export const SAMPLE_MEMBERS = {
   data: {
     workspaceMembers: {
       edges: [
-        { node: { id: "member-1", name: { firstName: "Abdullah", lastName: "Alotaibi" }, userEmail: "abdullah@example.com" } },
-        { node: { id: "member-2", name: { firstName: "Sarah", lastName: "Jones" }, userEmail: "sarah@example.com" } },
-        { node: { id: "member-3", name: { firstName: "Mike", lastName: "Chen" }, userEmail: "mike@example.com" } },
+        {
+          node: {
+            id: "member-1",
+            name: { firstName: "Abdullah", lastName: "Alotaibi" },
+            userEmail: "abdullah@example.com",
+          },
+        },
+        {
+          node: {
+            id: "member-2",
+            name: { firstName: "Sarah", lastName: "Jones" },
+            userEmail: "sarah@example.com",
+          },
+        },
+        {
+          node: {
+            id: "member-3",
+            name: { firstName: "Mike", lastName: "Chen" },
+            userEmail: "mike@example.com",
+          },
+        },
       ],
       pageInfo: { hasNextPage: false, endCursor: null },
     },
@@ -71,9 +97,39 @@ export const SAMPLE_OPPORTUNITIES = {
   data: {
     opportunities: {
       edges: [
-        { node: { id: "deal-1", name: "Enterprise Plan — Acme Corp", amount: { amountMicros: 999000000 }, closeDate: "2024-03-15T00:00:00.000Z", stage: "closed_won", createdBy: { workspaceMemberId: "member-1" }, currencyCode: "USD" } },
-        { node: { id: "deal-2", name: "Starter Plan — Beta Inc", amount: { amountMicros: 49000000 }, closeDate: "2024-05-20T00:00:00.000Z", stage: "pending", createdBy: { workspaceMemberId: "member-2" }, currencyCode: "EUR" } },
-        { node: { id: "deal-3", name: "Pro Plan — Gamma LLC", amount: { amountMicros: 149000000 }, closeDate: "2024-02-01T00:00:00.000Z", stage: "closed_lost", createdBy: { workspaceMemberId: "member-3" }, currencyCode: "USD" } },
+        {
+          node: {
+            id: "deal-1",
+            name: "Enterprise Plan — Acme Corp",
+            amount: { amountMicros: 999000000 },
+            closeDate: "2024-03-15T00:00:00.000Z",
+            stage: "closed_won",
+            createdBy: { workspaceMemberId: "member-1" },
+            currencyCode: "USD",
+          },
+        },
+        {
+          node: {
+            id: "deal-2",
+            name: "Starter Plan — Beta Inc",
+            amount: { amountMicros: 49000000 },
+            closeDate: "2024-05-20T00:00:00.000Z",
+            stage: "pending",
+            createdBy: { workspaceMemberId: "member-2" },
+            currencyCode: "EUR",
+          },
+        },
+        {
+          node: {
+            id: "deal-3",
+            name: "Pro Plan — Gamma LLC",
+            amount: { amountMicros: 149000000 },
+            closeDate: "2024-02-01T00:00:00.000Z",
+            stage: "closed_lost",
+            createdBy: { workspaceMemberId: "member-3" },
+            currencyCode: "USD",
+          },
+        },
       ],
       pageInfo: { hasNextPage: false, endCursor: null },
     },
@@ -82,8 +138,26 @@ export const SAMPLE_OPPORTUNITIES = {
 
 // Flat array responses
 export const FLAT_DEALS = [
-  { id: "flat-1", dealName: "Widget Sale", totalAmount: 5000, closedAt: "2024-06-01T00:00:00.000Z", dealStage: "closed_won", salesRepId: "rep-1", currencyCode: "USD", paymentState: "paid" },
-  { id: "flat-2", dealName: "Widget Sale 2", totalAmount: 7500, closedAt: "2024-06-10T00:00:00.000Z", dealStage: "pending", salesRepId: "rep-2", currencyCode: "EUR", paymentState: "outstanding" },
+  {
+    id: "flat-1",
+    dealName: "Widget Sale",
+    totalAmount: 5000,
+    closedAt: "2024-06-01T00:00:00.000Z",
+    dealStage: "closed_won",
+    salesRepId: "rep-1",
+    currencyCode: "USD",
+    paymentState: "paid",
+  },
+  {
+    id: "flat-2",
+    dealName: "Widget Sale 2",
+    totalAmount: 7500,
+    closedAt: "2024-06-10T00:00:00.000Z",
+    dealStage: "pending",
+    salesRepId: "rep-2",
+    currencyCode: "EUR",
+    paymentState: "outstanding",
+  },
 ];
 
 export const FLAT_REPS = [
@@ -93,7 +167,11 @@ export const FLAT_REPS = [
 
 // Pagination helpers
 export function generateDataset(count: number, prefix = "item") {
-  return Array.from({ length: count }, (_, i) => ({ id: `${prefix}-${i}`, name: `${prefix.charAt(0).toUpperCase() + prefix.slice(1)} ${i}`, amount: i * 100 }));
+  return Array.from({ length: count }, (_, i) => ({
+    id: `${prefix}-${i}`,
+    name: `${prefix.charAt(0).toUpperCase() + prefix.slice(1)} ${i}`,
+    amount: i * 100,
+  }));
 }
 
 export function makePaginatedPages<T>(data: T[], pageSize: number): Array<{ body: any }> {
@@ -104,7 +182,10 @@ export function makePaginatedPages<T>(data: T[], pageSize: number): Array<{ body
     pages.push({
       body: {
         data: chunk,
-        pageInfo: { hasNextPage: i < totalPages - 1, nextCursor: i < totalPages - 1 ? `cursor-${i + 1}` : null },
+        pageInfo: {
+          hasNextPage: i < totalPages - 1,
+          nextCursor: i < totalPages - 1 ? `cursor-${i + 1}` : null,
+        },
         totalCount: data.length,
       },
     });

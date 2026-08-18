@@ -1,7 +1,6 @@
-import { useEffect, useState, useCallback } from "react";
-import { useWorkspace } from "./use-workspace";
-
+import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
+import { useWorkspace } from "./use-workspace";
 
 export const PLAN_LIMITS = {
   free: { reps: 3, plans: 1, members: 1 },
@@ -46,13 +45,14 @@ export function useBillingStatus() {
           cancelAtPeriodEnd: false,
           extraRepSeats: 0,
           trialUsed: false,
-        })
+        }),
       )
       .finally(() => setLoading(false));
   }, [activeWorkspace?.id]);
 
-  const isActive = sub?.isLifetime || ["active", "trialing", "past_due", "paused"].includes(sub?.status ?? "");
-  const planType = isActive ? (sub?.plan || "free") : "free";
+  const isActive =
+    sub?.isLifetime || ["active", "trialing", "past_due", "paused"].includes(sub?.status ?? "");
+  const planType = isActive ? sub?.plan || "free" : "free";
   const planBaseLimits = PLAN_LIMITS[planType] || PLAN_LIMITS.free;
   const extra = isActive ? (sub?.extraRepSeats ?? 0) : 0;
   const limits = {
@@ -60,11 +60,13 @@ export function useBillingStatus() {
     reps: planBaseLimits.reps === -1 ? -1 : planBaseLimits.reps + extra,
   };
 
-  const effectiveSub = sub ? {
-    ...sub,
-    plan: isActive ? sub.plan : "free",
-    extraRepSeats: isActive ? (sub.extraRepSeats ?? 0) : 0,
-  } : null;
+  const effectiveSub = sub
+    ? {
+        ...sub,
+        plan: isActive ? sub.plan : "free",
+        extraRepSeats: isActive ? (sub.extraRepSeats ?? 0) : 0,
+      }
+    : null;
 
   const refetch = useCallback(() => {
     if (!activeWorkspace?.id) return;

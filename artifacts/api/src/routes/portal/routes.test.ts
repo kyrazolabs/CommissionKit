@@ -1,8 +1,8 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, mock } from "bun:test";
-import mongoose from "mongoose";
-import { setupTestDB, teardownTestDB, clearCollections } from "../../../test/setup-db";
+import { afterAll, beforeAll, beforeEach, describe, expect, mock, test } from "bun:test";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 import request from "supertest";
+import { clearCollections, setupTestDB, teardownTestDB } from "../../../test/setup-db";
 
 const TEST_USER_ID = "test-user-001";
 const TEST_USER_EMAIL = "admin@test.com";
@@ -10,8 +10,12 @@ const TEST_USER_EMAIL = "admin@test.com";
 // ── Mock heavy dependencies ────────────────────────────────────────────────────
 mock.module("@workspace/queue", () => ({
   getRedisClient: () => ({
-    get: async () => null, setex: async () => "OK", del: async () => 1,
-    scan: async () => ["0", []], on: () => {}, quit: async () => "OK",
+    get: async () => null,
+    setex: async () => "OK",
+    del: async () => 1,
+    scan: async () => ["0", []],
+    on: () => {},
+    quit: async () => "OK",
   }),
   sendHighPriorityEmail: () => Promise.resolve(),
   sendMediumPriorityEmail: () => Promise.resolve(),
@@ -34,7 +38,11 @@ mock.module("@workspace/queue", () => ({
   syncDealsQueue: { add: () => Promise.resolve() },
   webhookIngressQueue: { add: () => Promise.resolve() },
   syncEgressQueue: { add: () => Promise.resolve() },
-  PRIORITY_QUEUE_MAP: { high: { add: () => Promise.resolve() }, medium: { add: () => Promise.resolve() }, low: { add: () => Promise.resolve() } },
+  PRIORITY_QUEUE_MAP: {
+    high: { add: () => Promise.resolve() },
+    medium: { add: () => Promise.resolve() },
+    low: { add: () => Promise.resolve() },
+  },
 }));
 mock.module("../../lib/auth", () => ({
   auth: {
@@ -44,18 +52,20 @@ mock.module("../../lib/auth", () => ({
   findUserById: mock(() => Promise.resolve(null)),
 }));
 
-
-
 mock.module("../../lib/bull-board", () => ({
   secureBullBoard: (req: any, res: any, next: any) => next(),
-  serverAdapter: { getRouter: () => ((() => {}) as any) },
+  serverAdapter: { getRouter: () => (() => {}) as any },
 }));
 
 mock.module("stripe", () => ({
   default: class StripeMock {
     constructor() {}
     subscriptions = { create: () => Promise.resolve({ id: "sub_123", status: "active" }) };
-    checkout = { sessions: { create: () => Promise.resolve({ url: "https://checkout.stripe.com/test", id: "cs_test" }) } };
+    checkout = {
+      sessions: {
+        create: () => Promise.resolve({ url: "https://checkout.stripe.com/test", id: "cs_test" }),
+      },
+    };
     webhooks = { constructEvent: () => ({ type: "checkout.session.completed" }) };
   },
 }));
@@ -87,11 +97,9 @@ let portalToken: string;
 const PORTAL_JWT_SECRET = "test-portal-jwt-secret";
 
 function signPortalToken(repId: string, accessCode: string, mustChangePassword = false) {
-  return jwt.sign(
-    { repId, accessCode, mustChangePassword },
-    PORTAL_JWT_SECRET,
-    { expiresIn: "24h" },
-  );
+  return jwt.sign({ repId, accessCode, mustChangePassword }, PORTAL_JWT_SECRET, {
+    expiresIn: "24h",
+  });
 }
 
 beforeAll(async () => {
@@ -142,12 +150,32 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await clearCollections();
-  const ws = await Workspace.create({ slug: "test-ws", name: "Test Workspace", ownerId: TEST_USER_ID });
+  const ws = await Workspace.create({
+    slug: "test-ws",
+    name: "Test Workspace",
+    ownerId: TEST_USER_ID,
+  });
   workspaceId = ws._id.toString();
-  await WorkspaceMember.create({ workspaceId: ws._id, userId: TEST_USER_ID, email: TEST_USER_EMAIL, role: "owner" });
-  await WorkspaceSubscription.create({ workspaceId: ws._id, plan: "growth", status: "active", isLifetime: true });
+  await WorkspaceMember.create({
+    workspaceId: ws._id,
+    userId: TEST_USER_ID,
+    email: TEST_USER_EMAIL,
+    role: "owner",
+  });
+  await WorkspaceSubscription.create({
+    workspaceId: ws._id,
+    plan: "growth",
+    status: "active",
+    isLifetime: true,
+  });
 
-  testRep = await Rep.create({ workspaceId: ws._id, name: "Portal Rep", email: "portalrep@test.com", portalAccessCode: "test-access-code-abc123", portalUsername: "portalrep" });
+  testRep = await Rep.create({
+    workspaceId: ws._id,
+    name: "Portal Rep",
+    email: "portalrep@test.com",
+    portalAccessCode: "test-access-code-abc123",
+    portalUsername: "portalrep",
+  });
 
   const db = mongoose.connection.db;
   const userCol = db.collection("user");
@@ -182,16 +210,13 @@ const portalAuth = () => ({ Authorization: `Bearer ${portalToken}` });
 
 describe("GET /api/portal/:accessCode", () => {
   test("returns 404 for invalid access code", async () => {
-    const res = await request(app)
-      .get("/api/portal/invalid-code")
-      .set(portalAuth());
+    const res = await request(app).get("/api/portal/invalid-code").set(portalAuth());
 
     expect(res.status).toBe(404);
   });
 
   test("returns 401 when no authorization header", async () => {
-    const res = await request(app)
-      .get(`/api/portal/${testRep.portalAccessCode}`);
+    const res = await request(app).get(`/api/portal/${testRep.portalAccessCode}`);
 
     expect(res.status).toBe(401);
   });
@@ -199,16 +224,25 @@ describe("GET /api/portal/:accessCode", () => {
   test("returns rep commission summary when authenticated", async () => {
     const now = new Date();
     const period = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-    const run = await CommissionRun.create({ workspaceId, period, totalCommission: 500, totalDeals: 1, repsCount: 1, status: "completed" });
+    const run = await CommissionRun.create({
+      workspaceId,
+      period,
+      totalCommission: 500,
+      totalDeals: 1,
+      repsCount: 1,
+      status: "completed",
+    });
     await CommissionResult.create({
-      runId: run._id, repId: testRep._id, dealId: new mongoose.Types.ObjectId(),
-      rateApplied: 5, commissionAmount: 500, calculationNote: "5% of 10000 = 500",
+      runId: run._id,
+      repId: testRep._id,
+      dealId: new mongoose.Types.ObjectId(),
+      rateApplied: 5,
+      commissionAmount: 500,
+      calculationNote: "5% of 10000 = 500",
       currency: "USD",
     });
 
-    const res = await request(app)
-      .get(`/api/portal/${testRep.portalAccessCode}`)
-      .set(portalAuth());
+    const res = await request(app).get(`/api/portal/${testRep.portalAccessCode}`).set(portalAuth());
 
     expect(res.status).toBe(200);
     expect(res.body.repName).toBe("Portal Rep");
@@ -219,7 +253,11 @@ describe("GET /api/portal/:accessCode", () => {
   });
 
   test("returns 403 when mustChangePassword is true in token", async () => {
-    const mustChangeToken = signPortalToken(testRep._id.toString(), "test-access-code-abc123", true);
+    const mustChangeToken = signPortalToken(
+      testRep._id.toString(),
+      "test-access-code-abc123",
+      true,
+    );
 
     const res = await request(app)
       .get(`/api/portal/${testRep.portalAccessCode}`)
@@ -233,9 +271,14 @@ describe("GET /api/portal/:accessCode", () => {
 describe("GET /api/portal/:accessCode/payouts", () => {
   test("returns rep payouts", async () => {
     await Payout.create({
-      workspaceId, repId: testRep._id, periodStart: new Date("2024-03-01"),
-      periodEnd: new Date("2024-03-31"), commissionAmount: 2500, finalAmount: 2500,
-      currency: "USD", status: "approved",
+      workspaceId,
+      repId: testRep._id,
+      periodStart: new Date("2024-03-01"),
+      periodEnd: new Date("2024-03-31"),
+      commissionAmount: 2500,
+      finalAmount: 2500,
+      currency: "USD",
+      status: "approved",
       statusHistory: [{ status: "approved", changedAt: new Date(), changedBy: TEST_USER_ID }],
     });
 
@@ -250,8 +293,7 @@ describe("GET /api/portal/:accessCode/payouts", () => {
   });
 
   test("returns 401 without auth", async () => {
-    const res = await request(app)
-      .get(`/api/portal/${testRep.portalAccessCode}/payouts`);
+    const res = await request(app).get(`/api/portal/${testRep.portalAccessCode}/payouts`);
 
     expect(res.status).toBe(401);
   });
@@ -286,9 +328,7 @@ describe("POST /api/portal/:accessCode/login", () => {
   });
 
   test("returns 400 when credentials missing", async () => {
-    const res = await request(app)
-      .post(`/api/portal/${testRep.portalAccessCode}/login`)
-      .send({});
+    const res = await request(app).post(`/api/portal/${testRep.portalAccessCode}/login`).send({});
 
     expect(res.status).toBe(400);
   });

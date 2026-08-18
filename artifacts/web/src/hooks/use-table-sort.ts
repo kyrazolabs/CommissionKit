@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 
 export type SortDirection = "asc" | "desc" | null;
 
@@ -17,7 +17,7 @@ export interface UseTableSortReturn<TColumnKey extends string> {
 
 export function computeNextSort(
   current: TableSortState<string>,
-  column: string
+  column: string,
 ): TableSortState<string> {
   if (current.column !== column) {
     return { column, direction: "desc" };
@@ -31,7 +31,7 @@ export function computeNextSort(
 export function applySort<T>(
   data: T[],
   sort: TableSortState<string>,
-  getSortValue: (row: T, column: string) => string | number
+  getSortValue: (row: T, column: string) => string | number,
 ): T[] {
   if (!sort.column || !sort.direction) return data;
 
@@ -54,7 +54,7 @@ export function applySort<T>(
 
 export function useTableSort<TColumnKey extends string>(
   initialColumn?: TColumnKey,
-  initialDirection?: SortDirection
+  initialDirection?: SortDirection,
 ): UseTableSortReturn<TColumnKey> {
   const [sort, setSort] = useState<TableSortState<TColumnKey>>({
     column: initialColumn ?? null,
@@ -63,14 +63,21 @@ export function useTableSort<TColumnKey extends string>(
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const getSortHandler = (column: TColumnKey) => () => {
-    setSort((prev) => computeNextSort(prev as TableSortState<string>, column) as TableSortState<TColumnKey>);
+    setSort(
+      (prev) =>
+        computeNextSort(prev as TableSortState<string>, column) as TableSortState<TColumnKey>,
+    );
   };
 
   const sortedData = useCallback(
-    <T,>(data: T[], getSortValue: (row: T, column: TColumnKey) => string | number): T[] => {
-      return applySort(data, sort as TableSortState<string>, getSortValue as (row: T, column: string) => string | number);
+    <T>(data: T[], getSortValue: (row: T, column: TColumnKey) => string | number): T[] => {
+      return applySort(
+        data,
+        sort as TableSortState<string>,
+        getSortValue as (row: T, column: string) => string | number,
+      );
     },
-    [sort]
+    [sort],
   );
 
   return { sort, getSortHandler, sortedData };

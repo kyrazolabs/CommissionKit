@@ -1,8 +1,6 @@
-import fs from "node:fs";
-import path from "node:path";
-import { writeFileSync } from "node:fs";
-import { resolve } from "node:path";
-import { getAllSlugs, getAllLanguages } from "../src/lib/posts";
+import fs, { writeFileSync } from "node:fs";
+import path, { resolve } from "node:path";
+import { getAllLanguages, getAllSlugs } from "../src/lib/posts";
 
 const hostname = process.env.HOSTNAME || "commissionkit.co";
 const baseUrl = `https://${hostname}`;
@@ -29,17 +27,11 @@ function getSlugDate(slug: string): string | null {
   return null;
 }
 
-function alternatesXml(
-  languages: string[],
-  urlForLang: (lang: string) => string,
-): string {
+function alternatesXml(languages: string[], urlForLang: (lang: string) => string): string {
   const links = languages.map(
-    (l) =>
-      `    <xhtml:link rel="alternate" hreflang="${l}" href="${urlForLang(l)}"/>`,
+    (l) => `    <xhtml:link rel="alternate" hreflang="${l}" href="${urlForLang(l)}"/>`,
   );
-  links.push(
-    `    <xhtml:link rel="alternate" hreflang="x-default" href="${urlForLang("en")}"/>`,
-  );
+  links.push(`    <xhtml:link rel="alternate" hreflang="x-default" href="${urlForLang("en")}"/>`);
   return links.join("\n");
 }
 
@@ -81,6 +73,4 @@ ${entries.join("\n")}
 const xml = buildSitemapXml();
 const outPath = resolve(import.meta.dirname, "../public/sitemap.xml");
 writeFileSync(outPath, xml);
-console.log(
-  `[sitemap] Generated blog sitemap.xml (${xml.split("\n").length} lines)`,
-);
+console.log(`[sitemap] Generated blog sitemap.xml (${xml.split("\n").length} lines)`);

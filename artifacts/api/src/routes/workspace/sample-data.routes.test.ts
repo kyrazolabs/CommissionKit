@@ -1,7 +1,7 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, mock } from "bun:test";
+import { afterAll, beforeAll, beforeEach, describe, expect, mock, test } from "bun:test";
 import mongoose from "mongoose";
-import { setupTestDB, teardownTestDB, clearCollections } from "../../../test/setup-db";
 import request from "supertest";
+import { clearCollections, setupTestDB, teardownTestDB } from "../../../test/setup-db";
 
 const TEST_USER_ID = "test-user-001";
 const TEST_USER_EMAIL = "admin@test.com";
@@ -36,7 +36,11 @@ mock.module("@workspace/queue", () => ({
   syncDealsQueue: { add: () => Promise.resolve() },
   webhookIngressQueue: { add: () => Promise.resolve() },
   syncEgressQueue: { add: () => Promise.resolve() },
-  PRIORITY_QUEUE_MAP: { high: { add: () => Promise.resolve() }, medium: { add: () => Promise.resolve() }, low: { add: () => Promise.resolve() } },
+  PRIORITY_QUEUE_MAP: {
+    high: { add: () => Promise.resolve() },
+    medium: { add: () => Promise.resolve() },
+    low: { add: () => Promise.resolve() },
+  },
 }));
 
 mock.module("../../lib/auth", () => ({
@@ -49,14 +53,18 @@ mock.module("../../lib/auth", () => ({
 
 mock.module("../../lib/bull-board", () => ({
   secureBullBoard: (req: any, res: any, next: any) => next(),
-  serverAdapter: { getRouter: () => ((() => {}) as any) },
+  serverAdapter: { getRouter: () => (() => {}) as any },
 }));
 
 mock.module("stripe", () => ({
   default: class StripeMock {
     constructor() {}
     subscriptions = { create: () => Promise.resolve({ id: "sub_123", status: "active" }) };
-    checkout = { sessions: { create: () => Promise.resolve({ url: "https://checkout.stripe.com/test", id: "cs_test" }) } };
+    checkout = {
+      sessions: {
+        create: () => Promise.resolve({ url: "https://checkout.stripe.com/test", id: "cs_test" }),
+      },
+    };
     webhooks = { constructEvent: () => ({ type: "checkout.session.completed" }) };
   },
 }));
@@ -129,7 +137,12 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await clearCollections();
-  const ws = await Workspace.create({ slug: "test-ws", name: "Test Workspace", ownerId: TEST_USER_ID, currency: "USD" });
+  const ws = await Workspace.create({
+    slug: "test-ws",
+    name: "Test Workspace",
+    ownerId: TEST_USER_ID,
+    currency: "USD",
+  });
   workspaceId = ws._id.toString();
   await WorkspaceMember.create({
     workspaceId: ws._id,
@@ -196,7 +209,11 @@ describe("POST /api/workspace/sample-data", () => {
   });
 
   test("requires admin role or higher", async () => {
-    const memberWs = await Workspace.create({ slug: "member-ws", name: "Member Workspace", ownerId: "other-owner" });
+    const memberWs = await Workspace.create({
+      slug: "member-ws",
+      name: "Member Workspace",
+      ownerId: "other-owner",
+    });
     await WorkspaceMember.create({
       workspaceId: memberWs._id,
       userId: TEST_USER_ID,
@@ -245,7 +262,11 @@ describe("POST /api/workspace/sample-data", () => {
 
     const plan = await Plan.findOne({ workspaceId });
     const sarah = await Rep.findOne({ workspaceId, name: "Sarah Chen" });
-    const deal = await Deal.findOne({ workspaceId, repId: sarah?._id, name: "Acme Corp — Enterprise License" });
+    const deal = await Deal.findOne({
+      workspaceId,
+      repId: sarah?._id,
+      name: "Acme Corp — Enterprise License",
+    });
     const run = await CommissionRun.findOne({ workspaceId });
 
     const result = await CommissionResult.findOne({ runId: run?._id, dealId: deal?._id });
@@ -280,8 +301,20 @@ describe("DELETE /api/workspace/sample-data", () => {
     expect(seedRes.status).toBe(201);
 
     // Create real records
-    const realPlan = await Plan.create({ workspaceId, name: "Real Plan", type: "flat", flatRate: 0.1, isSampleData: false });
-    const realRep = await Rep.create({ workspaceId, name: "Real Rep", email: "real@test.com", planId: realPlan._id, isSampleData: false });
+    const realPlan = await Plan.create({
+      workspaceId,
+      name: "Real Plan",
+      type: "flat",
+      flatRate: 0.1,
+      isSampleData: false,
+    });
+    const realRep = await Rep.create({
+      workspaceId,
+      name: "Real Rep",
+      email: "real@test.com",
+      planId: realPlan._id,
+      isSampleData: false,
+    });
     const realDeal = await Deal.create({
       workspaceId,
       repId: realRep._id,
@@ -303,7 +336,10 @@ describe("DELETE /api/workspace/sample-data", () => {
       isSampleData: false,
     });
 
-    const clearRes = await request(app).delete("/api/workspace/sample-data").set(authHeader()).send();
+    const clearRes = await request(app)
+      .delete("/api/workspace/sample-data")
+      .set(authHeader())
+      .send();
     expect(clearRes.status).toBe(200);
     expect(clearRes.body.cleared).toBe(true);
     expect(clearRes.body.removed).toEqual({ reps: 6, plans: 1, deals: 18, runs: 1 });

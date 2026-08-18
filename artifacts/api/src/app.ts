@@ -1,15 +1,19 @@
-import express, { type Express } from "express";
 import * as Sentry from "@sentry/bun";
-import cors from "cors";
-import pinoHttp from "pino-http";
 import { toNodeHandler } from "better-auth/node";
-import router from "./routes";
-import { logger } from "./lib/logger";
+import cors from "cors";
+import express, { type Express } from "express";
+import pinoHttp from "pino-http";
 import { auth } from "./lib/auth";
-import { defaultRateLimit } from "./middleware/rate-limiter";
+import { logger } from "./lib/logger";
 import { auditContextMiddleware } from "./middleware/audit-context";
+import { defaultRateLimit } from "./middleware/rate-limiter";
+import router from "./routes";
 
 const app: Express = express();
+
+// Respect X-Forwarded-Proto/Host set by the reverse proxy (Coolify/Traefik, nginx)
+// so req.protocol and any derived URLs use https, not the internal http scheme.
+app.set("trust proxy", true);
 
 app.use(
   pinoHttp({
@@ -39,7 +43,9 @@ app.use(
   }),
 );
 app.use(defaultRateLimit);
+
 import { secureBullBoard, serverAdapter } from "./lib/bull-board";
+
 app.use("/api/admin/queues", secureBullBoard, serverAdapter.getRouter());
 
 // Raw body for Stripe webhook signature verification
@@ -60,7 +66,7 @@ app.use((err: any, req: any, res: any, next: any) => {
   if (err.name === "ZodError" || err.issues) {
     logger.warn(
       { err: err.message, issues: err.issues, url: req.url, method: req.method },
-      "[Express] Validation failed"
+      "[Express] Validation failed",
     );
     res.status(400).json({
       error: "ValidationError",
@@ -73,7 +79,7 @@ app.use((err: any, req: any, res: any, next: any) => {
   // Handle all other unexpected server runtime exceptions
   logger.error(
     { err, url: req.url, method: req.method },
-    `[Express] Unhandled error during request execution: ${err.message || String(err)}`
+    `[Express] Unhandled error during request execution: ${err.message || String(err)}`,
   );
 
   res.status(err.status || err.statusCode || 500).json({
@@ -83,4 +89,3 @@ app.use((err: any, req: any, res: any, next: any) => {
 });
 
 export default app;
-

@@ -66,5 +66,5 @@ export const AUDIT_RESOURCE_TYPES = [
   "billing",
 ] as const;
 
-export type AuditAction = typeof AUDIT_ACTIONS[number];
-export type AuditResourceType = typeof AUDIT_RESOURCE_TYPES[number];
+export type AuditAction = (typeof AUDIT_ACTIONS)[number];
+export type AuditResourceType = (typeof AUDIT_RESOURCE_TYPES)[number];

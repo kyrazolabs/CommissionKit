@@ -14,7 +14,7 @@ export function LanguageBadge({ lang, languageLabels, className }: LanguageBadge
       className={cn(
         "inline-flex items-center rounded-sm px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
         "bg-muted/80 text-muted-foreground border border-border/50",
-        className
+        className,
       )}
     >
       {label}

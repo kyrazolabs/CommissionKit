@@ -1,7 +1,7 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, mock } from "bun:test";
+import { afterAll, beforeAll, beforeEach, describe, expect, mock, test } from "bun:test";
 import mongoose from "mongoose";
-import { setupTestDB, teardownTestDB, clearCollections } from "../../../test/setup-db";
 import request from "supertest";
+import { clearCollections, setupTestDB, teardownTestDB } from "../../../test/setup-db";
 
 const TEST_USER_ID = "test-user-001";
 const TEST_USER_EMAIL = "admin@test.com";
@@ -9,8 +9,12 @@ const TEST_USER_EMAIL = "admin@test.com";
 // ── Mock heavy dependencies ────────────────────────────────────────────────────
 mock.module("@workspace/queue", () => ({
   getRedisClient: () => ({
-    get: async () => null, setex: async () => "OK", del: async () => 1,
-    scan: async () => ["0", []], on: () => {}, quit: async () => "OK",
+    get: async () => null,
+    setex: async () => "OK",
+    del: async () => 1,
+    scan: async () => ["0", []],
+    on: () => {},
+    quit: async () => "OK",
   }),
   sendHighPriorityEmail: () => Promise.resolve(),
   sendMediumPriorityEmail: () => Promise.resolve(),
@@ -33,7 +37,11 @@ mock.module("@workspace/queue", () => ({
   syncDealsQueue: { add: () => Promise.resolve() },
   webhookIngressQueue: { add: () => Promise.resolve() },
   syncEgressQueue: { add: () => Promise.resolve() },
-  PRIORITY_QUEUE_MAP: { high: { add: () => Promise.resolve() }, medium: { add: () => Promise.resolve() }, low: { add: () => Promise.resolve() } },
+  PRIORITY_QUEUE_MAP: {
+    high: { add: () => Promise.resolve() },
+    medium: { add: () => Promise.resolve() },
+    low: { add: () => Promise.resolve() },
+  },
 }));
 mock.module("../../lib/auth", () => ({
   auth: {
@@ -43,18 +51,20 @@ mock.module("../../lib/auth", () => ({
   findUserById: mock(() => Promise.resolve(null)),
 }));
 
-
-
 mock.module("../../lib/bull-board", () => ({
   secureBullBoard: (req: any, res: any, next: any) => next(),
-  serverAdapter: { getRouter: () => ((() => {}) as any) },
+  serverAdapter: { getRouter: () => (() => {}) as any },
 }));
 
 mock.module("stripe", () => ({
   default: class StripeMock {
     constructor() {}
     subscriptions = { create: () => Promise.resolve({ id: "sub_123", status: "active" }) };
-    checkout = { sessions: { create: () => Promise.resolve({ url: "https://checkout.stripe.com/test", id: "cs_test" }) } };
+    checkout = {
+      sessions: {
+        create: () => Promise.resolve({ url: "https://checkout.stripe.com/test", id: "cs_test" }),
+      },
+    };
     webhooks = { constructEvent: () => ({ type: "checkout.session.completed" }) };
   },
 }));
@@ -123,9 +133,18 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await clearCollections();
-  const ws = await Workspace.create({ slug: "test-ws", name: "Test Workspace", ownerId: TEST_USER_ID });
+  const ws = await Workspace.create({
+    slug: "test-ws",
+    name: "Test Workspace",
+    ownerId: TEST_USER_ID,
+  });
   workspaceId = ws._id.toString();
-  await WorkspaceMember.create({ workspaceId: ws._id, userId: TEST_USER_ID, email: TEST_USER_EMAIL, role: "owner" });
+  await WorkspaceMember.create({
+    workspaceId: ws._id,
+    userId: TEST_USER_ID,
+    email: TEST_USER_EMAIL,
+    role: "owner",
+  });
 });
 
 const authHeader = () => ({ "X-Workspace-ID": workspaceId });
@@ -138,8 +157,22 @@ describe("GET /api/runs", () => {
   });
 
   test("returns runs sorted by creation date", async () => {
-    await CommissionRun.create({ workspaceId, period: "2024-01", totalCommission: 1000, totalDeals: 5, repsCount: 2, status: "completed" });
-    await CommissionRun.create({ workspaceId, period: "2024-02", totalCommission: 2000, totalDeals: 8, repsCount: 3, status: "completed" });
+    await CommissionRun.create({
+      workspaceId,
+      period: "2024-01",
+      totalCommission: 1000,
+      totalDeals: 5,
+      repsCount: 2,
+      status: "completed",
+    });
+    await CommissionRun.create({
+      workspaceId,
+      period: "2024-02",
+      totalCommission: 2000,
+      totalDeals: 8,
+      repsCount: 3,
+      status: "completed",
+    });
 
     const res = await request(app).get("/api/runs").set(authHeader());
     expect(res.status).toBe(200);
@@ -150,10 +183,7 @@ describe("GET /api/runs", () => {
 
 describe("POST /api/runs", () => {
   test("creates a run and enqueues calculation", async () => {
-    const res = await request(app)
-      .post("/api/runs")
-      .set(authHeader())
-      .send({ period: "2024-03" });
+    const res = await request(app).post("/api/runs").set(authHeader()).send({ period: "2024-03" });
 
     expect(res.status).toBe(201);
     expect(res.body.period).toBe("2024-03");
@@ -165,21 +195,22 @@ describe("POST /api/runs", () => {
   });
 
   test("returns 409 for duplicate period with active run", async () => {
-    await CommissionRun.create({ workspaceId, period: "2024-04", totalCommission: 0, totalDeals: 0, repsCount: 0, status: "processing" });
+    await CommissionRun.create({
+      workspaceId,
+      period: "2024-04",
+      totalCommission: 0,
+      totalDeals: 0,
+      repsCount: 0,
+      status: "processing",
+    });
 
-    const res = await request(app)
-      .post("/api/runs")
-      .set(authHeader())
-      .send({ period: "2024-04" });
+    const res = await request(app).post("/api/runs").set(authHeader()).send({ period: "2024-04" });
 
     expect(res.status).toBe(409);
   });
 
   test("returns 400 for invalid body", async () => {
-    const res = await request(app)
-      .post("/api/runs")
-      .set(authHeader())
-      .send({});
+    const res = await request(app).post("/api/runs").set(authHeader()).send({});
 
     expect(res.status).toBe(400);
   });
@@ -187,8 +218,23 @@ describe("POST /api/runs", () => {
 
 describe("GET /api/runs/:id", () => {
   test("returns run with results", async () => {
-    const run = await CommissionRun.create({ workspaceId, period: "2024-03", totalCommission: 500, totalDeals: 1, repsCount: 1, status: "completed" });
-    await CommissionResult.create({ runId: run._id, repId: new mongoose.Types.ObjectId(), dealId: new mongoose.Types.ObjectId(), rateApplied: 5, commissionAmount: 500, calculationNote: "5% of 10000 = 500", currency: "USD" });
+    const run = await CommissionRun.create({
+      workspaceId,
+      period: "2024-03",
+      totalCommission: 500,
+      totalDeals: 1,
+      repsCount: 1,
+      status: "completed",
+    });
+    await CommissionResult.create({
+      runId: run._id,
+      repId: new mongoose.Types.ObjectId(),
+      dealId: new mongoose.Types.ObjectId(),
+      rateApplied: 5,
+      commissionAmount: 500,
+      calculationNote: "5% of 10000 = 500",
+      currency: "USD",
+    });
 
     const res = await request(app).get(`/api/runs/${run._id}`).set(authHeader());
     expect(res.status).toBe(200);

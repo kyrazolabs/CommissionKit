@@ -1,14 +1,20 @@
+import {
+  connectDB,
+  mongoose,
+  NOTIFICATION_TYPES,
+  Notification,
+  type NotificationType,
+  UserNotificationPrefs,
+  Workspace,
+} from "@workspace/db";
 import { Router } from "express";
 import { Types } from "mongoose";
 import {
-  Notification,
-  UserNotificationPrefs,
-  Workspace,
-  NOTIFICATION_TYPES,
-  type NotificationType,
-} from "@workspace/db";
-import { connectDB, mongoose } from "@workspace/db";
-import { requireAuth, requireWorkspaceMember, requirePermission, type AuthenticatedRequest } from "../../middleware/auth";
+  type AuthenticatedRequest,
+  requireAuth,
+  requirePermission,
+  requireWorkspaceMember,
+} from "../../middleware/auth";
 
 const router = Router();
 
@@ -19,82 +25,99 @@ const router = Router();
  * Returns the current user's notifications for the active workspace.
  * Supports ?unreadOnly=true and ?limit=N
  */
-router.get("/notifications", ...requirePermission("notifications", "read"), async (req: AuthenticatedRequest, res): Promise<void> => {
-  const userId = req.userId!;
-  const workspaceId = req.workspaceId!;
-  const unreadOnly = req.query.unreadOnly === "true";
-  const limit = Math.min(Number(req.query.limit ?? 50), 100);
+router.get(
+  "/notifications",
+  ...requirePermission("notifications", "read"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const userId = req.userId!;
+    const workspaceId = req.workspaceId!;
+    const unreadOnly = req.query.unreadOnly === "true";
+    const limit = Math.min(Number(req.query.limit ?? 50), 100);
 
-  const query: any = {
-    userId,
-    workspaceId: new Types.ObjectId(workspaceId),
-  };
-  if (unreadOnly) query.read = false;
+    const query: any = {
+      userId,
+      workspaceId: new Types.ObjectId(workspaceId),
+    };
+    if (unreadOnly) query.read = false;
 
-  const notifications = await Notification.find(query)
-    .sort({ createdAt: -1 })
-    .limit(limit);
+    const notifications = await Notification.find(query).sort({ createdAt: -1 }).limit(limit);
 
-  const unreadCount = await Notification.countDocuments({
-    userId,
-    workspaceId: new Types.ObjectId(workspaceId),
-    read: false,
-  });
+    const unreadCount = await Notification.countDocuments({
+      userId,
+      workspaceId: new Types.ObjectId(workspaceId),
+      read: false,
+    });
 
-  res.json({
-    notifications: notifications.map((n) => ({
-      id: n._id,
-      type: n.type,
-      title: n.title,
-      message: n.message,
-      read: n.read,
-      href: n.href,
-      meta: n.meta,
-      createdAt: n.createdAt.toISOString(),
-    })),
-    unreadCount,
-  });
-});
+    res.json({
+      notifications: notifications.map((n) => ({
+        id: n._id,
+        type: n.type,
+        title: n.title,
+        message: n.message,
+        read: n.read,
+        href: n.href,
+        meta: n.meta,
+        createdAt: n.createdAt.toISOString(),
+      })),
+      unreadCount,
+    });
+  },
+);
 
 /**
  * PATCH /notifications/:id/read
  * Mark a single notification as read.
  */
-router.patch("/notifications/:id/read", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const userId = req.userId!;
-  const id = String(req.params.id);
+router.patch(
+  "/notifications/:id/read",
+  requireAuth,
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const userId = req.userId!;
+    const id = String(req.params.id);
 
-  const n = await Notification.findOneAndUpdate(
-    { _id: new Types.ObjectId(id), userId },
-    { read: true },
-    { new: true },
-  );
+    const n = await Notification.findOneAndUpdate(
+      { _id: new Types.ObjectId(id), userId },
+      { read: true },
+      { new: true },
+    );
 
-  if (!n) { res.status(404).json({ error: "Notification not found" }); return; }
-  res.json({ id: n._id, read: n.read });
-});
+    if (!n) {
+      res.status(404).json({ error: "Notification not found" });
+      return;
+    }
+    res.json({ id: n._id, read: n.read });
+  },
+);
 
 /**
  * PATCH /notifications/read-all
  * Mark all of the user's notifications in this workspace as read.
  */
-router.patch("/notifications/read-all", ...requirePermission("notifications", "read"), async (req: AuthenticatedRequest, res): Promise<void> => {
-  await Notification.updateMany(
-    { userId: req.userId!, workspaceId: new Types.ObjectId(req.workspaceId!), read: false },
-    { read: true },
-  );
-  res.json({ ok: true });
-});
+router.patch(
+  "/notifications/read-all",
+  ...requirePermission("notifications", "read"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    await Notification.updateMany(
+      { userId: req.userId!, workspaceId: new Types.ObjectId(req.workspaceId!), read: false },
+      { read: true },
+    );
+    res.json({ ok: true });
+  },
+);
 
 /**
  * DELETE /notifications/:id
  * Dismiss (delete) a single notification.
  */
-router.delete("/notifications/:id", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const id = String(req.params.id);
-  await Notification.deleteOne({ _id: new Types.ObjectId(id), userId: req.userId! });
-  res.status(204).send();
-});
+router.delete(
+  "/notifications/:id",
+  requireAuth,
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const id = String(req.params.id);
+    await Notification.deleteOne({ _id: new Types.ObjectId(id), userId: req.userId! });
+    res.status(204).send();
+  },
+);
 
 // ─── User notification preferences ───────────────────────────────────────────
 
@@ -102,129 +125,321 @@ router.delete("/notifications/:id", requireAuth, async (req: AuthenticatedReques
  * GET /users/me/notification-prefs
  * Returns the user's notification preference settings.
  */
-router.get("/users/me/notification-prefs", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const userId = req.userId!;
-  let prefsDoc = await UserNotificationPrefs.findOne({ userId });
+router.get(
+  "/users/me/notification-prefs",
+  requireAuth,
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const userId = req.userId!;
+    const prefsDoc = await UserNotificationPrefs.findOne({ userId });
 
-  if (!prefsDoc) {
-    // Return defaults without persisting
-    const defaults = Object.fromEntries(
-      NOTIFICATION_TYPES.map((t) => [t, { email: true, inApp: true }]),
-    );
-    res.json({ prefs: defaults });
-    return;
-  }
+    if (!prefsDoc) {
+      // Return defaults without persisting
+      const defaults = Object.fromEntries(
+        NOTIFICATION_TYPES.map((t) => [t, { email: true, inApp: true }]),
+      );
+      res.json({ prefs: defaults });
+      return;
+    }
 
-  // Ensure all types are present (fill in any new types added since doc was created)
-  const merged: Record<string, { email: boolean; inApp: boolean }> = {};
-  for (const t of NOTIFICATION_TYPES) {
-    merged[t] = prefsDoc.prefs?.[t] ?? { email: true, inApp: true };
-  }
+    // Ensure all types are present (fill in any new types added since doc was created)
+    const merged: Record<string, { email: boolean; inApp: boolean }> = {};
+    for (const t of NOTIFICATION_TYPES) {
+      merged[t] = prefsDoc.prefs?.[t] ?? { email: true, inApp: true };
+    }
 
-  res.json({ prefs: merged });
-});
+    res.json({ prefs: merged });
+  },
+);
 
 /**
  * PATCH /users/me/notification-prefs
  * Save user's notification preferences.
  * Body: { prefs: { [type]: { email: boolean; inApp: boolean } } }
  */
-router.patch("/users/me/notification-prefs", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const userId = req.userId!;
-  const { prefs } = req.body as { prefs?: Record<string, { email: boolean; inApp: boolean }> };
+router.patch(
+  "/users/me/notification-prefs",
+  requireAuth,
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const userId = req.userId!;
+    const { prefs } = req.body as { prefs?: Record<string, { email: boolean; inApp: boolean }> };
 
-  if (!prefs || typeof prefs !== "object") {
-    res.status(400).json({ error: "prefs object is required" }); return;
-  }
-
-  // Validate only known notification types are included
-  const sanitized: Record<string, { email: boolean; inApp: boolean }> = {};
-  for (const t of NOTIFICATION_TYPES) {
-    if (prefs[t]) {
-      sanitized[t] = {
-        email: Boolean(prefs[t].email),
-        inApp: Boolean(prefs[t].inApp),
-      };
+    if (!prefs || typeof prefs !== "object") {
+      res.status(400).json({ error: "prefs object is required" });
+      return;
     }
-  }
 
-  const doc = await UserNotificationPrefs.findOneAndUpdate(
-    { userId },
-    { $set: { prefs: sanitized, userId } },
-    { upsert: true, new: true },
-  );
+    // Validate only known notification types are included
+    const sanitized: Record<string, { email: boolean; inApp: boolean }> = {};
+    for (const t of NOTIFICATION_TYPES) {
+      if (prefs[t]) {
+        sanitized[t] = {
+          email: Boolean(prefs[t].email),
+          inApp: Boolean(prefs[t].inApp),
+        };
+      }
+    }
 
-  res.json({ prefs: doc?.prefs ?? sanitized });
-});
+    const doc = await UserNotificationPrefs.findOneAndUpdate(
+      { userId },
+      { $set: { prefs: sanitized, userId } },
+      { upsert: true, new: true },
+    );
+
+    res.json({ prefs: doc?.prefs ?? sanitized });
+  },
+);
 
 // ─── Workspace settings ───────────────────────────────────────────────────────
 
 const VALID_CURRENCIES = [
-  "AED","AFN","ALL","AMD","ANG","AOA","ARS","AUD","AWG","AZN",
-  "BAM","BBD","BDT","BGN","BHD","BIF","BMD","BND","BOB","BRL",
-  "BSD","BTC","BTN","BWP","BYN","BZD","CAD","CDF","CHF","CLF",
-  "CLP","CNH","CNY","COP","CRC","CUC","CUP","CVE","CZK","DJF",
-  "DKK","DOP","DZD","EGP","ERN","ETB","EUR","FJD","FKP","GBP",
-  "GEL","GGP","GHS","GIP","GMD","GNF","GTQ","GYD","HKD","HNL",
-  "HRK","HTG","HUF","IDR","ILS","IMP","INR","IQD","IRR","ISK",
-  "JEP","JMD","JOD","JPY","KES","KGS","KHR","KMF","KPW","KRW",
-  "KWD","KYD","KZT","LAK","LBP","LKR","LRD","LSL","LYD","MAD",
-  "MDL","MGA","MKD","MMK","MNT","MOP","MRU","MUR","MVR","MWK",
-  "MXN","MYR","MZN","NAD","NGN","NIO","NOK","NPR","NZD","OMR",
-  "PAB","PEN","PGK","PHP","PKR","PLN","PYG","QAR","RON","RSD",
-  "RUB","RWF","SAR","SBD","SCR","SDG","SEK","SGD","SHP","SLE",
-  "SLL","SOS","SRD","SSP","STD","STN","SVC","SYP","SZL","THB",
-  "TJS","TMT","TND","TOP","TRY","TTD","TWD","TZS","UAH","UGX",
-  "USD","UYU","UZS","VES","VND","VUV","WST","XAF","XAG","XAU",
-  "XCD","XCG","XDR","XOF","XPD","XPF","XPT","YER","ZAR","ZMW",
-  "ZWG","ZWL",
+  "AED",
+  "AFN",
+  "ALL",
+  "AMD",
+  "ANG",
+  "AOA",
+  "ARS",
+  "AUD",
+  "AWG",
+  "AZN",
+  "BAM",
+  "BBD",
+  "BDT",
+  "BGN",
+  "BHD",
+  "BIF",
+  "BMD",
+  "BND",
+  "BOB",
+  "BRL",
+  "BSD",
+  "BTC",
+  "BTN",
+  "BWP",
+  "BYN",
+  "BZD",
+  "CAD",
+  "CDF",
+  "CHF",
+  "CLF",
+  "CLP",
+  "CNH",
+  "CNY",
+  "COP",
+  "CRC",
+  "CUC",
+  "CUP",
+  "CVE",
+  "CZK",
+  "DJF",
+  "DKK",
+  "DOP",
+  "DZD",
+  "EGP",
+  "ERN",
+  "ETB",
+  "EUR",
+  "FJD",
+  "FKP",
+  "GBP",
+  "GEL",
+  "GGP",
+  "GHS",
+  "GIP",
+  "GMD",
+  "GNF",
+  "GTQ",
+  "GYD",
+  "HKD",
+  "HNL",
+  "HRK",
+  "HTG",
+  "HUF",
+  "IDR",
+  "ILS",
+  "IMP",
+  "INR",
+  "IQD",
+  "IRR",
+  "ISK",
+  "JEP",
+  "JMD",
+  "JOD",
+  "JPY",
+  "KES",
+  "KGS",
+  "KHR",
+  "KMF",
+  "KPW",
+  "KRW",
+  "KWD",
+  "KYD",
+  "KZT",
+  "LAK",
+  "LBP",
+  "LKR",
+  "LRD",
+  "LSL",
+  "LYD",
+  "MAD",
+  "MDL",
+  "MGA",
+  "MKD",
+  "MMK",
+  "MNT",
+  "MOP",
+  "MRU",
+  "MUR",
+  "MVR",
+  "MWK",
+  "MXN",
+  "MYR",
+  "MZN",
+  "NAD",
+  "NGN",
+  "NIO",
+  "NOK",
+  "NPR",
+  "NZD",
+  "OMR",
+  "PAB",
+  "PEN",
+  "PGK",
+  "PHP",
+  "PKR",
+  "PLN",
+  "PYG",
+  "QAR",
+  "RON",
+  "RSD",
+  "RUB",
+  "RWF",
+  "SAR",
+  "SBD",
+  "SCR",
+  "SDG",
+  "SEK",
+  "SGD",
+  "SHP",
+  "SLE",
+  "SLL",
+  "SOS",
+  "SRD",
+  "SSP",
+  "STD",
+  "STN",
+  "SVC",
+  "SYP",
+  "SZL",
+  "THB",
+  "TJS",
+  "TMT",
+  "TND",
+  "TOP",
+  "TRY",
+  "TTD",
+  "TWD",
+  "TZS",
+  "UAH",
+  "UGX",
+  "USD",
+  "UYU",
+  "UZS",
+  "VES",
+  "VND",
+  "VUV",
+  "WST",
+  "XAF",
+  "XAG",
+  "XAU",
+  "XCD",
+  "XCG",
+  "XDR",
+  "XOF",
+  "XPD",
+  "XPF",
+  "XPT",
+  "YER",
+  "ZAR",
+  "ZMW",
+  "ZWG",
+  "ZWL",
 ];
-const VALID_MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const VALID_MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 /**
  * GET /workspaces/:id/settings
  * Returns the workspace's editable settings.
  */
-router.get("/workspaces/:id/settings", ...requirePermission("workspace", "read"), async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = String(req.params.id);
-  const ws = await Workspace.findById(workspaceId);
-  if (!ws) { res.status(404).json({ error: "Workspace not found" }); return; }
+router.get(
+  "/workspaces/:id/settings",
+  ...requirePermission("workspace", "read"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const workspaceId = String(req.params.id);
+    const ws = await Workspace.findById(workspaceId);
+    if (!ws) {
+      res.status(404).json({ error: "Workspace not found" });
+      return;
+    }
 
-  res.json({
-    currency: (ws as any).currency ?? "USD",
-    fiscalYearStart: (ws as any).fiscalYearStart ?? "January",
-  });
-});
+    res.json({
+      currency: (ws as any).currency ?? "USD",
+      fiscalYearStart: (ws as any).fiscalYearStart ?? "January",
+    });
+  },
+);
 
 /**
  * PATCH /workspaces/:id/settings
  * Update currency and/or fiscalYearStart. Requires admin.
  */
-router.patch("/workspaces/:id/settings", ...requirePermission("workspace", "edit"), async (req: AuthenticatedRequest, res): Promise<void> => {
-  const workspaceId = String(req.params.id);
-  const { fiscalYearStart } = req.body as { fiscalYearStart?: string };
+router.patch(
+  "/workspaces/:id/settings",
+  ...requirePermission("workspace", "edit"),
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const workspaceId = String(req.params.id);
+    const { fiscalYearStart } = req.body as { fiscalYearStart?: string };
 
-  const update: Record<string, string> = {};
+    const update: Record<string, string> = {};
 
-  if (fiscalYearStart !== undefined) {
-    if (!VALID_MONTHS.includes(fiscalYearStart)) {
-      res.status(400).json({ error: "fiscalYearStart must be a full month name e.g. January" }); return;
+    if (fiscalYearStart !== undefined) {
+      if (!VALID_MONTHS.includes(fiscalYearStart)) {
+        res.status(400).json({ error: "fiscalYearStart must be a full month name e.g. January" });
+        return;
+      }
+      update.fiscalYearStart = fiscalYearStart;
     }
-    update.fiscalYearStart = fiscalYearStart;
-  }
 
-  if (Object.keys(update).length === 0) {
-    res.status(400).json({ error: "Nothing to update" }); return;
-  }
+    if (Object.keys(update).length === 0) {
+      res.status(400).json({ error: "Nothing to update" });
+      return;
+    }
 
-  const ws = await Workspace.findByIdAndUpdate(workspaceId, { $set: update }, { new: true });
-  if (!ws) { res.status(404).json({ error: "Workspace not found" }); return; }
+    const ws = await Workspace.findByIdAndUpdate(workspaceId, { $set: update }, { new: true });
+    if (!ws) {
+      res.status(404).json({ error: "Workspace not found" });
+      return;
+    }
 
-  res.json({
-    currency: (ws as any).currency ?? "USD",
-    fiscalYearStart: (ws as any).fiscalYearStart ?? "January",
-  });
-});
+    res.json({
+      currency: (ws as any).currency ?? "USD",
+      fiscalYearStart: (ws as any).fiscalYearStart ?? "January",
+    });
+  },
+);
 
 // ─── User language preference ──────────────────────────────────────────────────
 
@@ -237,7 +452,10 @@ router.get("/users/me/lang", requireAuth, async (req: AuthenticatedRequest, res)
   try {
     await connectDB();
     const db = mongoose.connection.db;
-    if (!db) { res.json({ lang: "en" }); return; }
+    if (!db) {
+      res.json({ lang: "en" });
+      return;
+    }
     const user = await db.collection("user").findOne({ _id: userId as any });
     res.json({ lang: user?.lang || "en" });
   } catch {
@@ -249,28 +467,34 @@ router.get("/users/me/lang", requireAuth, async (req: AuthenticatedRequest, res)
  * PATCH /users/me/lang
  * Saves the user's language preference.
  */
-router.patch("/users/me/lang", requireAuth, async (req: AuthenticatedRequest, res): Promise<void> => {
-  const userId = req.userId!;
-  const { lang } = req.body as { lang?: string };
-  const supportedLangs = ["en", "es", "ar", "hi"];
+router.patch(
+  "/users/me/lang",
+  requireAuth,
+  async (req: AuthenticatedRequest, res): Promise<void> => {
+    const userId = req.userId!;
+    const { lang } = req.body as { lang?: string };
+    const supportedLangs = ["en", "es", "ar", "hi"];
 
-  if (!lang || !supportedLangs.includes(lang)) {
-    res.status(400).json({ error: `lang must be one of: ${supportedLangs.join(", ")}` }); return;
-  }
+    if (!lang || !supportedLangs.includes(lang)) {
+      res.status(400).json({ error: `lang must be one of: ${supportedLangs.join(", ")}` });
+      return;
+    }
 
-  try {
-    await connectDB();
-    const db = mongoose.connection.db;
-    if (!db) { res.status(500).json({ error: "Database not connected" }); return; }
-    await db.collection("user").updateOne(
-      { _id: userId as any },
-      { $set: { lang } },
-      { upsert: true },
-    );
-    res.json({ lang });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message || "Failed to save language preference" });
-  }
-});
+    try {
+      await connectDB();
+      const db = mongoose.connection.db;
+      if (!db) {
+        res.status(500).json({ error: "Database not connected" });
+        return;
+      }
+      await db
+        .collection("user")
+        .updateOne({ _id: userId as any }, { $set: { lang } }, { upsert: true });
+      res.json({ lang });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || "Failed to save language preference" });
+    }
+  },
+);
 
 export default router;

@@ -1,6 +1,6 @@
-import { describe, test, expect } from "bun:test";
-import { AuditEvent, AUDIT_ACTIONS, AUDIT_RESOURCE_TYPES } from "./auditEvents";
+import { describe, expect, test } from "bun:test";
 import { Types } from "mongoose";
+import { AUDIT_ACTIONS, AUDIT_RESOURCE_TYPES, AuditEvent } from "./auditEvents";
 
 describe("AuditEvent schema", () => {
   test("constants are defined", () => {

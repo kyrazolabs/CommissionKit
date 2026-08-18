@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeAll } from "bun:test";
+import { beforeAll, describe, expect, test } from "bun:test";
 import { pluginRegistry } from "./registry";
 import type { CKitPlugin } from "./types";
 
@@ -17,7 +17,13 @@ function makeMockPlugin(name: string): CKitPlugin {
     verifyWebhook: async () => {},
     parseWebhook: () => [],
     getSettingsSchema: () => ({ type: "object" }),
-    getUIMetadata: () => ({ name: "mock", description: "mock", icon: "plug", category: "crm", features: [] }),
+    getUIMetadata: () => ({
+      name: "mock",
+      description: "mock",
+      icon: "plug",
+      category: "crm",
+      features: [],
+    }),
     getStatus: async () => "connected",
   };
 }

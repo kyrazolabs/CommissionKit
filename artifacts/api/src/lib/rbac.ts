@@ -1,10 +1,13 @@
-import { getRedisClient } from "@workspace/queue";
 import { Role, WorkspaceMember } from "@workspace/db";
+import { getRedisClient } from "@workspace/queue";
 import { Types } from "mongoose";
 
 const CACHE_TTL = 300; // 5 minutes
 
-export async function getUserPermissions(workspaceId: string, userId: string): Promise<Set<string>> {
+export async function getUserPermissions(
+  workspaceId: string,
+  userId: string,
+): Promise<Set<string>> {
   const redis = getRedisClient();
   const cacheKey = `rbac:${workspaceId}:${userId}`;
 
@@ -38,14 +41,27 @@ export async function getUserPermissions(workspaceId: string, userId: string): P
       permissions.add("*");
     } else if (legacyRole === "admin") {
       const adminPerms = [
-        "deals:*", "reps:*", "plans:*", "payouts:*", "reports:*", "analytics:*",
-        "disputes:*", "team:*", "teams:*", "roles:*", "workspace:*", "workspaces:*",
-        "calculations:*", "audit_log:*"
+        "deals:*",
+        "reps:*",
+        "plans:*",
+        "payouts:*",
+        "reports:*",
+        "analytics:*",
+        "disputes:*",
+        "team:*",
+        "teams:*",
+        "roles:*",
+        "workspace:*",
+        "workspaces:*",
+        "calculations:*",
+        "audit_log:*",
       ];
-      adminPerms.forEach(p => permissions.add(p));
+      adminPerms.forEach((p) => permissions.add(p));
     } else {
       // member
-      ["deals:read", "reports:read", "analytics:read", "reps:read"].forEach(p => permissions.add(p));
+      ["deals:read", "reports:read", "analytics:read", "reps:read"].forEach((p) =>
+        permissions.add(p),
+      );
     }
   } else {
     // 3. Aggregate custom roles
@@ -66,7 +82,10 @@ export async function getUserPermissions(workspaceId: string, userId: string): P
   return permissions;
 }
 
-export async function invalidateUserPermissions(workspaceId: string, userId: string): Promise<void> {
+export async function invalidateUserPermissions(
+  workspaceId: string,
+  userId: string,
+): Promise<void> {
   const redis = getRedisClient();
   await redis.del(`rbac:${workspaceId}:${userId}`);
 }
@@ -75,12 +94,12 @@ export async function invalidateWorkspaceRoles(workspaceId: string): Promise<voi
   const redis = getRedisClient();
   // We need to delete all cached RBAC for this workspace
   // Redis SCAN is best, but since workspaces usually have limited members, we can use a wildcard keys command
-  // Warning: KEYS is slow on massive databases, but safe for standard SaaS sizes. 
+  // Warning: KEYS is slow on massive databases, but safe for standard SaaS sizes.
   // Alternatively, we could store a namespace version key, but let's use SCAN for safety.
-  
+
   const pattern = `rbac:${workspaceId}:*`;
   let cursor = "0";
-  
+
   do {
     const [nextCursor, keys] = await redis.scan(cursor, "MATCH", pattern, "COUNT", 100);
     cursor = nextCursor;
@@ -109,7 +128,11 @@ export function hasPermission(permissions: Set<string>, resource: string, action
  * Finds all user IDs in a workspace who have a specific permission.
  * Useful for targeting notifications to "anyone who can manage disputes".
  */
-export async function getUsersWithPermission(workspaceId: string, resource: string, action: string): Promise<string[]> {
+export async function getUsersWithPermission(
+  workspaceId: string,
+  resource: string,
+  action: string,
+): Promise<string[]> {
   const members = await WorkspaceMember.find({ workspaceId: new Types.ObjectId(workspaceId) });
   const userIds: string[] = [];
 

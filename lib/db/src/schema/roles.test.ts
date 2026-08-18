@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { insertRoleSchema } from "./roles";
 
 describe("insertRoleSchema", () => {
@@ -23,11 +23,7 @@ describe("insertRoleSchema", () => {
       isSystem: false,
     });
     expect(result.description).toBe("Handles financial reporting");
-    expect(result.permissions).toEqual([
-      "deals:read",
-      "payouts:read",
-      "reports:export",
-    ]);
+    expect(result.permissions).toEqual(["deals:read", "payouts:read", "reports:export"]);
   });
 
   test("accepts isSystem true for built-in roles", () => {
@@ -49,9 +45,7 @@ describe("insertRoleSchema", () => {
   });
 
   test("rejects empty name", () => {
-    expect(() =>
-      insertRoleSchema.parse({ ...validRole, name: "" }),
-    ).toThrow();
+    expect(() => insertRoleSchema.parse({ ...validRole, name: "" })).toThrow();
   });
 
   test("rejects non-array permissions", () => {
@@ -69,8 +63,6 @@ describe("insertRoleSchema", () => {
   });
 
   test("rejects non-boolean isSystem", () => {
-    expect(() =>
-      insertRoleSchema.parse({ ...validRole, isSystem: "yes" }),
-    ).toThrow();
+    expect(() => insertRoleSchema.parse({ ...validRole, isSystem: "yes" })).toThrow();
   });
 });

@@ -1,82 +1,70 @@
-import { Switch, Route, Router as WouterRouter, useLocation, useParams } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
-
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/not-found";
+import { Route, Switch, useLocation, useParams, Router as WouterRouter } from "wouter";
+import { CurrencyCombobox } from "@/components/currency-combobox";
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { usePageTrack } from "@/hooks/use-page-track";
+import { ThemeProvider } from "@/hooks/use-theme";
+import { useWorkspace, WorkspaceProvider } from "@/hooks/use-workspace";
+import { Analytics } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
-
-import { Dashboard } from "@/pages/dashboard";
-import { ReportsPage } from "@/pages/reports/reports";
 import AuditLogPage from "@/pages/audit-log/audit-log";
-
-import { PlansPage } from "@/pages/commission/plans";
+import { AuthPage } from "@/pages/auth/auth";
+import { EmailVerifiedPage } from "@/pages/auth/email-verified";
+import { ResetPasswordPage } from "@/pages/auth/reset-password";
+import { CareersPage } from "@/pages/careers";
+import { CareersJobPage } from "@/pages/careers-job";
 import { DealsPage } from "@/pages/commission/deals";
-import { RunsPage } from "@/pages/commission/runs";
+import { PlansPage } from "@/pages/commission/plans";
 import { RunDetailsPage } from "@/pages/commission/run-details";
-
-import { RepPortal } from "@/pages/portal/rep-portal";
-import { PublicRepPortal } from "@/pages/portal/public-portal";
-import { RepPortalLanding } from "@/pages/rep-portal-landing";
-
-import { SettingsPage } from "@/pages/settings/settings";
-import { BillingPage } from "@/pages/settings/billing";
-import { AissolProjectsPage } from "@/pages/enterprise/aissol/projects";
-import { AissolProjectDetailPage } from "@/pages/enterprise/aissol/project-detail";
+import { RunsPage } from "@/pages/commission/runs";
+import { CommissionCalculator } from "@/pages/commission-calculator";
+import { ContactPage } from "@/pages/contact";
+import { Dashboard } from "@/pages/dashboard";
 import { AissolMatrixPage } from "@/pages/enterprise/aissol/matrix";
+import { AissolProjectDetailPage } from "@/pages/enterprise/aissol/project-detail";
+import { AissolProjectsPage } from "@/pages/enterprise/aissol/projects";
+import { EnterprisePublicRepPortal } from "@/pages/enterprise/aissol/public-portal";
+import { EnterpriseRepPortal } from "@/pages/enterprise/aissol/rep-portal";
 import { AissolReportsPage } from "@/pages/enterprise/aissol/reports";
 import { EnterpriseRunDetailsPage } from "@/pages/enterprise/aissol/run-details";
 import { EnterpriseRunsPage } from "@/pages/enterprise/aissol/runs";
-import { EnterpriseRepPortal } from "@/pages/enterprise/aissol/rep-portal";
-import { EnterprisePublicRepPortal } from "@/pages/enterprise/aissol/public-portal";
-
-import { TeamPage } from "@/pages/team/team";
-import { RepsPage } from "@/pages/team/reps";
-import { AcceptInvite } from "@/pages/team/accept-invite";
-
-
-import { AuthPage } from "@/pages/auth/auth";
-import { ResetPasswordPage } from "@/pages/auth/reset-password";
-import { EmailVerifiedPage } from "@/pages/auth/email-verified";
-
-import { LandingPage } from "@/pages/landing";
-
-import { PayoutsPage } from "@/pages/payouts/payouts";
-import { DisputesPage } from "@/pages/payouts/disputes";
-import { IntegrationsPage } from "@/pages/integrations/integrations";
-import { CommissionCalculator } from "@/pages/commission-calculator";
-import { PrivacyPage } from "@/pages/legal/privacy";
-import { TermsPage } from "@/pages/legal/terms";
-import { SecurityPage } from "@/pages/legal/security";
-import { ContactPage } from "@/pages/contact";
 import { FeaturesPage } from "@/pages/features";
-import { SolutionsPage } from "@/pages/solutions";
-import { PricingPage } from "@/pages/pricing";
-import { CareersPage } from "@/pages/careers";
-import { CareersJobPage } from "@/pages/careers-job";
-import { OdooIntegrationPage } from "@/pages/integrations/odoo";
-import { HubspotIntegrationPage } from "@/pages/integrations/hubspot";
-import { SalesforceIntegrationPage } from "@/pages/integrations/salesforce";
 import { CustomIntegrationPage } from "@/pages/integrations/custom";
-
-import { ThemeProvider } from "@/hooks/use-theme";
-import { AuthProvider, useAuth } from "@/hooks/use-auth";
-import { WorkspaceProvider, useWorkspace } from "@/hooks/use-workspace";
-import { usePageTrack } from "@/hooks/use-page-track";
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { CurrencyCombobox } from "@/components/currency-combobox";
-import { Analytics } from "@/lib/analytics";
+import { HubspotIntegrationPage } from "@/pages/integrations/hubspot";
+import { IntegrationsPage } from "@/pages/integrations/integrations";
+import { OdooIntegrationPage } from "@/pages/integrations/odoo";
+import { SalesforceIntegrationPage } from "@/pages/integrations/salesforce";
+import { LandingPage } from "@/pages/landing";
+import { PrivacyPage } from "@/pages/legal/privacy";
+import { SecurityPage } from "@/pages/legal/security";
+import { TermsPage } from "@/pages/legal/terms";
+import NotFound from "@/pages/not-found";
+import { DisputesPage } from "@/pages/payouts/disputes";
+import { PayoutsPage } from "@/pages/payouts/payouts";
+import { PublicRepPortal } from "@/pages/portal/public-portal";
+import { RepPortal } from "@/pages/portal/rep-portal";
+import { PricingPage } from "@/pages/pricing";
+import { RepPortalLanding } from "@/pages/rep-portal-landing";
+import { ReportsPage } from "@/pages/reports/reports";
+import { BillingPage } from "@/pages/settings/billing";
+import { SettingsPage } from "@/pages/settings/settings";
+import { SolutionsPage } from "@/pages/solutions";
+import { AcceptInvite } from "@/pages/team/accept-invite";
+import { RepsPage } from "@/pages/team/reps";
+import { TeamPage } from "@/pages/team/team";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -94,7 +82,9 @@ function Layout({ children }: { children: React.ReactNode }) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Close mobile sidebar on route change
-  useEffect(() => { setMobileSidebarOpen(false); }, [location]);
+  useEffect(() => {
+    setMobileSidebarOpen(false);
+  }, [location]);
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-sidebar">
@@ -111,17 +101,22 @@ function Layout({ children }: { children: React.ReactNode }) {
               onClick={() => setMobileSidebarOpen(false)}
             />
             {/* Sliding sidebar — always rendered, transitions transform */}
-            <div className={cn(
-              "fixed inset-y-0 left-0 z-50 w-55 transition-transform duration-200",
-              mobileSidebarOpen ? "translate-x-0" : "-translate-x-full",
-            )}>
+            <div
+              className={cn(
+                "fixed inset-y-0 left-0 z-50 w-55 transition-transform duration-200",
+                mobileSidebarOpen ? "translate-x-0" : "-translate-x-full",
+              )}
+            >
               <Sidebar onCloseMobile={() => setMobileSidebarOpen(false)} isMobile />
             </div>
           </>
         ) : (
           <Sidebar />
         )}
-        <div className="flex-1 flex flex-col px-3 pb-3 overflow-hidden" style={{ background: "hsl(var(--sidebar))" }}>
+        <div
+          className="flex-1 flex flex-col ltr:pr-3 rtl:pl-3 pb-3 overflow-hidden"
+          style={{ background: "hsl(var(--sidebar))" }}
+        >
           <div className="bg-card rounded-2xl border border-card-border flex-1 flex flex-col overflow-hidden shadow-xs">
             <div className="flex-1 overflow-y-auto custom-scrollbar">
               <main className="mx-auto px-6 py-6 lg:px-10 lg:py-8 max-w-6xl min-h-full">
@@ -129,7 +124,7 @@ function Layout({ children }: { children: React.ReactNode }) {
                   key={location}
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.20, ease: [0.34, 1.56, 0.64, 1], }}
+                  transition={{ duration: 0.2, ease: [0.34, 1.56, 0.64, 1] }}
                 >
                   {children}
                 </motion.div>
@@ -150,7 +145,9 @@ function CreateWorkspaceScreen() {
   const [error, setError] = useState("");
   const [creating, setCreating] = useState(false);
 
-  useEffect(() => { Analytics.workspaceCreateView(); }, []);
+  useEffect(() => {
+    Analytics.workspaceCreateView();
+  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -174,13 +171,23 @@ function CreateWorkspaceScreen() {
           <div className="flex justify-center mb-4">
             <svg width="40" height="40" viewBox="0 0 56 56" fill="none">
               <rect width="56" height="56" rx="14" fill="#111827" />
-              <line x1="16" y1="40" x2="40" y2="16" stroke="#0D9488" strokeWidth="3.5" strokeLinecap="round" />
+              <line
+                x1="16"
+                y1="40"
+                x2="40"
+                y2="16"
+                stroke="#0D9488"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+              />
               <circle cx="20" cy="20" r="5" fill="#0D9488" />
               <circle cx="36" cy="36" r="7" fill="none" stroke="#0D9488" strokeWidth="3" />
               <circle cx="36" cy="36" r="2.5" fill="#0D9488" />
             </svg>
           </div>
-          <CardTitle className="text-[18px] font-semibold text-center mb-1">{t("createWorkspace.title")}</CardTitle>
+          <CardTitle className="text-[18px] font-semibold text-center mb-1">
+            {t("createWorkspace.title")}
+          </CardTitle>
           <CardDescription className="text-[13px] text-center">
             {t("createWorkspace.description")}
           </CardDescription>
@@ -230,7 +237,7 @@ function AppLoader() {
   const [idx, setIdx] = useState(0);
 
   useEffect(() => {
-    const t = setInterval(() => setIdx(i => (i + 1) % messages.length), 2000);
+    const t = setInterval(() => setIdx((i) => (i + 1) % messages.length), 2000);
     return () => clearInterval(t);
   }, []);
 
@@ -284,19 +291,22 @@ function EnterpriseDealsGuard() {
 
 function EnterpriseRunsListGuard() {
   const { activeWorkspace } = useWorkspace();
-  if (!activeWorkspace || activeWorkspace?.commissionEngine !== "standard") return <EnterpriseRunsPage />;
+  if (!activeWorkspace || activeWorkspace?.commissionEngine !== "standard")
+    return <EnterpriseRunsPage />;
   return <RunsPage />;
 }
 
 function EnterpriseRunsGuard() {
   const { activeWorkspace } = useWorkspace();
-  if (!activeWorkspace || activeWorkspace?.commissionEngine !== "standard") return <EnterpriseRunDetailsPage />;
+  if (!activeWorkspace || activeWorkspace?.commissionEngine !== "standard")
+    return <EnterpriseRunDetailsPage />;
   return <RunDetailsPage />;
 }
 
 function EnterpriseRepPortalGuard() {
   const { activeWorkspace } = useWorkspace();
-  if (!activeWorkspace || activeWorkspace?.commissionEngine !== "standard") return <EnterpriseRepPortal />;
+  if (!activeWorkspace || activeWorkspace?.commissionEngine !== "standard")
+    return <EnterpriseRepPortal />;
   return <RepPortal />;
 }
 
@@ -333,7 +343,7 @@ function ProtectedRouter() {
   if (location === "/login" || location === "/register") return <AppLoader />;
 
   return (
-      <Layout>
+    <Layout>
       <Switch>
         <Route path="/dash/enterprise/projects" component={AissolProjectsPage} />
         <Route path="/dash/enterprise/projects/:id" component={AissolProjectDetailPage} />
@@ -359,7 +369,6 @@ function ProtectedRouter() {
     </Layout>
   );
 }
-
 
 /**
  * Sets the per-page <link rel="canonical"> via react-helmet-async.
@@ -390,22 +399,34 @@ function App() {
             <PageTracker />
             {/* Public routes : no auth required directly here */}
             <Switch>
-              <Route path="/portal/:accessCode" component={() => {
-                const { accessCode } = useParams();
-                const token = localStorage.getItem(`ck_portal_${accessCode}`);
-                let engine = "standard";
-                if (token) {
-                  try { engine = JSON.parse(atob(token.split(".")[1])).commissionEngine || "standard"; } catch {}
-                }
-                return engine !== "standard" ? <EnterprisePublicRepPortal /> : <PublicRepPortal />;
-              }} />
+              <Route
+                path="/portal/:accessCode"
+                component={() => {
+                  const { accessCode } = useParams();
+                  const token = localStorage.getItem(`ck_portal_${accessCode}`);
+                  let engine = "standard";
+                  if (token) {
+                    try {
+                      engine = JSON.parse(atob(token.split(".")[1])).commissionEngine || "standard";
+                    } catch {}
+                  }
+                  return engine !== "standard" ? (
+                    <EnterprisePublicRepPortal />
+                  ) : (
+                    <PublicRepPortal />
+                  );
+                }}
+              />
               <Route path="/portal" component={RepPortalLanding} />
               <Route path="/accept-invite" component={AcceptInvite} />
-              <Route path="/home" component={() => (
-                <AuthProvider>
-                  <PublicOrRedirectLanding />
-                </AuthProvider>
-              )} />
+              <Route
+                path="/home"
+                component={() => (
+                  <AuthProvider>
+                    <PublicOrRedirectLanding />
+                  </AuthProvider>
+                )}
+              />
               <Route path="/calculator" component={CommissionCalculator} />
               <Route path="/privacy" component={PrivacyPage} />
               <Route path="/terms" component={TermsPage} />
@@ -420,36 +441,54 @@ function App() {
               <Route path="/integrations/custom" component={CustomIntegrationPage} />
               <Route path="/careers/:slug" component={CareersJobPage} />
               <Route path="/careers" component={CareersPage} />
-              <Route path="/forgot-password" component={() => (
-                <AuthProvider>
-                  <AuthPage initialMode="forgot" />
-                </AuthProvider>
-              )} />
-              <Route path="/reset-password" component={() => (
-                <AuthProvider>
-                  <ResetPasswordPage />
-                </AuthProvider>
-              )} />
-              <Route path="/email-verified" component={() => (
-                <AuthProvider>
-                  <EmailVerifiedPage />
-                </AuthProvider>
-              )} />
-              <Route path="/login" component={() => (
-                <AuthProvider>
-                  <ProtectedRouter />
-                </AuthProvider>
-              )} />
-              <Route path="/register" component={() => (
-                <AuthProvider>
-                  <ProtectedRouter />
-                </AuthProvider>
-              )} />
-              <Route path="/" component={() => (
-                <AuthProvider>
-                  <PublicOrRedirectLanding />
-                </AuthProvider>
-              )} />
+              <Route
+                path="/forgot-password"
+                component={() => (
+                  <AuthProvider>
+                    <AuthPage initialMode="forgot" />
+                  </AuthProvider>
+                )}
+              />
+              <Route
+                path="/reset-password"
+                component={() => (
+                  <AuthProvider>
+                    <ResetPasswordPage />
+                  </AuthProvider>
+                )}
+              />
+              <Route
+                path="/email-verified"
+                component={() => (
+                  <AuthProvider>
+                    <EmailVerifiedPage />
+                  </AuthProvider>
+                )}
+              />
+              <Route
+                path="/login"
+                component={() => (
+                  <AuthProvider>
+                    <ProtectedRouter />
+                  </AuthProvider>
+                )}
+              />
+              <Route
+                path="/register"
+                component={() => (
+                  <AuthProvider>
+                    <ProtectedRouter />
+                  </AuthProvider>
+                )}
+              />
+              <Route
+                path="/"
+                component={() => (
+                  <AuthProvider>
+                    <PublicOrRedirectLanding />
+                  </AuthProvider>
+                )}
+              />
               {/* All other routes go through the authenticated provider stack */}
               <Route>
                 <AuthProvider>

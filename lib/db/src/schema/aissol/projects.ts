@@ -1,15 +1,19 @@
-import mongoose, { Schema, model, Types } from "mongoose";
+import type mongoose from "mongoose";
+import { model, Schema, type Types } from "mongoose";
 
-const AissolProjectSchema = new Schema({
-  workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
-  repId: { type: Schema.Types.ObjectId, ref: "Rep", required: true },
-  name: { type: String, required: true },
-  totalValue: { type: Number, required: true },
-  totalCost: { type: Number, required: true },
-  currency: { type: String, default: "SAR" },
-  period: { type: String, required: true },
-  status: { type: String, enum: ["active", "completed", "cancelled"], default: "active" },
-}, { timestamps: { createdAt: true, updatedAt: true } });
+const AissolProjectSchema = new Schema(
+  {
+    workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
+    repId: { type: Schema.Types.ObjectId, ref: "Rep", required: true },
+    name: { type: String, required: true },
+    totalValue: { type: Number, required: true },
+    totalCost: { type: Number, required: true },
+    currency: { type: String, default: "SAR" },
+    period: { type: String, required: true },
+    status: { type: String, enum: ["active", "completed", "cancelled"], default: "active" },
+  },
+  { timestamps: { createdAt: true, updatedAt: true } },
+);
 
 export const AissolProject = model("AissolProject", AissolProjectSchema);
 

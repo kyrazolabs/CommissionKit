@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, mkdirSync, existsSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const TRANSLATIONS_DIR = resolve(import.meta.dirname, "../translations");
@@ -7,9 +7,7 @@ const OUTPUT_DIR = resolve(import.meta.dirname, "../src/generated/translations")
 function mergeTranslations(): void {
   // Find all language subdirectories
   const items = readdirSync(TRANSLATIONS_DIR, { withFileTypes: true });
-  const langs = items
-    .filter((item) => item.isDirectory())
-    .map((item) => item.name);
+  const langs = items.filter((item) => item.isDirectory()).map((item) => item.name);
 
   if (langs.length === 0) {
     console.log("No language directories found in translations/");
@@ -49,9 +47,7 @@ function mergeTranslations(): void {
     }
 
     const keyCount = Object.keys(merged).length;
-    const sectionNames = sectionFiles
-      .map((f) => f.replace(".json", ""))
-      .join(", ");
+    const sectionNames = sectionFiles.map((f) => f.replace(".json", "")).join(", ");
     const outputFile = join(OUTPUT_DIR, `${lang}.json`);
 
     Bun.write(outputFile, JSON.stringify(merged, null, 2));

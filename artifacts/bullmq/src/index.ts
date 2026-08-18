@@ -1,33 +1,31 @@
 import "dotenv/config";
 
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
-import express from "express";
 import { createBullBoard } from "@bull-board/api";
-import { ExpressAdapter } from "@bull-board/express";
 import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
-
+import { ExpressAdapter } from "@bull-board/express";
 import {
-  mailHighQueue,
-  mailMediumQueue,
-  mailLowQueue,
-  mailSendQueue,
   commissionCalcQueue,
   exchangeRateQueue,
   logsFlushQueue,
-  syncRepsQueue,
+  mailHighQueue,
+  mailLowQueue,
+  mailMediumQueue,
+  mailSendQueue,
   syncDealsQueue,
-  webhookIngressQueue,
   syncEgressQueue,
+  syncRepsQueue,
+  webhookIngressQueue,
 } from "@workspace/queue";
+import express from "express";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 function findBullBoardUi(): string {
   let dir = path.dirname(fileURLToPath(import.meta.url));
   while (dir !== "/") {
     const candidate = path.join(dir, "node_modules", "@bull-board", "ui");
-    if (fs.existsSync(path.join(candidate, "dist", "index.ejs")))
-      return candidate;
+    if (fs.existsSync(path.join(candidate, "dist", "index.ejs"))) return candidate;
     dir = path.dirname(dir);
   }
   return "";

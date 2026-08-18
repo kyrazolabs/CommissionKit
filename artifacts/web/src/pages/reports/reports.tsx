@@ -1,33 +1,78 @@
-import { useState } from "react";
-import { useGetReports, getGetReportsQueryKey } from "@workspace/api-client-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { getGetReportsQueryKey, useGetReports } from "@workspace/api-client-react";
 import {
-  FileText, Download, TrendingUp, DollarSign, Target, PieChart as PieIcon,
-  HandCoins, Medal, AlertCircle, TrendingDown, Minus
+  endOfMonth,
+  endOfYear,
+  format,
+  startOfMonth,
+  startOfYear,
+  subMonths,
+  subYears,
+} from "date-fns";
+import {
+  AlertCircle,
+  DollarSign,
+  Download,
+  FileText,
+  HandCoins,
+  Medal,
+  Minus,
+  PieChart as PieIcon,
+  Target,
+  TrendingDown,
+  TrendingUp,
 } from "lucide-react";
+import { useState } from "react";
+import type { DateRange } from "react-day-picker";
+import { useTranslation } from "react-i18next";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { Button } from "@/components/ui/button";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DateRangePicker } from "@/components/ui/date-picker";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { usePageMeta } from "@/hooks/use-page-meta";
+import { useRole } from "@/hooks/use-role";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { formatCurrency, formatNumber } from "@/lib/format";
-import { format, startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, subYears } from "date-fns";
-import { DateRange } from "react-day-picker";
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
-  ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line
-} from "recharts";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DateRangePicker } from "@/components/ui/date-picker";
 import { cn } from "@/lib/utils";
-import { useRole } from "@/hooks/use-role";
-import { usePageMeta } from "@/hooks/use-page-meta";
-import { useTranslation } from "react-i18next";
 
 // ---------------------------------------------------------------------------
 // Shared Chart Components
 // ---------------------------------------------------------------------------
 
-function ChartTooltip({ active, payload, label, currency }: {
+function ChartTooltip({
+  active,
+  payload,
+  label,
+  currency,
+}: {
   active?: boolean;
   payload?: Array<{ name: string; value: number; color?: string }>;
   label?: string;
@@ -39,7 +84,8 @@ function ChartTooltip({ active, payload, label, currency }: {
       <p className="text-xs font-semibold text-foreground mb-1">{label}</p>
       {payload.map((p, i) => (
         <p key={i} className="text-xs text-muted-foreground">
-          {p.name}: <span className="font-medium text-foreground tabular-nums">
+          {p.name}:{" "}
+          <span className="font-medium text-foreground tabular-nums">
             {typeof p.value === "number" ? formatCurrency(p.value, currency ?? "USD") : p.value}
           </span>
         </p>
@@ -83,7 +129,9 @@ function KpiCard({
   return (
     <Card className="p-5">
       <div className="flex items-center justify-between mb-3.5">
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</span>
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          {label}
+        </span>
         <div className="flex size-7 items-center justify-center rounded-[10px] bg-secondary">
           <Icon className="size-3.5 text-primary" />
         </div>
@@ -92,8 +140,23 @@ function KpiCard({
         {value}
       </div>
       {trend !== undefined && (
-        <div className={cn("flex items-center gap-1 mt-2 text-xs", trend > 0 ? "text-[hsl(var(--chart-2))]" : trend < 0 ? "text-destructive" : "text-muted-foreground")}>
-          {trend > 0 ? <TrendingUp className="size-3" /> : trend < 0 ? <TrendingDown className="size-3" /> : <Minus className="size-3" />}
+        <div
+          className={cn(
+            "flex items-center gap-1 mt-2 text-xs",
+            trend > 0
+              ? "text-[hsl(var(--chart-2))]"
+              : trend < 0
+                ? "text-destructive"
+                : "text-muted-foreground",
+          )}
+        >
+          {trend > 0 ? (
+            <TrendingUp className="size-3" />
+          ) : trend < 0 ? (
+            <TrendingDown className="size-3" />
+          ) : (
+            <Minus className="size-3" />
+          )}
           <span className="font-medium tabular-nums">{Math.abs(trend).toFixed(1)}%</span>
           <span className="text-muted-foreground">{sub}</span>
         </div>
@@ -114,7 +177,8 @@ export function ReportsPage() {
   usePageMeta({
     title: t("reports.title"),
     description: "Detailed commission reports and analytics for your workspace.",
-    keywords: "commission reports, sales analytics, rep performance reports, commission analytics, payout reports",
+    keywords:
+      "commission reports, sales analytics, rep performance reports, commission analytics, payout reports",
     robots: "noindex, nofollow",
   });
   const { activeWorkspace } = useWorkspace();
@@ -138,7 +202,10 @@ export function ReportsPage() {
         setInterval("day");
         break;
       case "last-month":
-        setDateRange({ from: startOfMonth(subMonths(today, 1)), to: endOfMonth(subMonths(today, 1)) });
+        setDateRange({
+          from: startOfMonth(subMonths(today, 1)),
+          to: endOfMonth(subMonths(today, 1)),
+        });
         setInterval("day");
         break;
       case "last-3-months":
@@ -169,7 +236,7 @@ export function ReportsPage() {
     "last-6-months": "Last 6 Months",
     "this-year": "This Year",
     "last-year": "Last Year",
-    "custom": "Custom",
+    custom: "Custom",
   };
 
   const queryParams = {
@@ -178,10 +245,13 @@ export function ReportsPage() {
     interval,
   };
 
-  const { data: reportData, isLoading, isError } = useGetReports(
-    queryParams,
-    { query: { queryKey: [...getGetReportsQueryKey(queryParams)], staleTime: 0 } },
-  );
+  const {
+    data: reportData,
+    isLoading,
+    isError,
+  } = useGetReports(queryParams, {
+    query: { queryKey: [...getGetReportsQueryKey(queryParams)], staleTime: 0 },
+  });
 
   if (roleLoading) {
     return (
@@ -216,7 +286,9 @@ export function ReportsPage() {
       <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
         <AlertCircle className="size-10 text-destructive" />
         <h2 className="text-lg font-semibold text-foreground">Failed to load reports</h2>
-        <p className="text-sm text-muted-foreground">An error occurred while fetching report data. Please try again.</p>
+        <p className="text-sm text-muted-foreground">
+          An error occurred while fetching report data. Please try again.
+        </p>
         <Button variant="outline" onClick={() => window.location.reload()} className="mt-2">
           Retry
         </Button>
@@ -251,9 +323,7 @@ export function ReportsPage() {
     const cursor = new Date(dateRange.from);
     const end = new Date(dateRange.to);
     while (cursor <= end) {
-      const key = interval === "month"
-        ? format(cursor, "yyyy-MM")
-        : format(cursor, "yyyy-MM-dd");
+      const key = interval === "month" ? format(cursor, "yyyy-MM") : format(cursor, "yyyy-MM-dd");
       const existing = (reportData.monthlyTrends as any[]).find((d: any) => d.period === key);
       periods.push(existing ?? { period: key, revenue: 0, commission: 0 });
       if (interval === "month") cursor.setMonth(cursor.getMonth() + 1);
@@ -269,7 +339,9 @@ export function ReportsPage() {
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4">
           <div>
             <p className="text-[12px] font-semibold text-primary mb-1">Analytics</p>
-            <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">Executive Report</h1>
+            <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">
+              Executive Report
+            </h1>
             <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
               Data-driven insights for compensation and revenue decisions.
             </p>
@@ -281,7 +353,7 @@ export function ReportsPage() {
                 <SelectTrigger className="w-[130px] h-8 border-none bg-transparent shadow-none text-sm focus:ring-0 focus:ring-offset-0">
                   <SelectValue placeholder="Select preset" />
                 </SelectTrigger>
-                  <SelectContent>
+                <SelectContent>
                   <SelectItem value="this-month">This Month</SelectItem>
                   <SelectItem value="last-month">Last Month</SelectItem>
                   <SelectItem value="last-3-months">Last 3 Months</SelectItem>
@@ -332,12 +404,13 @@ export function ReportsPage() {
             <CardHeader className="pb-0">
               <FileText className="size-12 text-muted-foreground opacity-20 mb-2" />
               <CardTitle>No data available</CardTitle>
-              <CardDescription>There is no report data for the selected date range.</CardDescription>
+              <CardDescription>
+                There is no report data for the selected date range.
+              </CardDescription>
             </CardHeader>
           </Card>
         ) : (
           <div className="space-y-6">
-
             {/* KPI Cards — 5 cards */}
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
               <KpiCard
@@ -379,9 +452,13 @@ export function ReportsPage() {
             {reportData.repCommissionBreakdown && reportData.repCommissionBreakdown.length > 0 && (
               <Card className="p-5">
                 <div className="mb-1">
-                  <h3 className="text-sm font-semibold text-foreground">{t("reports.commissionByRep")}</h3>
+                  <h3 className="text-sm font-semibold text-foreground">
+                    {t("reports.commissionByRep")}
+                  </h3>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {top3Percent > 0 ? `Top 3 reps earned ${top3Percent.toFixed(0)}% of total commissions` : t("reports.topEarnersRanked")}
+                    {top3Percent > 0
+                      ? `Top 3 reps earned ${top3Percent.toFixed(0)}% of total commissions`
+                      : t("reports.topEarnersRanked")}
                   </p>
                 </div>
                 <div className="h-55 w-full">
@@ -390,7 +467,11 @@ export function ReportsPage() {
                       data={reportData.repCommissionBreakdown}
                       margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        stroke="hsl(var(--border))"
+                      />
                       <XAxis
                         dataKey="name"
                         stroke="hsl(var(--muted-foreground))"
@@ -409,8 +490,18 @@ export function ReportsPage() {
                         content={<ChartTooltip currency={currency} />}
                         cursor={{ fill: "hsl(var(--muted) / 0.3)" }}
                       />
-                      <Bar dataKey="revenue" name="Revenue" fill="hsl(var(--muted))" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="commission" name="Commission" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                      <Bar
+                        dataKey="revenue"
+                        name="Revenue"
+                        fill="hsl(var(--muted))"
+                        radius={[4, 4, 0, 0]}
+                      />
+                      <Bar
+                        dataKey="commission"
+                        name="Commission"
+                        fill="hsl(var(--primary))"
+                        radius={[4, 4, 0, 0]}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -427,13 +518,24 @@ export function ReportsPage() {
             {filledTrends.length > 0 && (
               <Card className="p-5">
                 <div className="mb-1">
-                  <h3 className="text-sm font-semibold text-foreground">{t("reports.revenueMarginTrends")}</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">{t("reports.trackingPipelineImpact")}</p>
+                  <h3 className="text-sm font-semibold text-foreground">
+                    {t("reports.revenueMarginTrends")}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {t("reports.trackingPipelineImpact")}
+                  </p>
                 </div>
                 <div className="h-55 w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={filledTrends} margin={{ top: 4, right: 4, bottom: 0, left: -16 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                    <LineChart
+                      data={filledTrends}
+                      margin={{ top: 4, right: 4, bottom: 0, left: -16 }}
+                    >
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        stroke="hsl(var(--border))"
+                      />
                       <XAxis
                         dataKey="period"
                         stroke="hsl(var(--muted-foreground))"
@@ -463,10 +565,19 @@ export function ReportsPage() {
                               <p className="text-xs font-semibold text-foreground mb-1">{label}</p>
                               {payload.map((p: any) => (
                                 <p key={p.name} className="text-xs">
-                                  <span style={{ color: p.name === "revenue" ? "hsl(var(--chart-4))" : "hsl(var(--chart-1))" }}>
+                                  <span
+                                    style={{
+                                      color:
+                                        p.name === "revenue"
+                                          ? "hsl(var(--chart-4))"
+                                          : "hsl(var(--chart-1))",
+                                    }}
+                                  >
                                     {p.name === "revenue" ? "Revenue" : "Commission"}:{" "}
                                   </span>
-                                  <span className="font-medium text-foreground tabular-nums">{formatCurrency(p.value, currency)}</span>
+                                  <span className="font-medium text-foreground tabular-nums">
+                                    {formatCurrency(p.value, currency)}
+                                  </span>
                                 </p>
                               ))}
                             </div>
@@ -474,8 +585,22 @@ export function ReportsPage() {
                         }}
                         cursor={{ fill: "hsl(var(--muted) / 0.3)" }}
                       />
-                      <Line type="monotone" dataKey="revenue" stroke="hsl(var(--chart-4))" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "hsl(var(--chart-4))" }} />
-                      <Line type="monotone" dataKey="commission" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "hsl(var(--chart-1))" }} />
+                      <Line
+                        type="monotone"
+                        dataKey="revenue"
+                        stroke="hsl(var(--chart-4))"
+                        strokeWidth={2}
+                        dot={false}
+                        activeDot={{ r: 4, fill: "hsl(var(--chart-4))" }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="commission"
+                        stroke="hsl(var(--chart-1))"
+                        strokeWidth={2}
+                        dot={false}
+                        activeDot={{ r: 4, fill: "hsl(var(--chart-1))" }}
+                      />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -487,11 +612,16 @@ export function ReportsPage() {
               <Card className="p-5">
                 <div className="mb-1">
                   <h3 className="text-sm font-semibold text-foreground">Deal Stage Funnel</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">Won, pending, and lost deals breakdown</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Won, pending, and lost deals breakdown
+                  </p>
                 </div>
                 {/* Transform [{name, value}] → [{stage, won, pending, lost}] for grouped bar chart */}
                 {(() => {
-                  const funnelData = reportData.dealStages.map((d) => ({ stage: d.name, value: d.value }));
+                  const funnelData = reportData.dealStages.map((d) => ({
+                    stage: d.name,
+                    value: d.value,
+                  }));
                   return (
                     <>
                       <div className="h-[220px] w-full">
@@ -501,7 +631,11 @@ export function ReportsPage() {
                             layout="vertical"
                             margin={{ top: 0, right: 40, left: 0, bottom: 0 }}
                           >
-                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
+                            <CartesianGrid
+                              strokeDasharray="3 3"
+                              horizontal={false}
+                              stroke="hsl(var(--border))"
+                            />
                             <XAxis
                               type="number"
                               stroke="hsl(var(--muted-foreground))"
@@ -523,10 +657,15 @@ export function ReportsPage() {
                                 if (!active || !payload?.length) return null;
                                 return (
                                   <div className="rounded-lg border border-card-border bg-card px-3 py-2 shadow-sm">
-                                    <p className="text-xs font-semibold text-foreground mb-1 capitalize">{label}</p>
+                                    <p className="text-xs font-semibold text-foreground mb-1 capitalize">
+                                      {label}
+                                    </p>
                                     {payload.map((p, i) => (
                                       <p key={i} className="text-xs text-muted-foreground">
-                                        {p.name}: <span className="font-medium text-foreground tabular-nums">{p.value}</span>
+                                        {p.name}:{" "}
+                                        <span className="font-medium text-foreground tabular-nums">
+                                          {p.value}
+                                        </span>
                                       </p>
                                     ))}
                                   </div>
@@ -534,7 +673,13 @@ export function ReportsPage() {
                               }}
                               cursor={{ fill: "hsl(var(--muted) / 0.3)" }}
                             />
-                            <Bar dataKey="value" name="Count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={20} />
+                            <Bar
+                              dataKey="value"
+                              name="Count"
+                              fill="hsl(var(--primary))"
+                              radius={[0, 4, 4, 0]}
+                              barSize={20}
+                            />
                           </BarChart>
                         </ResponsiveContainer>
                       </div>
@@ -552,89 +697,125 @@ export function ReportsPage() {
             ) : (
               <Card className="flex flex-col items-center justify-center p-12 text-center">
                 <FileText className="size-10 text-muted-foreground opacity-20 mb-3" />
-                <p className="text-sm font-medium text-foreground">No deal stage data for this period</p>
-                <p className="text-xs text-muted-foreground mt-1">Import deals and run a commission calculation to see the funnel.</p>
+                <p className="text-sm font-medium text-foreground">
+                  No deal stage data for this period
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Import deals and run a commission calculation to see the funnel.
+                </p>
               </Card>
             )}
 
             {/* Row: Payment Status + Top Won Deals */}
             <div className="grid gap-6 md:grid-cols-2">
               {/* Payment Status */}
-              {reportData.paymentStatusBreakdown && reportData.paymentStatusBreakdown.length > 0 && (
-                <Card className="p-5">
-                  <div className="mb-1">
-                    <h3 className="text-sm font-semibold text-foreground">{t("reports.paymentStatus")}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">{t("reports.paymentStatusDesc")}</p>
-                  </div>
-                  <div className="h-[200px] w-full flex items-center justify-center">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={reportData.paymentStatusBreakdown}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={50}
-                          outerRadius={80}
-                          paddingAngle={2}
-                          dataKey="value"
-                          stroke="none"
-                        >
-                          {reportData.paymentStatusBreakdown.map((_, index) => (
-                            <Cell key={`cell-${index}`} fill={`hsl(var(--chart-${(index % 5) + 1}))`} />
-                          ))}
-                        </Pie>
-                        <RechartsTooltip
-                          content={({ active, payload }) => {
-                            if (!active || !payload?.length || !reportData.paymentStatusBreakdown) return null;
-                            const data = payload[0];
-                            const idx = reportData.paymentStatusBreakdown.findIndex((d) => d.name === data.name);
-                            return (
-                              <div className="rounded-lg border border-card-border bg-card px-3 py-2 shadow-sm">
-                                <p className="text-xs text-muted-foreground">
-                                  <span
-                                    className="inline-block size-2 rounded-sm mr-1.5"
-                                    style={{ backgroundColor: `hsl(var(--chart-${(idx % 5) + 1}))` }}
-                                  />
-                                  {data.name}
-                                </p>
-                                <p className="text-xs font-medium text-foreground tabular-nums">{data.value} deals</p>
-                              </div>
-                            );
-                          }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <ChartLegend
-                    items={reportData.paymentStatusBreakdown.map((entry, index) => ({
-                      label: `${entry.name} (${entry.value})`,
-                      color: `bg-[hsl(var(--chart-${(index % 5) + 1}))]`,
-                    }))}
-                  />
-                </Card>
-              )}
+              {reportData.paymentStatusBreakdown &&
+                reportData.paymentStatusBreakdown.length > 0 && (
+                  <Card className="p-5">
+                    <div className="mb-1">
+                      <h3 className="text-sm font-semibold text-foreground">
+                        {t("reports.paymentStatus")}
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {t("reports.paymentStatusDesc")}
+                      </p>
+                    </div>
+                    <div className="h-[200px] w-full flex items-center justify-center">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={reportData.paymentStatusBreakdown}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={50}
+                            outerRadius={80}
+                            paddingAngle={2}
+                            dataKey="value"
+                            stroke="none"
+                          >
+                            {reportData.paymentStatusBreakdown.map((_, index) => (
+                              <Cell
+                                key={`cell-${index}`}
+                                fill={`hsl(var(--chart-${(index % 5) + 1}))`}
+                              />
+                            ))}
+                          </Pie>
+                          <RechartsTooltip
+                            content={({ active, payload }) => {
+                              if (!active || !payload?.length || !reportData.paymentStatusBreakdown)
+                                return null;
+                              const data = payload[0];
+                              const idx = reportData.paymentStatusBreakdown.findIndex(
+                                (d) => d.name === data.name,
+                              );
+                              return (
+                                <div className="rounded-lg border border-card-border bg-card px-3 py-2 shadow-sm">
+                                  <p className="text-xs text-muted-foreground">
+                                    <span
+                                      className="inline-block size-2 rounded-sm mr-1.5"
+                                      style={{
+                                        backgroundColor: `hsl(var(--chart-${(idx % 5) + 1}))`,
+                                      }}
+                                    />
+                                    {data.name}
+                                  </p>
+                                  <p className="text-xs font-medium text-foreground tabular-nums">
+                                    {data.value} deals
+                                  </p>
+                                </div>
+                              );
+                            }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <ChartLegend
+                      items={reportData.paymentStatusBreakdown.map((entry, index) => ({
+                        label: `${entry.name} (${entry.value})`,
+                        color: `bg-[hsl(var(--chart-${(index % 5) + 1}))]`,
+                      }))}
+                    />
+                  </Card>
+                )}
 
               {/* Top Won Deals */}
               {reportData.topDeals && reportData.topDeals.length > 0 && (
                 <Card className="overflow-hidden">
                   <div className="px-5 py-[18px] border-b border-border">
-                    <h3 className="text-sm font-semibold text-foreground">{t("reports.topWonDeals")}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">{t("reports.topWonDealsDesc")}</p>
+                    <h3 className="text-sm font-semibold text-foreground">
+                      {t("reports.topWonDeals")}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {t("reports.topWonDealsDesc")}
+                    </p>
                   </div>
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow className="hover:bg-transparent">
-                          <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">#</TableHead>
-                          <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("deals.dealName")}</TableHead>
-                          <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("deals.rep")}</TableHead>
-                          <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">{t("deals.amount")}</TableHead>
-                          <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("deals.closeDate")}</TableHead>
+                          <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            #
+                          </TableHead>
+                          <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            {t("deals.dealName")}
+                          </TableHead>
+                          <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            {t("deals.rep")}
+                          </TableHead>
+                          <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
+                            {t("deals.amount")}
+                          </TableHead>
+                          <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            {t("deals.closeDate")}
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {reportData.topDeals.map((deal, i) => (
-                          <TableRow key={deal.name + i} className="hover:bg-muted/40 transition-colors last:border-0">
+                          <TableRow
+                            key={deal.name + i}
+                            className="hover:bg-muted/40 transition-colors last:border-0"
+                          >
                             <TableCell className="py-3.5">
                               <span
                                 className={cn(
@@ -651,8 +832,12 @@ export function ReportsPage() {
                                 {i + 1}
                               </span>
                             </TableCell>
-                            <TableCell className="text-[13px] font-semibold text-foreground">{deal.name}</TableCell>
-                            <TableCell className="text-[13px] text-muted-foreground">{deal.repName}</TableCell>
+                            <TableCell className="text-[13px] font-semibold text-foreground">
+                              {deal.name}
+                            </TableCell>
+                            <TableCell className="text-[13px] text-muted-foreground">
+                              {deal.repName}
+                            </TableCell>
                             <TableCell className="text-[13px] font-medium text-foreground text-right tabular-nums">
                               {formatCurrency(deal.amount, currency)}
                             </TableCell>
@@ -672,26 +857,45 @@ export function ReportsPage() {
             {reportData.topPerformers && reportData.topPerformers.length > 0 && (
               <Card className="overflow-hidden">
                 <div className="px-5 py-[18px] border-b border-border">
-                  <h3 className="text-sm font-semibold text-foreground">{t("reports.repPerformanceMatrix")}</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">{t("reports.decisionMetricsDesc")}</p>
+                  <h3 className="text-sm font-semibold text-foreground">
+                    {t("reports.repPerformanceMatrix")}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {t("reports.decisionMetricsDesc")}
+                  </p>
                 </div>
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow className="hover:bg-transparent">
-                        <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("deals.rep")}</TableHead>
-                        <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">{t("reports.dealsWon")}</TableHead>
-                        <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">{t("reports.winRate")}</TableHead>
-                        <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">{t("reports.revenueDriven")}</TableHead>
-                        <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">{t("reports.commissionsPaid")}</TableHead>
-                        <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">{t("reports.effectiveRate")}</TableHead>
+                        <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          {t("deals.rep")}
+                        </TableHead>
+                        <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
+                          {t("reports.dealsWon")}
+                        </TableHead>
+                        <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
+                          {t("reports.winRate")}
+                        </TableHead>
+                        <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
+                          {t("reports.revenueDriven")}
+                        </TableHead>
+                        <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
+                          {t("reports.commissionsPaid")}
+                        </TableHead>
+                        <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
+                          {t("reports.effectiveRate")}
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {reportData.topPerformers.map((rep, i) => {
                         const effRate = rep.revenue > 0 ? (rep.commission / rep.revenue) * 100 : 0;
                         return (
-                          <TableRow key={rep.name} className="hover:bg-muted/40 transition-colors last:border-0">
+                          <TableRow
+                            key={rep.name}
+                            className="hover:bg-muted/40 transition-colors last:border-0"
+                          >
                             <TableCell className="text-[13px] font-semibold text-foreground">
                               <span className="flex items-center gap-2">
                                 {i === 0 && <Medal className="size-4 text-[hsl(var(--chart-3))]" />}
@@ -721,7 +925,6 @@ export function ReportsPage() {
                 </div>
               </Card>
             )}
-
           </div>
         )}
       </div>

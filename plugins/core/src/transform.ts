@@ -2,7 +2,7 @@ import type { PaymentStatus } from "./types";
 
 const CURRENCY_MAP: Record<string, string> = {
   "US Dollar": "USD",
-  "Euro": "EUR",
+  Euro: "EUR",
   "British Pound": "GBP",
   "Saudi Riyal": "SAR",
   "UAE Dirham": "AED",
@@ -55,10 +55,7 @@ export function derivePaymentStatus(
   }
 }
 
-export function mapStageToSynced(
-  rawStage: string,
-  closedWonStages: string[],
-): string | null {
+export function mapStageToSynced(rawStage: string, closedWonStages: string[]): string | null {
   if (closedWonStages.includes(rawStage)) return rawStage;
   return null; // Not a closed-won stage, don't sync
 }

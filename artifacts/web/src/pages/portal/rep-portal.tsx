@@ -1,49 +1,77 @@
-import { useState } from "react";
-import { useParams } from "wouter";
-import { useGetRepSummary, getGetRepSummaryQueryKey } from "@workspace/api-client-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useQuery } from "@tanstack/react-query";
+import { getGetRepSummaryQueryKey, useGetRepSummary } from "@workspace/api-client-react";
 import { format } from "date-fns";
-import { formatCurrency, formatPercent } from "@/lib/format";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import {
-  DollarSign, Activity, Briefcase, Wallet,
-  Building2, Layers, Clock, TrendingUp, ArrowDownToLine,
+  Activity,
+  ArrowDownToLine,
+  Briefcase,
+  Building2,
+  Clock,
+  DollarSign,
+  Layers,
+  TrendingUp,
+  Wallet,
 } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  LineChart,
-  Line,
   CartesianGrid,
-  ResponsiveContainer,
+  Line,
+  LineChart,
   Tooltip as RechartsTooltip,
+  ResponsiveContainer,
   XAxis,
   YAxis,
 } from "recharts";
-import { useWorkspace } from "@/hooks/use-workspace";
+import { useParams } from "wouter";
 import { CurrencyCell } from "@/components/currency-cell";
-import { MonthPicker } from "@/components/ui/month-picker";
-import { useQuery } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
-import { apiFetch } from "@/lib/api";
 import { RepAvatar } from "@/components/rep-avatar";
-import { StatCard } from "@/components/stat-card";
-import { useTableSort, SortDirection } from "@/hooks/use-table-sort";
 import { SortableTableHead } from "@/components/sortable-table-head";
+import { StatCard } from "@/components/stat-card";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { MonthPicker } from "@/components/ui/month-picker";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { type SortDirection, useTableSort } from "@/hooks/use-table-sort";
+import { useWorkspace } from "@/hooks/use-workspace";
+import { apiFetch } from "@/lib/api";
+import { formatCurrency, formatPercent } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 const PAYOUT_STATUS_I18N: Record<string, string> = {
-  pending: "portal.rep.pending", approved: "portal.rep.approved", paid: "portal.rep.paid",
-  disputed: "portal.rep.disputed", on_hold: "portal.rep.onHold",
+  pending: "portal.rep.pending",
+  approved: "portal.rep.approved",
+  paid: "portal.rep.paid",
+  disputed: "portal.rep.disputed",
+  on_hold: "portal.rep.onHold",
 };
 
 const PAYOUT_STATUS_CLASSES: Record<string, string> = {
-  pending: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200/50",
+  pending:
+    "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200/50",
   approved: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200/50",
   paid: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200/50",
   disputed: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200/50",
   on_hold: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 border-gray-200/50",
 };
+
+// Guards against Invalid Date crashes — the API can return empty strings
+// for optional dates (e.g. deal.closeDate), and date-fns format() throws
+// RangeError on Invalid Date, which unmounts the whole portal.
+function formatDateSafe(value: string | null | undefined, pattern: string): string {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  return format(d, pattern);
+}
 
 // ─── Payouts Section ──────────────────────────────────────────────────────────
 
@@ -55,7 +83,9 @@ function PayoutsSection({ payouts, isLoading, currency, t, statusI18n, statusCla
           <Wallet className="size-4 text-primary" />
           <CardTitle className="text-base">{t("portal.rep.payoutHistory")}</CardTitle>
         </div>
-        <CardDescription className="text-xs">{t("portal.rep.allPayoutsDescription")}</CardDescription>
+        <CardDescription className="text-xs">
+          {t("portal.rep.allPayoutsDescription")}
+        </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
         {isLoading ? (
@@ -87,16 +117,41 @@ function PayoutsSection({ payouts, isLoading, currency, t, statusI18n, statusCla
                 return (
                   <TableRow key={p.id}>
                     <TableCell className="text-sm text-muted-foreground">
-                      {format(new Date(p.periodStart), "MMM d")}–{format(new Date(p.periodEnd), "MMM d, yyyy")}
+                      {formatDateSafe(p.periodStart, "MMM d")}–
+                      {formatDateSafe(p.periodEnd, "MMM d, yyyy")}
                     </TableCell>
-                    <TableCell className="text-right text-sm tabular-nums">{formatCurrency(p.commissionAmount, p.currency)}</TableCell>
-                    <TableCell className={cn("text-right text-sm tabular-nums", p.adjustments < 0 ? "text-red-600" : p.adjustments > 0 ? "text-green-600" : "text-muted-foreground")}>
-                      {p.adjustments !== 0 ? (p.adjustments > 0 ? "+" : "") + formatCurrency(p.adjustments, p.currency) : "—"}
+                    <TableCell className="text-right text-sm tabular-nums">
+                      {formatCurrency(p.commissionAmount, p.currency)}
                     </TableCell>
-                    <TableCell className="text-right text-sm font-semibold tabular-nums">{formatCurrency(p.finalAmount, p.currency)}</TableCell>
-                    <TableCell><span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold", statusClass)}>{t(statusKey)}</span></TableCell>
+                    <TableCell
+                      className={cn(
+                        "text-right text-sm tabular-nums",
+                        p.adjustments < 0
+                          ? "text-red-600"
+                          : p.adjustments > 0
+                            ? "text-green-600"
+                            : "text-muted-foreground",
+                      )}
+                    >
+                      {p.adjustments !== 0
+                        ? (p.adjustments > 0 ? "+" : "") + formatCurrency(p.adjustments, p.currency)
+                        : "—"}
+                    </TableCell>
+                    <TableCell className="text-right text-sm font-semibold tabular-nums">
+                      {formatCurrency(p.finalAmount, p.currency)}
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={cn(
+                          "inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold",
+                          statusClass,
+                        )}
+                      >
+                        {t(statusKey)}
+                      </span>
+                    </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {p.actualPaymentDate ? format(new Date(p.actualPaymentDate), "MMM d, yyyy") : "—"}
+                      {formatDateSafe(p.actualPaymentDate, "MMM d, yyyy")}
                     </TableCell>
                   </TableRow>
                 );
@@ -122,15 +177,18 @@ export function RepPortal() {
   const { data: summary, isLoading: summaryLoading } = useGetRepSummary(
     id,
     { period },
-    { query: { enabled: !!id, queryKey: getGetRepSummaryQueryKey(id, { period }) } }
+    { query: { enabled: !!id, queryKey: getGetRepSummaryQueryKey(id, { period }) } },
   );
 
   // Fetch payouts at the parent level so we can compute admin metrics
   const { data: payoutsRaw = {} as any, isLoading: payoutsLoading } = useQuery<any>({
     queryKey: ["rep-payouts", id, activeWorkspace?.id],
     queryFn: async () => {
-      try { return await apiFetch(`/api/payouts?repId=${id}&limit=500`); }
-      catch { return { data: [] }; }
+      try {
+        return await apiFetch(`/api/payouts?repId=${id}&limit=500`);
+      } catch {
+        return { data: [] };
+      }
     },
     enabled: Boolean(id && activeWorkspace?.id),
   });
@@ -141,7 +199,12 @@ export function RepPortal() {
   const { sort, getSortHandler, sortedData } = useTableSort<DealColumn>();
 
   if (summaryLoading) return <RepPortalSkeleton />;
-  if (!summary || (summary as any).error) return <div className="max-w-5xl mx-auto p-6"><p className="text-muted-foreground">{t("portal.rep.repNotFound")}</p></div>;
+  if (!summary || (summary as any).error)
+    return (
+      <div className="max-w-5xl mx-auto p-6">
+        <p className="text-muted-foreground">{t("portal.rep.repNotFound")}</p>
+      </div>
+    );
 
   // Always compute last 6 months
   const last6Months = (() => {
@@ -151,7 +214,11 @@ export function RepPortal() {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const periodStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       const existing = (summary.monthlyHistory || []).find((m) => m.period === periodStr);
-      months.push(existing ? { ...existing, totalDeals: (existing as any).totalDeals ?? 0 } : { period: periodStr, totalCommission: 0, totalDeals: 0 });
+      months.push(
+        existing
+          ? { ...existing, totalDeals: (existing as any).totalDeals ?? 0 }
+          : { period: periodStr, totalCommission: 0, totalDeals: 0 },
+      );
     }
     return months;
   })();
@@ -165,11 +232,18 @@ export function RepPortal() {
     .filter((p: any) => p.status === "paid")
     .reduce((s: number, p: any) => s + Number(p.finalAmount || p.commissionAmount || 0), 0);
 
-  const lifetimeEarnings = payouts
-    .reduce((s: number, p: any) => s + Number(p.commissionAmount || 0), 0);
+  const lifetimeEarnings = payouts.reduce(
+    (s: number, p: any) => s + Number(p.commissionAmount || 0),
+    0,
+  );
 
   const ytdPaid = payouts
-    .filter((p: any) => p.status === "paid" && p.actualPaymentDate && new Date(p.actualPaymentDate).getFullYear() === new Date().getFullYear())
+    .filter(
+      (p: any) =>
+        p.status === "paid" &&
+        p.actualPaymentDate &&
+        new Date(p.actualPaymentDate).getFullYear() === new Date().getFullYear(),
+    )
     .reduce((s: number, p: any) => s + Number(p.finalAmount || p.commissionAmount || 0), 0);
 
   return (
@@ -198,19 +272,29 @@ export function RepPortal() {
           <div className="px-5 py-4">
             <div className="flex items-center gap-1.5 mb-1">
               <Layers className="size-3.5 text-muted-foreground" />
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Plan</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Plan
+              </p>
             </div>
-            <p className="text-sm font-medium text-foreground">{summary.planName || t("portal.rep.planNone")}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{activeWorkspace?.name || t("portal.rep.planWorkspace")}</p>
+            <p className="text-sm font-medium text-foreground">
+              {summary.planName || t("portal.rep.planNone")}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {activeWorkspace?.name || t("portal.rep.planWorkspace")}
+            </p>
           </div>
 
           {/* Total Owed (pending + approved) */}
           <div className="px-5 py-4">
             <div className="flex items-center gap-1.5 mb-1">
               <Clock className="size-3.5 text-amber-500" />
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Outstanding</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Outstanding
+              </p>
             </div>
-            <p className="text-sm font-semibold text-foreground tabular-nums">{formatCurrency(totalOwed, currency)}</p>
+            <p className="text-sm font-semibold text-foreground tabular-nums">
+              {formatCurrency(totalOwed, currency)}
+            </p>
             <p className="text-xs text-muted-foreground mt-0.5">Pending &amp; approved</p>
           </div>
 
@@ -218,9 +302,13 @@ export function RepPortal() {
           <div className="px-5 py-4">
             <div className="flex items-center gap-1.5 mb-1">
               <ArrowDownToLine className="size-3.5 text-green-500" />
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Total Paid</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Total Paid
+              </p>
             </div>
-            <p className="text-sm font-semibold text-foreground tabular-nums">{formatCurrency(totalPaid, currency)}</p>
+            <p className="text-sm font-semibold text-foreground tabular-nums">
+              {formatCurrency(totalPaid, currency)}
+            </p>
             <p className="text-xs text-muted-foreground mt-0.5">Lifetime</p>
           </div>
 
@@ -228,9 +316,13 @@ export function RepPortal() {
           <div className="px-5 py-4">
             <div className="flex items-center gap-1.5 mb-1">
               <TrendingUp className="size-3.5 text-primary" />
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">YTD Paid</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                YTD Paid
+              </p>
             </div>
-            <p className="text-sm font-semibold text-foreground tabular-nums">{formatCurrency(ytdPaid, currency)}</p>
+            <p className="text-sm font-semibold text-foreground tabular-nums">
+              {formatCurrency(ytdPaid, currency)}
+            </p>
             <p className="text-xs text-muted-foreground mt-0.5">{new Date().getFullYear()}</p>
           </div>
         </div>
@@ -272,7 +364,9 @@ export function RepPortal() {
               <CardContent className="grid grid-cols-2 gap-2">
                 <div>
                   <p className="text-[10px] text-muted-foreground">Commission</p>
-                  <p className="text-sm font-semibold">{formatCurrency(c.totalCommission, c.currency)}</p>
+                  <p className="text-sm font-semibold">
+                    {formatCurrency(c.totalCommission, c.currency)}
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] text-muted-foreground">Deals</p>
@@ -301,10 +395,50 @@ export function RepPortal() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                <XAxis dataKey="period" tickFormatter={(val) => { const [y,m]=val.split("-"); return new Date(+y,+m-1,1).toLocaleString("en",{month:"short"}); }} tick={{fontSize:11}} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-                <YAxis tickFormatter={(v:number)=>`$${(v/1000).toFixed(0)}k`} tick={{fontSize:11}} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-                <RechartsTooltip formatter={(v:number)=>[formatCurrency(v,currency),t("portal.rep.commission")]} labelFormatter={(l)=>{const[y,m]=(l||"").split("-");const d=new Date(+y,+m-1,1);return`${d.toLocaleString("en",{month:"short"})} ${y}`;}} contentStyle={{borderRadius:8,border:"1px solid hsl(var(--border))",backgroundColor:"hsl(var(--card))",fontSize:13}} cursor={{fill:"hsl(var(--muted)/0.3)"}} />
-                <Line type="monotone" dataKey="totalCommission" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} activeDot={{r:4,fill:"hsl(var(--primary))"}} />
+                <XAxis
+                  dataKey="period"
+                  tickFormatter={(val) => {
+                    const [y, m] = val.split("-");
+                    return new Date(+y, +m - 1, 1).toLocaleString("en", { month: "short" });
+                  }}
+                  tick={{ fontSize: 11 }}
+                  stroke="hsl(var(--muted-foreground))"
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`}
+                  tick={{ fontSize: 11 }}
+                  stroke="hsl(var(--muted-foreground))"
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <RechartsTooltip
+                  formatter={(v: number) => [
+                    formatCurrency(v, currency),
+                    t("portal.rep.commission"),
+                  ]}
+                  labelFormatter={(l) => {
+                    const [y, m] = (l || "").split("-");
+                    const d = new Date(+y, +m - 1, 1);
+                    return `${d.toLocaleString("en", { month: "short" })} ${y}`;
+                  }}
+                  contentStyle={{
+                    borderRadius: 8,
+                    border: "1px solid hsl(var(--border))",
+                    backgroundColor: "hsl(var(--card))",
+                    fontSize: 13,
+                  }}
+                  cursor={{ fill: "hsl(var(--muted)/0.3)" }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="totalCommission"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 4, fill: "hsl(var(--primary))" }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -326,11 +460,44 @@ export function RepPortal() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <SortableTableHead label={t("portal.rep.dealName")} column="dealName" sortColumn={sort.column} sortDirection={sort.direction as SortDirection} onSort={getSortHandler} />
-                  <SortableTableHead label={t("portal.rep.closeDate")} column="closeDate" sortColumn={sort.column} sortDirection={sort.direction as SortDirection} onSort={getSortHandler} />
-                  <SortableTableHead label={t("portal.rep.amount")} column="dealAmount" sortColumn={sort.column} sortDirection={sort.direction as SortDirection} onSort={getSortHandler} align="right" />
-                  <SortableTableHead label={t("portal.rep.rate")} column="rateApplied" sortColumn={sort.column} sortDirection={sort.direction as SortDirection} onSort={getSortHandler} align="right" />
-                  <SortableTableHead label={t("portal.rep.commission")} column="commissionAmount" sortColumn={sort.column} sortDirection={sort.direction as SortDirection} onSort={getSortHandler} align="right" />
+                  <SortableTableHead
+                    label={t("portal.rep.dealName")}
+                    column="dealName"
+                    sortColumn={sort.column}
+                    sortDirection={sort.direction as SortDirection}
+                    onSort={getSortHandler}
+                  />
+                  <SortableTableHead
+                    label={t("portal.rep.closeDate")}
+                    column="closeDate"
+                    sortColumn={sort.column}
+                    sortDirection={sort.direction as SortDirection}
+                    onSort={getSortHandler}
+                  />
+                  <SortableTableHead
+                    label={t("portal.rep.amount")}
+                    column="dealAmount"
+                    sortColumn={sort.column}
+                    sortDirection={sort.direction as SortDirection}
+                    onSort={getSortHandler}
+                    align="right"
+                  />
+                  <SortableTableHead
+                    label={t("portal.rep.rate")}
+                    column="rateApplied"
+                    sortColumn={sort.column}
+                    sortDirection={sort.direction as SortDirection}
+                    onSort={getSortHandler}
+                    align="right"
+                  />
+                  <SortableTableHead
+                    label={t("portal.rep.commission")}
+                    column="commissionAmount"
+                    sortColumn={sort.column}
+                    sortDirection={sort.direction as SortDirection}
+                    onSort={getSortHandler}
+                    align="right"
+                  />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -347,13 +514,41 @@ export function RepPortal() {
                     <TableRow key={deal.dealId}>
                       <TableCell>
                         <div className="font-medium">{deal.dealName}</div>
-                        <div className="text-xs text-muted-foreground mt-0.5">{deal.calculationNote}</div>
-                        {dealCurrency !== currency && (<Badge variant="outline" className="mt-0.5 text-[10px] p-1.5 h-4">{dealCurrency}</Badge>)}
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          {deal.calculationNote}
+                        </div>
+                        {dealCurrency !== currency && (
+                          <Badge variant="outline" className="mt-0.5 text-[10px] p-1.5 h-4">
+                            {dealCurrency}
+                          </Badge>
+                        )}
                       </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">{format(new Date(deal.closeDate), "MMM d")}</TableCell>
-                      <TableCell className="text-right"><CurrencyCell amount={deal.dealAmount} currency={dealCurrency} wsCurrency={deal.wsCurrency ?? currency} convertedAmount={deal.convertedDealAmount} exchangeRateSnapshot={deal.exchangeRateSnapshot} rateSnapshotDate={deal.rateSnapshotDate} /></TableCell>
-                      <TableCell className="text-right font-medium">{formatPercent(deal.rateApplied)}</TableCell>
-                      <TableCell className="text-right font-semibold text-primary"><CurrencyCell amount={deal.commissionAmount} currency={dealCurrency} wsCurrency={deal.wsCurrency ?? currency} convertedAmount={deal.convertedCommission} exchangeRateSnapshot={deal.exchangeRateSnapshot} rateSnapshotDate={deal.rateSnapshotDate} /></TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {formatDateSafe(deal.closeDate, "MMM d")}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <CurrencyCell
+                          amount={deal.dealAmount}
+                          currency={dealCurrency}
+                          wsCurrency={deal.wsCurrency ?? currency}
+                          convertedAmount={deal.convertedDealAmount}
+                          exchangeRateSnapshot={deal.exchangeRateSnapshot}
+                          rateSnapshotDate={deal.rateSnapshotDate}
+                        />
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {formatPercent(deal.rateApplied)}
+                      </TableCell>
+                      <TableCell className="text-right font-semibold text-primary">
+                        <CurrencyCell
+                          amount={deal.commissionAmount}
+                          currency={dealCurrency}
+                          wsCurrency={deal.wsCurrency ?? currency}
+                          convertedAmount={deal.convertedCommission}
+                          exchangeRateSnapshot={deal.exchangeRateSnapshot}
+                          rateSnapshotDate={deal.rateSnapshotDate}
+                        />
+                      </TableCell>
                     </TableRow>
                   );
                 })}
@@ -364,7 +559,14 @@ export function RepPortal() {
       </Card>
 
       {/* Payout History */}
-      <PayoutsSection payouts={payouts} isLoading={payoutsLoading} currency={currency} t={t} statusI18n={PAYOUT_STATUS_I18N} statusClasses={PAYOUT_STATUS_CLASSES} />
+      <PayoutsSection
+        payouts={payouts}
+        isLoading={payoutsLoading}
+        currency={currency}
+        t={t}
+        statusI18n={PAYOUT_STATUS_I18N}
+        statusClasses={PAYOUT_STATUS_CLASSES}
+      />
     </div>
   );
 }

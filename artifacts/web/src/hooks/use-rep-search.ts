@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
 
 export function useRepSearch(workspaceId?: string) {
@@ -20,27 +20,36 @@ export function useRepSearch(workspaceId?: string) {
           setReps(data.map((r: any) => ({ id: String(r.id || r._id), name: r.name })));
           setInitialLoaded(true);
         }
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
       if (!cancelled) setSearching(false);
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [workspaceId, initialLoaded]);
 
   // Server-side search via API
-  const onSearch = useCallback((query: string) => {
-    if (!workspaceId) return;
-    clearTimeout(searchTimeout.current);
-    searchTimeout.current = setTimeout(async () => {
-      setSearching(true);
-      try {
-        const queryParam = query ? `search=${encodeURIComponent(query)}&limit=50` : "limit=200";
-        const res = await apiFetch(`/api/reps?${queryParam}`);
-        const data = (res as any)?.data ?? (Array.isArray(res) ? res : []);
-        setReps(data.map((r: any) => ({ id: String(r.id || r._id), name: r.name })));
-      } catch { /* ignore */ }
-      setSearching(false);
-    }, 300);
-  }, [workspaceId]);
+  const onSearch = useCallback(
+    (query: string) => {
+      if (!workspaceId) return;
+      clearTimeout(searchTimeout.current);
+      searchTimeout.current = setTimeout(async () => {
+        setSearching(true);
+        try {
+          const queryParam = query ? `search=${encodeURIComponent(query)}&limit=50` : "limit=200";
+          const res = await apiFetch(`/api/reps?${queryParam}`);
+          const data = (res as any)?.data ?? (Array.isArray(res) ? res : []);
+          setReps(data.map((r: any) => ({ id: String(r.id || r._id), name: r.name })));
+        } catch {
+          /* ignore */
+        }
+        setSearching(false);
+      }, 300);
+    },
+    [workspaceId],
+  );
 
   return { reps, searching, onSearch };
 }

@@ -1,22 +1,29 @@
-import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { CheckCircle2, Loader2, LogIn, UserPlus, XCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { authClient } from "@/lib/auth-client";
-import { useAuth } from "@/hooks/use-auth";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, CheckCircle2, XCircle, UserPlus, LogIn } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { authClient } from "@/lib/auth-client";
 
 export function AcceptInvite() {
   const { t } = useTranslation();
   const [location, setLocation] = useLocation();
   const { session, loading: authLoading } = useAuth();
   const { toast } = useToast();
-  
+
   const searchParams = new URLSearchParams(window.location.search);
   const invitationId = searchParams.get("id");
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [invitation, setInvitation] = useState<any>(null);
@@ -32,7 +39,7 @@ export function AcceptInvite() {
 
     async function checkInvitation() {
       try {
-        // Better Auth might have a way to get invitation details publically 
+        // Better Auth might have a way to get invitation details publically
         // but for now we'll just try to accept it if logged in or show join button
         setChecking(false);
       } catch (err) {
@@ -91,11 +98,9 @@ export function AcceptInvite() {
             </div>
           </div>
           <CardTitle className="text-2xl font-semibold">Workspace Invitation</CardTitle>
-          <CardDescription>
-            You've been invited to join a team on CommissionKit.
-          </CardDescription>
+          <CardDescription>You've been invited to join a team on CommissionKit.</CardDescription>
         </CardHeader>
-        
+
         <CardContent className="space-y-4">
           {error && (
             <div className="bg-destructive/10 border border-destructive/20 text-destructive p-4 rounded-lg flex items-start gap-3">
@@ -109,8 +114,8 @@ export function AcceptInvite() {
               <p className="text-sm text-muted-foreground mb-4">
                 You need to be signed in to accept this invitation.
               </p>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full gap-2"
                 onClick={() => setLocation(`/login?redirect=/accept-invite?id=${invitationId}`)}
               >
@@ -135,8 +140,8 @@ export function AcceptInvite() {
 
         <CardFooter>
           {session && !error && (
-            <Button 
-              className="w-full h-11 text-[15px] font-semibold" 
+            <Button
+              className="w-full h-11 text-[15px] font-semibold"
               onClick={handleAccept}
               disabled={loading}
             >

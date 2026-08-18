@@ -1,8 +1,8 @@
-import { z } from "zod";
-import { Router, type IRouter, type Request } from "express";
-import { sendMediumPriorityEmail } from "@workspace/queue";
-import { leadNotificationTemplate } from "@workspace/email-templates";
 import { Lead } from "@workspace/db/schema";
+import { leadNotificationTemplate } from "@workspace/email-templates";
+import { sendMediumPriorityEmail } from "@workspace/queue";
+import { type IRouter, type Request, Router } from "express";
+import { z } from "zod";
 import { logger } from "../../lib/logger";
 import { leadRateLimit } from "../../middleware/rate-limiter";
 

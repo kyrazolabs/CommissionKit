@@ -1,5 +1,5 @@
-import { useTranslation } from "react-i18next";
 import { Download } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 
@@ -9,24 +9,20 @@ interface PortalExportButtonProps {
   columns: { key: string; header: string }[];
 }
 
-export function PortalExportButton({
-  data,
-  filename,
-  columns,
-}: PortalExportButtonProps) {
+export function PortalExportButton({ data, filename, columns }: PortalExportButtonProps) {
   const { t } = useTranslation();
 
   const handleExport = () => {
     const header = columns.map((c) => c.header).join(",");
     const rows = data.map((row) =>
-      columns.map((c) => {
-        const val = row[c.key];
-        const str = String(val ?? "");
-        // Escape values containing commas or quotes
-        return str.includes(",") || str.includes('"')
-          ? `"${str.replace(/"/g, '""')}"`
-          : str;
-      }).join(",")
+      columns
+        .map((c) => {
+          const val = row[c.key];
+          const str = String(val ?? "");
+          // Escape values containing commas or quotes
+          return str.includes(",") || str.includes('"') ? `"${str.replace(/"/g, '""')}"` : str;
+        })
+        .join(","),
     );
     const csv = [header, ...rows].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });

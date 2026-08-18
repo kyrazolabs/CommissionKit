@@ -1,19 +1,25 @@
-import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { authClient } from "@/lib/auth-client";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { motion, AnimatePresence } from "framer-motion";
-import { Link, useLocation } from "wouter";
-
+import bleftCurves from "@/decorative/bleft.curves.svg?raw";
 // Import decorative SVGs from public/decorative as raw strings
 import leftCurves from "@/decorative/left-curves.svg?raw";
 import rightCurves from "@/decorative/right-curves.svg?raw";
-import bleftCurves from "@/decorative/bleft.curves.svg?raw";
 import trightCurves from "@/decorative/tright-curves.svg?raw";
+import { useToast } from "@/hooks/use-toast";
+import { authClient } from "@/lib/auth-client";
 
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false);
@@ -162,19 +168,33 @@ export function ResetPasswordPage() {
                         transition={{ duration: 0.25 }}
                       >
                         <CardHeader className="pb-4">
-                          <CardTitle className="text-lg text-destructive">Invalid or Expired Link</CardTitle>
+                          <CardTitle className="text-lg text-destructive">
+                            Invalid or Expired Link
+                          </CardTitle>
                           <CardDescription className="mt-1">
-                            This password reset link is invalid, has expired, or is missing the verification token.
+                            This password reset link is invalid, has expired, or is missing the
+                            verification token.
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col items-center justify-center py-4 text-center">
                           <div className="rounded-full bg-destructive/10 p-3 text-destructive mb-4">
-                            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            <svg
+                              className="w-8 h-8"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                              />
                             </svg>
                           </div>
                           <p className="text-sm text-muted-foreground max-w-[280px]">
-                            Please request a new password reset link to securely reset your credentials.
+                            Please request a new password reset link to securely reset your
+                            credentials.
                           </p>
                         </CardContent>
                         <CardFooter className="flex flex-col gap-3">
@@ -185,7 +205,10 @@ export function ResetPasswordPage() {
                           >
                             Request new reset link
                           </Button>
-                          <Link to="/login" className="text-sm text-primary font-medium hover:underline text-center">
+                          <Link
+                            to="/login"
+                            className="text-sm text-primary font-medium hover:underline text-center"
+                          >
                             Back to sign in
                           </Link>
                         </CardFooter>
@@ -206,8 +229,18 @@ export function ResetPasswordPage() {
                         </CardHeader>
                         <CardContent className="flex flex-col items-center justify-center py-4 text-center space-y-4">
                           <div className="rounded-full bg-primary/10 p-3 text-primary">
-                            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <svg
+                              className="w-8 h-8"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
                             </svg>
                           </div>
                           <p className="text-sm text-muted-foreground max-w-[280px]">
@@ -268,26 +301,68 @@ export function ResetPasswordPage() {
 
                             {/* Requirements indicators with premium transitions */}
                             <div className="space-y-2 pt-2 border-t border-border/20">
-                              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-2">Password Requirements</p>
-                              
+                              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-2">
+                                Password Requirements
+                              </p>
+
                               <div className="flex items-center gap-2 text-xs">
-                                <span className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${isLengthValid ? 'bg-primary scale-125' : 'bg-muted-foreground/30'}`} />
-                                <span className={isLengthValid ? 'text-foreground font-medium' : 'text-muted-foreground'}>At least 8 characters</span>
+                                <span
+                                  className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${isLengthValid ? "bg-primary scale-125" : "bg-muted-foreground/30"}`}
+                                />
+                                <span
+                                  className={
+                                    isLengthValid
+                                      ? "text-foreground font-medium"
+                                      : "text-muted-foreground"
+                                  }
+                                >
+                                  At least 8 characters
+                                </span>
                               </div>
 
                               <div className="flex items-center gap-2 text-xs">
-                                <span className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${hasNumber ? 'bg-primary scale-125' : 'bg-muted-foreground/30'}`} />
-                                <span className={hasNumber ? 'text-foreground font-medium' : 'text-muted-foreground'}>At least 1 number</span>
+                                <span
+                                  className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${hasNumber ? "bg-primary scale-125" : "bg-muted-foreground/30"}`}
+                                />
+                                <span
+                                  className={
+                                    hasNumber
+                                      ? "text-foreground font-medium"
+                                      : "text-muted-foreground"
+                                  }
+                                >
+                                  At least 1 number
+                                </span>
                               </div>
 
                               <div className="flex items-center gap-2 text-xs">
-                                <span className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${hasSpecial ? 'bg-primary scale-125' : 'bg-muted-foreground/30'}`} />
-                                <span className={hasSpecial ? 'text-foreground font-medium' : 'text-muted-foreground'}>At least 1 special character</span>
+                                <span
+                                  className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${hasSpecial ? "bg-primary scale-125" : "bg-muted-foreground/30"}`}
+                                />
+                                <span
+                                  className={
+                                    hasSpecial
+                                      ? "text-foreground font-medium"
+                                      : "text-muted-foreground"
+                                  }
+                                >
+                                  At least 1 special character
+                                </span>
                               </div>
 
                               <div className="flex items-center gap-2 text-xs">
-                                <span className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${doPasswordsMatch ? 'bg-primary scale-125' : 'bg-muted-foreground/30'}`} />
-                                <span className={doPasswordsMatch ? 'text-foreground font-medium' : 'text-muted-foreground'}>Passwords match</span>
+                                <span
+                                  className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${doPasswordsMatch ? "bg-primary scale-125" : "bg-muted-foreground/30"}`}
+                                />
+                                <span
+                                  className={
+                                    doPasswordsMatch
+                                      ? "text-foreground font-medium"
+                                      : "text-muted-foreground"
+                                  }
+                                >
+                                  Passwords match
+                                </span>
                               </div>
                             </div>
                           </CardContent>
@@ -306,12 +381,17 @@ export function ResetPasswordPage() {
                                   exit={{ opacity: 0, y: -10 }}
                                   transition={{ duration: 0.15 }}
                                 >
-                                  {loading ? t("resetPassword.updatingPassword") : t("resetPassword.resetPasswordButton")}
+                                  {loading
+                                    ? t("resetPassword.updatingPassword")
+                                    : t("resetPassword.resetPasswordButton")}
                                 </motion.span>
                               </AnimatePresence>
                             </Button>
 
-                            <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground text-center">
+                            <Link
+                              to="/login"
+                              className="text-sm text-muted-foreground hover:text-foreground text-center"
+                            >
                               Back to sign in
                             </Link>
                           </CardFooter>

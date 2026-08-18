@@ -1,11 +1,11 @@
-import { Worker } from "bullmq";
-import { IntegrationConnection, IntegrationSync } from "@workspace/db";
-import { getRedisClient, SYNC_DEALS_QUEUE } from "@workspace/queue";
-import type { SyncDealsPayload } from "@workspace/queue";
-import { pluginRegistry } from "@workspace/plugins-core";
-import { logger } from "../lib/logger";
-import { decryptConfig } from "../lib/crypto";
 import * as Sentry from "@sentry/bun";
+import { IntegrationConnection, IntegrationSync } from "@workspace/db";
+import { pluginRegistry } from "@workspace/plugins-core";
+import type { SyncDealsPayload } from "@workspace/queue";
+import { getRedisClient, SYNC_DEALS_QUEUE } from "@workspace/queue";
+import { Worker } from "bullmq";
+import { ensureFreshConfig } from "../lib/integrations/oauth";
+import { logger } from "../lib/logger";
 import { acquireWorkspaceLock } from "../lib/sync/lock";
 import { upsertDeals } from "../lib/sync/upsert-engine";
 
@@ -50,16 +50,9 @@ export const syncDealsWorker = new Worker<SyncDealsPayload>(
       try {
         await job.updateProgress(10);
 
-        const pluginConfig = {
-          ...(decryptConfig(conn.config as string) || {}),
-          _metadata: conn.metadata || {},
-        };
+        const pluginConfig = await ensureFreshConfig(conn, plugin);
 
-        const deals = await plugin.fetchDeals(
-          workspaceId,
-          pluginConfig,
-          {},
-        );
+        const deals = await plugin.fetchDeals(workspaceId, pluginConfig, {});
 
         await job.updateProgress(50);
 
@@ -81,10 +74,7 @@ export const syncDealsWorker = new Worker<SyncDealsPayload>(
           lastError: undefined,
         });
 
-        logger.info(
-          { workspaceId, connectorName, stats },
-          "[SyncDealsWorker] Deal sync complete",
-        );
+        logger.info({ workspaceId, connectorName, stats }, "[SyncDealsWorker] Deal sync complete");
 
         await job.updateProgress(100);
       } catch (err: any) {

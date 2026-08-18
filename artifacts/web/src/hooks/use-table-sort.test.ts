@@ -1,5 +1,5 @@
-import { describe, test, expect } from "bun:test";
-import { computeNextSort, applySort } from "./use-table-sort";
+import { describe, expect, test } from "bun:test";
+import { applySort, computeNextSort } from "./use-table-sort";
 
 describe("computeNextSort", () => {
   test("starts with null state", () => {
@@ -72,7 +72,11 @@ describe("applySort", () => {
   });
 
   test("handles single item array", () => {
-    const result = applySort([{ name: "Alice", revenue: 100 }], { column: "name", direction: "asc" }, (r) => r.name);
+    const result = applySort(
+      [{ name: "Alice", revenue: 100 }],
+      { column: "name", direction: "asc" },
+      (r) => r.name,
+    );
     expect(result.map((r) => r.name)).toEqual(["Alice"]);
   });
 });

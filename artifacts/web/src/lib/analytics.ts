@@ -9,7 +9,10 @@
 declare global {
   interface Window {
     umami?: {
-      track: (event: string | object | ((props: any) => object), data?: Record<string, string | number | boolean | null>) => void;
+      track: (
+        event: string | object | ((props: any) => object),
+        data?: Record<string, string | number | boolean | null>,
+      ) => void;
     };
   }
 }
@@ -35,133 +38,311 @@ export function trackPageView(url: string, referrer?: string) {
 
 export const Analytics = {
   // ── Auth ──────────────────────────────────────────────────────────────
-  authLoginView() { track("auth_login_view"); },
-  authSignupView() { track("auth_signup_view"); },
-  authForgotView() { track("auth_forgot_view"); },
-  authSignupAttempt() { track("auth_signup_attempt"); },
-  authLoginAttempt(provider: "email" | "google") { track("auth_login_attempt", { provider }); },
-  authLoginSuccess(provider: "email" | "google") { track("auth_login_success", { provider }); },
-  authLoginFailed(provider: "email" | "google", reason: string) { track("auth_login_failed", { provider, reason }); },
-  authSignupSuccess() { track("auth_signup_success"); },
-  authForgotRequest() { track("auth_forgot_request"); },
-  authResendVerification() { track("auth_resend_verification"); },
-  authModeSwitch(from: string, to: string) { track("auth_mode_switch", { from, to }); },
-  authSignOut() { track("auth_sign_out"); },
+  authLoginView() {
+    track("auth_login_view");
+  },
+  authSignupView() {
+    track("auth_signup_view");
+  },
+  authForgotView() {
+    track("auth_forgot_view");
+  },
+  authSignupAttempt() {
+    track("auth_signup_attempt");
+  },
+  authLoginAttempt(provider: "email" | "google") {
+    track("auth_login_attempt", { provider });
+  },
+  authLoginSuccess(provider: "email" | "google") {
+    track("auth_login_success", { provider });
+  },
+  authLoginFailed(provider: "email" | "google", reason: string) {
+    track("auth_login_failed", { provider, reason });
+  },
+  authSignupSuccess() {
+    track("auth_signup_success");
+  },
+  authForgotRequest() {
+    track("auth_forgot_request");
+  },
+  authResendVerification() {
+    track("auth_resend_verification");
+  },
+  authModeSwitch(from: string, to: string) {
+    track("auth_mode_switch", { from, to });
+  },
+  authSignOut() {
+    track("auth_sign_out");
+  },
 
   // ── Workspace ─────────────────────────────────────────────────────────
-  workspaceCreateView() { track("workspace_create_view"); },
-  workspaceCreated(engine: string | undefined) { track("workspace_created", { engine: engine ?? "standard" }); },
-  workspaceSwitched(engine: string | undefined) { track("workspace_switched", { engine: engine ?? "standard" }); },
-  workspaceCreateFailed() { track("workspace_create_failed"); },
+  workspaceCreateView() {
+    track("workspace_create_view");
+  },
+  workspaceCreated(engine: string | undefined) {
+    track("workspace_created", { engine: engine ?? "standard" });
+  },
+  workspaceSwitched(engine: string | undefined) {
+    track("workspace_switched", { engine: engine ?? "standard" });
+  },
+  workspaceCreateFailed() {
+    track("workspace_create_failed");
+  },
 
   // ── Navigation ────────────────────────────────────────────────────────
-  navClick(group: string, href: string, label: string) { track("nav_click", { group, href, label }); },
-  dashboardView() { track("dashboard_view"); },
+  navClick(group: string, href: string, label: string) {
+    track("nav_click", { group, href, label });
+  },
+  dashboardView() {
+    track("dashboard_view");
+  },
 
   // ── Reps ──────────────────────────────────────────────────────────────
-  repsView() { track("reps_view"); },
-  repCreated() { track("rep_created"); },
-  repBulkImport(count: number) { track("rep_bulk_import", { count }); },
-  repPortalCodeGenerated() { track("rep_portal_code_generated"); },
+  repsView() {
+    track("reps_view");
+  },
+  repCreated() {
+    track("rep_created");
+  },
+  repBulkImport(count: number) {
+    track("rep_bulk_import", { count });
+  },
+  repPortalCodeGenerated() {
+    track("rep_portal_code_generated");
+  },
 
   // ── Plans ─────────────────────────────────────────────────────────────
-  plansView() { track("plans_view"); },
-  planCreated(hasTiers: boolean, hasAccelerator: boolean) { track("plan_created", { hasTiers, hasAccelerator }); },
-  planDeleted() { track("plan_deleted"); },
+  plansView() {
+    track("plans_view");
+  },
+  planCreated(hasTiers: boolean, hasAccelerator: boolean) {
+    track("plan_created", { hasTiers, hasAccelerator });
+  },
+  planDeleted() {
+    track("plan_deleted");
+  },
 
   // ── Deals ─────────────────────────────────────────────────────────────
-  dealsView() { track("deals_view"); },
-  dealCreated() { track("deal_created"); },
-  dealBulkImport(count: number) { track("deal_bulk_import", { count }); },
-  dealExport() { track("deal_export"); },
+  dealsView() {
+    track("deals_view");
+  },
+  dealCreated() {
+    track("deal_created");
+  },
+  dealBulkImport(count: number) {
+    track("deal_bulk_import", { count });
+  },
+  dealExport() {
+    track("deal_export");
+  },
 
   // ── Commission Runs ───────────────────────────────────────────────────
-  runsView() { track("runs_view"); },
-  runDetailView() { track("run_detail_view"); },
-  runCalculated(engine: string | undefined) { track("run_calculated", { engine: engine ?? "standard" }); },
-  runExport() { track("run_export"); },
+  runsView() {
+    track("runs_view");
+  },
+  runDetailView() {
+    track("run_detail_view");
+  },
+  runCalculated(engine: string | undefined) {
+    track("run_calculated", { engine: engine ?? "standard" });
+  },
+  runExport() {
+    track("run_export");
+  },
 
   // ── Payouts ───────────────────────────────────────────────────────────
-  payoutsView() { track("payouts_view"); },
-  payoutCreated(method: string) { track("payout_created", { method }); },
-  payoutStatusChanged(from: string, to: string) { track("payout_status_changed", { from, to }); },
+  payoutsView() {
+    track("payouts_view");
+  },
+  payoutCreated(method: string) {
+    track("payout_created", { method });
+  },
+  payoutStatusChanged(from: string, to: string) {
+    track("payout_status_changed", { from, to });
+  },
 
   // ── Disputes ──────────────────────────────────────────────────────────
-  disputesView() { track("disputes_view"); },
-  disputeFiled() { track("dispute_filed"); },
-  disputeResolved(verdict: string) { track("dispute_resolved", { verdict }); },
+  disputesView() {
+    track("disputes_view");
+  },
+  disputeFiled() {
+    track("dispute_filed");
+  },
+  disputeResolved(verdict: string) {
+    track("dispute_resolved", { verdict });
+  },
 
   // ── Reports ───────────────────────────────────────────────────────────
-  reportsView() { track("reports_view"); },
-  reportExported(format: "csv" | "pdf") { track("report_exported", { format }); },
+  reportsView() {
+    track("reports_view");
+  },
+  reportExported(format: "csv" | "pdf") {
+    track("report_exported", { format });
+  },
 
   // ── Team ──────────────────────────────────────────────────────────────
-  teamView() { track("team_view"); },
-  teamMemberInvited(role: string) { track("team_member_invited", { role }); },
-  teamMemberRoleChanged(from: string, to: string) { track("team_member_role_changed", { from, to }); },
-  teamMemberRemoved() { track("team_member_removed"); },
-  teamInviteAccepted() { track("team_invite_accepted"); },
+  teamView() {
+    track("team_view");
+  },
+  teamMemberInvited(role: string) {
+    track("team_member_invited", { role });
+  },
+  teamMemberRoleChanged(from: string, to: string) {
+    track("team_member_role_changed", { from, to });
+  },
+  teamMemberRemoved() {
+    track("team_member_removed");
+  },
+  teamInviteAccepted() {
+    track("team_invite_accepted");
+  },
 
   // ── Settings ──────────────────────────────────────────────────────────
-  settingsView() { track("settings_view"); },
-  settingsSaved() { track("settings_saved"); },
+  settingsView() {
+    track("settings_view");
+  },
+  settingsSaved() {
+    track("settings_saved");
+  },
 
   // ── Billing ───────────────────────────────────────────────────────────
-  billingView() { track("billing_view"); },
-  billingPlanSelected(plan: string, yearly: boolean) { track("billing_plan_selected", { plan, yearly }); },
-  billingCheckoutStarted(plan: string, yearly: boolean, extraReps: number) { track("billing_checkout_started", { plan, yearly, extraReps }); },
-  billingCheckoutRedirected(plan: string) { track("billing_checkout_redirected", { plan }); },
-  billingCheckoutError(plan: string, error: string) { track("billing_checkout_error", { plan, error }); },
-  billingPortalOpened() { track("billing_portal_opened"); },
-  billingExtraRepsSaved(count: number) { track("billing_extra_reps_saved", { count }); },
-  billingCurrencyToggled(currency: string) { track("billing_currency_toggled", { currency }); },
-  billingYearlyToggled(yearly: boolean) { track("billing_yearly_toggled", { yearly }); },
+  billingView() {
+    track("billing_view");
+  },
+  billingPlanSelected(plan: string, yearly: boolean) {
+    track("billing_plan_selected", { plan, yearly });
+  },
+  billingCheckoutStarted(plan: string, yearly: boolean, extraReps: number) {
+    track("billing_checkout_started", { plan, yearly, extraReps });
+  },
+  billingCheckoutRedirected(plan: string) {
+    track("billing_checkout_redirected", { plan });
+  },
+  billingCheckoutError(plan: string, error: string) {
+    track("billing_checkout_error", { plan, error });
+  },
+  billingPortalOpened() {
+    track("billing_portal_opened");
+  },
+  billingExtraRepsSaved(count: number) {
+    track("billing_extra_reps_saved", { count });
+  },
+  billingCurrencyToggled(currency: string) {
+    track("billing_currency_toggled", { currency });
+  },
+  billingYearlyToggled(yearly: boolean) {
+    track("billing_yearly_toggled", { yearly });
+  },
 
   // ── Integrations ──────────────────────────────────────────────────────
-  integrationsView() { track("integrations_view"); },
-  integrationConnectOpened(provider: string) { track("integration_connect_opened", { provider }); },
-  integrationConnected(provider: string) { track("integration_connected", { provider }); },
-  integrationDisconnected(provider: string) { track("integration_disconnected", { provider }); },
-  integrationTrialClick(provider: string, location: string) { track("integration_trial_click", { provider, location }); },
-  integrationOdooTrialClick(location: string) { track("integration_odoo_trial_click", { location }); },
-  integrationHubspotTrialClick(location: string) { track("integration_hubspot_trial_click", { location }); },
-  integrationSalesforceTrialClick(location: string) { track("integration_salesforce_trial_click", { location }); },
-  integrationCustomTrialClick(location: string) { track("integration_custom_trial_click", { location }); },
+  integrationsView() {
+    track("integrations_view");
+  },
+  integrationConnectOpened(provider: string) {
+    track("integration_connect_opened", { provider });
+  },
+  integrationConnected(provider: string) {
+    track("integration_connected", { provider });
+  },
+  integrationDisconnected(provider: string) {
+    track("integration_disconnected", { provider });
+  },
+  integrationTrialClick(provider: string, location: string) {
+    track("integration_trial_click", { provider, location });
+  },
+  integrationOdooTrialClick(location: string) {
+    track("integration_odoo_trial_click", { location });
+  },
+  integrationHubspotTrialClick(location: string) {
+    track("integration_hubspot_trial_click", { location });
+  },
+  integrationSalesforceTrialClick(location: string) {
+    track("integration_salesforce_trial_click", { location });
+  },
+  integrationCustomTrialClick(location: string) {
+    track("integration_custom_trial_click", { location });
+  },
 
   // ── Enterprise / Aissol ───────────────────────────────────────────────
-  enterpriseProjectsView() { track("enterprise_projects_view"); },
-  enterpriseProjectDetailView() { track("enterprise_project_detail_view"); },
-  enterpriseMatrixView() { track("enterprise_matrix_view"); },
-  enterpriseReportsView() { track("enterprise_reports_view"); },
-  enterpriseRunsView() { track("enterprise_runs_view"); },
+  enterpriseProjectsView() {
+    track("enterprise_projects_view");
+  },
+  enterpriseProjectDetailView() {
+    track("enterprise_project_detail_view");
+  },
+  enterpriseMatrixView() {
+    track("enterprise_matrix_view");
+  },
+  enterpriseReportsView() {
+    track("enterprise_reports_view");
+  },
+  enterpriseRunsView() {
+    track("enterprise_runs_view");
+  },
 
   // ── Portal ────────────────────────────────────────────────────────────
-  portalLogin() { track("portal_login"); },
-  portalView(engine: string | undefined) { track("portal_view", { engine: engine ?? "standard" }); },
-  portalPayoutViewed() { track("portal_payout_viewed"); },
+  portalLogin() {
+    track("portal_login");
+  },
+  portalView(engine: string | undefined) {
+    track("portal_view", { engine: engine ?? "standard" });
+  },
+  portalPayoutViewed() {
+    track("portal_payout_viewed");
+  },
 
   // ── Public / Landing ──────────────────────────────────────────────────
-  landingView() { track("landing_view"); },
-  landingCTAClick(location: string) { track("landing_cta_click", { location }); },
-  landingSectionView(section: string) { track("landing_section_view", { section }); },
-  landingPricingCTAClick(plan: string) { track("landing_pricing_cta_click", { plan }); },
-  calculatorUsed() { track("calculator_used"); },
-  calculatorResultView() { track("calculator_result_view"); },
-  legalPageView(page: "privacy" | "terms" | "security") { track("legal_page_view", { page }); },
+  landingView() {
+    track("landing_view");
+  },
+  landingCTAClick(location: string) {
+    track("landing_cta_click", { location });
+  },
+  landingSectionView(section: string) {
+    track("landing_section_view", { section });
+  },
+  landingPricingCTAClick(plan: string) {
+    track("landing_pricing_cta_click", { plan });
+  },
+  calculatorUsed() {
+    track("calculator_used");
+  },
+  calculatorResultView() {
+    track("calculator_result_view");
+  },
+  legalPageView(page: "privacy" | "terms" | "security") {
+    track("legal_page_view", { page });
+  },
 
   // ── UI / Dialogs ──────────────────────────────────────────────────────
-  dialogOpened(dialog: string) { track("dialog_opened", { dialog }); },
-  dialogClosed(dialog: string) { track("dialog_closed", { dialog }); },
-  dialogConfirmed(dialog: string) { track("dialog_confirmed", { dialog }); },
-  toastShown(type: string, message: string) { track("toast_shown", { type, message }); },
+  dialogOpened(dialog: string) {
+    track("dialog_opened", { dialog });
+  },
+  dialogClosed(dialog: string) {
+    track("dialog_closed", { dialog });
+  },
+  dialogConfirmed(dialog: string) {
+    track("dialog_confirmed", { dialog });
+  },
+  toastShown(type: string, message: string) {
+    track("toast_shown", { type, message });
+  },
 
   // ── Theme / Preferences ───────────────────────────────────────────────
-  themeToggled(theme: "light" | "dark") { track("theme_toggled", { theme }); },
-  languageChanged(lang: string) { track("language_changed", { lang }); },
+  themeToggled(theme: "light" | "dark") {
+    track("theme_toggled", { theme });
+  },
+  languageChanged(lang: string) {
+    track("language_changed", { lang });
+  },
 
   // ── Session / Lifecycle ───────────────────────────────────────────────
-  errorOccurred(source: string, message: string) { track("error_occurred", { source, message }); },
-  limitReached(feature: string, currentPlan: string) { track("limit_reached", { feature, currentPlan }); },
+  errorOccurred(source: string, message: string) {
+    track("error_occurred", { source, message });
+  },
+  limitReached(feature: string, currentPlan: string) {
+    track("limit_reached", { feature, currentPlan });
+  },
 } as const;
 
 // ─── Internal helper ─────────────────────────────────────────────────────────

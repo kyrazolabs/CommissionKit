@@ -335,7 +335,7 @@ Each plugin implements `CKitPlugin` from `@workspace/plugins-core`:
 - `core`: base types, registry, HTTP client, normalization helpers.
 - `custom`: generic REST connector with JSONPath field mapping.
 - `odoo`: reps from `res.users`, deals from `sale.order`, invoice-derived payment status.
-- `salesforce`: OAuth 2.0 Client Credentials, opportunity sync.
+- `salesforce`: OAuth 2.0 Authorization Code (web server) with PKCE + token refresh, opportunity sync.
 - `hubspot`: owner/deal sync with pipeline stage mapping.
 
 Plugins are registered at API boot and support scheduled sync, webhook ingress, and egress write-back.

@@ -1,11 +1,11 @@
-import { describe, test, expect } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import {
   AuthConfigSchema,
-  PaginationConfigSchema,
-  EntityFieldMappingSchema,
-  StageFilterSchema,
-  EntityMappingSchema,
   CustomConnectorConfigSchema,
+  EntityFieldMappingSchema,
+  EntityMappingSchema,
+  PaginationConfigSchema,
+  StageFilterSchema,
 } from "./config-parser";
 
 describe("AuthConfigSchema", () => {
@@ -28,7 +28,12 @@ describe("AuthConfigSchema", () => {
   });
 
   test("parses valid oauth2 auth", () => {
-    const result = AuthConfigSchema.safeParse({ type: "oauth2", tokenUrl: "https://a.com", clientId: "c", clientSecret: "s" });
+    const result = AuthConfigSchema.safeParse({
+      type: "oauth2",
+      tokenUrl: "https://a.com",
+      clientId: "c",
+      clientSecret: "s",
+    });
     expect(result.success).toBe(true);
   });
 
@@ -54,7 +59,11 @@ describe("PaginationConfigSchema", () => {
   });
 
   test("parses cursor pagination with optional cursorPath", () => {
-    const result = PaginationConfigSchema.safeParse({ type: "cursor", limitValue: 50, cursorPath: "next" });
+    const result = PaginationConfigSchema.safeParse({
+      type: "cursor",
+      limitValue: 50,
+      cursorPath: "next",
+    });
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.cursorPath).toBe("next");

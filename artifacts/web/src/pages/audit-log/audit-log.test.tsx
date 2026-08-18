@@ -1,5 +1,5 @@
-import { describe, test, expect, mock, beforeEach } from "bun:test";
-import { render, screen, cleanup } from "@testing-library/react";
+import { beforeEach, describe, expect, mock, test } from "bun:test";
+import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import { AuditLogTable } from "@/components/audit-log/audit-log-table";
@@ -75,7 +75,7 @@ describe("AuditLogTable", () => {
         totalPages: 1,
         total: 0,
         onPageChange: () => {},
-      })
+      }),
     );
     // Check for animate-pulse class which is what Skeleton uses
     expect(container.querySelectorAll(".animate-pulse").length).toBeGreaterThan(0);
@@ -90,7 +90,7 @@ describe("AuditLogTable", () => {
         totalPages: 1,
         total: 0,
         onPageChange: () => {},
-      })
+      }),
     );
     expect(screen.getByText(/no audit events found/i)).toBeTruthy();
   });
@@ -104,7 +104,7 @@ describe("AuditLogTable", () => {
         totalPages: 1,
         total: 3,
         onPageChange: () => {},
-      })
+      }),
     );
 
     // Use exact match selector to avoid duplicate matches (title + visible text)
@@ -124,7 +124,7 @@ describe("AuditLogTable", () => {
         totalPages: 1,
         total: 3,
         onPageChange: () => {},
-      })
+      }),
     );
 
     // Find expand toggle buttons (first 3 buttons are expand toggles)
@@ -147,7 +147,7 @@ describe("AuditLogTable", () => {
         totalPages: 5,
         total: 120,
         onPageChange: () => {},
-      })
+      }),
     );
 
     expect(screen.getByText(/page 2 of 5/i)).toBeTruthy();
@@ -165,7 +165,7 @@ describe("AuditLogTable", () => {
         totalPages: 5,
         total: 120,
         onPageChange: onPageChange,
-      })
+      }),
     );
 
     // Find pagination buttons - they come after the 3 expand toggle buttons
@@ -188,7 +188,7 @@ describe("AuditLogTable", () => {
         totalPages: 1,
         total: 3,
         onPageChange: () => {},
-      })
+      }),
     );
 
     // Find expand buttons using data-testid
@@ -196,7 +196,7 @@ describe("AuditLogTable", () => {
     expect(expandButtons.length).toBe(3); // 3 rows, 1 expand button each
 
     // Before expand: all detail rows have opacity 0 (CSS approach keeps them in DOM)
-    let allDetailRows = document.querySelectorAll("tbody tr:has(td[colspan='6'])");
+    const allDetailRows = document.querySelectorAll("tbody tr:has(td[colspan='6'])");
     expect(allDetailRows.length).toBe(3);
     const firstDetailRowBefore = allDetailRows[0];
     expect(firstDetailRowBefore.querySelector("div")?.style.opacity).toBe("0");

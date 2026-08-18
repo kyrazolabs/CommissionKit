@@ -264,13 +264,13 @@ import { normalizeCurrency, derivePeriod, derivePaymentStatus, generateAccessCod
 
 ### `@workspace/plugins-salesforce`
 
-- OAuth 2.0 Client Credentials flow.
+- OAuth 2.0 Authorization Code (web server) with PKCE + token refresh (manual client-credentials fallback retained).
 - Syncs users as reps, opportunities as deals.
 - Auto-discovers pipeline stages; supports stage mapping/filtering.
 
 ### `@workspace/plugins-hubspot`
 
-- Service Key or Legacy App token auth.
+- OAuth 2.0 Authorization Code (web server) or access-token auth (manual fallback).
 - Syncs owners as reps, deals by pipeline stage.
 - Auto-discovers pipeline stages.
 

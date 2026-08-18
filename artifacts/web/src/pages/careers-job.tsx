@@ -1,32 +1,31 @@
-import { useState } from "react";
-import { usePageMeta } from "@/hooks/use-page-meta";
-import { useParams, Link } from "wouter";
-import { Footer } from "./landing/Footer";
-import { Navbar } from "./landing/Navbar";
 import {
-  CheckCircle2,
-  LoaderCircle,
-  Send,
-  User,
-  Mail,
-  Phone,
-  Linkedin,
-  MapPin,
-  FileText,
-  MessageSquare,
   ArrowLeft,
   Briefcase,
   Check,
+  CheckCircle2,
   Clock,
+  FileText,
+  Linkedin,
+  LoaderCircle,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Phone,
+  Send,
+  User,
 } from "lucide-react";
-
-import { Card, CardContent } from "@/components/ui/card";
+import { useState } from "react";
+import { Link, useParams } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+import { usePageMeta } from "@/hooks/use-page-meta";
 import { getJobBySlug } from "@/lib/jobs";
+import { Footer } from "./landing/Footer";
+import { Navbar } from "./landing/Navbar";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8088";
 
@@ -95,10 +94,8 @@ export function CareersJobPage() {
     const next: Record<string, string> = {};
     if (!form.fullName.trim() || form.fullName.trim().length < 2)
       next.fullName = "Full name is required";
-    if (!form.email.trim() || !/.+@.+\..+/.test(form.email))
-      next.email = "Valid email is required";
-    if (!form.phone.trim() || form.phone.trim().length < 5)
-      next.phone = "Phone number is required";
+    if (!form.email.trim() || !/.+@.+\..+/.test(form.email)) next.email = "Valid email is required";
+    if (!form.phone.trim() || form.phone.trim().length < 5) next.phone = "Phone number is required";
     if (!form.location.trim()) next.location = "Location is required";
     if (!form.experience.trim()) next.experience = "Experience is required";
     if (!form.pitch.trim() || form.pitch.trim().length < 10)
@@ -159,7 +156,8 @@ export function CareersJobPage() {
               Thank you for applying to the <strong>{job.title}</strong> position.
             </p>
             <p className="text-[13px] text-muted-foreground mb-6">
-              Our team will review your application and reach out via email or WhatsApp within 2 business days.
+              Our team will review your application and reach out via email or WhatsApp within 2
+              business days.
             </p>
             <Button variant="outline" className="w-full" asChild>
               <Link href="/careers">
@@ -177,326 +175,346 @@ export function CareersJobPage() {
     <>
       <Navbar />
       <main className="mx-auto p-8 lg:px-10 max-w-3xl py-36">
-          {/* Back link */}
-          <Link href="/careers" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
-            <ArrowLeft className="size-3.5" />
-            Back to all positions
-          </Link>
+        {/* Back link */}
+        <Link
+          href="/careers"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
+        >
+          <ArrowLeft className="size-3.5" />
+          Back to all positions
+        </Link>
 
-          {/* Job Header */}
-          <div className="mb-10">
-            <div className="flex flex-wrap items-center gap-2 mb-3">
-              <h1 className="text-[24px] md:text-[28px] font-bold tracking-tight text-foreground">
-                {job.title}
-              </h1>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                {job.type === "contract" ? "Contract" : job.type === "full-time" ? "Full-time" : "Part-time"}
-              </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                <Clock className="size-3" />
-                {job.schedule === "full-time" ? "Full-time" : "Part-time"}
-              </span>
-            </div>
-            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <Briefcase className="size-3.5" />
-                {job.department}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <MapPin className="size-3.5" />
-                {job.location}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Clock className="size-3.5" />
-                {job.schedule === "full-time" ? "Full-time" : "Part-time"}
-              </span>
-            </div>
+        {/* Job Header */}
+        <div className="mb-10">
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <h1 className="text-[24px] md:text-[28px] font-bold tracking-tight text-foreground">
+              {job.title}
+            </h1>
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+              {job.type === "contract"
+                ? "Contract"
+                : job.type === "full-time"
+                  ? "Full-time"
+                  : "Part-time"}
+            </span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+              <Clock className="size-3" />
+              {job.schedule === "full-time" ? "Full-time" : "Part-time"}
+            </span>
           </div>
-
-          {/* Job Description */}
-          <div className="space-y-8 mb-10">
-            <section>
-              <h2 className="text-[15px] font-semibold text-foreground mb-3">About the role</h2>
-              <p className="text-[14px] text-muted-foreground leading-relaxed">{job.description}</p>
-            </section>
-
-            <section>
-              <h2 className="text-[15px] font-semibold text-foreground mb-3">What you'll do</h2>
-              <ul className="space-y-2">
-                {job.responsibilities.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-[14px] text-muted-foreground leading-relaxed">
-                    <Check className="size-4 text-primary shrink-0 mt-0.5" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="text-[15px] font-semibold text-foreground mb-3">What we're looking for</h2>
-              <ul className="space-y-2">
-                {job.requirements.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-[14px] text-muted-foreground leading-relaxed">
-                    <Check className="size-4 text-primary shrink-0 mt-0.5" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="text-[15px] font-semibold text-foreground mb-3">What we offer</h2>
-              <ul className="space-y-2">
-                {job.offers.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-[14px] text-muted-foreground leading-relaxed">
-                    <Check className="size-4 text-primary shrink-0 mt-0.5" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-
-            {job.earningsExample && (
-              <section>
-                <h2 className="text-[15px] font-semibold text-foreground mb-3">Earnings Potential</h2>
-                <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
-                  <p className="text-[14px] text-foreground leading-relaxed">{job.earningsExample}</p>
-                </div>
-              </section>
-            )}
-
-            <section>
-              <h2 className="text-[15px] font-semibold text-foreground mb-3">The product you'll be selling</h2>
-              <div className="rounded-xl border border-border overflow-hidden">
-                <img
-                  src="/imgs/demo.jpg"
-                  alt="CommissionKit platform dashboard"
-                  className="w-full h-auto"
-                />
-              </div>
-              <p className="text-[13px] text-muted-foreground mt-2">
-                CommissionKit is a sales commission management tool for teams with 5–100+ reps.
-                It replaces commission spreadsheets with a real system: import deals, build plans, run calculations, manage payouts,
-                and give reps their own portal to see what they're earning. Three pricing tiers: Starter ($49/mo), Growth ($99/mo), Pro ($249/mo).
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-[15px] font-semibold text-foreground mb-3">About CommissionKit</h2>
-              <div className="rounded-xl border border-border bg-card p-5">
-                <p className="text-[14px] text-muted-foreground leading-relaxed mb-3">
-                  Founded by Abdullah — someone who's been on both sides of the commission equation. We built CommissionKit because we got tired of watching sales teams fight over spreadsheets, do shadow accounting in Excel, and argue about whether a payout was correct. We made the tool we wanted when we were in your shoes.
-                </p>
-                <p className="text-[14px] text-muted-foreground leading-relaxed">
-                  We're early-stage, self-funded, and already have paying customers across the GCC.
-                  The reps who join now get in on the ground floor. You'll help define how we sell, and
-                  you'll earn bigger commissions from the accounts you bring in as we grow.
-                </p>
-              </div>
-            </section>
-
-            {job.leadPromise && (
-              <section>
-                <h2 className="text-[15px] font-semibold text-foreground mb-3">Lead Generation</h2>
-                <div className="rounded-xl border border-border bg-card p-5">
-                  <p className="text-[14px] text-foreground leading-relaxed">{job.leadPromise}</p>
-                </div>
-              </section>
-            )}
-
-            {job.payoutTimeline && (
-              <section>
-                <h2 className="text-[15px] font-semibold text-foreground mb-3">Payout Timeline</h2>
-                <div className="rounded-xl border border-border bg-card p-5">
-                  <p className="text-[14px] text-foreground leading-relaxed">{job.payoutTimeline}</p>
-                </div>
-              </section>
-            )}
+          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <Briefcase className="size-3.5" />
+              {job.department}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <MapPin className="size-3.5" />
+              {job.location}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Clock className="size-3.5" />
+              {job.schedule === "full-time" ? "Full-time" : "Part-time"}
+            </span>
           </div>
+        </div>
 
-          {/* Application Form */}
-          <div className="border-t border-border pt-10">
-            <h2 className="text-[18px] font-semibold tracking-tight text-foreground mb-2">
-              Apply for this position
+        {/* Job Description */}
+        <div className="space-y-8 mb-10">
+          <section>
+            <h2 className="text-[15px] font-semibold text-foreground mb-3">About the role</h2>
+            <p className="text-[14px] text-muted-foreground leading-relaxed">{job.description}</p>
+          </section>
+
+          <section>
+            <h2 className="text-[15px] font-semibold text-foreground mb-3">What you'll do</h2>
+            <ul className="space-y-2">
+              {job.responsibilities.map((item, i) => (
+                <li
+                  key={i}
+                  className="flex items-start gap-2 text-[14px] text-muted-foreground leading-relaxed"
+                >
+                  <Check className="size-4 text-primary shrink-0 mt-0.5" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-[15px] font-semibold text-foreground mb-3">
+              What we're looking for
             </h2>
-            <p className="text-[13px] text-muted-foreground mb-6">
-              Fill out the form below and we'll get back to you within 2 business days.
+            <ul className="space-y-2">
+              {job.requirements.map((item, i) => (
+                <li
+                  key={i}
+                  className="flex items-start gap-2 text-[14px] text-muted-foreground leading-relaxed"
+                >
+                  <Check className="size-4 text-primary shrink-0 mt-0.5" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-[15px] font-semibold text-foreground mb-3">What we offer</h2>
+            <ul className="space-y-2">
+              {job.offers.map((item, i) => (
+                <li
+                  key={i}
+                  className="flex items-start gap-2 text-[14px] text-muted-foreground leading-relaxed"
+                >
+                  <Check className="size-4 text-primary shrink-0 mt-0.5" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {job.earningsExample && (
+            <section>
+              <h2 className="text-[15px] font-semibold text-foreground mb-3">Earnings Potential</h2>
+              <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
+                <p className="text-[14px] text-foreground leading-relaxed">{job.earningsExample}</p>
+              </div>
+            </section>
+          )}
+
+          <section>
+            <h2 className="text-[15px] font-semibold text-foreground mb-3">
+              The product you'll be selling
+            </h2>
+            <div className="rounded-xl border border-border overflow-hidden">
+              <img
+                src="/imgs/demo.jpg"
+                alt="CommissionKit platform dashboard"
+                className="w-full h-auto"
+              />
+            </div>
+            <p className="text-[13px] text-muted-foreground mt-2">
+              CommissionKit is a sales commission management tool for teams with 5–100+ reps. It
+              replaces commission spreadsheets with a real system: import deals, build plans, run
+              calculations, manage payouts, and give reps their own portal to see what they're
+              earning. Three pricing tiers: Starter ($49/mo), Growth ($99/mo), Pro ($249/mo).
             </p>
+          </section>
 
-            <Card className="border border-card-border rounded-2xl shadow-sm">
-              <CardContent className="p-6">
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  {errors.general && (
-                    <div className="rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-[13px] text-destructive">
-                      {errors.general}
-                    </div>
+          <section>
+            <h2 className="text-[15px] font-semibold text-foreground mb-3">About CommissionKit</h2>
+            <div className="rounded-xl border border-border bg-card p-5">
+              <p className="text-[14px] text-muted-foreground leading-relaxed mb-3">
+                Founded by Abdullah — someone who's been on both sides of the commission equation.
+                We built CommissionKit because we got tired of watching sales teams fight over
+                spreadsheets, do shadow accounting in Excel, and argue about whether a payout was
+                correct. We made the tool we wanted when we were in your shoes.
+              </p>
+              <p className="text-[14px] text-muted-foreground leading-relaxed">
+                We're early-stage, self-funded, and already have paying customers across the GCC.
+                The reps who join now get in on the ground floor. You'll help define how we sell,
+                and you'll earn bigger commissions from the accounts you bring in as we grow.
+              </p>
+            </div>
+          </section>
+
+          {job.leadPromise && (
+            <section>
+              <h2 className="text-[15px] font-semibold text-foreground mb-3">Lead Generation</h2>
+              <div className="rounded-xl border border-border bg-card p-5">
+                <p className="text-[14px] text-foreground leading-relaxed">{job.leadPromise}</p>
+              </div>
+            </section>
+          )}
+
+          {job.payoutTimeline && (
+            <section>
+              <h2 className="text-[15px] font-semibold text-foreground mb-3">Payout Timeline</h2>
+              <div className="rounded-xl border border-border bg-card p-5">
+                <p className="text-[14px] text-foreground leading-relaxed">{job.payoutTimeline}</p>
+              </div>
+            </section>
+          )}
+        </div>
+
+        {/* Application Form */}
+        <div className="border-t border-border pt-10">
+          <h2 className="text-[18px] font-semibold tracking-tight text-foreground mb-2">
+            Apply for this position
+          </h2>
+          <p className="text-[13px] text-muted-foreground mb-6">
+            Fill out the form below and we'll get back to you within 2 business days.
+          </p>
+
+          <Card className="border border-card-border rounded-2xl shadow-sm">
+            <CardContent className="p-6">
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {errors.general && (
+                  <div className="rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-[13px] text-destructive">
+                    {errors.general}
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium flex items-center gap-2">
+                    <User className="size-3.5 text-muted-foreground" />
+                    Full Name
+                  </Label>
+                  <Input
+                    value={form.fullName}
+                    onChange={(e) => update("fullName", e.target.value)}
+                    placeholder="John Doe"
+                    aria-invalid={!!errors.fullName}
+                  />
+                  {errors.fullName && (
+                    <p className="text-[12px] text-destructive">{errors.fullName}</p>
                   )}
+                </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-sm font-medium flex items-center gap-2">
-                      <User className="size-3.5 text-muted-foreground" />
-                      Full Name
+                      <Mail className="size-3.5 text-muted-foreground" />
+                      Email
                     </Label>
                     <Input
-                      value={form.fullName}
-                      onChange={(e) => update("fullName", e.target.value)}
-                      placeholder="John Doe"
-                      aria-invalid={!!errors.fullName}
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => update("email", e.target.value)}
+                      placeholder="john@example.com"
+                      aria-invalid={!!errors.email}
                     />
-                    {errors.fullName && (
-                      <p className="text-[12px] text-destructive">{errors.fullName}</p>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium flex items-center gap-2">
-                        <Mail className="size-3.5 text-muted-foreground" />
-                        Email
-                      </Label>
-                      <Input
-                        type="email"
-                        value={form.email}
-                        onChange={(e) => update("email", e.target.value)}
-                        placeholder="john@example.com"
-                        aria-invalid={!!errors.email}
-                      />
-                      {errors.email && (
-                        <p className="text-[12px] text-destructive">{errors.email}</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium flex items-center gap-2">
-                        <Phone className="size-3.5 text-muted-foreground" />
-                        Phone / WhatsApp
-                      </Label>
-                      <Input
-                        value={form.phone}
-                        onChange={(e) => update("phone", e.target.value)}
-                        placeholder="+1 234 567 8900"
-                        aria-invalid={!!errors.phone}
-                      />
-                      {errors.phone && (
-                        <p className="text-[12px] text-destructive">{errors.phone}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium flex items-center gap-2">
-                        <Linkedin className="size-3.5 text-muted-foreground" />
-                        LinkedIn URL (optional)
-                      </Label>
-                      <Input
-                        value={form.linkedinUrl}
-                        onChange={(e) => update("linkedinUrl", e.target.value)}
-                        placeholder="https://linkedin.com/in/johndoe"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium flex items-center gap-2">
-                        <MapPin className="size-3.5 text-muted-foreground" />
-                        Location
-                      </Label>
-                      <Input
-                        value={form.location}
-                        onChange={(e) => update("location", e.target.value)}
-                        placeholder="Dubai, UAE"
-                        aria-invalid={!!errors.location}
-                      />
-                      {errors.location && (
-                        <p className="text-[12px] text-destructive">{errors.location}</p>
-                      )}
-                    </div>
+                    {errors.email && <p className="text-[12px] text-destructive">{errors.email}</p>}
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-sm font-medium flex items-center gap-2">
-                      <Briefcase className="size-3.5 text-muted-foreground" />
-                      Relevant Experience
+                      <Phone className="size-3.5 text-muted-foreground" />
+                      Phone / WhatsApp
                     </Label>
-                    <Textarea
-                      value={form.experience}
-                      onChange={(e) => update("experience", e.target.value)}
-                      placeholder="Tell us about your background, relevant roles, and achievements."
-                      rows={3}
-                      aria-invalid={!!errors.experience}
+                    <Input
+                      value={form.phone}
+                      onChange={(e) => update("phone", e.target.value)}
+                      placeholder="+1 234 567 8900"
+                      aria-invalid={!!errors.phone}
                     />
-                    {errors.experience && (
-                      <p className="text-[12px] text-destructive">{errors.experience}</p>
-                    )}
+                    {errors.phone && <p className="text-[12px] text-destructive">{errors.phone}</p>}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium flex items-center gap-2">
+                      <Linkedin className="size-3.5 text-muted-foreground" />
+                      LinkedIn URL (optional)
+                    </Label>
+                    <Input
+                      value={form.linkedinUrl}
+                      onChange={(e) => update("linkedinUrl", e.target.value)}
+                      placeholder="https://linkedin.com/in/johndoe"
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-sm font-medium flex items-center gap-2">
-                      <MessageSquare className="size-3.5 text-muted-foreground" />
-                      Why CommissionKit?
+                      <MapPin className="size-3.5 text-muted-foreground" />
+                      Location
                     </Label>
-                    <Textarea
-                      value={form.pitch}
-                      onChange={(e) => update("pitch", e.target.value)}
-                      placeholder="Tell us why you want this role and how you plan to succeed."
-                      rows={4}
-                      aria-invalid={!!errors.pitch}
+                    <Input
+                      value={form.location}
+                      onChange={(e) => update("location", e.target.value)}
+                      placeholder="Dubai, UAE"
+                      aria-invalid={!!errors.location}
                     />
-                    {errors.pitch && (
-                      <p className="text-[12px] text-destructive">{errors.pitch}</p>
+                    {errors.location && (
+                      <p className="text-[12px] text-destructive">{errors.location}</p>
                     )}
                   </div>
+                </div>
 
-                  <div className="space-y-2">
-                    <div className="flex items-start gap-3 rounded-lg border border-card-border bg-card p-4">
-                      <FileText className="size-4 text-muted-foreground shrink-0 mt-0.5" />
-                      <div className="text-[13px] text-muted-foreground space-y-1">
-                        <p className="font-medium text-foreground">Independent Contractor Terms</p>
-                        <p>
-                          This is an independent contractor engagement, not employment. You'll earn 40% on the first 3 months' revenue + 10% residual on months 4-12, with multipliers for annual prepay (2x) and self-sourced deals (1.25x). Payouts arrive within 15 days, no minimum thresholds. Clawback applies to the residual portion only — full details in the job description above.
-                        </p>
-                      </div>
-                    </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium flex items-center gap-2">
+                    <Briefcase className="size-3.5 text-muted-foreground" />
+                    Relevant Experience
+                  </Label>
+                  <Textarea
+                    value={form.experience}
+                    onChange={(e) => update("experience", e.target.value)}
+                    placeholder="Tell us about your background, relevant roles, and achievements."
+                    rows={3}
+                    aria-invalid={!!errors.experience}
+                  />
+                  {errors.experience && (
+                    <p className="text-[12px] text-destructive">{errors.experience}</p>
+                  )}
+                </div>
 
-                    <div className="flex items-start gap-2">
-                      <Checkbox
-                        id="terms"
-                        checked={form.agreedToTerms}
-                        onCheckedChange={(checked) =>
-                          update("agreedToTerms", checked === true)
-                        }
-                        aria-invalid={!!errors.agreedToTerms}
-                      />
-                      <label
-                        htmlFor="terms"
-                        className="text-[13px] text-muted-foreground leading-tight cursor-pointer"
-                      >
-                        I agree to the terms and confirm this is an independent contractor engagement.
-                      </label>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium flex items-center gap-2">
+                    <MessageSquare className="size-3.5 text-muted-foreground" />
+                    Why CommissionKit?
+                  </Label>
+                  <Textarea
+                    value={form.pitch}
+                    onChange={(e) => update("pitch", e.target.value)}
+                    placeholder="Tell us why you want this role and how you plan to succeed."
+                    rows={4}
+                    aria-invalid={!!errors.pitch}
+                  />
+                  {errors.pitch && <p className="text-[12px] text-destructive">{errors.pitch}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-start gap-3 rounded-lg border border-card-border bg-card p-4">
+                    <FileText className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+                    <div className="text-[13px] text-muted-foreground space-y-1">
+                      <p className="font-medium text-foreground">Independent Contractor Terms</p>
+                      <p>
+                        This is an independent contractor engagement, not employment. You'll earn
+                        40% on the first 3 months' revenue + 10% residual on months 4-12, with
+                        multipliers for annual prepay (2x) and self-sourced deals (1.25x). Payouts
+                        arrive within 15 days, no minimum thresholds. Clawback applies to the
+                        residual portion only — full details in the job description above.
+                      </p>
                     </div>
-                    {errors.agreedToTerms && (
-                      <p className="text-[12px] text-destructive">{errors.agreedToTerms}</p>
-                    )}
                   </div>
 
-                  <Button type="submit" disabled={submitting} className="w-full font-semibold">
-                    {submitting ? (
-                      <>
-                        <LoaderCircle className="size-4 mr-2 animate-spin" />
-                        Submitting...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="size-4 mr-2" />
-                        Submit Application
-                      </>
-                    )}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
-        </main>
+                  <div className="flex items-start gap-2">
+                    <Checkbox
+                      id="terms"
+                      checked={form.agreedToTerms}
+                      onCheckedChange={(checked) => update("agreedToTerms", checked === true)}
+                      aria-invalid={!!errors.agreedToTerms}
+                    />
+                    <label
+                      htmlFor="terms"
+                      className="text-[13px] text-muted-foreground leading-tight cursor-pointer"
+                    >
+                      I agree to the terms and confirm this is an independent contractor engagement.
+                    </label>
+                  </div>
+                  {errors.agreedToTerms && (
+                    <p className="text-[12px] text-destructive">{errors.agreedToTerms}</p>
+                  )}
+                </div>
+
+                <Button type="submit" disabled={submitting} className="w-full font-semibold">
+                  {submitting ? (
+                    <>
+                      <LoaderCircle className="size-4 mr-2 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="size-4 mr-2" />
+                      Submit Application
+                    </>
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
       <Footer />
     </>
   );

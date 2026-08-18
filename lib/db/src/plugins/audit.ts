@@ -1,10 +1,24 @@
-import type { Schema, Document, Types } from "mongoose";
-import { dispatchAuditEvent, getAuditContext, type AuditEventPayload, type AuditContextLike } from "./audit-dispatcher.js";
-import type { AuditResourceType, AuditAction } from "../schema/auditEvents.js";
+import type { Document, Schema, Types } from "mongoose";
+import type { AuditAction, AuditResourceType } from "../schema/auditEvents.js";
+import {
+  type AuditContextLike,
+  type AuditEventPayload,
+  dispatchAuditEvent,
+  getAuditContext,
+} from "./audit-dispatcher.js";
 
 const SENSITIVE_FIELDS = new Set<string>([
-  "password", "secret", "token", "key", "webhookSecret", "apiKey", "apiSecret",
-  "session", "cookie", "stripeCustomerId", "stripeSubscriptionId",
+  "password",
+  "secret",
+  "token",
+  "key",
+  "webhookSecret",
+  "apiKey",
+  "apiSecret",
+  "session",
+  "cookie",
+  "stripeCustomerId",
+  "stripeSubscriptionId",
 ]);
 
 function isSensitiveField(key: string): boolean {
@@ -77,14 +91,19 @@ export interface AuditPluginOptions {
   resourceNameField?: string;
 }
 
-function getResourceName(doc: Record<string, unknown>, resourceNameField?: string): string | undefined {
+function getResourceName(
+  doc: Record<string, unknown>,
+  resourceNameField?: string,
+): string | undefined {
   if (!resourceNameField) return undefined;
   const value = doc[resourceNameField];
   return typeof value === "string" ? value : undefined;
 }
 
 function getWorkspaceId(doc: Document | Record<string, unknown>): string | undefined {
-  const lean = (doc as Document).toObject ? (doc as Document).toObject() : (doc as Record<string, unknown>);
+  const lean = (doc as Document).toObject
+    ? (doc as Document).toObject()
+    : (doc as Record<string, unknown>);
   const value = lean.workspaceId;
   if (value) {
     if (typeof value === "string") return value;
@@ -102,7 +121,9 @@ function getWorkspaceId(doc: Document | Record<string, unknown>): string | undef
 }
 
 function getResourceId(doc: Document | Record<string, unknown>): string | undefined {
-  const lean = (doc as Document).toObject ? (doc as Document).toObject() : (doc as Record<string, unknown>);
+  const lean = (doc as Document).toObject
+    ? (doc as Document).toObject()
+    : (doc as Record<string, unknown>);
   const value = lean._id;
   if (!value) return undefined;
   if (typeof value === "string") return value;
@@ -120,7 +141,9 @@ function buildEvent(
   ctx: AuditContextLike,
   resourceNameField?: string,
 ): AuditEventPayload {
-  const lean = (doc as Document).toObject ? (doc as Document).toObject() : (doc as Record<string, unknown>);
+  const lean = (doc as Document).toObject
+    ? (doc as Document).toObject()
+    : (doc as Record<string, unknown>);
   const workspaceId = getWorkspaceId(doc) ?? ctx.workspaceId ?? "";
   const resourceId = getResourceId(doc);
   const resourceName = getResourceName(lean, resourceNameField);
@@ -142,11 +165,11 @@ function buildEvent(
 }
 
 export function auditPlugin(options: AuditPluginOptions) {
-  return function (schema: Schema) {
+  return (schema: Schema) => {
     const { resourceType, resourceNameField } = options;
 
     // CREATE
-    schema.post("save", function (doc) {
+    schema.post("save", (doc) => {
       const ctx = getAuditContext();
       const lean = normalizeDoc(doc);
       const changes: Array<{ field: string; from?: unknown; to?: unknown }> = [];
@@ -169,10 +192,14 @@ export function auditPlugin(options: AuditPluginOptions) {
       const ctx = getAuditContext();
       const original = (this as any)._auditOriginal;
       if (!original) return;
-      const updated = doc ? normalizeDoc(doc) : normalizeDoc(await (this.model as any).findById(original._id).lean());
+      const updated = doc
+        ? normalizeDoc(doc)
+        : normalizeDoc(await (this.model as any).findById(original._id).lean());
       const changes = computeDiff(normalizeDoc(original), updated);
       if (changes.length === 0) return;
-      dispatchAuditEvent(buildEvent("update", resourceType, doc || original, changes, ctx, resourceNameField));
+      dispatchAuditEvent(
+        buildEvent("update", resourceType, doc || original, changes, ctx, resourceNameField),
+      );
     });
 
     // DELETE
@@ -193,9 +220,11 @@ export function auditPlugin(options: AuditPluginOptions) {
         if (key === "_id" || key === "createdAt" || key === "updatedAt") continue;
         changes.push({ field: key, from: redactValue(key, value), to: null });
       }
-      dispatchAuditEvent(buildEvent("delete", resourceType, original, changes, ctx, resourceNameField));
+      dispatchAuditEvent(
+        buildEvent("delete", resourceType, original, changes, ctx, resourceNameField),
+      );
     });
   };
 }
 
-export { setAuditContextProvider, getAuditContext } from "./audit-dispatcher.js";
+export { getAuditContext, setAuditContextProvider } from "./audit-dispatcher.js";

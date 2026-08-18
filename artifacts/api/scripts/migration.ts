@@ -16,9 +16,7 @@ if (!NEW_MONGO_URL) {
 
 async function getCollections(db: import("mongodb").Db) {
   const collections = await db.listCollections().toArray();
-  return collections
-    .map((c) => c.name)
-    .filter((name) => !name.startsWith("system."));
+  return collections.map((c) => c.name).filter((name) => !name.startsWith("system."));
 }
 
 async function migrate() {
@@ -52,7 +50,7 @@ async function migrate() {
     const batchSize = 1000;
     let batchInserted = 0;
     let batchSkipped = 0;
-    let cursor = oldColl.find({}).batchSize(batchSize);
+    const cursor = oldColl.find({}).batchSize(batchSize);
 
     let buffer: import("bson").Document[] = [];
 
@@ -66,7 +64,7 @@ async function migrate() {
       if (buffer.length >= batchSize) {
         const result = await newColl.bulkWrite(
           buffer.map((d) => ({ insertOne: { document: d } })),
-          { ordered: false }
+          { ordered: false },
         );
         batchInserted += result.insertedCount;
         buffer = [];
@@ -76,13 +74,13 @@ async function migrate() {
     if (buffer.length > 0) {
       const result = await newColl.bulkWrite(
         buffer.map((d) => ({ insertOne: { document: d } })),
-        { ordered: false }
+        { ordered: false },
       );
       batchInserted += result.insertedCount;
     }
 
     console.log(
-      `[${name}] total: ${totalDocs}, inserted: ${batchInserted}, skipped (already existed): ${batchSkipped}`
+      `[${name}] total: ${totalDocs}, inserted: ${batchInserted}, skipped (already existed): ${batchSkipped}`,
     );
     totalInserted += batchInserted;
     totalSkipped += batchSkipped;

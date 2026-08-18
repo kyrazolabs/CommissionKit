@@ -1,19 +1,20 @@
-import mongoose, { Schema, model, Types } from "mongoose";
+import type mongoose from "mongoose";
+import { model, Schema, type Types } from "mongoose";
 import { z } from "zod";
 import { auditPlugin } from "../plugins/audit.js";
 
 const PayoutSchema = new Schema(
   {
     workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
-    repId:       { type: Schema.Types.ObjectId, ref: "Rep", required: true },
+    repId: { type: Schema.Types.ObjectId, ref: "Rep", required: true },
     periodStart: { type: Date, required: true },
-    periodEnd:   { type: Date, required: true },
+    periodEnd: { type: Date, required: true },
     /** Base commission amount from the calculation run */
     commissionAmount: { type: Number, required: true, default: 0 },
     /** Manual adjustments (positive = bonus, negative = clawback) */
     adjustments: { type: Number, default: 0 },
     /** commissionAmount + adjustments */
-    finalAmount:  { type: Number, required: true },
+    finalAmount: { type: Number, required: true },
     /** Payment currency (inherits from workspace default) */
     currency: { type: String, default: "USD" },
     status: {
@@ -26,15 +27,17 @@ const PayoutSchema = new Schema(
       enum: ["payroll", "bank_transfer", "other"],
     },
     scheduledPaymentDate: { type: Date },
-    actualPaymentDate:    { type: Date },
+    actualPaymentDate: { type: Date },
     notes: { type: String },
+    /** CommissionRuns that contributed to this payout (empty for manual payouts) */
+    runIds: [{ type: Schema.Types.ObjectId, ref: "CommissionRun" }],
     /** Internal log of status changes for audit trail */
     statusHistory: [
       {
-        status:    { type: String },
+        status: { type: String },
         changedAt: { type: Date, default: Date.now },
         changedBy: { type: String }, // userId
-        note:      { type: String },
+        note: { type: String },
       },
     ],
   },
@@ -44,6 +47,8 @@ const PayoutSchema = new Schema(
 PayoutSchema.index({ workspaceId: 1, repId: 1 });
 PayoutSchema.index({ workspaceId: 1, status: 1 });
 PayoutSchema.index({ workspaceId: 1, periodStart: 1, periodEnd: 1 });
+// Compound index for dedup: same rep + same period = one payout target
+PayoutSchema.index({ workspaceId: 1, repId: 1, periodStart: 1, periodEnd: 1 }, { unique: false });
 
 PayoutSchema.plugin(auditPlugin({ resourceType: "payout" }));
 
@@ -60,6 +65,7 @@ export type Payout = mongoose.Document & {
   finalAmount: number;
   currency: string;
   status: "pending" | "approved" | "paid" | "disputed" | "on_hold";
+  runIds: Types.ObjectId[];
   paymentMethod?: "payroll" | "bank_transfer" | "other";
   scheduledPaymentDate?: Date;
   actualPaymentDate?: Date;
@@ -70,13 +76,14 @@ export type Payout = mongoose.Document & {
 };
 
 export const createPayoutSchema = z.object({
-  repId:            z.string(),
-  periodStart:      z.string(),
-  periodEnd:        z.string(),
+  repId: z.string(),
+  periodStart: z.string(),
+  periodEnd: z.string(),
   commissionAmount: z.number().min(0),
-  adjustments:      z.number().default(0),
-  currency:         z.string().optional(),
-  paymentMethod:    z.enum(["payroll", "bank_transfer", "other"]).optional(),
+  adjustments: z.number().default(0),
+  currency: z.string().optional(),
+  runIds: z.array(z.string()).optional(),
+  paymentMethod: z.enum(["payroll", "bank_transfer", "other"]).optional(),
   scheduledPaymentDate: z.string().optional(),
-  notes:            z.string().optional(),
+  notes: z.string().optional(),
 });

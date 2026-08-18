@@ -15,10 +15,7 @@
     "groups": [
       {
         "group": "Getting Started",
-        "pages": [
-          "index",
-          "quickstart"
-        ]
+        "pages": ["index", "quickstart"]
       },
       {
         "group": "Core Concepts",
@@ -51,10 +48,7 @@
       },
       {
         "group": "Portal",
-        "pages": [
-          "portal/rep-portal",
-          "portal/public-portal"
-        ]
+        "pages": ["portal/rep-portal", "portal/public-portal"]
       }
     ]
   },

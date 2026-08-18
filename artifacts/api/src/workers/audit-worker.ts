@@ -1,6 +1,6 @@
-import { Worker } from "bullmq";
-import { getRedisClient, AUDIT_LOG_QUEUE } from "@workspace/queue";
 import { AuditEvent } from "@workspace/db";
+import { AUDIT_LOG_QUEUE, getRedisClient } from "@workspace/queue";
+import { Worker } from "bullmq";
 import { logger } from "../lib/logger";
 
 const WORKER_OPTS = {
@@ -51,8 +51,5 @@ auditWorker.on("completed", (job) => {
 
 auditWorker.on("failed", (job, err) => {
   if (!job) return;
-  logger.error(
-    { err, jobId: job.id, payload: job.data },
-    "[Worker:Audit] Job failed",
-  );
+  logger.error({ err, jobId: job.id, payload: job.data }, "[Worker:Audit] Job failed");
 });

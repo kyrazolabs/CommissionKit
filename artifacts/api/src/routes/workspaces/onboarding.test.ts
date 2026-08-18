@@ -1,6 +1,6 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, mock } from "bun:test";
-import { setupTestDB, teardownTestDB, clearCollections } from "../../../test/setup-db";
+import { afterAll, beforeAll, beforeEach, describe, expect, mock, test } from "bun:test";
 import request from "supertest";
+import { clearCollections, setupTestDB, teardownTestDB } from "../../../test/setup-db";
 
 const TEST_USER_ID = "test-user-001";
 const TEST_USER_EMAIL = "admin@test.com";
@@ -35,7 +35,11 @@ mock.module("@workspace/queue", () => ({
   syncDealsQueue: { add: () => Promise.resolve() },
   webhookIngressQueue: { add: () => Promise.resolve() },
   syncEgressQueue: { add: () => Promise.resolve() },
-  PRIORITY_QUEUE_MAP: { high: { add: () => Promise.resolve() }, medium: { add: () => Promise.resolve() }, low: { add: () => Promise.resolve() } },
+  PRIORITY_QUEUE_MAP: {
+    high: { add: () => Promise.resolve() },
+    medium: { add: () => Promise.resolve() },
+    low: { add: () => Promise.resolve() },
+  },
 }));
 
 mock.module("../../lib/auth", () => ({
@@ -48,14 +52,18 @@ mock.module("../../lib/auth", () => ({
 
 mock.module("../../lib/bull-board", () => ({
   secureBullBoard: (req: any, res: any, next: any) => next(),
-  serverAdapter: { getRouter: () => ((() => {}) as any) },
+  serverAdapter: { getRouter: () => (() => {}) as any },
 }));
 
 mock.module("stripe", () => ({
   default: class StripeMock {
     constructor() {}
     subscriptions = { create: () => Promise.resolve({ id: "sub_123", status: "active" }) };
-    checkout = { sessions: { create: () => Promise.resolve({ url: "https://checkout.stripe.com/test", id: "cs_test" }) } };
+    checkout = {
+      sessions: {
+        create: () => Promise.resolve({ url: "https://checkout.stripe.com/test", id: "cs_test" }),
+      },
+    };
     webhooks = { constructEvent: () => ({ type: "checkout.session.completed" }) };
   },
 }));
@@ -116,7 +124,11 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await clearCollections();
-  const ws = await Workspace.create({ slug: "test-ws", name: "Test Workspace", ownerId: TEST_USER_ID });
+  const ws = await Workspace.create({
+    slug: "test-ws",
+    name: "Test Workspace",
+    ownerId: TEST_USER_ID,
+  });
   workspaceId = ws._id.toString();
   await WorkspaceMember.create({
     workspaceId: ws._id,
@@ -178,7 +190,11 @@ describe("PATCH /api/workspaces/:id/onboarding", () => {
   });
 
   test("returns 403 when user is not a workspace member", async () => {
-    const otherWs = await Workspace.create({ slug: "other-ws", name: "Other Workspace", ownerId: "other-owner" });
+    const otherWs = await Workspace.create({
+      slug: "other-ws",
+      name: "Other Workspace",
+      ownerId: "other-owner",
+    });
 
     const res = await request(app)
       .patch(`/api/workspaces/${otherWs._id}/onboarding`)

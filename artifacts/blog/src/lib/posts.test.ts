@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -7,8 +7,9 @@ process.env.BLOG_ARTICLES_DIR = fs.existsSync(workspaceArticles)
   ? workspaceArticles
   : path.join(process.cwd(), "artifacts", "blog", "articles");
 
-const { getPost, getAllPosts, getAvailableLanguages, getAllSlugs, getAllLanguages } =
-  await import("./posts");
+const { getPost, getAllPosts, getAvailableLanguages, getAllSlugs, getAllLanguages } = await import(
+  "./posts"
+);
 
 describe("getAllLanguages", () => {
   test("returns languages derived from translation files", () => {

@@ -1,11 +1,11 @@
-import { Worker } from "bullmq";
-import { IntegrationConnection, IntegrationSync } from "@workspace/db";
-import { getRedisClient, SYNC_REPS_QUEUE } from "@workspace/queue";
-import type { SyncRepsPayload } from "@workspace/queue";
-import { pluginRegistry } from "@workspace/plugins-core";
-import { logger } from "../lib/logger";
-import { decryptConfig } from "../lib/crypto";
 import * as Sentry from "@sentry/bun";
+import { IntegrationConnection, IntegrationSync } from "@workspace/db";
+import { pluginRegistry } from "@workspace/plugins-core";
+import type { SyncRepsPayload } from "@workspace/queue";
+import { getRedisClient, SYNC_REPS_QUEUE } from "@workspace/queue";
+import { Worker } from "bullmq";
+import { ensureFreshConfig } from "../lib/integrations/oauth";
+import { logger } from "../lib/logger";
 import { acquireWorkspaceLock } from "../lib/sync/lock";
 import { upsertReps } from "../lib/sync/upsert-engine";
 
@@ -50,25 +50,13 @@ export const syncRepsWorker = new Worker<SyncRepsPayload>(
       try {
         await job.updateProgress(10);
 
-        const pluginConfig = {
-          ...(decryptConfig(conn.config as string) || {}),
-          _metadata: conn.metadata || {},
-        };
+        const pluginConfig = await ensureFreshConfig(conn, plugin);
 
-        const reps = await plugin.fetchReps(
-          workspaceId,
-          pluginConfig,
-          {},
-        );
+        const reps = await plugin.fetchReps(workspaceId, pluginConfig, {});
 
         await job.updateProgress(50);
 
-        const stats = await upsertReps(
-          workspaceId,
-          connectorName,
-          reps,
-          syncRecord._id.toString(),
-        );
+        const stats = await upsertReps(workspaceId, connectorName, reps, syncRecord._id.toString());
 
         await IntegrationSync.findByIdAndUpdate(syncRecord._id, {
           status: stats.failed > 0 ? "partial" : "completed",
@@ -81,10 +69,10 @@ export const syncRepsWorker = new Worker<SyncRepsPayload>(
           lastError: undefined,
         });
 
-      logger.info(
-        { workspaceId, connectorName, configKeys: Object.keys(conn.config || {}).slice(0, 10) },
-        "[SyncRepsWorker] Config keys",
-      );
+        logger.info(
+          { workspaceId, connectorName, configKeys: Object.keys(conn.config || {}).slice(0, 10) },
+          "[SyncRepsWorker] Config keys",
+        );
 
         await job.updateProgress(100);
       } catch (err: any) {

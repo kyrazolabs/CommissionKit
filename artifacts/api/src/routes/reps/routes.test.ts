@@ -1,7 +1,7 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, mock } from "bun:test";
+import { afterAll, beforeAll, beforeEach, describe, expect, mock, test } from "bun:test";
 import mongoose from "mongoose";
-import { setupTestDB, teardownTestDB, clearCollections } from "../../../test/setup-db";
 import request from "supertest";
+import { clearCollections, setupTestDB, teardownTestDB } from "../../../test/setup-db";
 
 const TEST_USER_ID = "test-user-001";
 const TEST_USER_EMAIL = "admin@test.com";
@@ -37,7 +37,11 @@ mock.module("@workspace/queue", () => ({
   syncDealsQueue: { add: () => Promise.resolve() },
   webhookIngressQueue: { add: () => Promise.resolve() },
   syncEgressQueue: { add: () => Promise.resolve() },
-  PRIORITY_QUEUE_MAP: { high: { add: () => Promise.resolve() }, medium: { add: () => Promise.resolve() }, low: { add: () => Promise.resolve() } },
+  PRIORITY_QUEUE_MAP: {
+    high: { add: () => Promise.resolve() },
+    medium: { add: () => Promise.resolve() },
+    low: { add: () => Promise.resolve() },
+  },
 }));
 mock.module("../../lib/auth", () => ({
   auth: {
@@ -47,18 +51,20 @@ mock.module("../../lib/auth", () => ({
   findUserById: mock(() => Promise.resolve(null)),
 }));
 
-
-
 mock.module("../../lib/bull-board", () => ({
   secureBullBoard: (req: any, res: any, next: any) => next(),
-  serverAdapter: { getRouter: () => ((() => {}) as any) },
+  serverAdapter: { getRouter: () => (() => {}) as any },
 }));
 
 mock.module("stripe", () => ({
   default: class StripeMock {
     constructor() {}
     subscriptions = { create: () => Promise.resolve({ id: "sub_123", status: "active" }) };
-    checkout = { sessions: { create: () => Promise.resolve({ url: "https://checkout.stripe.com/test", id: "cs_test" }) } };
+    checkout = {
+      sessions: {
+        create: () => Promise.resolve({ url: "https://checkout.stripe.com/test", id: "cs_test" }),
+      },
+    };
     webhooks = { constructEvent: () => ({ type: "checkout.session.completed" }) };
   },
 }));
@@ -115,7 +121,11 @@ beforeAll(async () => {
   Workspace = db.Workspace;
   WorkspaceMember = db.WorkspaceMember;
 
-  const ws = await Workspace.create({ slug: "test-ws", name: "Test Workspace", ownerId: TEST_USER_ID });
+  const ws = await Workspace.create({
+    slug: "test-ws",
+    name: "Test Workspace",
+    ownerId: TEST_USER_ID,
+  });
   workspaceId = ws._id.toString();
 
   await WorkspaceMember.create({
@@ -134,7 +144,11 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await clearCollections();
-  const ws = await Workspace.create({ slug: "test-ws", name: "Test Workspace", ownerId: TEST_USER_ID });
+  const ws = await Workspace.create({
+    slug: "test-ws",
+    name: "Test Workspace",
+    ownerId: TEST_USER_ID,
+  });
   workspaceId = ws._id.toString();
   await WorkspaceMember.create({
     workspaceId: ws._id,
@@ -175,7 +189,12 @@ describe("GET /api/reps", () => {
 
   test("includes planName when rep has a plan", async () => {
     const plan = await Plan.create({ workspaceId, name: "Gold Plan", type: "flat" });
-    const rep = await Rep.create({ workspaceId, name: "Dave", email: "dave@test.com", planId: plan._id });
+    const rep = await Rep.create({
+      workspaceId,
+      name: "Dave",
+      email: "dave@test.com",
+      planId: plan._id,
+    });
 
     const res = await request(app).get("/api/reps").set(authHeader());
     expect(res.status).toBe(200);
@@ -204,10 +223,12 @@ describe("POST /api/reps", () => {
   test("assigns a plan when planId is provided", async () => {
     const plan = await Plan.create({ workspaceId, name: "Silver Plan", type: "tiered" });
 
-    const res = await request(app)
-      .post("/api/reps")
-      .set(authHeader())
-      .send({ name: "Frank", email: "frank@test.com", role: "Sales Rep", planId: plan._id.toString() });
+    const res = await request(app).post("/api/reps").set(authHeader()).send({
+      name: "Frank",
+      email: "frank@test.com",
+      role: "Sales Rep",
+      planId: plan._id.toString(),
+    });
 
     expect(res.status).toBe(201);
     expect(res.body.planName).toBe("Silver Plan");
@@ -286,11 +307,15 @@ describe("DELETE /api/reps/:id", () => {
 
 describe("POST /api/reps/:id/send-portal-link", () => {
   test("sends portal link for existing rep", async () => {
-    const rep = await Rep.create({ workspaceId, name: "Portal User", email: "portal@test.com", portalAccessCode: "existing-code", portalUsername: "portal.user" });
+    const rep = await Rep.create({
+      workspaceId,
+      name: "Portal User",
+      email: "portal@test.com",
+      portalAccessCode: "existing-code",
+      portalUsername: "portal.user",
+    });
 
-    const res = await request(app)
-      .post(`/api/reps/${rep._id}/send-portal-link`)
-      .set(authHeader());
+    const res = await request(app).post(`/api/reps/${rep._id}/send-portal-link`).set(authHeader());
 
     expect(res.status).toBe(200);
     expect(res.body.ok).toBe(true);
@@ -300,9 +325,7 @@ describe("POST /api/reps/:id/send-portal-link", () => {
   test("generates access code if rep has none", async () => {
     const rep = await Rep.create({ workspaceId, name: "No Code Rep", email: "nocode@test.com" });
 
-    const res = await request(app)
-      .post(`/api/reps/${rep._id}/send-portal-link`)
-      .set(authHeader());
+    const res = await request(app).post(`/api/reps/${rep._id}/send-portal-link`).set(authHeader());
 
     expect(res.status).toBe(200);
     expect(res.body.portalAccessCode).toBeDefined();
@@ -311,9 +334,7 @@ describe("POST /api/reps/:id/send-portal-link", () => {
 
   test("returns 404 for non-existent rep", async () => {
     const fakeId = new mongoose.Types.ObjectId();
-    const res = await request(app)
-      .post(`/api/reps/${fakeId}/send-portal-link`)
-      .set(authHeader());
+    const res = await request(app).post(`/api/reps/${fakeId}/send-portal-link`).set(authHeader());
 
     expect(res.status).toBe(404);
   });

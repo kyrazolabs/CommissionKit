@@ -1,5 +1,5 @@
-import { describe, test, expect } from "bun:test";
-import { PLAN_LIMITS, getPlanLimits } from "./limits";
+import { describe, expect, test } from "bun:test";
+import { getPlanLimits, PLAN_LIMITS } from "./limits";
 
 describe("PLAN_LIMITS", () => {
   test("defines all plan types", () => {

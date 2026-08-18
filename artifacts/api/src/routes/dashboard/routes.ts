@@ -1,18 +1,8 @@
-import { Router } from "express";
-import {
-  CommissionRun,
-  CommissionResult,
-  Deal,
-  Rep,
-  Plan,
-} from "@workspace/db";
 import { GetRepSummaryParams } from "@workspace/api-zod";
-import {
-  requirePermission,
-  type AuthenticatedRequest,
-} from "../../middleware/auth";
+import { CommissionResult, CommissionRun, Deal, Payout, Plan, Rep, Workspace } from "@workspace/db";
+import { Router } from "express";
 import { convertCurrency } from "../../lib/exchange";
-import { Workspace } from "@workspace/db";
+import { type AuthenticatedRequest, requirePermission } from "../../middleware/auth";
 
 const router = Router();
 
@@ -28,20 +18,14 @@ router.get(
     const workspaceId = req.workspaceId!;
     const period = currentPeriod();
 
-     // Run independent queries in parallel
-    const [workspace, totalReps, latestRun, recentRuns, plans] =
-      await Promise.all([
-        Workspace.findById(workspaceId).select("currency").lean(),
-        Rep.countDocuments({ workspaceId }),
-        CommissionRun.findOne({ workspaceId, period })
-          .sort({ createdAt: -1 })
-          .lean(),
-        CommissionRun.find({ workspaceId })
-          .sort({ createdAt: -1 })
-          .limit(5)
-          .lean(),
-        Plan.find({ workspaceId }).select("_id name").lean(),
-      ]);
+    // Run independent queries in parallel
+    const [workspace, totalReps, latestRun, recentRuns, plans] = await Promise.all([
+      Workspace.findById(workspaceId).select("currency").lean(),
+      Rep.countDocuments({ workspaceId }),
+      CommissionRun.findOne({ workspaceId, period }).sort({ createdAt: -1 }).lean(),
+      CommissionRun.find({ workspaceId }).sort({ createdAt: -1 }).limit(5).lean(),
+      Plan.find({ workspaceId }).select("_id name").lean(),
+    ]);
     const wsCurrency = (workspace as any)?.currency || "USD";
 
     const planMap = new Map(plans.map((p) => [p._id.toString(), p.name]));
@@ -75,16 +59,8 @@ router.get(
         const resCurrency = (r as any).currency || dealCurrency;
 
         // Convert to workspace currency for summary cards
-        const convertedCommission = await convertCurrency(
-          commission,
-          resCurrency,
-          wsCurrency,
-        );
-        const convertedRevenue = await convertCurrency(
-          dealAmt,
-          dealCurrency,
-          wsCurrency,
-        );
+        const convertedCommission = await convertCurrency(commission, resCurrency, wsCurrency);
+        const convertedRevenue = await convertCurrency(dealAmt, dealCurrency, wsCurrency);
 
         totalCommission += convertedCommission;
         totalDeals++;
@@ -109,12 +85,22 @@ router.get(
       }
     }
 
+    let payoutsGenerated = 0;
+    let payoutsNeeded = 0;
+    if (latestRun) {
+      // Count payouts that include this run in their runIds array (cross-run dedup)
+      payoutsGenerated = await Payout.countDocuments({ workspaceId, runIds: latestRun._id });
+      payoutsNeeded = Math.max(0, (latestRun.repsCount ?? 0) - payoutsGenerated);
+    }
+
     res.json({
       period,
       totalCommission,
       totalRevenue,
       totalDeals,
       totalReps,
+      payoutsGenerated,
+      payoutsNeeded,
       repEarnings: Array.from(repEarningsMap.values()).sort(
         (a, b) => b.totalCommission - a.totalCommission,
       ),
@@ -151,9 +137,7 @@ router.get(
       planName = plan?.name ?? null;
     }
 
-    const latestRun = await CommissionRun.findOne({ workspaceId, period }).sort(
-      { createdAt: -1 },
-    );
+    const latestRun = await CommissionRun.findOne({ workspaceId, period }).sort({ createdAt: -1 });
 
     let totalCommission = 0;
     let totalRevenue = 0;
@@ -231,8 +215,9 @@ router.get(
       }
     }
 
-    const allRunsRaw = await CommissionRun.find({ workspaceId, status: "completed" })
-      .sort({ createdAt: -1 });
+    const allRunsRaw = await CommissionRun.find({ workspaceId, status: "completed" }).sort({
+      createdAt: -1,
+    });
 
     const latestRunsByPeriod = new Map<string, any>();
     for (const run of allRunsRaw) {
@@ -247,10 +232,7 @@ router.get(
           runId: run._id,
           repId: rep._id,
         });
-        const commission = repRunResults.reduce(
-          (sum, r) => sum + Number(r.commissionAmount),
-          0,
-        );
+        const commission = repRunResults.reduce((sum, r) => sum + Number(r.commissionAmount), 0);
         return {
           period: run.period,
           totalCommission: commission,

@@ -1,15 +1,14 @@
-import type { CalcEngine, CalcEngineInput, CalcEngineOutput, CalcEngineResult, EngineFeature } from "./CalcEngine";
+import { CommissionRun, Deal, Plan, PlanTier, Rep, Workspace } from "@workspace/db";
 import { Types } from "mongoose";
-import {
-  CommissionRun,
-  Deal,
-  Rep,
-  Plan,
-  PlanTier,
-  Workspace,
-} from "@workspace/db";
 import { convertCurrencyAt } from "../../lib/exchange";
 import { logger } from "../../lib/logger";
+import type {
+  CalcEngine,
+  CalcEngineInput,
+  CalcEngineOutput,
+  CalcEngineResult,
+  EngineFeature,
+} from "./CalcEngine";
 
 function calculateCommission(
   amount: number,
@@ -67,9 +66,7 @@ function calculateCommission(
       if (applicable <= 0) continue;
       const commission = applicable * tier.rate;
       totalCommission += commission;
-      notes.push(
-        `${(tier.rate * 100).toFixed(2)}% on ${currency} ${applicable.toFixed(2)}`,
-      );
+      notes.push(`${(tier.rate * 100).toFixed(2)}% on ${currency} ${applicable.toFixed(2)}`);
       lastRate = tier.rate;
       remaining -= applicable;
     }
@@ -96,9 +93,7 @@ export class StandardEngine implements CalcEngine {
   async calculate(input: CalcEngineInput): Promise<CalcEngineOutput> {
     const { workspaceId, period, wsCurrency, session } = input;
 
-    logger.info(
-      `[Engine:Standard] Calculating run ${input.runId} for workspace ${workspaceId}`,
-    );
+    logger.info(`[Engine:Standard] Calculating run ${input.runId} for workspace ${workspaceId}`);
 
     const dealQuery: any = {
       workspaceId: new Types.ObjectId(workspaceId),
@@ -111,11 +106,17 @@ export class StandardEngine implements CalcEngine {
     const deals = await Deal.find(dealQuery).session(session ?? null);
     logger.info(`[Engine:Standard] Found ${deals.length} deals for period ${period}`);
 
-    const reps = await Rep.find({ workspaceId: new Types.ObjectId(workspaceId) }).session(session ?? null);
-    const plans = await Plan.find({ workspaceId: new Types.ObjectId(workspaceId) }).session(session ?? null);
+    const reps = await Rep.find({ workspaceId: new Types.ObjectId(workspaceId) }).session(
+      session ?? null,
+    );
+    const plans = await Plan.find({ workspaceId: new Types.ObjectId(workspaceId) }).session(
+      session ?? null,
+    );
     const tiers = await PlanTier.find({
       planId: { $in: plans.map((p) => p._id) },
-    }).sort({ fromAmount: 1 }).session(session ?? null);
+    })
+      .sort({ fromAmount: 1 })
+      .session(session ?? null);
 
     const planMap = new Map(plans.map((p) => [p._id.toString(), p]));
     const tierMap = new Map<
@@ -159,14 +160,27 @@ export class StandardEngine implements CalcEngine {
         continue;
       }
 
-      const dealCreatedAt = (deal as any).createdAt instanceof Date
-        ? (deal as any).createdAt
-        : new Date((deal as any).createdAt || Date.now());
+      const dealCreatedAt =
+        (deal as any).createdAt instanceof Date
+          ? (deal as any).createdAt
+          : new Date((deal as any).createdAt || Date.now());
 
-      const { converted: normalizedAmount, rate: snapshotRate, snapshotDate } =
-        await convertCurrencyAt(Number(deal.amount), deal.currency || "USD", wsCurrency, dealCreatedAt);
+      const {
+        converted: normalizedAmount,
+        rate: snapshotRate,
+        snapshotDate,
+      } = await convertCurrencyAt(
+        Number(deal.amount),
+        deal.currency || "USD",
+        wsCurrency,
+        dealCreatedAt,
+      );
 
-      const { rate, commission: commissionInWsCurrency, note } = calculateCommission(
+      const {
+        rate,
+        commission: commissionInWsCurrency,
+        note,
+      } = calculateCommission(
         normalizedAmount,
         wsCurrency,
         plan.type,

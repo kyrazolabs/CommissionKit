@@ -1,14 +1,18 @@
-import mongoose, { Schema, model, Types } from "mongoose";
+import type mongoose from "mongoose";
+import { model, Schema, type Types } from "mongoose";
 import { z } from "zod";
 import { auditPlugin } from "../plugins/audit.js";
 
-const RoleSchema = new Schema({
-  workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
-  name: { type: String, required: true },
-  description: { type: String, default: "" },
-  isSystem: { type: Boolean, default: false }, // true for Built-in roles (Owner, Admin, Member)
-  permissions: [{ type: String }],
-}, { timestamps: { createdAt: true, updatedAt: true } });
+const RoleSchema = new Schema(
+  {
+    workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
+    name: { type: String, required: true },
+    description: { type: String, default: "" },
+    isSystem: { type: Boolean, default: false }, // true for Built-in roles (Owner, Admin, Member)
+    permissions: [{ type: String }],
+  },
+  { timestamps: { createdAt: true, updatedAt: true } },
+);
 
 // Ensure role names are unique per workspace
 RoleSchema.index({ workspaceId: 1, name: 1 }, { unique: true });

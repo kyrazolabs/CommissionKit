@@ -1,4 +1,4 @@
-import { baseTemplate, btn, h1, p, muted, divider, infoBox } from "./base.js";
+import { baseTemplate, btn, divider, h1, infoBox, muted, p } from "./base.js";
 
 export interface EmailVerificationTemplateProps {
   name?: string;

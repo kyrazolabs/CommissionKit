@@ -1,28 +1,28 @@
-import { Navbar } from "@/pages/landing/Navbar";
-import { Footer } from "@/pages/landing/Footer";
-import { usePageMeta } from "@/hooks/use-page-meta";
-import { Button } from "@/components/ui/button";
+import {
+  ArrowRight,
+  Cable,
+  Calculator,
+  Clock,
+  FileText,
+  Globe,
+  Layers,
+  RefreshCw,
+  Settings,
+  Shield,
+  Users,
+  Zap,
+} from "lucide-react";
 import {
   Accordion,
+  AccordionContent,
   AccordionItem,
   AccordionTrigger,
-  AccordionContent,
 } from "@/components/ui/accordion";
-import {
-  Cable,
-  ArrowRight,
-  Users,
-  FileText,
-  RefreshCw,
-  Globe,
-  Zap,
-  Clock,
-  Shield,
-  Layers,
-  Settings,
-  Calculator,
-} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { usePageMeta } from "@/hooks/use-page-meta";
 import { Analytics } from "@/lib/analytics";
+import { Footer } from "@/pages/landing/Footer";
+import { Navbar } from "@/pages/landing/Navbar";
 
 const FEATURES = [
   {
@@ -143,22 +143,27 @@ export function SalesforceIntegrationPage() {
               Automate Your Sales Commission Tracking
             </p>
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
-              Sync your Salesforce opportunities, users, and pipeline stages automatically. Eliminate manual commission spreadsheets and give your reps real-time earnings visibility.
+              Sync your Salesforce opportunities, users, and pipeline stages automatically.
+              Eliminate manual commission spreadsheets and give your reps real-time earnings
+              visibility.
             </p>
             <p className="text-sm mx-auto text-muted-foreground max-w-xl mb-4">
-              Unlike tools that bolt on a generic Salesforce connector, CommissionKit reads Opportunities, custom fields, and sandbox environments natively. your Salesforce configuration drives the commission engine, not the other way around.
+              Unlike tools that bolt on a generic Salesforce connector, CommissionKit reads
+              Opportunities, custom fields, and sandbox environments natively. your Salesforce
+              configuration drives the commission engine, not the other way around.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild className="font-semibold shadow-sm">
-                <a href="/register" onClick={() => Analytics.integrationSalesforceTrialClick("hero")}>
+                <a
+                  href="/register"
+                  onClick={() => Analytics.integrationSalesforceTrialClick("hero")}
+                >
                   Start Free Trial
                   <ArrowRight className="size-4 ml-2" />
                 </a>
               </Button>
               <Button variant="outline" asChild className="font-semibold">
-                <a href="#how-it-works">
-                  See How It Works
-                </a>
+                <a href="#how-it-works">See How It Works</a>
               </Button>
             </div>
 
@@ -178,11 +183,7 @@ export function SalesforceIntegrationPage() {
                   <span className="text-[10px] font-medium text-primary">Sync</span>
                 </div>
                 <div className="flex flex-col items-center gap-2">
-                  <img
-                    src="/brand/logo-symbol.svg"
-                    alt="CommissionKit"
-                    className="w-12 h-12"
-                  />
+                  <img src="/brand/logo-symbol.svg" alt="CommissionKit" className="w-12 h-12" />
                   <span className="text-xs font-medium text-muted-foreground">CommissionKit</span>
                 </div>
               </div>
@@ -198,7 +199,9 @@ export function SalesforceIntegrationPage() {
                 Stop Calculating Salesforce Commissions in Spreadsheets
               </h2>
               <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-                If you are exporting opportunities from Salesforce to CSV, cleaning them up in Excel, and manually calculating commissions — you are losing hours every month and your reps are questioning every number.
+                If you are exporting opportunities from Salesforce to CSV, cleaning them up in
+                Excel, and manually calculating commissions — you are losing hours every month and
+                your reps are questioning every number.
               </p>
             </div>
             <div className="grid gap-6 md:grid-cols-3">
@@ -231,9 +234,7 @@ export function SalesforceIntegrationPage() {
                     <h3 className="text-[15px] font-semibold text-foreground mb-2 tracking-tight">
                       {item.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {item.desc}
-                    </p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
                   </div>
                 );
               })}
@@ -266,9 +267,7 @@ export function SalesforceIntegrationPage() {
                     <h3 className="text-[15px] font-semibold text-foreground mb-2 tracking-tight">
                       {feature.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {feature.desc}
-                    </p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
                   </div>
                 );
               })}
@@ -291,10 +290,7 @@ export function SalesforceIntegrationPage() {
               {STEPS.map((step) => {
                 const Icon = step.Icon;
                 return (
-                  <div
-                    key={step.num}
-                    className="p-8 lg:p-10 bg-card relative overflow-hidden"
-                  >
+                  <div key={step.num} className="p-8 lg:p-10 bg-card relative overflow-hidden">
                     <div className="absolute top-4 right-6 text-[72px] font-black text-primary/5 tabular-nums leading-none select-none pointer-events-none">
                       {step.num}
                     </div>
@@ -357,22 +353,20 @@ export function SalesforceIntegrationPage() {
                   <p className="text-3xl font-bold text-primary tracking-tight tabular-nums">
                     {item.stat}
                   </p>
-                  <p className="text-sm font-medium text-foreground mt-1">
-                    {item.label}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {item.note}
-                  </p>
+                  <p className="text-sm font-medium text-foreground mt-1">{item.label}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{item.note}</p>
                 </div>
               ))}
             </div>
             <p className="text-center text-sm text-muted-foreground">
               A typical 20-rep team can save{" "}
-              <span className="font-semibold text-foreground">$1,500–$3,000/month</span>{" "}
-              in finance team labor. Plus the cost of errors caught too late.
+              <span className="font-semibold text-foreground">$1,500–$3,000/month</span> in finance
+              team labor. Plus the cost of errors caught too late.
             </p>
             <p className="text-xs text-muted-foreground mt-4">
-              Savings are estimated based on typical finance ops labor costs and time studies from spreadsheet-based commission processes. Actual results vary by team size and process complexity.
+              Savings are estimated based on typical finance ops labor costs and time studies from
+              spreadsheet-based commission processes. Actual results vary by team size and process
+              complexity.
             </p>
           </div>
         </section>
@@ -382,7 +376,10 @@ export function SalesforceIntegrationPage() {
           <div className="max-w-5xl mx-auto">
             <div className="bg-primary/5 border border-primary/10 rounded-lg p-4 text-sm">
               <p className="text-muted-foreground">
-                <span className="font-medium text-foreground">Built on Salesforce standards.</span> OAuth 2.0 Client Credentials flow with no user login prompts during sync. Reads Opportunities, Users, and custom fields via SOQL. Works with any Salesforce edition that includes API access. Sandbox support included.
+                <span className="font-medium text-foreground">Built on Salesforce standards.</span>{" "}
+                OAuth 2.0 Client Credentials flow with no user login prompts during sync. Reads
+                Opportunities, Users, and custom fields via SOQL. Works with any Salesforce edition
+                that includes API access. Sandbox support included.
               </p>
             </div>
           </div>
@@ -415,7 +412,10 @@ export function SalesforceIntegrationPage() {
         <section className="py-12 px-4">
           <div className="max-w-3xl mx-auto text-center">
             <p className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">CommissionKit</span> is built by a small, self-funded team focused exclusively on commission management. No venture capital, no growth-at-all-costs pressure. We build what customers need and we answer support messages ourselves.
+              <span className="font-medium text-foreground">CommissionKit</span> is built by a
+              small, self-funded team focused exclusively on commission management. No venture
+              capital, no growth-at-all-costs pressure. We build what customers need and we answer
+              support messages ourselves.
             </p>
           </div>
         </section>
@@ -430,7 +430,10 @@ export function SalesforceIntegrationPage() {
               Connect your Salesforce org in minutes. Your first 14 days are free.
             </p>
             <Button asChild className="font-semibold shadow-sm">
-              <a href="/register" onClick={() => Analytics.integrationSalesforceTrialClick("bottom")}>
+              <a
+                href="/register"
+                onClick={() => Analytics.integrationSalesforceTrialClick("bottom")}
+              >
                 Start Free Trial
                 <ArrowRight className="size-4 ml-2" />
               </a>

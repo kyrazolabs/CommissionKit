@@ -1,6 +1,6 @@
-import type { Request, Response, NextFunction } from "express";
-import { RateLimiterRedis } from "rate-limiter-flexible";
 import { getRedisClient } from "@workspace/queue";
+import type { NextFunction, Request, Response } from "express";
+import { RateLimiterRedis } from "rate-limiter-flexible";
 import { logger } from "../lib/logger";
 
 const redisClient = getRedisClient();

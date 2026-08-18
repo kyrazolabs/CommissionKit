@@ -1,7 +1,7 @@
 // Pre-optimize cover images to WebP at build time.
 // Bun.Image pipeline — zero npm deps, runs off the JS thread.
-import { readdirSync, existsSync, statSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { existsSync, readdirSync, statSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -50,7 +50,9 @@ async function optimize() {
           Bun.write(webpPath, out);
           const newSize = out.byteLength;
           const pct = ((1 - newSize / originalSize) * 100).toFixed(0);
-          console.log(`[optimize-covers] ${slugEntry.name}: ${(originalSize / 1024).toFixed(0)}KB → ${(newSize / 1024).toFixed(0)}KB WebP (${pct}% smaller)`);
+          console.log(
+            `[optimize-covers] ${slugEntry.name}: ${(originalSize / 1024).toFixed(0)}KB → ${(newSize / 1024).toFixed(0)}KB WebP (${pct}% smaller)`,
+          );
           optimized++;
           saved += originalSize - newSize;
         } catch (err) {
@@ -61,7 +63,9 @@ async function optimize() {
   }
 
   if (optimized > 0) {
-    console.log(`[optimize-covers] Optimized ${optimized} cover(s), saved ${(saved / 1024).toFixed(0)}KB total`);
+    console.log(
+      `[optimize-covers] Optimized ${optimized} cover(s), saved ${(saved / 1024).toFixed(0)}KB total`,
+    );
   }
 }
 

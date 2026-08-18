@@ -1,21 +1,20 @@
-import { Router } from "express";
-import { Types } from "mongoose";
-import jwt from "jsonwebtoken";
-import mongoose from "mongoose";
-import { hashPassword, verifyPassword } from "better-auth/crypto";
+import { GetPortalByCodeParams, GetPortalByCodeQueryParams } from "@workspace/api-zod";
 import {
-  Rep,
-  Plan,
-  CommissionRun,
   CommissionResult,
-  Workspace,
-  Payout,
+  CommissionRun,
   Dispute,
+  Notification,
+  Payout,
+  Plan,
+  Rep,
+  Workspace,
   WorkspaceMember,
   WorkspaceSubscription,
-  Notification,
 } from "@workspace/db";
-import { GetPortalByCodeParams, GetPortalByCodeQueryParams } from "@workspace/api-zod";
+import { hashPassword, verifyPassword } from "better-auth/crypto";
+import { Router } from "express";
+import jwt from "jsonwebtoken";
+import mongoose, { Types } from "mongoose";
 import { logger } from "../../lib/logger";
 import { getUsersWithPermission } from "../../lib/rbac";
 
@@ -23,7 +22,10 @@ const router = Router();
 
 // ─── JWT Config ───────────────────────────────────────────────────────────────
 
-const PORTAL_JWT_SECRET = process.env.PORTAL_JWT_SECRET || process.env.BETTER_AUTH_SECRET || "portal-fallback-secret-change-in-prod";
+const PORTAL_JWT_SECRET =
+  process.env.PORTAL_JWT_SECRET ||
+  process.env.BETTER_AUTH_SECRET ||
+  "portal-fallback-secret-change-in-prod";
 const PORTAL_TOKEN_TTL = "24h";
 
 interface PortalTokenPayload {
@@ -83,13 +85,22 @@ function verifyPortalAuth(
 
 async function getPlan(workspaceId: string): Promise<string> {
   const sub = await WorkspaceSubscription.findOne({ workspaceId: new Types.ObjectId(workspaceId) });
-  const isActive = sub?.isLifetime || (sub?.status && ["active", "trialing", "past_due", "paused"].includes(sub.status));
+  const isActive =
+    sub?.isLifetime ||
+    (sub?.status && ["active", "trialing", "past_due", "paused"].includes(sub.status));
   return (isActive ? (sub?.plan ?? "free") : "free") as string;
 }
 
 const GROWTH_PLANS = new Set(["growth", "annual", "flex", "pro"]);
 
-async function sendNotification(workspaceId: string, userId: string, type: string, title: string, message: string, href?: string) {
+async function sendNotification(
+  workspaceId: string,
+  userId: string,
+  type: string,
+  title: string,
+  message: string,
+  href?: string,
+) {
   try {
     await Notification.create({
       workspaceId: new Types.ObjectId(workspaceId),
@@ -191,7 +202,12 @@ router.post("/portal/:accessCode/login", async (req, res): Promise<void> => {
     });
 
     logger.info({ repId: rep._id, accessCode }, "Portal login successful");
-    res.json({ token, mustChangePassword, repName: rep.name, workspaceName: workspace?.name || "Workspace" });
+    res.json({
+      token,
+      mustChangePassword,
+      repName: rep.name,
+      workspaceName: workspace?.name || "Workspace",
+    });
   } catch (err: any) {
     logger.error({ err: err.message, accessCode }, "Portal login error");
     res.status(500).json({ error: "Login failed. Please try again." });
@@ -263,7 +279,10 @@ router.post("/portal/:accessCode/change-password", async (req, res): Promise<voi
     }
 
     // Verify current password
-    const isValid = await verifyPassword({ password: currentPassword, hash: accountRecord.password });
+    const isValid = await verifyPassword({
+      password: currentPassword,
+      hash: accountRecord.password,
+    });
 
     if (!isValid) {
       res.status(401).json({ error: "Current password is incorrect." });
@@ -272,16 +291,20 @@ router.post("/portal/:accessCode/change-password", async (req, res): Promise<voi
 
     // Hash and update the new password
     const newHash = await hashPassword(newPassword);
-    await db.collection("account").updateOne(
-      { _id: accountRecord._id },
-      { $set: { password: newHash, updatedAt: new Date() } }
-    );
+    await db
+      .collection("account")
+      .updateOne(
+        { _id: accountRecord._id },
+        { $set: { password: newHash, updatedAt: new Date() } },
+      );
 
     // Clear the mustChangePassword flag on the user record
-    await db.collection("user").updateOne(
-      { _id: authUser._id },
-      { $set: { mustChangePassword: false, updatedAt: new Date() } }
-    );
+    await db
+      .collection("user")
+      .updateOne(
+        { _id: authUser._id },
+        { $set: { mustChangePassword: false, updatedAt: new Date() } },
+      );
 
     // Return a fresh token with mustChangePassword: false
     const newToken = signPortalToken({
@@ -397,7 +420,7 @@ router.get("/portal/:accessCode", async (req, res): Promise<void> => {
       const repRunResults = await CommissionResult.find({ runId: run._id, repId: rep._id });
       const commission = repRunResults.reduce((sum, r) => sum + Number(r.commissionAmount), 0);
       return { period: run.period, totalCommission: commission, totalDeals: repRunResults.length };
-    })
+    }),
   );
 
   res.json({
@@ -423,7 +446,10 @@ router.get("/portal/:accessCode", async (req, res): Promise<void> => {
 router.get("/portal/:accessCode/payouts", async (req, res): Promise<void> => {
   const { accessCode } = req.params;
   const rep = await Rep.findOne({ portalAccessCode: accessCode });
-  if (!rep) { res.status(404).json({ error: "Invalid access code." }); return; }
+  if (!rep) {
+    res.status(404).json({ error: "Invalid access code." });
+    return;
+  }
 
   const portalAuth = verifyPortalAuth(req, rep);
   if (!portalAuth.authorized) {
@@ -435,20 +461,22 @@ router.get("/portal/:accessCode/payouts", async (req, res): Promise<void> => {
     .sort({ periodStart: -1 })
     .lean();
 
-  res.json(payouts.map((p: any) => ({
-    id: p._id.toString(),
-    periodStart: p.periodStart.toISOString(),
-    periodEnd: p.periodEnd.toISOString(),
-    commissionAmount: p.commissionAmount,
-    adjustments: p.adjustments,
-    finalAmount: p.finalAmount,
-    currency: p.currency ?? "USD",
-    status: p.status,
-    scheduledPaymentDate: p.scheduledPaymentDate?.toISOString() ?? null,
-    actualPaymentDate: p.actualPaymentDate?.toISOString() ?? null,
-    notes: p.notes ?? null,
-    createdAt: p.createdAt.toISOString(),
-  })));
+  res.json(
+    payouts.map((p: any) => ({
+      id: p._id.toString(),
+      periodStart: p.periodStart.toISOString(),
+      periodEnd: p.periodEnd.toISOString(),
+      commissionAmount: p.commissionAmount,
+      adjustments: p.adjustments,
+      finalAmount: p.finalAmount,
+      currency: p.currency ?? "USD",
+      status: p.status,
+      scheduledPaymentDate: p.scheduledPaymentDate?.toISOString() ?? null,
+      actualPaymentDate: p.actualPaymentDate?.toISOString() ?? null,
+      notes: p.notes ?? null,
+      createdAt: p.createdAt.toISOString(),
+    })),
+  );
 });
 
 /**
@@ -460,7 +488,10 @@ router.post("/portal/:accessCode/disputes", async (req, res): Promise<void> => {
   const { payoutId, reason } = req.body;
 
   const rep = await Rep.findOne({ portalAccessCode: accessCode });
-  if (!rep) { res.status(404).json({ error: "Invalid access code." }); return; }
+  if (!rep) {
+    res.status(404).json({ error: "Invalid access code." });
+    return;
+  }
 
   const portalAuth = verifyPortalAuth(req, rep);
   if (!portalAuth.authorized) {
@@ -471,23 +502,39 @@ router.post("/portal/:accessCode/disputes", async (req, res): Promise<void> => {
   const workspaceId = rep.workspaceId;
   const plan = await getPlan(workspaceId.toString());
   if (!GROWTH_PLANS.has(plan)) {
-    res.status(403).json({ error: "Disputes require a Growth plan or higher.", upgradeRequired: true });
+    res
+      .status(403)
+      .json({ error: "Disputes require a Growth plan or higher.", upgradeRequired: true });
     return;
   }
 
   if (!payoutId || !reason) {
-    res.status(400).json({ error: "payoutId and reason are required." }); return;
+    res.status(400).json({ error: "payoutId and reason are required." });
+    return;
   }
 
-  const payout = await Payout.findOne({ _id: new Types.ObjectId(payoutId), workspaceId, repId: rep._id });
-  if (!payout) { res.status(404).json({ error: "Payout not found or not accessible." }); return; }
+  const payout = await Payout.findOne({
+    _id: new Types.ObjectId(payoutId),
+    workspaceId,
+    repId: rep._id,
+  });
+  if (!payout) {
+    res.status(404).json({ error: "Payout not found or not accessible." });
+    return;
+  }
 
   if (!["pending", "approved"].includes(payout.status)) {
-    res.status(400).json({ error: `Only pending or approved payouts can be disputed. Status: ${payout.status}` }); return;
+    res.status(400).json({
+      error: `Only pending or approved payouts can be disputed. Status: ${payout.status}`,
+    });
+    return;
   }
 
   const existing = await Dispute.findOne({ payoutId: payout._id });
-  if (existing) { res.status(409).json({ error: "A dispute already exists for this payout." }); return; }
+  if (existing) {
+    res.status(409).json({ error: "A dispute already exists for this payout." });
+    return;
+  }
 
   const dispute = await Dispute.create({
     workspaceId,
@@ -499,7 +546,13 @@ router.post("/portal/:accessCode/disputes", async (req, res): Promise<void> => {
 
   await Payout.findByIdAndUpdate(payout._id, {
     status: "disputed",
-    $push: { statusHistory: { status: "disputed", changedAt: new Date(), note: `Dispute from portal: ${reason.slice(0, 80)}` } },
+    $push: {
+      statusHistory: {
+        status: "disputed",
+        changedAt: new Date(),
+        note: `Dispute from portal: ${reason.slice(0, 80)}`,
+      },
+    },
   });
 
   const notifyUserIds = await getUsersWithPermission(workspaceId.toString(), "disputes", "edit");
@@ -510,7 +563,7 @@ router.post("/portal/:accessCode/disputes", async (req, res): Promise<void> => {
       "dispute_submitted",
       "Payout Dispute Submitted (Portal)",
       `${rep.name} has disputed their payout from the public portal. Reason: ${reason.slice(0, 80)}`,
-      "/disputes"
+      "/disputes",
     );
   }
 

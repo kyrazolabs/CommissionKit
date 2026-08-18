@@ -208,6 +208,7 @@ These never change. Violate them and the PR gets rejected.
 - **No React Router.** Router is Wouter. Do not import `react-router-dom` or use `<BrowserRouter>`.
 - **Mongoose, not raw MongoDB.** All DB access goes through Mongoose models from `@workspace/db`.
 - **No `console.log` in production code.** Use Pino logger (`src/lib/logger`) on the API, no logging in web components.
+- **Keep the tree lint-clean.** `bun run build` runs `biome check` (format + lint) before typecheck. Run `bun run lint:fix` before committing.
 - **Test everything that matters.** Run `bun test` before marking work complete. Mock all external services (Stripe, SMTP, S3, Redis).
 - **Update `context/progress-tracker.md`** after completing any feature or significant change.
 - **Update `os/STATUS.md`** after completing any business process or significant OS change.
@@ -278,11 +279,20 @@ bun run --filter @workspace/web dev
 # Regenerate API client types, Zod schemas, and React Query hooks from OpenAPI spec
 bun run --filter @workspace/api-spec codegen
 
-# Full build (typecheck first, then build all workspaces)
+# Full build (lint + typecheck first, then build all workspaces)
 bun run build
 
 # Typecheck only (two-phase: tsc --build on libs, then tsc --noEmit on apps/scripts)
 bun run typecheck
+
+# Lint + format check (Biome — runs on every build)
+bun run lint
+
+# Auto-fix lint + format
+bun run lint:fix
+
+# Format only
+bun run format
 ```
 
 ## Dev Nginx Reverse Proxy

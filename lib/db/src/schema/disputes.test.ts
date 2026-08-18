@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { createDisputeSchema, updateDisputeSchema } from "./disputes";
 
 describe("createDisputeSchema", () => {
@@ -8,9 +8,7 @@ describe("createDisputeSchema", () => {
       reason: "The commission amount does not match my calculation records.",
     });
     expect(result.payoutId).toBe("payout1");
-    expect(result.reason).toBe(
-      "The commission amount does not match my calculation records.",
-    );
+    expect(result.reason).toBe("The commission amount does not match my calculation records.");
   });
 
   test("accepts exactly 10 character reason", () => {
@@ -57,9 +55,7 @@ describe("createDisputeSchema", () => {
   });
 
   test("rejects missing reason", () => {
-    expect(() =>
-      createDisputeSchema.parse({ payoutId: "payout1" }),
-    ).toThrow();
+    expect(() => createDisputeSchema.parse({ payoutId: "payout1" })).toThrow();
   });
 });
 
@@ -94,9 +90,7 @@ describe("updateDisputeSchema", () => {
   });
 
   test("rejects invalid status", () => {
-    expect(() =>
-      updateDisputeSchema.parse({ status: "closed" }),
-    ).toThrow();
+    expect(() => updateDisputeSchema.parse({ status: "closed" })).toThrow();
   });
 
   test("accepts all valid statuses", () => {

@@ -1,4 +1,4 @@
-import { baseTemplate, btn, h1, p, divider, infoBox, badge, cardSection } from "./base.js";
+import { badge, baseTemplate, btn, cardSection, divider, h1, infoBox, p } from "./base.js";
 
 export interface PayoutUpdateTemplateProps {
   repName: string;
@@ -40,12 +40,16 @@ export function payoutUpdateTemplate(props: PayoutUpdateTemplateProps): string {
           </td>
         </tr>
       </table>
-      ${notes ? `
+      ${
+        notes
+          ? `
         <div style="border-top:1px solid #E5E7EB;margin-top:12px;padding-top:12px;">
           <p style="margin:0;font-size:12px;color:#6B7280;text-transform:uppercase;font-weight:600;">Admin Notes</p>
           <p style="margin:6px 0 0;font-size:14px;color:#374151;font-style:italic;">"${notes}"</p>
         </div>
-      ` : ""}
+      `
+          : ""
+      }
     `)}
 
     ${btn(portalUrl, "View Portal Details")}

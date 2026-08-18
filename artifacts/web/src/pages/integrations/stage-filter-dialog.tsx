@@ -1,12 +1,18 @@
-import { useState, useEffect } from "react";
-import { apiFetch } from "@/lib/api";
+import { Filter, LoaderCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Filter, LoaderCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { apiFetch } from "@/lib/api";
 import type { StageOption } from "./types";
 
 interface Props {
@@ -31,7 +37,7 @@ export function StageFilterDialog({ open, onOpenChange, connectorName }: Props) 
       .then((data) => {
         setStages(data.stages || []);
         // Load existing filter
-        apiFetch(`/api/integrations/${activeWorkspace?.id}/config`)
+        apiFetch(`/api/integrations/${activeWorkspace?.id}/config?connector=${connectorName}`)
           .then((cfg) => {
             const filter = (cfg as any)?.metadata?.stageFilter;
             // null/undefined = all selected (first time), empty array = nothing selected, array = selected
@@ -48,7 +54,7 @@ export function StageFilterDialog({ open, onOpenChange, connectorName }: Props) 
   }, [open, activeWorkspace?.id, connectorName]);
 
   const toggle = (id: string) => {
-    setSelected((prev) => prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]);
+    setSelected((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
   };
 
   const selectAll = () => setSelected(stages.map((s) => s.id));
@@ -56,10 +62,13 @@ export function StageFilterDialog({ open, onOpenChange, connectorName }: Props) 
 
   const save = async () => {
     try {
-      await apiFetch(`/api/integrations/${activeWorkspace?.id}/connector/settings`, {
-        method: "PATCH",
-        body: JSON.stringify({ stageFilter: selected }),
-      });
+      await apiFetch(
+        `/api/integrations/${activeWorkspace?.id}/connector/settings?connector=${connectorName}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ stageFilter: selected }),
+        },
+      );
       onOpenChange(false);
       toast({ title: "Stage filter saved" });
     } catch (err: any) {
@@ -71,12 +80,19 @@ export function StageFilterDialog({ open, onOpenChange, connectorName }: Props) 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><Filter className="size-5" />Stage Filter</DialogTitle>
-          <DialogDescription>Select which stages to import. Unchecked stages are skipped during sync.</DialogDescription>
+          <DialogTitle className="flex items-center gap-2">
+            <Filter className="size-5" />
+            Stage Filter
+          </DialogTitle>
+          <DialogDescription>
+            Select which stages to import. Unchecked stages are skipped during sync.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-3 py-2 max-h-[300px] overflow-y-auto">
           {loading ? (
-            <div className="flex items-center justify-center py-8"><LoaderCircle className="size-5 animate-spin text-muted-foreground" /></div>
+            <div className="flex items-center justify-center py-8">
+              <LoaderCircle className="size-5 animate-spin text-muted-foreground" />
+            </div>
           ) : loadError ? (
             <p className="text-sm text-destructive text-center py-8">{loadError}</p>
           ) : stages.length === 0 ? (
@@ -84,15 +100,25 @@ export function StageFilterDialog({ open, onOpenChange, connectorName }: Props) 
           ) : (
             <>
               <div className="flex gap-2 mb-2">
-                <Button variant="ghost" size="sm" className="text-xs h-7" onClick={selectAll}>Select All</Button>
-                <Button variant="ghost" size="sm" className="text-xs h-7" onClick={clearAll}>Clear All</Button>
+                <Button variant="ghost" size="sm" className="text-xs h-7" onClick={selectAll}>
+                  Select All
+                </Button>
+                <Button variant="ghost" size="sm" className="text-xs h-7" onClick={clearAll}>
+                  Clear All
+                </Button>
               </div>
               {stages.map((stage) => (
                 <div key={stage.id} className="flex items-center gap-3">
-                  <Checkbox id={`sf-${stage.id}`} checked={selected.includes(stage.id)} onCheckedChange={() => toggle(stage.id)} />
+                  <Checkbox
+                    id={`sf-${stage.id}`}
+                    checked={selected.includes(stage.id)}
+                    onCheckedChange={() => toggle(stage.id)}
+                  />
                   <Label htmlFor={`sf-${stage.id}`} className="flex-1 cursor-pointer">
                     <p className="text-sm font-medium">{stage.label}</p>
-                    {stage.pipeline && <p className="text-[11px] text-muted-foreground">{stage.pipeline}</p>}
+                    {stage.pipeline && (
+                      <p className="text-[11px] text-muted-foreground">{stage.pipeline}</p>
+                    )}
                   </Label>
                 </div>
               ))}
@@ -100,8 +126,12 @@ export function StageFilterDialog({ open, onOpenChange, connectorName }: Props) 
           )}
         </div>
         <div className="flex gap-2 justify-end pt-2">
-          <Button variant="secondary" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={save} disabled={loading}>Save</Button>
+          <Button variant="secondary" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={save} disabled={loading}>
+            Save
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

@@ -1,12 +1,12 @@
+import { Check, Clock, Plus } from "lucide-react";
 import { useState } from "react";
-import { Navbar } from "./landing/Navbar";
-import { Footer } from "./landing/Footer";
-import { usePageMeta } from "@/hooks/use-page-meta";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Check, Plus, Clock } from "lucide-react";
+import { usePageMeta } from "@/hooks/use-page-meta";
 import { Analytics } from "@/lib/analytics";
+import { Footer } from "./landing/Footer";
+import { Navbar } from "./landing/Navbar";
 
 const PLANS = [
   {
@@ -104,8 +104,10 @@ const FAQ = [
 export function PricingPage() {
   usePageMeta({
     title: "Pricing — CommissionKit",
-    description: "Simple, predictable pricing for commission management. Plans start at $19.99/month. 14-day free trial, no credit card required.",
-    keywords: "commission software pricing, sales commission cost, commission management plans, team pricing, rep commission software",
+    description:
+      "Simple, predictable pricing for commission management. Plans start at $19.99/month. 14-day free trial, no credit card required.",
+    keywords:
+      "commission software pricing, sales commission cost, commission management plans, team pricing, rep commission software",
     robots: "index, follow",
   });
 
@@ -139,11 +141,17 @@ export function PricingPage() {
                   <Clock className="size-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-foreground">Limited-Time Launch Offer — 60% Off Forever</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Lock in 60% off forever — limited time for new customers. Applied automatically.</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    Limited-Time Launch Offer — 60% Off Forever
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Lock in 60% off forever — limited time for new customers. Applied automatically.
+                  </p>
                 </div>
               </div>
-              <span className="shrink-0 rounded-full bg-primary/20 px-3 py-1.5 text-[11px] font-bold text-primary uppercase tracking-wider">60% OFF</span>
+              <span className="shrink-0 rounded-full bg-primary/20 px-3 py-1.5 text-[11px] font-bold text-primary uppercase tracking-wider">
+                60% OFF
+              </span>
             </div>
           </div>
 
@@ -162,7 +170,9 @@ export function PricingPage() {
                 onCheckedChange={(v) => setPayYearly(v === true)}
                 className="size-4"
               />
-              <span className="text-[11px] font-bold text-primary uppercase tracking-wider">Save 17%</span>
+              <span className="text-[11px] font-bold text-primary uppercase tracking-wider">
+                Save 17%
+              </span>
             </div>
             <Label
               htmlFor="pricing-billing-toggle"
@@ -199,15 +209,21 @@ export function PricingPage() {
 
                   <div className="mb-6">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-4xl font-extrabold text-primary tracking-tight">${discountPrice}</span>
+                      <span className="text-4xl font-extrabold text-primary tracking-tight">
+                        ${discountPrice}
+                      </span>
                       <span className="text-sm text-muted-foreground">{period}</span>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-lg text-muted-foreground line-through">${price}</span>
-                      <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">60% OFF</span>
+                      <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                        60% OFF
+                      </span>
                     </div>
                     {payYearly && (
-                      <p className="text-[11px] font-bold text-primary mt-1">Includes 2 months free</p>
+                      <p className="text-[11px] font-bold text-primary mt-1">
+                        Includes 2 months free
+                      </p>
                     )}
                   </div>
 
@@ -228,7 +244,11 @@ export function PricingPage() {
                     className={`w-full font-bold ${plan.highlighted ? "shadow-sm" : ""}`}
                     onClick={() => Analytics.landingPricingCTAClick(plan.id)}
                   >
-                    {plan.id === "pro" ? "Contact Sales" : plan.highlighted ? "Start Free Trial" : "Get Started"}
+                    {plan.id === "pro"
+                      ? "Contact Sales"
+                      : plan.highlighted
+                        ? "Start Free Trial"
+                        : "Get Started"}
                   </Button>
                 </div>
               );
@@ -241,19 +261,37 @@ export function PricingPage() {
               <div>
                 <h3 className="text-xl font-bold text-foreground mb-1">Business</h3>
                 <p className="text-sm text-muted-foreground mb-4 md:mb-0">
-                  Custom commission engines, SSO/SAML, dedicated infrastructure, and priority support for large organizations.
+                  Custom commission engines, SSO/SAML, dedicated infrastructure, and priority
+                  support for large organizations.
                 </p>
                 <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-foreground">
-                  <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> Unlimited reps & members</li>
-                  <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> SAML/SSO & SCIM</li>
-                  <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> Custom Commission Engine</li>
-                  <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> Dedicated account manager</li>
-                  <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> Custom legal & SLA terms</li>
-                  <li className="flex items-center gap-2"><Check className="size-4 text-primary shrink-0" /> On-premise deployment option</li>
+                  <li className="flex items-center gap-2">
+                    <Check className="size-4 text-primary shrink-0" /> Unlimited reps & members
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="size-4 text-primary shrink-0" /> SAML/SSO & SCIM
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="size-4 text-primary shrink-0" /> Custom Commission Engine
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="size-4 text-primary shrink-0" /> Dedicated account manager
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="size-4 text-primary shrink-0" /> Custom legal & SLA terms
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="size-4 text-primary shrink-0" /> On-premise deployment option
+                  </li>
                 </ul>
               </div>
               <Button size="md" className="font-bold shadow-sm shrink-0" asChild>
-                <a href="mailto:sales@commissionkit.co" onClick={() => Analytics.landingPricingCTAClick("business")}>Contact Sales</a>
+                <a
+                  href="mailto:sales@commissionkit.co"
+                  onClick={() => Analytics.landingPricingCTAClick("business")}
+                >
+                  Contact Sales
+                </a>
               </Button>
             </div>
           </div>
@@ -263,15 +301,23 @@ export function PricingPage() {
             <p className="text-sm font-medium inline-flex items-center gap-2 bg-muted/50 px-4 py-2 rounded-lg border">
               <Plus className="size-4 inline-block" />
               <span className="text-primary font-bold">${payYearly ? "32" : "3.20"}</span>
-              <span className="text-muted-foreground">per additional rep/{payYearly ? "year" : "month"}</span>
-              <span className="text-xs text-muted-foreground line-through">${payYearly ? "79.99" : "7.99"}</span>
-              <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">60% OFF</span>
+              <span className="text-muted-foreground">
+                per additional rep/{payYearly ? "year" : "month"}
+              </span>
+              <span className="text-xs text-muted-foreground line-through">
+                ${payYearly ? "79.99" : "7.99"}
+              </span>
+              <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                60% OFF
+              </span>
             </p>
           </div>
 
           {/* FAQ */}
           <div className="max-w-3xl mx-auto border-t border-border pt-16">
-            <h2 className="text-2xl font-bold text-foreground mb-10 tracking-tight text-center">Frequently Asked Questions</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-10 tracking-tight text-center">
+              Frequently Asked Questions
+            </h2>
             <div className="space-y-4">
               {FAQ.map((item) => (
                 <div key={item.q} className="p-5 rounded-xl border border-border bg-card">

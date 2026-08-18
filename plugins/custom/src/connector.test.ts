@@ -1,18 +1,18 @@
-import { describe, test, expect } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { resolveFieldValue } from "./connector";
 
 describe("resolveFieldValue", () => {
   const item = {
     name: "Alice",
     amount: { amountMicros: 999000000 },
-    price: 42.50,
+    price: 42.5,
     zero: 0,
     nested: { deep: { value: "found" } },
   };
 
   test("plain field path returns value as-is", () => {
     expect(resolveFieldValue(item, "name")).toBe("Alice");
-    expect(resolveFieldValue(item, "price")).toBe(42.50);
+    expect(resolveFieldValue(item, "price")).toBe(42.5);
   });
 
   test("nested path returns deep value", () => {

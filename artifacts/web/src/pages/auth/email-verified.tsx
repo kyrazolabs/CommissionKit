@@ -1,14 +1,20 @@
-import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { motion, AnimatePresence } from "framer-motion";
 import { Link, useLocation } from "wouter";
-
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import bleftCurves from "@/decorative/bleft.curves.svg?raw";
 // Import decorative SVGs from public/decorative as raw strings
 import leftCurves from "@/decorative/left-curves.svg?raw";
 import rightCurves from "@/decorative/right-curves.svg?raw";
-import bleftCurves from "@/decorative/bleft.curves.svg?raw";
 import trightCurves from "@/decorative/tright-curves.svg?raw";
 
 const useIsMobile = () => {
@@ -100,19 +106,32 @@ export function EmailVerifiedPage() {
                         transition={{ duration: 0.25 }}
                       >
                         <CardHeader className="pb-4">
-                          <CardTitle className="text-lg text-destructive">{t('emailVerified.verificationFailed')}</CardTitle>
+                          <CardTitle className="text-lg text-destructive">
+                            {t("emailVerified.verificationFailed")}
+                          </CardTitle>
                           <CardDescription className="mt-1">
-                            {t('emailVerified.verificationFailedDescription')}.
+                            {t("emailVerified.verificationFailedDescription")}.
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col items-center justify-center py-4 text-center">
                           <div className="rounded-full bg-destructive/10 p-3 text-destructive mb-4">
-                            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            <svg
+                              className="w-8 h-8"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                              />
                             </svg>
                           </div>
                           <p className="text-sm text-muted-foreground max-w-[280px]">
-                            Try signing in to your account. If your email is unverified, a fresh verification link will be sent automatically.
+                            Try signing in to your account. If your email is unverified, a fresh
+                            verification link will be sent automatically.
                           </p>
                         </CardContent>
                         <CardFooter className="flex flex-col gap-3">
@@ -134,19 +153,32 @@ export function EmailVerifiedPage() {
                         transition={{ duration: 0.3 }}
                       >
                         <CardHeader className="pb-4">
-                          <CardTitle className="text-lg">{t('emailVerified.emailVerified')}</CardTitle>
+                          <CardTitle className="text-lg">
+                            {t("emailVerified.emailVerified")}
+                          </CardTitle>
                           <CardDescription className="mt-1">
-                            {t('emailVerified.emailVerifiedDescription')}.
+                            {t("emailVerified.emailVerifiedDescription")}.
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col items-center justify-center py-4 text-center space-y-4">
                           <div className="rounded-full bg-primary/10 p-3 text-primary">
-                            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <svg
+                              className="w-8 h-8"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
                             </svg>
                           </div>
                           <p className="text-sm text-muted-foreground max-w-[280px]">
-                            Thank you for verifying your email. You can now access your workspace and get started.
+                            Thank you for verifying your email. You can now access your workspace
+                            and get started.
                           </p>
                         </CardContent>
                         <CardFooter>

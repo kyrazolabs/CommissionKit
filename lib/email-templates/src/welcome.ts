@@ -1,4 +1,4 @@
-import { baseTemplate, btn, h1, p, muted, divider } from "./base.js";
+import { baseTemplate, btn, divider, h1, muted, p } from "./base.js";
 
 export interface WelcomeTemplateProps {
   name?: string;
@@ -14,9 +14,13 @@ export function welcomeTemplate(props: WelcomeTemplateProps): string {
     ${h1(greeting)}
     ${p("You're all set. CommissionKit makes commission tracking effortless — from plans and deals to automated calculations.")}
 
-    ${workspaceName
-      ? p(`Your workspace <strong>${workspaceName}</strong> is ready. Here's what you can do next:`)
-      : p("Here's what you can do to get started:")}
+    ${
+      workspaceName
+        ? p(
+            `Your workspace <strong>${workspaceName}</strong> is ready. Here's what you can do next:`,
+          )
+        : p("Here's what you can do to get started:")
+    }
 
     <ul style="padding-left:20px;color:#374151;font-size:15px;line-height:2;">
       <li>Set up your first <strong>Commission Plan</strong></li>

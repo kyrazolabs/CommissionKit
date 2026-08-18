@@ -1,6 +1,11 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, mock } from "bun:test";
-import mongoose, { Schema, model, Types } from "mongoose";
-import { setupTestDB, teardownTestDB, clearCollections } from "../../../../artifacts/api/test/setup-db";
+import { afterAll, beforeAll, beforeEach, describe, expect, mock, test } from "bun:test";
+import type mongoose from "mongoose";
+import { model, Schema, Types } from "mongoose";
+import {
+  clearCollections,
+  setupTestDB,
+  teardownTestDB,
+} from "../../../../artifacts/api/test/setup-db";
 import type { AuditEventPayload } from "./audit-dispatcher";
 
 let capturedEvents: AuditEventPayload[] = [];
@@ -80,7 +85,11 @@ describe("auditPlugin", () => {
     expect(capturedEvents.length).toBe(1);
     expect(capturedEvents[0].action).toBe("update");
     expect(capturedEvents[0].resourceType).toBe("deal");
-    expect(capturedEvents[0].changes).toContainEqual({ field: "name", from: "Old Deal", to: "Updated Deal" });
+    expect(capturedEvents[0].changes).toContainEqual({
+      field: "name",
+      from: "Old Deal",
+      to: "Updated Deal",
+    });
     expect(capturedEvents[0].changes).toContainEqual({ field: "amount", from: 500, to: 750 });
   });
 
@@ -94,7 +103,11 @@ describe("auditPlugin", () => {
     expect(capturedEvents.length).toBe(1);
     expect(capturedEvents[0].action).toBe("delete");
     expect(capturedEvents[0].resourceType).toBe("deal");
-    expect(capturedEvents[0].changes).toContainEqual({ field: "name", from: "Gone Deal", to: null });
+    expect(capturedEvents[0].changes).toContainEqual({
+      field: "name",
+      from: "Gone Deal",
+      to: null,
+    });
   });
 
   test("redacts sensitive fields", async () => {
@@ -112,11 +125,7 @@ describe("auditPlugin", () => {
     const doc = await TestModel.create({ workspaceId: wsId, name: "Stable Deal", amount: 100 });
     capturedEvents = [];
 
-    await TestModel.findOneAndUpdate(
-      { _id: doc._id },
-      { name: "Stable Deal" },
-      { new: true },
-    );
+    await TestModel.findOneAndUpdate({ _id: doc._id }, { name: "Stable Deal" }, { new: true });
 
     expect(capturedEvents.length).toBe(0);
   });

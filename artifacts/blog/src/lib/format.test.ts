@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { formatDate, readingTime } from "../lib/format";
 
 describe("formatDate", () => {

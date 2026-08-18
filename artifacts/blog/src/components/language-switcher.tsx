@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Check, ChevronDown, Languages } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Languages, ChevronDown, Check } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { Translations } from "@/lib/translations";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,12 @@ interface LanguageSwitcherProps {
   t: Translations;
 }
 
-export function LanguageSwitcher({ currentLang, currentPath, availableLanguages, t }: LanguageSwitcherProps) {
+export function LanguageSwitcher({
+  currentLang,
+  currentPath,
+  availableLanguages,
+  t,
+}: LanguageSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
 
@@ -25,9 +30,8 @@ export function LanguageSwitcher({ currentLang, currentPath, availableLanguages,
 
     // Replace current lang prefix in path, or append lang
     const pathWithoutLang = currentPath.replace(/^\/blog\/[a-z]{2}/, "");
-    const newPath = pathWithoutLang === currentPath
-      ? `/blog/${langCode}`
-      : `/blog/${langCode}${pathWithoutLang}`;
+    const newPath =
+      pathWithoutLang === currentPath ? `/blog/${langCode}` : `/blog/${langCode}${pathWithoutLang}`;
 
     router.push(newPath);
   };
@@ -49,11 +53,7 @@ export function LanguageSwitcher({ currentLang, currentPath, availableLanguages,
 
       {isOpen && (
         <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
-            aria-hidden="true"
-          />
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} aria-hidden="true" />
           <div
             className="absolute inset-e-0 mt-1 z-50 w-48 rounded-lg border border-border bg-popover shadow-md py-1 animate-in fade-in-0 zoom-in-95"
             role="listbox"
@@ -67,7 +67,7 @@ export function LanguageSwitcher({ currentLang, currentPath, availableLanguages,
                   onClick={() => handleSelect(lang)}
                   className={cn(
                     "w-full flex items-center justify-between px-3 py-2 text-sm text-popover-foreground hover:bg-accent transition-colors",
-                    isSelected && "bg-accent"
+                    isSelected && "bg-accent",
                   )}
                   role="option"
                   aria-selected={isSelected}

@@ -7,7 +7,9 @@ const COVER_NAMES = ["cover.webp", "cover.png", "cover.jpg", "cover.jpeg"];
 export function findCover(slug: string): { filePath: string; ext: string } | null {
   if (/*turbopackIgnore: true*/ !fs.existsSync(ARTICLES_DIR)) return null;
 
-  const dateEntries = /*turbopackIgnore: true*/ fs.readdirSync(ARTICLES_DIR, { withFileTypes: true });
+  const dateEntries = /*turbopackIgnore: true*/ fs.readdirSync(ARTICLES_DIR, {
+    withFileTypes: true,
+  });
   for (const dateEntry of dateEntries) {
     if (!dateEntry.isDirectory()) continue;
     const dateDir = /*turbopackIgnore: true*/ path.join(ARTICLES_DIR, dateEntry.name);
@@ -17,7 +19,8 @@ export function findCover(slug: string): { filePath: string; ext: string } | nul
       if (slugEntry.name !== slug) continue;
       for (const name of COVER_NAMES) {
         const p = /*turbopackIgnore: true*/ path.join(dateDir, slug, name);
-        if (/*turbopackIgnore: true*/ fs.existsSync(p)) return { filePath: p, ext: path.extname(name).slice(1) };
+        if (/*turbopackIgnore: true*/ fs.existsSync(p))
+          return { filePath: p, ext: path.extname(name).slice(1) };
       }
       return null;
     }

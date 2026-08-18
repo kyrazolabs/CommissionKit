@@ -1,30 +1,30 @@
-import { Navbar } from "@/pages/landing/Navbar";
-import { Footer } from "@/pages/landing/Footer";
-import { usePageMeta } from "@/hooks/use-page-meta";
-import { Button } from "@/components/ui/button";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Cable,
+  Calculator,
+  Check,
+  ChevronDown,
+  Clock,
+  FileText,
+  Globe,
+  RefreshCw,
+  Settings,
+  Shield,
+  Users,
+  Zap,
+} from "lucide-react";
 import {
   Accordion,
+  AccordionContent,
   AccordionItem,
   AccordionTrigger,
-  AccordionContent,
 } from "@/components/ui/accordion";
-import {
-  Cable,
-  ArrowRight,
-  Check,
-  Users,
-  FileText,
-  RefreshCw,
-  Globe,
-  Zap,
-  Clock,
-  Shield,
-  ChevronDown,
-  ArrowUpRight,
-  Settings,
-  Calculator,
-} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { usePageMeta } from "@/hooks/use-page-meta";
 import { Analytics } from "@/lib/analytics";
+import { Footer } from "@/pages/landing/Footer";
+import { Navbar } from "@/pages/landing/Navbar";
 
 const FEATURES = [
   {
@@ -141,10 +141,14 @@ export function OdooIntegrationPage() {
               Automate Your Sales Commission Tracking
             </p>
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
-              Sync your Odoo sales orders, reps, and invoices automatically. Eliminate manual spreadsheets, calculation errors, and commission disputes. Your reps see their earnings update in real time.
+              Sync your Odoo sales orders, reps, and invoices automatically. Eliminate manual
+              spreadsheets, calculation errors, and commission disputes. Your reps see their
+              earnings update in real time.
             </p>
             <p className="text-sm mx-auto text-muted-foreground max-w-xl mb-4">
-              Unlike generic commission tools that treat Odoo like any other CRM, CommissionKit understands Odoo-specific concepts. sales orders, invoice payment states, and multi-currency that maps to your Odoo configuration.
+              Unlike generic commission tools that treat Odoo like any other CRM, CommissionKit
+              understands Odoo-specific concepts. sales orders, invoice payment states, and
+              multi-currency that maps to your Odoo configuration.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild className="font-semibold shadow-sm">
@@ -154,9 +158,7 @@ export function OdooIntegrationPage() {
                 </a>
               </Button>
               <Button variant="outline" asChild className="font-semibold">
-                <a href="#how-it-works">
-                  See How It Works
-                </a>
+                <a href="#how-it-works">See How It Works</a>
               </Button>
             </div>
 
@@ -164,11 +166,7 @@ export function OdooIntegrationPage() {
             <div className="mt-16 flex justify-center">
               <div className="relative inline-flex items-center gap-6 px-8 py-6 rounded-2xl border border-card-border bg-card">
                 <div className="flex flex-col items-center gap-2">
-                  <img
-                    src="/plugins/odoo.webp"
-                    alt="Odoo"
-                    className="w-12 h-12 object-contain"
-                  />
+                  <img src="/plugins/odoo.webp" alt="Odoo" className="w-12 h-12 object-contain" />
                   <span className="text-xs font-medium text-muted-foreground">Odoo ERP</span>
                 </div>
                 <div className="flex flex-col items-center gap-1">
@@ -176,11 +174,7 @@ export function OdooIntegrationPage() {
                   <span className="text-[10px] font-medium text-primary">Sync</span>
                 </div>
                 <div className="flex flex-col items-center gap-2">
-                  <img
-                    src="/brand/logo-symbol.svg"
-                    alt="CommissionKit"
-                    className="w-12 h-12"
-                  />
+                  <img src="/brand/logo-symbol.svg" alt="CommissionKit" className="w-12 h-12" />
                   <span className="text-xs font-medium text-muted-foreground">CommissionKit</span>
                 </div>
               </div>
@@ -196,7 +190,9 @@ export function OdooIntegrationPage() {
                 Stop Calculating Odoo Commissions in Spreadsheets
               </h2>
               <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-                If you are exporting sales orders from Odoo to CSV, cleaning them up in Excel, and manually calculating commissions — you are losing hours every month and your reps are questioning every number.
+                If you are exporting sales orders from Odoo to CSV, cleaning them up in Excel, and
+                manually calculating commissions — you are losing hours every month and your reps
+                are questioning every number.
               </p>
             </div>
             <div className="grid gap-6 md:grid-cols-3">
@@ -229,9 +225,7 @@ export function OdooIntegrationPage() {
                     <h3 className="text-[15px] font-semibold text-foreground mb-2 tracking-tight">
                       {item.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {item.desc}
-                    </p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
                   </div>
                 );
               })}
@@ -264,9 +258,7 @@ export function OdooIntegrationPage() {
                     <h3 className="text-[15px] font-semibold text-foreground mb-2 tracking-tight">
                       {feature.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {feature.desc}
-                    </p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
                   </div>
                 );
               })}
@@ -289,10 +281,7 @@ export function OdooIntegrationPage() {
               {STEPS.map((step) => {
                 const Icon = step.Icon;
                 return (
-                  <div
-                    key={step.num}
-                    className="p-8 lg:p-10 bg-card relative overflow-hidden"
-                  >
+                  <div key={step.num} className="p-8 lg:p-10 bg-card relative overflow-hidden">
                     <div className="absolute top-4 right-6 text-[72px] font-black text-primary/5 tabular-nums leading-none select-none pointer-events-none">
                       {step.num}
                     </div>
@@ -355,22 +344,20 @@ export function OdooIntegrationPage() {
                   <p className="text-3xl font-bold text-primary tracking-tight tabular-nums">
                     {item.stat}
                   </p>
-                  <p className="text-sm font-medium text-foreground mt-1">
-                    {item.label}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {item.note}
-                  </p>
+                  <p className="text-sm font-medium text-foreground mt-1">{item.label}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{item.note}</p>
                 </div>
               ))}
             </div>
             <p className="text-center text-sm text-muted-foreground">
               A typical 20-rep team can save{" "}
-              <span className="font-semibold text-foreground">$1,500–$3,000/month</span>{" "}
-              in finance team labor alone.
+              <span className="font-semibold text-foreground">$1,500–$3,000/month</span> in finance
+              team labor alone.
             </p>
             <p className="text-xs text-muted-foreground mt-4">
-              Savings are estimated based on typical finance ops labor costs and time studies from spreadsheet-based commission processes. Actual results vary by team size and process complexity.
+              Savings are estimated based on typical finance ops labor costs and time studies from
+              spreadsheet-based commission processes. Actual results vary by team size and process
+              complexity.
             </p>
           </div>
         </section>
@@ -380,7 +367,14 @@ export function OdooIntegrationPage() {
           <div className="max-w-5xl mx-auto">
             <div className="bg-primary/5 border border-primary/10 rounded-lg p-4 text-sm">
               <p className="text-muted-foreground">
-                <span className="font-medium text-foreground">Built on Odoo standards.</span> The connector reads <code className="text-xs bg-muted px-1 py-0.5 rounded">sale.order</code>, <code className="text-xs bg-muted px-1 py-0.5 rounded">res.users</code>, and <code className="text-xs bg-muted px-1 py-0.5 rounded">account.move</code> via Odoo's JSON-RPC API (stable across v15–v18). No custom Odoo modules required. Invoice payment states are derived from actual accounting records, not order status guesses.
+                <span className="font-medium text-foreground">Built on Odoo standards.</span> The
+                connector reads{" "}
+                <code className="text-xs bg-muted px-1 py-0.5 rounded">sale.order</code>,{" "}
+                <code className="text-xs bg-muted px-1 py-0.5 rounded">res.users</code>, and{" "}
+                <code className="text-xs bg-muted px-1 py-0.5 rounded">account.move</code> via
+                Odoo's JSON-RPC API (stable across v15–v18). No custom Odoo modules required.
+                Invoice payment states are derived from actual accounting records, not order status
+                guesses.
               </p>
             </div>
           </div>
@@ -413,7 +407,10 @@ export function OdooIntegrationPage() {
         <section className="py-12 px-4">
           <div className="max-w-3xl mx-auto text-center">
             <p className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">CommissionKit</span> is built by a small, self-funded team focused exclusively on commission management. No venture capital, no growth-at-all-costs pressure. We build what customers need and we answer support messages ourselves.
+              <span className="font-medium text-foreground">CommissionKit</span> is built by a
+              small, self-funded team focused exclusively on commission management. No venture
+              capital, no growth-at-all-costs pressure. We build what customers need and we answer
+              support messages ourselves.
             </p>
           </div>
         </section>

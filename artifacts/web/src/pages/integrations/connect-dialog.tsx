@@ -1,14 +1,26 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ArrowRight, CheckCircle2, ExternalLink, XCircle } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { apiFetch } from "@/lib/api";
+import { cn } from "@/lib/utils";
+import {
+  CustomConnectForm,
+  HubspotConnectForm,
+  OdooConnectForm,
+  SalesforceConnectForm,
+} from "./connect-forms";
 import { ConnectorImage } from "./icons";
-import { OdooConnectForm, HubspotConnectForm, CustomConnectForm, SalesforceConnectForm } from "./connect-forms";
 import type { Connector } from "./types";
 
 interface Props {
@@ -28,13 +40,19 @@ export function ConnectDialog({ connector, isConnected }: Props) {
 
   const testMutation = useMutation({
     mutationFn: (data: { connectorName: string; config: Record<string, unknown> }) =>
-      apiFetch(`/api/integrations/${activeWorkspace?.id}/test`, { method: "POST", body: JSON.stringify(data) }),
+      apiFetch(`/api/integrations/${activeWorkspace?.id}/test`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
     onSuccess: (d: any) => setTestResult(d),
   });
 
   const connectMutation = useMutation({
     mutationFn: (data: { connectorName: string; config: Record<string, unknown> }) =>
-      apiFetch(`/api/integrations/${activeWorkspace?.id}/connect`, { method: "POST", body: JSON.stringify(data) }),
+      apiFetch(`/api/integrations/${activeWorkspace?.id}/connect`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["integrations"] });
       setOpen(false);
@@ -75,7 +93,10 @@ export function ConnectDialog({ connector, isConnected }: Props) {
   const handleTest = () => {
     setTesting(true);
     setTestResult(null);
-    testMutation.mutate({ connectorName: connector.name, config: buildConfig() }, { onSettled: () => setTesting(false) });
+    testMutation.mutate(
+      { connectorName: connector.name, config: buildConfig() },
+      { onSettled: () => setTesting(false) },
+    );
   };
 
   const handleConnect = () => {
@@ -84,23 +105,35 @@ export function ConnectDialog({ connector, isConnected }: Props) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={async (o) => {
-      setOpen(o);
-      if (o) {
-        setFormValues({});
-        setTestResult(null);
-        // Pre-populate with existing config if already connected
-        if (isConnected) {
-          try {
-            const data = await apiFetch(`/api/integrations/${activeWorkspace?.id}/config`);
-            const cfg = data?.config || data || {};
-            setFormValues(Object.fromEntries(
-              Object.entries(cfg as Record<string, unknown>).map(([k, v]) => [k, typeof v === 'boolean' || typeof v === 'string' ? v : String(v)])
-            ));
-          } catch { /* ignore */ }
+    <Dialog
+      open={open}
+      onOpenChange={async (o) => {
+        setOpen(o);
+        if (o) {
+          setFormValues({});
+          setTestResult(null);
+          // Pre-populate with existing config if already connected
+          if (isConnected) {
+            try {
+              const data = await apiFetch(
+                `/api/integrations/${activeWorkspace?.id}/config?connector=${connector.name}`,
+              );
+              const cfg = data?.config || data || {};
+              setFormValues(
+                Object.fromEntries(
+                  Object.entries(cfg as Record<string, unknown>).map(([k, v]) => [
+                    k,
+                    typeof v === "boolean" || typeof v === "string" ? v : String(v),
+                  ]),
+                ),
+              );
+            } catch {
+              /* ignore */
+            }
+          }
         }
-      }
-    }}>
+      }}
+    >
       <DialogTrigger asChild>
         <Button variant={isConnected ? "secondary" : "default"} className="w-full">
           {isConnected ? t("integrations.configure") : t("integrations.setUp")}
@@ -114,22 +147,54 @@ export function ConnectDialog({ connector, isConnected }: Props) {
             {t("integrations.connectTo")} {connector.displayName}
           </DialogTitle>
           <DialogDescription>
-            {t("integrations.enterCredentials")} {connector.displayName} {t("integrations.credentialsHint")}
+            {t("integrations.enterCredentials")} {connector.displayName}{" "}
+            {t("integrations.credentialsHint")}
           </DialogDescription>
+          {connector.setupGuideUrl && (
+            <a
+              href={connector.setupGuideUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+            >
+              <ExternalLink className="size-3.5" />
+              View setup guide
+            </a>
+          )}
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          {connector.name === "odoo" && <OdooConnectForm values={formValues} onChange={setFormValues} />}
-          {connector.name === "custom" && <CustomConnectForm values={formValues} onChange={setFormValues} />}
-          {connector.name === "hubspot" && <HubspotConnectForm values={formValues} onChange={setFormValues} />}
-          {connector.name === "salesforce" && <SalesforceConnectForm values={formValues} onChange={setFormValues} />}
+          {connector.name === "odoo" && (
+            <OdooConnectForm values={formValues} onChange={setFormValues} />
+          )}
+          {connector.name === "custom" && (
+            <CustomConnectForm values={formValues} onChange={setFormValues} />
+          )}
+          {connector.name === "hubspot" && (
+            <HubspotConnectForm values={formValues} onChange={setFormValues} />
+          )}
+          {connector.name === "salesforce" && (
+            <SalesforceConnectForm values={formValues} onChange={setFormValues} />
+          )}
 
           {testResult && (
-            <div className={cn("rounded-lg p-3 text-sm flex items-center gap-2",
-              testResult.success ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300" : "bg-destructive/10 text-destructive",
-            )}>
-              {testResult.success ? <CheckCircle2 className="size-4 shrink-0" /> : <XCircle className="size-4 shrink-0" />}
-              {testResult.message || (testResult.success ? t("integrations.connectionSuccessful") : t("integrations.connectionFailed"))}
+            <div
+              className={cn(
+                "rounded-lg p-3 text-sm flex items-center gap-2",
+                testResult.success
+                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                  : "bg-destructive/10 text-destructive",
+              )}
+            >
+              {testResult.success ? (
+                <CheckCircle2 className="size-4 shrink-0" />
+              ) : (
+                <XCircle className="size-4 shrink-0" />
+              )}
+              {testResult.message ||
+                (testResult.success
+                  ? t("integrations.connectionSuccessful")
+                  : t("integrations.connectionFailed"))}
             </div>
           )}
 

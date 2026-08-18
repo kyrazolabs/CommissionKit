@@ -1,34 +1,51 @@
-import mongoose, { Schema, model, Types } from "mongoose";
+import type mongoose from "mongoose";
+import { model, Schema, type Types } from "mongoose";
 import { z } from "zod";
 import { auditPlugin } from "../plugins/audit.js";
 
-const WorkspaceOnboardingSchema = new Schema({
-  checklistDismissed: { type: Boolean, default: false },
-  checklistCompletedAt: { type: Date, default: null },
-  checklistShownAt: { type: Date, default: null },
-}, { _id: false });
+const WorkspaceOnboardingSchema = new Schema(
+  {
+    checklistDismissed: { type: Boolean, default: false },
+    checklistCompletedAt: { type: Date, default: null },
+    checklistShownAt: { type: Date, default: null },
+  },
+  { _id: false },
+);
 
-const WorkspaceSchema = new Schema({
-  slug: { type: String, required: true, unique: true },
-  name: { type: String, required: true },
-  ownerId: { type: String, required: true },
-  // Workspace-level settings
-  currency: { type: String, default: "USD" },
-  fiscalYearStart: { type: String, default: "January" }, // month name
-  commissionEngine: { type: String, default: "standard" },
-  sampleDataLoaded: { type: Boolean, default: false },
-  onboarding: { type: WorkspaceOnboardingSchema, default: () => ({ checklistDismissed: false, checklistCompletedAt: null, checklistShownAt: null }) },
-}, { timestamps: { createdAt: true, updatedAt: false } });
+const WorkspaceSchema = new Schema(
+  {
+    slug: { type: String, required: true, unique: true },
+    name: { type: String, required: true },
+    ownerId: { type: String, required: true },
+    // Workspace-level settings
+    currency: { type: String, default: "USD" },
+    fiscalYearStart: { type: String, default: "January" }, // month name
+    commissionEngine: { type: String, default: "standard" },
+    sampleDataLoaded: { type: Boolean, default: false },
+    onboarding: {
+      type: WorkspaceOnboardingSchema,
+      default: () => ({
+        checklistDismissed: false,
+        checklistCompletedAt: null,
+        checklistShownAt: null,
+      }),
+    },
+  },
+  { timestamps: { createdAt: true, updatedAt: false } },
+);
 
 WorkspaceSchema.plugin(auditPlugin({ resourceType: "workspace", resourceNameField: "name" }));
 
-const WorkspaceMemberSchema = new Schema({
-  workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
-  userId: { type: String },
-  email: { type: String, required: true },
-  role: { type: String, required: true, default: "member" }, // legacy fallback
-  roleIds: [{ type: Schema.Types.ObjectId, ref: "Role" }],
-}, { timestamps: { createdAt: true, updatedAt: false } });
+const WorkspaceMemberSchema = new Schema(
+  {
+    workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
+    userId: { type: String },
+    email: { type: String, required: true },
+    role: { type: String, required: true, default: "member" }, // legacy fallback
+    roleIds: [{ type: Schema.Types.ObjectId, ref: "Role" }],
+  },
+  { timestamps: { createdAt: true, updatedAt: false } },
+);
 
 export const Workspace = model("Workspace", WorkspaceSchema);
 export const WorkspaceMember = model("WorkspaceMember", WorkspaceMemberSchema);

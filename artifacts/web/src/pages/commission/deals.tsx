@@ -1,53 +1,97 @@
-import { useState, useRef, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
-import * as XLSX from 'xlsx';
-import { downloadTemplate } from "@/lib/templates";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
-import { useSyncStore } from "@/hooks/use-sync-store";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  getListDealsQueryKey,
+  getListRepsQueryKey,
+  useCreateDeal,
   useDeleteDeal,
+  useImportDeals,
+  useListReps,
   useUpdateDeal,
-  useListReps, getListRepsQueryKey,
-  useCreateDeal, useImportDeals, getListDealsQueryKey
 } from "@workspace/api-client-react";
-import { DataPagination } from "@/components/ui/data-pagination";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { NumberInput } from "@/components/number-input";
-import { MonthPicker } from "@/components/ui/month-picker";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DatePicker, DateRangePicker } from "@/components/ui/date-picker";
-import { parseISO } from "date-fns";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Trash, UploadCloud, FileDown, Briefcase, Loader2, ChevronDown, ChevronRight, Pencil, MoreHorizontal } from "lucide-react";
-import { HelpTooltip } from "@/components/help-tooltip";
-import { format } from "date-fns";
-import { formatCurrency } from "@/lib/format";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { format, parseISO } from "date-fns";
+import { motion } from "framer-motion";
+import {
+  Briefcase,
+  ChevronDown,
+  ChevronRight,
+  Download,
+  FileDown,
+  Loader2,
+  MoreHorizontal,
+  Pencil,
+  Search,
+  Trash,
+  UploadCloud,
+} from "lucide-react";
 import Papa from "papaparse";
-import { useRole } from "@/hooks/use-role";
-import { useWorkspace } from "@/hooks/use-workspace";
+import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import * as XLSX from "xlsx";
 import { CurrencyCombobox } from "@/components/currency-combobox";
-import { RepCombobox } from "@/components/rep-combobox";
-import { useRepSearch } from "@/hooks/use-rep-search";
+import { HelpTooltip } from "@/components/help-tooltip";
 import { MarkdownEditor } from "@/components/markdown-editor";
+import { NumberInput } from "@/components/number-input";
+import { RepCombobox } from "@/components/rep-combobox";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { DataPagination } from "@/components/ui/data-pagination";
+import { DatePicker, DateRangePicker } from "@/components/ui/date-picker";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { MonthPicker } from "@/components/ui/month-picker";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 import { useBillingStatus } from "@/hooks/use-billing-status";
-import { Download } from "lucide-react";
-import { apiFetch } from "@/lib/api";
 import { usePageMeta } from "@/hooks/use-page-meta";
-
+import { useRepSearch } from "@/hooks/use-rep-search";
+import { useRole } from "@/hooks/use-role";
+import { useSyncStore } from "@/hooks/use-sync-store";
+import { useToast } from "@/hooks/use-toast";
+import { useWorkspace } from "@/hooks/use-workspace";
+import { apiFetch } from "@/lib/api";
+import { formatCurrency } from "@/lib/format";
+import { downloadTemplate } from "@/lib/templates";
 
 export function DealsPage() {
   const { t } = useTranslation();
-  usePageMeta({ title: t("deals.title"), description: "Track deals and calculate commissions across your team.", robots: "noindex, nofollow" });
+  usePageMeta({
+    title: t("deals.title"),
+    description: "Track deals and calculate commissions across your team.",
+    robots: "noindex, nofollow",
+  });
   const { activeWorkspace } = useWorkspace();
   const currency = activeWorkspace?.currency || "USD";
   const [period, setPeriod] = useState<string>(format(new Date(), "yyyy-MM"));
@@ -59,7 +103,11 @@ export function DealsPage() {
   const LIMIT = 50;
 
   const { can, hasPermission, isLoading: roleLoading } = useRole();
-  const { reps: searchReps, searching: repSearching, onSearch: onRepSearch } = useRepSearch(activeWorkspace?.id);
+  const {
+    reps: searchReps,
+    searching: repSearching,
+    onSearch: onRepSearch,
+  } = useRepSearch(activeWorkspace?.id);
 
   const queryParams: any = { period, page, limit: LIMIT };
   if (repId !== "all") queryParams.repId = repId;
@@ -67,9 +115,15 @@ export function DealsPage() {
   if (searchTerm.trim()) queryParams.search = searchTerm.trim();
 
   // Reset page when filters change
-  useEffect(() => { setPage(1); }, [repId, paymentStatus, period, searchTerm]);
+  useEffect(() => {
+    setPage(1);
+  }, [repId, paymentStatus, period, searchTerm]);
 
-  const { data: dealsResult, isLoading, error } = useQuery({
+  const {
+    data: dealsResult,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["/api/deals", queryParams],
     queryFn: () => {
       const sp = new URLSearchParams();
@@ -79,7 +133,10 @@ export function DealsPage() {
       if (queryParams.search) sp.set("search", queryParams.search);
       sp.set("page", String(queryParams.page));
       sp.set("limit", String(queryParams.limit));
-      return apiFetch(`/api/deals?${sp}`) as Promise<{ data: any[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>;
+      return apiFetch(`/api/deals?${sp}`) as Promise<{
+        data: any[];
+        pagination: { page: number; limit: number; total: number; totalPages: number };
+      }>;
     },
     enabled: Boolean(activeWorkspace?.id),
   });
@@ -169,9 +226,9 @@ export function DealsPage() {
               </Select>
             </div>
             <div className="w-40">
-              <MonthPicker 
-                value={period} 
-                onChange={setPeriod} 
+              <MonthPicker
+                value={period}
+                onChange={setPeriod}
                 placeholder={t("common.pickMonth")}
                 className="w-full h-9"
               />
@@ -185,7 +242,7 @@ export function DealsPage() {
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
             </div>
-           ) : deals.length === 0 ? (
+          ) : deals.length === 0 ? (
             <div className="text-center py-12">
               <div className="bg-muted size-12 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Briefcase className="size-6 text-muted-foreground" />
@@ -197,130 +254,155 @@ export function DealsPage() {
             </div>
           ) : (
             <>
-            <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>
-                    <div className="flex items-center gap-1.5">
-                      {t("deals.dealName")}
-                      <HelpTooltip content="The unique identifier for this revenue event." />
-                    </div>
-                  </TableHead>
-                  <TableHead>Rep</TableHead>
-                  <TableHead className="text-right tabular-nums">Amount</TableHead>
-                  <TableHead>{t("deals.closeDate")}</TableHead>
-                  <TableHead>Stage</TableHead>
-                  <TableHead>Payment</TableHead>
-                  <TableHead className="text-right"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {deals.flatMap((deal) => {
-                  const rows: React.ReactNode[] = [
-                    <TableRow key={deal.id}>
-                      <TableCell className="font-medium p-1.5!">
-                        <button
-                          onClick={() => setExpandedDealId(expandedDealId === deal.id ? null : deal.id)}
-                          className="flex items-center gap-1.5 hover:text-primary transition-colors text-left"
-                        >
-                          {deal.notes ? (
-                            expandedDealId === deal.id ? (
-                              <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
-                            ) : (
-                              <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
-                            )
-                          ) : (
-                            <span className="size-3.5 shrink-0" />
-                          )}
-                          {deal.name}
-                        </button>
-                      </TableCell>
-                      <TableCell>{deal.repName}</TableCell>
-                      <TableCell className="font-medium text-primary text-right tabular-nums p-1.5!">
-                        {formatCurrency(deal.amount, deal.currency || currency)}
-                      </TableCell>
-                      <TableCell className="p-1.5!">{deal.closeDate ? format(new Date(deal.closeDate), "MMM d, yyyy") : "—"}</TableCell>
-                      <TableCell className="p-1.5!">
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
-                          deal.stage === 'closed_won' ? 'bg-primary/10 text-primary border-primary/20' : 
-                          deal.stage === 'closed_lost' ? 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/30' :
-                          'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800/30'
-                        }`}>
-                          {deal.stage.replace('_', ' ').toUpperCase()}
-                        </span>
-                        {(deal as any).clawbackApplied && (
-                          <span className="ml-1 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-orange-100 text-orange-800 border border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800/30">
-                            CLAWBACK
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="p-1.5!">
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
-                          deal.paymentStatus === 'paid' ? 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800/30' : 
-                          deal.paymentStatus === 'partial' ? 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/30' :
-                          deal.paymentStatus === 'on_hold' ? 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800/30' :
-                          'bg-muted text-muted-foreground border-border'
-                        }`}>
-                          {(deal.paymentStatus || 'unpaid').replace('_', ' ').toUpperCase()}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right p-1.5!">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="size-8">
-                              <MoreHorizontal className="size-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            {hasPermission("deals", "edit") && deal.paymentStatus !== "paid" && (
-                              <UpdateDealDialog deal={deal} queryParams={queryParams} workspaceCurrency={currency} />
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>
+                        <div className="flex items-center gap-1.5">
+                          {t("deals.dealName")}
+                          <HelpTooltip content="The unique identifier for this revenue event." />
+                        </div>
+                      </TableHead>
+                      <TableHead>Rep</TableHead>
+                      <TableHead className="text-right tabular-nums">Amount</TableHead>
+                      <TableHead>{t("deals.closeDate")}</TableHead>
+                      <TableHead>Stage</TableHead>
+                      <TableHead>Payment</TableHead>
+                      <TableHead className="text-right"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {deals.flatMap((deal) => {
+                      const rows: React.ReactNode[] = [
+                        <TableRow key={deal.id}>
+                          <TableCell className="font-medium p-1.5!">
+                            <button
+                              onClick={() =>
+                                setExpandedDealId(expandedDealId === deal.id ? null : deal.id)
+                              }
+                              className="flex items-center gap-1.5 hover:text-primary transition-colors text-left"
+                            >
+                              {deal.notes ? (
+                                expandedDealId === deal.id ? (
+                                  <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
+                                ) : (
+                                  <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
+                                )
+                              ) : (
+                                <span className="size-3.5 shrink-0" />
+                              )}
+                              {deal.name}
+                            </button>
+                          </TableCell>
+                          <TableCell>{deal.repName}</TableCell>
+                          <TableCell className="font-medium text-primary text-right tabular-nums p-1.5!">
+                            {formatCurrency(deal.amount, deal.currency || currency)}
+                          </TableCell>
+                          <TableCell className="p-1.5!">
+                            {deal.closeDate ? format(new Date(deal.closeDate), "MMM d, yyyy") : "—"}
+                          </TableCell>
+                          <TableCell className="p-1.5!">
+                            <span
+                              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
+                                deal.stage === "closed_won"
+                                  ? "bg-primary/10 text-primary border-primary/20"
+                                  : deal.stage === "closed_lost"
+                                    ? "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/30"
+                                    : "bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800/30"
+                              }`}
+                            >
+                              {deal.stage.replace("_", " ").toUpperCase()}
+                            </span>
+                            {(deal as any).clawbackApplied && (
+                              <span className="ml-1 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-orange-100 text-orange-800 border border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800/30">
+                                CLAWBACK
+                              </span>
                             )}
-                            {hasPermission("deals", "delete") && (
-                              <>
-                                <DropdownMenuSeparator />
-                                <DealDeleteAction deal={deal} queryParams={queryParams} currency={currency} />
-            </>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>,
-                  ];
-                  if (expandedDealId === deal.id && deal.notes) {
-                    rows.push(
-                      <TableRow key={`${deal.id}-notes`} className="hover:bg-transparent">
-                        <TableCell colSpan={7} className="p-0 border-t-0 overflow-hidden">
-                          <motion.div
-                            initial={{ opacity: 0, y: -4 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.15, ease: "easeOut" }}
-                          >
-                            <div className="px-6 py-4 bg-muted/20 border-t">
-                              <div className="prose prose-sm max-w-none prose-p:my-0.5" dangerouslySetInnerHTML={{ __html: deal.notes }} />
-                            </div>
-                          </motion.div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  }
-                  return rows;
-                })}
-              </TableBody>
-            </Table>
-            </div>
-            {pagination && (
-              <div className="border-t px-4 py-3">
-                <DataPagination
-                  page={page}
-                  totalPages={pagination.totalPages}
-                  total={pagination.total}
-                  limit={LIMIT}
-                  onPageChange={setPage}
-                />
+                          </TableCell>
+                          <TableCell className="p-1.5!">
+                            <span
+                              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
+                                deal.paymentStatus === "paid"
+                                  ? "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800/30"
+                                  : deal.paymentStatus === "partial"
+                                    ? "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/30"
+                                    : deal.paymentStatus === "on_hold"
+                                      ? "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800/30"
+                                      : "bg-muted text-muted-foreground border-border"
+                              }`}
+                            >
+                              {(deal.paymentStatus || "unpaid").replace("_", " ").toUpperCase()}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right p-1.5!">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="size-8">
+                                  <MoreHorizontal className="size-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                {hasPermission("deals", "edit") &&
+                                  deal.paymentStatus !== "paid" && (
+                                    <UpdateDealDialog
+                                      deal={deal}
+                                      queryParams={queryParams}
+                                      workspaceCurrency={currency}
+                                    />
+                                  )}
+                                {hasPermission("deals", "delete") && (
+                                  <>
+                                    <DropdownMenuSeparator />
+                                    <DealDeleteAction
+                                      deal={deal}
+                                      queryParams={queryParams}
+                                      currency={currency}
+                                    />
+                                  </>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>,
+                      ];
+                      if (expandedDealId === deal.id && deal.notes) {
+                        rows.push(
+                          <TableRow key={`${deal.id}-notes`} className="hover:bg-transparent">
+                            <TableCell colSpan={7} className="p-0 border-t-0 overflow-hidden">
+                              <motion.div
+                                initial={{ opacity: 0, y: -4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.15, ease: "easeOut" }}
+                              >
+                                <div className="px-6 py-4 bg-muted/20 border-t">
+                                  <div
+                                    className="prose prose-sm max-w-none prose-p:my-0.5"
+                                    dangerouslySetInnerHTML={{ __html: deal.notes }}
+                                  />
+                                </div>
+                              </motion.div>
+                            </TableCell>
+                          </TableRow>,
+                        );
+                      }
+                      return rows;
+                    })}
+                  </TableBody>
+                </Table>
               </div>
-            )}
+              {pagination && (
+                <div className="border-t px-4 py-3">
+                  <DataPagination
+                    page={page}
+                    totalPages={pagination.totalPages}
+                    total={pagination.total}
+                    limit={LIMIT}
+                    onPageChange={setPage}
+                  />
+                </div>
+              )}
             </>
           )}
         </CardContent>
@@ -329,35 +411,52 @@ export function DealsPage() {
   );
 }
 
-function UpdateDealDialog({ deal, queryParams, workspaceCurrency }: { deal: any, queryParams: any, workspaceCurrency: string }) {
+function UpdateDealDialog({
+  deal,
+  queryParams,
+  workspaceCurrency,
+}: {
+  deal: any;
+  queryParams: any;
+  workspaceCurrency: string;
+}) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const { t } = useTranslation();
   const { toast } = useToast();
   const { activeWorkspace } = useWorkspace();
-  const { reps: searchReps, searching: repSearching, onSearch: onRepSearch } = useRepSearch(activeWorkspace?.id);
+  const {
+    reps: searchReps,
+    searching: repSearching,
+    onSearch: onRepSearch,
+  } = useRepSearch(activeWorkspace?.id);
   const updateMutation = useUpdateDeal({
     mutation: {
       onMutate: async (variables) => {
         const { id, data } = variables;
-        await queryClient.cancelQueries({ queryKey: ['/api/deals'] });
-        const previousDealsQueries = queryClient.getQueriesData<any[]>({ queryKey: ['/api/deals'] });
+        await queryClient.cancelQueries({ queryKey: ["/api/deals"] });
+        const previousDealsQueries = queryClient.getQueriesData<any[]>({
+          queryKey: ["/api/deals"],
+        });
 
         const rep = searchReps?.find((r) => r.id === String(data.repId));
         const repName = rep ? rep.name : (formData.repName ?? t("deals.creator.title"));
 
-        queryClient.setQueriesData<any>({ queryKey: ['/api/deals'] }, (old: any) => {
+        queryClient.setQueriesData<any>({ queryKey: ["/api/deals"] }, (old: any) => {
           if (!old?.data) return old;
-          return { ...old, data: old.data.map((dealItem: any) => {
-            if (dealItem.id === id) {
-              return {
-                ...dealItem,
-                ...data,
-                repName,
-              };
-            }
-            return dealItem;
-          }) };
+          return {
+            ...old,
+            data: old.data.map((dealItem: any) => {
+              if (dealItem.id === id) {
+                return {
+                  ...dealItem,
+                  ...data,
+                  repName,
+                };
+              }
+              return dealItem;
+            }),
+          };
         });
 
         return { previousDealsQueries };
@@ -380,9 +479,9 @@ function UpdateDealDialog({ deal, queryParams, workspaceCurrency }: { deal: any,
         toast({ title: t("deals.dealUpdated") });
       },
       onSettled: () => {
-        queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
-      }
-    }
+        queryClient.invalidateQueries({ queryKey: ["/api/deals"] });
+      },
+    },
   });
 
   const [formData, setFormData] = useState({
@@ -395,7 +494,7 @@ function UpdateDealDialog({ deal, queryParams, workspaceCurrency }: { deal: any,
     period: deal.period,
     stage: deal.stage as any,
     paymentStatus: deal.paymentStatus || "unpaid",
-    notes: deal.notes || ""
+    notes: deal.notes || "",
   });
   const [showClawbackConfirm, setShowClawbackConfirm] = useState(false);
   const [showPaidConfirm, setShowPaidConfirm] = useState(false);
@@ -425,33 +524,53 @@ function UpdateDealDialog({ deal, queryParams, workspaceCurrency }: { deal: any,
     setOpen(false);
   };
 
-  const isPending = deal.stage === 'pending';
-  const isClosedWon = deal.stage === 'closed_won';
+  const isPending = deal.stage === "pending";
+  const isClosedWon = deal.stage === "closed_won";
   const isEditable = isPending || isClosedWon;
   const isPaymentOnly = isClosedWon;
 
   if (!isEditable) return null;
 
-   return (<>
-     <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setOpen(true); }}>
-       <Pencil className="mr-2 size-4" />Edit
-     </DropdownMenuItem>
-     <Dialog open={open} onOpenChange={setOpen}>
+  return (
+    <>
+      <DropdownMenuItem
+        onSelect={(e) => {
+          e.preventDefault();
+          setOpen(true);
+        }}
+      >
+        <Pencil className="mr-2 size-4" />
+        Edit
+      </DropdownMenuItem>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[550px]">
           <DialogHeader>
-            <DialogTitle>{isPaymentOnly ? t("deals.updatePaymentStatus") : "Edit Deal"}</DialogTitle>
-            <DialogDescription>{isPaymentOnly ? "Update the stage or payment status for this closed won deal. Changing to Closed Lost triggers clawback." : "Update deal details."}</DialogDescription>
+            <DialogTitle>
+              {isPaymentOnly ? t("deals.updatePaymentStatus") : "Edit Deal"}
+            </DialogTitle>
+            <DialogDescription>
+              {isPaymentOnly
+                ? "Update the stage or payment status for this closed won deal. Changing to Closed Lost triggers clawback."
+                : "Update deal details."}
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4 py-4">
             {isPaymentOnly ? (
               <>
                 <div className="rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 p-3 text-sm text-amber-800 dark:text-amber-300">
-                  This deal is <strong>closed won</strong>. Changing the stage to <strong>Closed Lost</strong> will trigger a <strong>clawback</strong> if the plan has a clawback period configured.
+                  This deal is <strong>closed won</strong>. Changing the stage to{" "}
+                  <strong>Closed Lost</strong> will trigger a <strong>clawback</strong> if the plan
+                  has a clawback period configured.
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-stage">{t("deals.stage")}</Label>
-                  <Select value={formData.stage} onValueChange={(val) => setFormData(prev => ({ ...prev, stage: val }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    value={formData.stage}
+                    onValueChange={(val) => setFormData((prev) => ({ ...prev, stage: val }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="closed_won">CLOSED WON</SelectItem>
                       <SelectItem value="closed_lost">CLOSED LOST</SelectItem>
@@ -460,104 +579,157 @@ function UpdateDealDialog({ deal, queryParams, workspaceCurrency }: { deal: any,
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-paymentStatus">{t("deals.paymentStatus")}</Label>
-                  <Select value={formData.paymentStatus} onValueChange={(val) => setFormData(prev => ({ ...prev, paymentStatus: val }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    value={formData.paymentStatus}
+                    onValueChange={(val) =>
+                      setFormData((prev) => ({ ...prev, paymentStatus: val }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="unpaid">UNPAID</SelectItem>
-                    <SelectItem value="paid">PAID</SelectItem>
-                    <SelectItem value="partial">PARTIAL</SelectItem>
-                    <SelectItem value="on_hold">ON HOLD</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </>
-          ) : (
-            <>
-          <div className="space-y-2">
-            <Label htmlFor="edit-repId">Sales Rep</Label>
-            <RepCombobox
-              key={`rep-select-${formData.repId}-${searchReps?.length || 0}`}
-              reps={searchReps}
-              value={formData.repId}
-              onChange={(val) => {
-                const selected = searchReps?.find(r => r.id === val);
-                setFormData(prev => ({ ...prev, repId: val, repName: selected?.name ?? prev.repName }));
-              }}
-              onSearch={onRepSearch}
-              searching={repSearching}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="edit-name">{t("deals.dealName")}</Label>
-            <Input id="edit-name" value={formData.name} onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))} required />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-amount">Amount</Label>
-              <NumberInput id="edit-amount" value={formData.amount} onChange={(e) => setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-currency">Currency</Label>
-              <CurrencyCombobox
-                value={formData.currency}
-                onChange={(val) => setFormData((prev) => ({ ...prev, currency: val }))}
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-closeDate">{t("deals.closeDate")}</Label>
-              <DatePicker 
-                date={formData.closeDate ? parseISO(formData.closeDate) : undefined} 
-                onChange={(d) => setFormData(prev => ({ ...prev, closeDate: d ? format(d, "yyyy-MM-dd") : "" }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-stage">{t("deals.stage")}</Label>
-              <Select value={formData.stage} onValueChange={(val) => setFormData(prev => ({ ...prev, stage: val }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="closed_won">CLOSED WON</SelectItem>
-                  <SelectItem value="closed_lost">CLOSED LOST</SelectItem>
-                  <SelectItem value="pending">PENDING</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="edit-paymentStatus">{t("deals.paymentStatus")}</Label>
-            <Select value={formData.paymentStatus} onValueChange={(val) => setFormData(prev => ({ ...prev, paymentStatus: val }))}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="unpaid">UNPAID</SelectItem>
-                <SelectItem value="paid">PAID</SelectItem>
-                <SelectItem value="partial">PARTIAL</SelectItem>
-                <SelectItem value="on_hold">ON HOLD</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="edit-notes">Notes</Label>
-            <MarkdownEditor
-              value={formData.notes}
-              onChange={(val) => setFormData(prev => ({ ...prev, notes: val }))}
-              placeholder={t("deals.notesPlaceholder")}
-            />
-          </div>
-            </>
-          )}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={updateMutation.isPending}>{updateMutation.isPending ? t("common.saving") : t("common.saveChanges")}</Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+                      <SelectItem value="paid">PAID</SelectItem>
+                      <SelectItem value="partial">PARTIAL</SelectItem>
+                      <SelectItem value="on_hold">ON HOLD</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-repId">Sales Rep</Label>
+                  <RepCombobox
+                    key={`rep-select-${formData.repId}-${searchReps?.length || 0}`}
+                    reps={searchReps}
+                    value={formData.repId}
+                    onChange={(val) => {
+                      const selected = searchReps?.find((r) => r.id === val);
+                      setFormData((prev) => ({
+                        ...prev,
+                        repId: val,
+                        repName: selected?.name ?? prev.repName,
+                      }));
+                    }}
+                    onSearch={onRepSearch}
+                    searching={repSearching}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-name">{t("deals.dealName")}</Label>
+                  <Input
+                    id="edit-name"
+                    value={formData.name}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-amount">Amount</Label>
+                    <NumberInput
+                      id="edit-amount"
+                      value={formData.amount}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          amount: parseFloat(e.target.value) || 0,
+                        }))
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-currency">Currency</Label>
+                    <CurrencyCombobox
+                      value={formData.currency}
+                      onChange={(val) => setFormData((prev) => ({ ...prev, currency: val }))}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-closeDate">{t("deals.closeDate")}</Label>
+                    <DatePicker
+                      date={formData.closeDate ? parseISO(formData.closeDate) : undefined}
+                      onChange={(d) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          closeDate: d ? format(d, "yyyy-MM-dd") : "",
+                        }))
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-stage">{t("deals.stage")}</Label>
+                    <Select
+                      value={formData.stage}
+                      onValueChange={(val) => setFormData((prev) => ({ ...prev, stage: val }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="closed_won">CLOSED WON</SelectItem>
+                        <SelectItem value="closed_lost">CLOSED LOST</SelectItem>
+                        <SelectItem value="pending">PENDING</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-paymentStatus">{t("deals.paymentStatus")}</Label>
+                  <Select
+                    value={formData.paymentStatus}
+                    onValueChange={(val) =>
+                      setFormData((prev) => ({ ...prev, paymentStatus: val }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unpaid">UNPAID</SelectItem>
+                      <SelectItem value="paid">PAID</SelectItem>
+                      <SelectItem value="partial">PARTIAL</SelectItem>
+                      <SelectItem value="on_hold">ON HOLD</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-notes">Notes</Label>
+                  <MarkdownEditor
+                    value={formData.notes}
+                    onChange={(val) => setFormData((prev) => ({ ...prev, notes: val }))}
+                    placeholder={t("deals.notesPlaceholder")}
+                  />
+                </div>
+              </>
+            )}
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={updateMutation.isPending}>
+                {updateMutation.isPending ? t("common.saving") : t("common.saveChanges")}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
       <ConfirmDialog
         open={showClawbackConfirm}
         onOpenChange={setShowClawbackConfirm}
         title={t("deals.triggerClawback")}
-        description={<>Changing this deal from <strong>Closed Won</strong> to <strong>Closed Lost</strong> will trigger a clawback if the plan has a clawback period configured. The commission paid for this deal will be deducted from the rep's next payout.</>}
+        description={
+          <>
+            Changing this deal from <strong>Closed Won</strong> to <strong>Closed Lost</strong> will
+            trigger a clawback if the plan has a clawback period configured. The commission paid for
+            this deal will be deducted from the rep's next payout.
+          </>
+        }
         confirmLabel={t("deals.changeToClosedLost")}
         variant="destructive"
         onConfirm={() => {
@@ -570,7 +742,12 @@ function UpdateDealDialog({ deal, queryParams, workspaceCurrency }: { deal: any,
         open={showPaidConfirm}
         onOpenChange={setShowPaidConfirm}
         title={t("deals.markAsPaid")}
-        description={<>Marking <strong>{deal.name}</strong> as paid will lock it from further edits and set the stage to <strong>Closed Won</strong>. This cannot be undone.</>}
+        description={
+          <>
+            Marking <strong>{deal.name}</strong> as paid will lock it from further edits and set the
+            stage to <strong>Closed Won</strong>. This cannot be undone.
+          </>
+        }
         confirmLabel={t("deals.markAsPaidConfirm")}
         variant="default"
         onConfirm={() => {
@@ -588,11 +765,19 @@ function UpdateDealDialog({ deal, queryParams, workspaceCurrency }: { deal: any,
           setOpen(false);
         }}
       />
-      </>
+    </>
   );
 }
 
-function DealDeleteAction({ deal, queryParams, currency }: { deal: any, queryParams: any, currency: string }) {
+function DealDeleteAction({
+  deal,
+  queryParams,
+  currency,
+}: {
+  deal: any;
+  queryParams: any;
+  currency: string;
+}) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const { t } = useTranslation();
@@ -601,10 +786,12 @@ function DealDeleteAction({ deal, queryParams, currency }: { deal: any, queryPar
     mutation: {
       onMutate: async (variables) => {
         const { id } = variables;
-        await queryClient.cancelQueries({ queryKey: ['/api/deals'] });
-        const previousDealsQueries = queryClient.getQueriesData<any[]>({ queryKey: ['/api/deals'] });
+        await queryClient.cancelQueries({ queryKey: ["/api/deals"] });
+        const previousDealsQueries = queryClient.getQueriesData<any[]>({
+          queryKey: ["/api/deals"],
+        });
 
-        queryClient.setQueriesData<any>({ queryKey: ['/api/deals'] }, (old: any) => {
+        queryClient.setQueriesData<any>({ queryKey: ["/api/deals"] }, (old: any) => {
           if (!old?.data) return old;
           return { ...old, data: old.data.filter((dealItem: any) => dealItem.id !== id) };
         });
@@ -629,9 +816,9 @@ function DealDeleteAction({ deal, queryParams, currency }: { deal: any, queryPar
         toast({ title: t("deals.dealDeleted") });
       },
       onSettled: () => {
-        queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
-      }
-    }
+        queryClient.invalidateQueries({ queryKey: ["/api/deals"] });
+      },
+    },
   });
 
   const handleDelete = () => {
@@ -639,39 +826,62 @@ function DealDeleteAction({ deal, queryParams, currency }: { deal: any, queryPar
     setOpen(false);
   };
 
-  return (<>
-    <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setOpen(true); }} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-      <Trash className="mr-2 size-4" />Delete
-    </DropdownMenuItem>
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete Deal</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete <strong>{deal.name}</strong> ({formatCurrency(deal.amount, deal.currency || currency)})? This may affect historical commission calculations.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button variant="destructive" onClick={handleDelete} disabled={deleteMutation.isPending}>
-            {deleteMutation.isPending ? "Deleting…" : "Delete"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  </>);
+  return (
+    <>
+      <DropdownMenuItem
+        onSelect={(e) => {
+          e.preventDefault();
+          setOpen(true);
+        }}
+        className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+      >
+        <Trash className="mr-2 size-4" />
+        Delete
+      </DropdownMenuItem>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Deal</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete <strong>{deal.name}</strong> (
+              {formatCurrency(deal.amount, deal.currency || currency)})? This may affect historical
+              commission calculations.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Deleting…" : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 }
 
-function ImportDealsDialog({ period, workspaceCurrency }: { period: string, workspaceCurrency: string }) {
+function ImportDealsDialog({
+  period,
+  workspaceCurrency,
+}: {
+  period: string;
+  workspaceCurrency: string;
+}) {
   const [open, setOpen] = useState(false);
   const [defaultCurrency, setDefaultCurrency] = useState(workspaceCurrency);
   const [parsedData, setParsedData] = useState<any[] | null>(null);
   const [isParsing, setIsParsing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const { data: repsRaw } = useListReps();
-  const repsRef = useRef(repsRaw ? (repsRaw as any).data ?? [] : []);
-  repsRef.current = repsRaw ? (repsRaw as any).data ?? [] : [];
+  const repsRef = useRef(repsRaw ? ((repsRaw as any).data ?? []) : []);
+  repsRef.current = repsRaw ? ((repsRaw as any).data ?? []) : [];
   const reps = repsRef.current;
   const { t } = useTranslation();
   const importMutation = useImportDeals();
@@ -680,29 +890,67 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
 
   const processData = (data: any[]) => {
     const mapped = data.map((row: any) => {
-      const repEmail = (row['Rep Email'] || row['email'] || row['Rep'] || row['sales_rep'] || row['Sales Rep'] || '').trim();
-      const dealName = (row['Deal Name'] || row['Name'] || row['Deal'] || row['deal_name'] || '').trim();
-      const amountStr = (row['Amount'] || row['Price'] || row['Value'] || row['Deal Amount'] || row['deal_amount'] || '0').toString().replace(/[^0-9.-]+/g, "");
-      const closeDateStr = (row['Close Date'] || row['Date'] || row['close_date'] || '').trim();
-      const stageRaw = (row['Stage'] || row['stage'] || 'pending').toString().trim().toLowerCase().replace(' ', '_');
-      const rowCurrency = (row['Currency'] || row['currency'] || defaultCurrency).trim().toUpperCase();
-      const paymentStatusRaw = (row['Payment Status'] || row['payment_status'] || row['Payment'] || 'unpaid').toString().trim().toLowerCase().replace(' ', '_');
-      const notes = (row['Notes'] || row['Description'] || row['notes'] || '').trim();
+      const repEmail = (
+        row["Rep Email"] ||
+        row["email"] ||
+        row["Rep"] ||
+        row["sales_rep"] ||
+        row["Sales Rep"] ||
+        ""
+      ).trim();
+      const dealName = (
+        row["Deal Name"] ||
+        row["Name"] ||
+        row["Deal"] ||
+        row["deal_name"] ||
+        ""
+      ).trim();
+      const amountStr = (
+        row["Amount"] ||
+        row["Price"] ||
+        row["Value"] ||
+        row["Deal Amount"] ||
+        row["deal_amount"] ||
+        "0"
+      )
+        .toString()
+        .replace(/[^0-9.-]+/g, "");
+      const closeDateStr = (row["Close Date"] || row["Date"] || row["close_date"] || "").trim();
+      const stageRaw = (row["Stage"] || row["stage"] || "pending")
+        .toString()
+        .trim()
+        .toLowerCase()
+        .replace(" ", "_");
+      const rowCurrency = (row["Currency"] || row["currency"] || defaultCurrency)
+        .trim()
+        .toUpperCase();
+      const paymentStatusRaw = (
+        row["Payment Status"] ||
+        row["payment_status"] ||
+        row["Payment"] ||
+        "unpaid"
+      )
+        .toString()
+        .trim()
+        .toLowerCase()
+        .replace(" ", "_");
+      const notes = (row["Notes"] || row["Description"] || row["notes"] || "").trim();
 
-      const rep = reps?.find((r: any) => 
-        r.email.toLowerCase() === repEmail.toLowerCase() || 
-        r.name.toLowerCase() === repEmail.toLowerCase()
+      const rep = reps?.find(
+        (r: any) =>
+          r.email.toLowerCase() === repEmail.toLowerCase() ||
+          r.name.toLowerCase() === repEmail.toLowerCase(),
       );
-      
-      let stage: 'closed_won' | 'closed_lost' | 'pending' = 'pending';
-      if (stageRaw.includes('won')) stage = 'closed_won';
-      else if (stageRaw.includes('lost')) stage = 'closed_lost';
 
-      let paymentStatus = 'unpaid';
-      if (paymentStatusRaw.includes('paid')) paymentStatus = 'paid';
-      else if (paymentStatusRaw.includes('partial')) paymentStatus = 'partial';
-      else if (paymentStatusRaw.includes('hold')) paymentStatus = 'on_hold';
-      
+      let stage: "closed_won" | "closed_lost" | "pending" = "pending";
+      if (stageRaw.includes("won")) stage = "closed_won";
+      else if (stageRaw.includes("lost")) stage = "closed_lost";
+
+      let paymentStatus = "unpaid";
+      if (paymentStatusRaw.includes("paid")) paymentStatus = "paid";
+      else if (paymentStatusRaw.includes("partial")) paymentStatus = "partial";
+      else if (paymentStatusRaw.includes("hold")) paymentStatus = "on_hold";
+
       return {
         id: Math.random().toString(36).substr(2, 9), // Temp ID for list management
         repId: rep?.id || "",
@@ -714,7 +962,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
         stage,
         paymentStatus,
         currency: rowCurrency,
-        notes: notes || null
+        notes: notes || null,
       };
     });
     setParsedData(mapped);
@@ -727,7 +975,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
     setIsParsing(true);
     const reader = new FileReader();
 
-    if (file.name.endsWith('.csv')) {
+    if (file.name.endsWith(".csv")) {
       reader.onload = (event) => {
         const text = event.target?.result as string;
         Papa.parse(text, {
@@ -737,14 +985,14 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
           complete: (results) => {
             processData(results.data);
             setIsParsing(false);
-          }
+          },
         });
       };
       reader.readAsText(file);
     } else {
       reader.onload = (event) => {
         const data = new Uint8Array(event.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
+        const workbook = XLSX.read(data, { type: "array" });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
         const json = XLSX.utils.sheet_to_json(worksheet);
@@ -756,49 +1004,57 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
   };
 
   const updateRow = (id: string, field: string, value: any) => {
-    setParsedData(prev => prev ? prev.map(row => 
-      row.id === id ? { ...row, [field]: value } : row
-    ) : null);
+    setParsedData((prev) =>
+      prev ? prev.map((row) => (row.id === id ? { ...row, [field]: value } : row)) : null,
+    );
   };
 
   const removeRow = (id: string) => {
-    setParsedData(prev => prev ? prev.filter(row => row.id !== id) : null);
+    setParsedData((prev) => (prev ? prev.filter((row) => row.id !== id) : null));
   };
 
   const handleImport = () => {
     if (!parsedData) return;
-    
+
     // Validate that all rows have a repId
-    const invalidRows = parsedData.filter(d => !d.repId);
+    const invalidRows = parsedData.filter((d) => !d.repId);
     if (invalidRows.length > 0) {
-      toast({ 
-        title: t("deals.validationError"), 
+      toast({
+        title: t("deals.validationError"),
         description: `Please select a Sales Rep for all rows (missing for ${invalidRows.length} rows).`,
-        variant: "destructive" 
+        variant: "destructive",
       });
       return;
     }
 
     const dealsToImport = parsedData.map(({ id, ...deal }) => deal);
-    
-    importMutation.mutate({ data: { period, deals: dealsToImport } }, {
-      onSuccess: (res: any) => {
-        queryClient.invalidateQueries({ queryKey: getListDealsQueryKey({ period }) });
-        toast({ 
-          title: res.skipped > 0 ? t("deals.importPartial") : t("deals.importComplete"), 
-          description: `Imported ${res.imported} deals.`,
-        });
-        setOpen(false);
-        setParsedData(null);
-      }
-    });
+
+    importMutation.mutate(
+      { data: { period, deals: dealsToImport } },
+      {
+        onSuccess: (res: any) => {
+          queryClient.invalidateQueries({ queryKey: getListDealsQueryKey({ period }) });
+          toast({
+            title: res.skipped > 0 ? t("deals.importPartial") : t("deals.importComplete"),
+            description: `Imported ${res.imported} deals.`,
+          });
+          setOpen(false);
+          setParsedData(null);
+        },
+      },
+    );
   };
 
   return (
-    <Dialog open={open} onOpenChange={(val) => {
-      setOpen(val);
-      if (!val) { setParsedData(null); }
-    }}>
+    <Dialog
+      open={open}
+      onOpenChange={(val) => {
+        setOpen(val);
+        if (!val) {
+          setParsedData(null);
+        }
+      }}
+    >
       <DialogTrigger asChild>
         <Button>
           <UploadCloud className="mr-2 size-4" />
@@ -815,16 +1071,26 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
               </DialogDescription>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => downloadTemplate('csv')} className="text-xs">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => downloadTemplate("csv")}
+                className="text-xs"
+              >
                 <FileDown className="mr-1.5 size-3.5" /> Template (CSV)
               </Button>
-              <Button variant="outline" size="sm" onClick={() => downloadTemplate('xlsx')} className="text-xs">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => downloadTemplate("xlsx")}
+                className="text-xs"
+              >
                 <FileDown className="mr-1.5 size-3.5" /> Template (XLSX)
               </Button>
             </div>
           </div>
         </DialogHeader>
-        
+
         <div className="flex-1 overflow-y-auto py-4 min-h-0">
           {!parsedData ? (
             <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-12 text-center bg-muted/30">
@@ -833,23 +1099,28 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
               </div>
               <h3 className="text-lg font-medium">Upload deal data</h3>
               <p className="text-sm text-muted-foreground mb-6 max-w-sm">
-                Drop your CSV or XLSX file here, or click to browse. We'll show a preview for you to edit.
+                Drop your CSV or XLSX file here, or click to browse. We'll show a preview for you to
+                edit.
               </p>
-              
+
               <div className="flex flex-col items-center gap-4 w-full max-w-xs">
                 <div className="w-full space-y-2 text-left">
                   <Label className="text-xs">Default Currency (fallback)</Label>
                   <CurrencyCombobox value={defaultCurrency} onChange={setDefaultCurrency} />
                 </div>
-                
-                <input 
-                  type="file" 
+
+                <input
+                  type="file"
                   ref={fileInputRef}
                   onChange={handleFileUpload}
                   accept=".csv,.xlsx"
-                  className="hidden" 
+                  className="hidden"
                 />
-                <Button onClick={() => fileInputRef.current?.click()} disabled={isParsing} className="w-full">
+                <Button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isParsing}
+                  className="w-full"
+                >
                   {isParsing ? t("deals.parsing") : t("deals.selectFile")}
                 </Button>
               </div>
@@ -864,7 +1135,7 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
                   Clear and upload new
                 </Button>
               </div>
-              
+
               <div className="border rounded-xl overflow-x-auto bg-background shadow-sm">
                 <Table className="relative">
                   <TableHeader className="bg-muted/50 sticky top-0 z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">
@@ -881,45 +1152,63 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
                   </TableHeader>
                   <TableBody>
                     {parsedData.map((row) => (
-                      <TableRow key={row.id} className={!row.repId ? "bg-red-50/30 dark:bg-red-900/10" : ""}>
+                      <TableRow
+                        key={row.id}
+                        className={!row.repId ? "bg-red-50/30 dark:bg-red-900/10" : ""}
+                      >
                         <TableCell>
                           <RepCombobox
-                            reps={Array.isArray(reps) ? reps.map((r: any) => ({ id: String(r.id), name: r.name })) : []}
+                            reps={
+                              Array.isArray(reps)
+                                ? reps.map((r: any) => ({ id: String(r.id), name: r.name }))
+                                : []
+                            }
                             value={row.repId}
-                            onChange={(val) => updateRow(row.id, 'repId', val)}
+                            onChange={(val) => updateRow(row.id, "repId", val)}
                             className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent shadow-none"
                           />
-                          {!row.repId && <p className="text-[10px] text-destructive mt-0.5 ml-2">Unknown email: {row.repEmail}</p>}
+                          {!row.repId && (
+                            <p className="text-[10px] text-destructive mt-0.5 ml-2">
+                              Unknown email: {row.repEmail}
+                            </p>
+                          )}
                         </TableCell>
                         <TableCell>
-                          <Input 
-                            value={row.name} 
-                            onChange={(e) => updateRow(row.id, 'name', e.target.value)}
+                          <Input
+                            value={row.name}
+                            onChange={(e) => updateRow(row.id, "name", e.target.value)}
                             className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent"
                           />
                         </TableCell>
                         <TableCell>
                           <NumberInput
-                            value={row.amount} 
-                            onChange={(e) => updateRow(row.id, 'amount', parseFloat(e.target.value) || 0)}
+                            value={row.amount}
+                            onChange={(e) =>
+                              updateRow(row.id, "amount", parseFloat(e.target.value) || 0)
+                            }
                             className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent"
                           />
                         </TableCell>
                         <TableCell>
-                          <CurrencyCombobox 
-                            value={row.currency} 
-                            onChange={(val) => updateRow(row.id, 'currency', val)}
+                          <CurrencyCombobox
+                            value={row.currency}
+                            onChange={(val) => updateRow(row.id, "currency", val)}
                             className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent shadow-none hover:bg-muted/50"
                           />
                         </TableCell>
                         <TableCell>
                           <DatePicker
                             date={row.closeDate ? parseISO(row.closeDate) : undefined}
-                            onChange={(d) => updateRow(row.id, 'closeDate', d ? format(d, "yyyy-MM-dd") : "")}
+                            onChange={(d) =>
+                              updateRow(row.id, "closeDate", d ? format(d, "yyyy-MM-dd") : "")
+                            }
                           />
                         </TableCell>
                         <TableCell>
-                          <Select value={row.stage} onValueChange={(val) => updateRow(row.id, 'stage', val)}>
+                          <Select
+                            value={row.stage}
+                            onValueChange={(val) => updateRow(row.id, "stage", val)}
+                          >
                             <SelectTrigger className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent">
                               <SelectValue />
                             </SelectTrigger>
@@ -931,7 +1220,10 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
                           </Select>
                         </TableCell>
                         <TableCell>
-                          <Select value={row.paymentStatus || 'unpaid'} onValueChange={(val) => updateRow(row.id, 'paymentStatus', val)}>
+                          <Select
+                            value={row.paymentStatus || "unpaid"}
+                            onValueChange={(val) => updateRow(row.id, "paymentStatus", val)}
+                          >
                             <SelectTrigger className="h-8 text-xs border-transparent hover:border-input focus:border-input bg-transparent">
                               <SelectValue />
                             </SelectTrigger>
@@ -944,7 +1236,12 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
                           </Select>
                         </TableCell>
                         <TableCell>
-                          <Button variant="ghost" size="icon" className="size-6 text-muted-foreground hover:text-destructive" onClick={() => removeRow(row.id)}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-6 text-muted-foreground hover:text-destructive"
+                            onClick={() => removeRow(row.id)}
+                          >
                             <Trash className="size-3" />
                           </Button>
                         </TableCell>
@@ -956,13 +1253,17 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
             </>
           )}
         </div>
-        
+
         <DialogFooter className="border-t pt-4">
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
           {parsedData && (
             <Button onClick={handleImport} disabled={importMutation.isPending}>
               {importMutation.isPending ? (
-                <><Loader2 className="mr-2 size-4 animate-spin" /> Importing…</>
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" /> Importing…
+                </>
               ) : (
                 <>Finalize Import ({parsedData.length} deals)</>
               )}
@@ -974,7 +1275,13 @@ function ImportDealsDialog({ period, workspaceCurrency }: { period: string, work
   );
 }
 
-function CreateDealDialog({ period, workspaceCurrency }: { period: string, workspaceCurrency: string }) {
+function CreateDealDialog({
+  period,
+  workspaceCurrency,
+}: {
+  period: string;
+  workspaceCurrency: string;
+}) {
   const [open, setOpen] = useState(false);
   const { activeWorkspace } = useWorkspace();
   const { reps: searchReps, searching, onSearch } = useRepSearch(activeWorkspace?.id);
@@ -984,8 +1291,10 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
   const createMutation = useCreateDeal({
     mutation: {
       onMutate: async (variables) => {
-        await queryClient.cancelQueries({ queryKey: ['/api/deals'] });
-        const previousDealsQueries = queryClient.getQueriesData<any[]>({ queryKey: ['/api/deals'] });
+        await queryClient.cancelQueries({ queryKey: ["/api/deals"] });
+        const previousDealsQueries = queryClient.getQueriesData<any[]>({
+          queryKey: ["/api/deals"],
+        });
 
         const newDeal = variables.data;
         const rep = searchReps?.find((r: any) => String(r.id || r._id) === String(newDeal.repId));
@@ -1001,14 +1310,22 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
           currency: newDeal.currency,
           closeDate: newDeal.closeDate,
           period: newDeal.period || period,
-          stage: newDeal.stage || 'closed_won',
-          paymentStatus: newDeal.paymentStatus || 'unpaid',
+          stage: newDeal.stage || "closed_won",
+          paymentStatus: newDeal.paymentStatus || "unpaid",
           notes: newDeal.notes || null,
         };
 
-        queryClient.setQueriesData<any>({ queryKey: ['/api/deals'] }, (old: any) => {
-          if (!old?.data) return { data: [optimisticDeal], pagination: { page: 1, limit: 50, total: 1, totalPages: 1 } };
-          return { ...old, data: [optimisticDeal, ...old.data], pagination: { ...old.pagination, total: (old.pagination?.total || 0) + 1 } };
+        queryClient.setQueriesData<any>({ queryKey: ["/api/deals"] }, (old: any) => {
+          if (!old?.data)
+            return {
+              data: [optimisticDeal],
+              pagination: { page: 1, limit: 50, total: 1, totalPages: 1 },
+            };
+          return {
+            ...old,
+            data: [optimisticDeal, ...old.data],
+            pagination: { ...old.pagination, total: (old.pagination?.total || 0) + 1 },
+          };
         });
 
         return { previousDealsQueries };
@@ -1033,9 +1350,9 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
         setOpen(false);
       },
       onSettled: () => {
-        queryClient.invalidateQueries({ queryKey: ['/api/deals'] });
-      }
-    }
+        queryClient.invalidateQueries({ queryKey: ["/api/deals"] });
+      },
+    },
   });
 
   const [formData, setFormData] = useState({
@@ -1047,7 +1364,7 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
     period: period,
     stage: "pending" as any,
     paymentStatus: "unpaid" as any,
-    notes: ""
+    notes: "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -1070,21 +1387,24 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
       return;
     }
 
-    createMutation.mutate({ data: formData }, {
-      onSuccess: () => {
-        setFormData({
-          repId: "",
-          name: "",
-          amount: 0,
-          currency: workspaceCurrency,
-          closeDate: "",
-          period: period,
-          stage: "pending" as any,
-          paymentStatus: "unpaid" as any,
-          notes: ""
-        });
-      }
-    });
+    createMutation.mutate(
+      { data: formData },
+      {
+        onSuccess: () => {
+          setFormData({
+            repId: "",
+            name: "",
+            amount: 0,
+            currency: workspaceCurrency,
+            closeDate: "",
+            period: period,
+            stage: "pending" as any,
+            paymentStatus: "unpaid" as any,
+            notes: "",
+          });
+        },
+      },
+    );
   };
 
   return (
@@ -1113,12 +1433,24 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
           </div>
           <div className="space-y-2">
             <Label htmlFor="name">{t("deals.dealName")}</Label>
-            <Input id="name" value={formData.name} onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))} required />
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+              required
+            />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="amount">Amount</Label>
-              <NumberInput id="amount" value={formData.amount} onChange={(e) => setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))} required />
+              <NumberInput
+                id="amount"
+                value={formData.amount}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))
+                }
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="currency">Currency</Label>
@@ -1131,45 +1463,59 @@ function CreateDealDialog({ period, workspaceCurrency }: { period: string, works
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="closeDate">{t("deals.closeDate")}</Label>
-              <DatePicker 
-                date={formData.closeDate ? parseISO(formData.closeDate) : undefined} 
-                onChange={(d) => setFormData(prev => ({ ...prev, closeDate: d ? format(d, "yyyy-MM-dd") : "" }))}
+              <DatePicker
+                date={formData.closeDate ? parseISO(formData.closeDate) : undefined}
+                onChange={(d) =>
+                  setFormData((prev) => ({ ...prev, closeDate: d ? format(d, "yyyy-MM-dd") : "" }))
+                }
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="stage">{t("deals.stage")}</Label>
-              <Select value={formData.stage} onValueChange={(val) => setFormData(prev => ({ ...prev, stage: val }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-                <SelectItem value="closed_won">CLOSED WON</SelectItem>
-                <SelectItem value="closed_lost">CLOSED LOST</SelectItem>
-                <SelectItem value="pending">PENDING</SelectItem>
-              </SelectContent>
-            </Select>
+              <Select
+                value={formData.stage}
+                onValueChange={(val) => setFormData((prev) => ({ ...prev, stage: val }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="closed_won">CLOSED WON</SelectItem>
+                  <SelectItem value="closed_lost">CLOSED LOST</SelectItem>
+                  <SelectItem value="pending">PENDING</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="paymentStatus">{t("deals.paymentStatus")}</Label>
+              <Select
+                value={formData.paymentStatus}
+                onValueChange={(val) => setFormData((prev) => ({ ...prev, paymentStatus: val }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unpaid">UNPAID</SelectItem>
+                  <SelectItem value="paid">PAID</SelectItem>
+                  <SelectItem value="partial">PARTIAL</SelectItem>
+                  <SelectItem value="on_hold">ON HOLD</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="paymentStatus">{t("deals.paymentStatus")}</Label>
-            <Select value={formData.paymentStatus} onValueChange={(val) => setFormData(prev => ({ ...prev, paymentStatus: val }))}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="unpaid">UNPAID</SelectItem>
-                <SelectItem value="paid">PAID</SelectItem>
-                <SelectItem value="partial">PARTIAL</SelectItem>
-                <SelectItem value="on_hold">ON HOLD</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="notes">Notes</Label>
+            <Label htmlFor="notes">Notes</Label>
             <MarkdownEditor
               value={formData.notes}
-              onChange={(val) => setFormData(prev => ({ ...prev, notes: val }))}
+              onChange={(val) => setFormData((prev) => ({ ...prev, notes: val }))}
               placeholder="Add notes in Markdown... (optional)"
             />
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
             <Button type="submit" disabled={createMutation.isPending}>
               {createMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
               Save Deal
@@ -1205,10 +1551,13 @@ function ExportDealsButton() {
     setIsExporting(true);
     try {
       const workspaceId = localStorage.getItem("ck_active_workspace");
-      const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8088"}/api/export/deals`, {
-        credentials: "include",
-        headers: { "x-workspace-id": workspaceId ?? "" },
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL || "http://localhost:8088"}/api/export/deals`,
+        {
+          credentials: "include",
+          headers: { "x-workspace-id": workspaceId ?? "" },
+        },
+      );
 
       if (!res.ok) throw new Error("Export failed");
 
@@ -1221,7 +1570,7 @@ function ExportDealsButton() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      
+
       toast({
         title: t("deals.exportSuccessful"),
         description: t("deals.exportSuccessfulDescription"),
@@ -1238,9 +1587,9 @@ function ExportDealsButton() {
   };
 
   return (
-    <Button 
-      variant="outline" 
-      onClick={handleExport} 
+    <Button
+      variant="outline"
+      onClick={handleExport}
       disabled={isExporting}
       className={!isGrowth ? "opacity-70 border-dashed" : ""}
     >

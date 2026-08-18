@@ -1,11 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import {
-  t,
-  translations,
-  formatPageXofY,
   formatAllRightsReserved,
   formatFallbackBanner,
+  formatPageXofY,
   formatReadIn,
+  t,
+  translations,
 } from "./translations";
 
 describe("translations", () => {

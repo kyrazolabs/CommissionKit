@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     siteName: "CommissionKit",
     locale: "en_US",
     url: `${baseUrl}/blog`,
-      images: [{ url: `${baseUrl}/blog/og.png`, width: 1600, height: 630 }],
+    images: [{ url: `${baseUrl}/blog/og.png`, width: 1600, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
@@ -77,10 +77,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

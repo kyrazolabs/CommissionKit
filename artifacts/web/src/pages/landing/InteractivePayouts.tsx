@@ -1,21 +1,43 @@
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuSeparator, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  ShieldCheck, DollarSign, CheckCircle, Clock,
-  ChevronDown, ChevronRight, Search, MoreHorizontal,
-  CheckCircle2, AlertTriangle, FileText, X, Check, Plus, Ban,
+  AlertTriangle,
+  Ban,
+  Check,
+  CheckCircle,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Clock,
+  DollarSign,
+  FileText,
+  MoreHorizontal,
+  Plus,
+  Search,
+  ShieldCheck,
+  X,
   XCircle,
 } from "lucide-react";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
 interface Payout {
@@ -33,35 +55,146 @@ interface Payout {
 }
 
 const payoutData: Payout[] = [
-  { id: "pay-1", rep: "Sarah Davis", commissionAmount: 7500, adjustments: 320, finalAmount: 7820, period: "Jun 1 – Jun 30, 2024", status: "paid", scheduledPaymentDate: "Jul 3, 2024", deals: 6, plan: "Enterprise", notes: "Top performer bonus applied." },
-  { id: "pay-2", rep: "Mike Chen", commissionAmount: 6480, adjustments: 0, finalAmount: 6480, period: "Jun 1 – Jun 30, 2024", status: "paid", scheduledPaymentDate: "Jul 3, 2024", deals: 4, plan: "Accelerator" },
-  { id: "pay-3", rep: "Emily Park", commissionAmount: 5140, adjustments: -200, finalAmount: 4940, period: "Jun 1 – Jun 30, 2024", status: "approved", scheduledPaymentDate: "Jul 5, 2024", deals: 3, plan: "Standard" },
-  { id: "pay-4", rep: "James Lee", commissionAmount: 3250, adjustments: 0, finalAmount: 3250, period: "Jun 1 – Jun 30, 2024", status: "pending", scheduledPaymentDate: "", deals: 2, plan: "Standard" },
-  { id: "pay-5", rep: "Alex Kim", commissionAmount: 2180, adjustments: 0, finalAmount: 2180, period: "Jun 1 – Jun 30, 2024", status: "pending", scheduledPaymentDate: "", deals: 1, plan: "Flat 5%" },
+  {
+    id: "pay-1",
+    rep: "Sarah Davis",
+    commissionAmount: 7500,
+    adjustments: 320,
+    finalAmount: 7820,
+    period: "Jun 1 – Jun 30, 2024",
+    status: "paid",
+    scheduledPaymentDate: "Jul 3, 2024",
+    deals: 6,
+    plan: "Enterprise",
+    notes: "Top performer bonus applied.",
+  },
+  {
+    id: "pay-2",
+    rep: "Mike Chen",
+    commissionAmount: 6480,
+    adjustments: 0,
+    finalAmount: 6480,
+    period: "Jun 1 – Jun 30, 2024",
+    status: "paid",
+    scheduledPaymentDate: "Jul 3, 2024",
+    deals: 4,
+    plan: "Accelerator",
+  },
+  {
+    id: "pay-3",
+    rep: "Emily Park",
+    commissionAmount: 5140,
+    adjustments: -200,
+    finalAmount: 4940,
+    period: "Jun 1 – Jun 30, 2024",
+    status: "approved",
+    scheduledPaymentDate: "Jul 5, 2024",
+    deals: 3,
+    plan: "Standard",
+  },
+  {
+    id: "pay-4",
+    rep: "James Lee",
+    commissionAmount: 3250,
+    adjustments: 0,
+    finalAmount: 3250,
+    period: "Jun 1 – Jun 30, 2024",
+    status: "pending",
+    scheduledPaymentDate: "",
+    deals: 2,
+    plan: "Standard",
+  },
+  {
+    id: "pay-5",
+    rep: "Alex Kim",
+    commissionAmount: 2180,
+    adjustments: 0,
+    finalAmount: 2180,
+    period: "Jun 1 – Jun 30, 2024",
+    status: "pending",
+    scheduledPaymentDate: "",
+    deals: 1,
+    plan: "Flat 5%",
+  },
 ];
 
 const initialDisputes = [
-  { id: "DSP-001", rep: "Alex Kim", deal: "Initech Upsell", reason: "Missing bonus accelerator on deal above $15k — should have received 8% instead of 5% on the full deal amount.", status: "under_review", created: "Jul 6, 2024" },
-  { id: "DSP-002", rep: "Mike Chen", deal: "Globex Renewal", reason: "Tier boundary calculated incorrectly for split deal — the second half should have fallen into the higher tier.", status: "resolved", created: "Jul 4, 2024", resolvedAt: "Jul 5, 2024", adminNotes: "Confirmed — recalculated and adjusted payout." },
+  {
+    id: "DSP-001",
+    rep: "Alex Kim",
+    deal: "Initech Upsell",
+    reason:
+      "Missing bonus accelerator on deal above $15k. Should have received 8% instead of 5% on the full deal amount.",
+    status: "under_review",
+    created: "Jul 6, 2024",
+  },
+  {
+    id: "DSP-002",
+    rep: "Mike Chen",
+    deal: "Globex Renewal",
+    reason:
+      "Tier boundary calculated incorrectly for split deal. The second half should have fallen into the higher tier.",
+    status: "resolved",
+    created: "Jul 4, 2024",
+    resolvedAt: "Jul 5, 2024",
+    adminNotes: "Confirmed. Recalculated and adjusted payout.",
+  },
 ];
 
 function fmtCurrency(n: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(n);
 }
 
 const PAYOUT_STATUS: Record<string, { label: string; class: string }> = {
-  pending:   { label: "Pending",   class: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200/50" },
-  approved:  { label: "Approved",  class: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200/50" },
-  paid:      { label: "Paid",      class: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200/50" },
-  on_hold:   { label: "On Hold",   class: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 border-gray-200/50" },
-  disputed:  { label: "Disputed",  class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200/50" },
+  pending: {
+    label: "Pending",
+    class:
+      "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200/50",
+  },
+  approved: {
+    label: "Approved",
+    class: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200/50",
+  },
+  paid: {
+    label: "Paid",
+    class:
+      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200/50",
+  },
+  on_hold: {
+    label: "On Hold",
+    class: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 border-gray-200/50",
+  },
+  disputed: {
+    label: "Disputed",
+    class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200/50",
+  },
 };
 
-const DISPUTE_STATUS: Record<string, { label: string; class: string; icon: typeof AlertTriangle }> = {
-  open:         { label: "Open",         class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200/50",     icon: AlertTriangle },
-  under_review: { label: "Under Review", class: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200/50", icon: Clock },
-  resolved:     { label: "Resolved",     class: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200/50", icon: CheckCircle2 },
-};
+const DISPUTE_STATUS: Record<string, { label: string; class: string; icon: typeof AlertTriangle }> =
+  {
+    open: {
+      label: "Open",
+      class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200/50",
+      icon: AlertTriangle,
+    },
+    under_review: {
+      label: "Under Review",
+      class:
+        "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200/50",
+      icon: Clock,
+    },
+    resolved: {
+      label: "Resolved",
+      class:
+        "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200/50",
+      icon: CheckCircle2,
+    },
+  };
 
 export function InteractivePayouts() {
   const [tab, setTab] = useState("payouts");
@@ -74,7 +207,10 @@ export function InteractivePayouts() {
   const [payouts, setPayouts] = useState(payoutData);
 
   const totalPaid = payouts.reduce((s, p) => s + (p.status === "paid" ? p.finalAmount : 0), 0);
-  const totalPending = payouts.reduce((s, p) => s + (["pending", "approved"].includes(p.status) ? p.finalAmount : 0), 0);
+  const totalPending = payouts.reduce(
+    (s, p) => s + (["pending", "approved"].includes(p.status) ? p.finalAmount : 0),
+    0,
+  );
   const openDisputes = disputes.filter((d) => d.status !== "resolved");
   const resolvedDisputes = disputes.filter((d) => d.status === "resolved");
 
@@ -96,19 +232,32 @@ export function InteractivePayouts() {
   }
 
   function updatePayout(id: string, patch: Partial<Payout>) {
-    setPayouts((prev) => prev.map((p) => p.id === id ? { ...p, ...patch } : p));
+    setPayouts((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
   }
 
   function handleBulkApprove() {
     setPayouts((prev) =>
-      prev.map((p) => (selectedIds.has(p.id) ? { ...p, status: "approved", scheduledPaymentDate: "Jul 5, 2024" } : p))
+      prev.map((p) =>
+        selectedIds.has(p.id)
+          ? { ...p, status: "approved", scheduledPaymentDate: "Jul 5, 2024" }
+          : p,
+      ),
     );
     setSelectedIds(new Set());
   }
 
   function resolveDispute(id: string) {
     setDisputes((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, status: "resolved", resolvedAt: "Jul 7, 2024", adminNotes: "Reviewed — commission recalculated." } : d))
+      prev.map((d) =>
+        d.id === id
+          ? {
+              ...d,
+              status: "resolved",
+              resolvedAt: "Jul 7, 2024",
+              adminNotes: "Reviewed. Commission recalculated.",
+            }
+          : d,
+      ),
     );
   }
 
@@ -133,30 +282,44 @@ export function InteractivePayouts() {
           <ShieldCheck className="size-3.5 text-primary" />
         </div>
         <span className="text-[13px] font-semibold text-foreground">Payouts & Disputes</span>
-        <Badge variant="secondary" className="ml-auto text-[10px]">Interactive Demo</Badge>
+        <Badge variant="secondary" className="ml-auto text-[10px]">
+          Interactive Demo
+        </Badge>
       </div>
 
       <div className="grid grid-cols-3 divide-x divide-card-border border-b border-card-border shrink-0">
         <div className="px-4 py-3">
           <div className="flex items-center gap-1.5 mb-1">
             <DollarSign className="size-3 text-emerald-600" />
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Total Paid</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+              Total Paid
+            </span>
           </div>
-          <p className="text-[17px] font-bold text-foreground tabular-nums">{fmtCurrency(totalPaid)}</p>
+          <p className="text-[17px] font-bold text-foreground tabular-nums">
+            {fmtCurrency(totalPaid)}
+          </p>
         </div>
         <div className="px-4 py-3">
           <div className="flex items-center gap-1.5 mb-1">
             <Clock className="size-3 text-amber-600" />
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Pending</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+              Pending
+            </span>
           </div>
-          <p className="text-[17px] font-bold text-foreground tabular-nums">{fmtCurrency(totalPending)}</p>
+          <p className="text-[17px] font-bold text-foreground tabular-nums">
+            {fmtCurrency(totalPending)}
+          </p>
         </div>
         <div className="px-4 py-3">
           <div className="flex items-center gap-1.5 mb-1">
             <AlertTriangle className="size-3 text-red-500" />
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Open Disputes</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+              Open Disputes
+            </span>
           </div>
-          <p className="text-[17px] font-bold text-foreground tabular-nums">{openDisputes.length}</p>
+          <p className="text-[17px] font-bold text-foreground tabular-nums">
+            {openDisputes.length}
+          </p>
         </div>
       </div>
 
@@ -168,7 +331,9 @@ export function InteractivePayouts() {
               value={t}
               className="rounded-none border-b-2 border-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-primary/[0.04] py-2.5 px-2 h-auto text-xs font-medium capitalize"
             >
-              {t === "payouts" ? "Payouts" : `Disputes${openDisputes.length > 0 ? ` (${openDisputes.length})` : ""}`}
+              {t === "payouts"
+                ? "Payouts"
+                : `Disputes${openDisputes.length > 0 ? ` (${openDisputes.length})` : ""}`}
             </TabsTrigger>
           ))}
         </TabsList>
@@ -185,7 +350,11 @@ export function InteractivePayouts() {
               />
             </div>
             {selectedIds.size > 0 && (
-              <Button size="sm" className="h-7 text-[10px] rounded-lg gap-1" onClick={handleBulkApprove}>
+              <Button
+                size="sm"
+                className="h-7 text-[10px] rounded-lg gap-1"
+                onClick={handleBulkApprove}
+              >
                 <Check className="size-3" />
                 Approve {selectedIds.size}
               </Button>
@@ -199,18 +368,34 @@ export function InteractivePayouts() {
                   <Checkbox
                     checked={
                       filtered.filter((p) => p.status === "pending").length > 0 &&
-                      filtered.filter((p) => p.status === "pending").every((p) => selectedIds.has(p.id))
+                      filtered
+                        .filter((p) => p.status === "pending")
+                        .every((p) => selectedIds.has(p.id))
                     }
                     onCheckedChange={toggleAll}
                   />
                 </TableHead>
-                <TableHead className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Rep</TableHead>
-                <TableHead className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Period</TableHead>
-                <TableHead className="text-right text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Commission</TableHead>
-                <TableHead className="text-right text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Adjustments</TableHead>
-                <TableHead className="text-right text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Final</TableHead>
-                <TableHead className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Status</TableHead>
-                <TableHead className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Scheduled</TableHead>
+                <TableHead className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                  Rep
+                </TableHead>
+                <TableHead className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                  Period
+                </TableHead>
+                <TableHead className="text-right text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                  Commission
+                </TableHead>
+                <TableHead className="text-right text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                  Adjustments
+                </TableHead>
+                <TableHead className="text-right text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                  Final
+                </TableHead>
+                <TableHead className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                  Status
+                </TableHead>
+                <TableHead className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                  Scheduled
+                </TableHead>
                 <TableHead className="w-7" />
                 <TableHead className="text-right w-8" />
               </TableRow>
@@ -218,7 +403,10 @@ export function InteractivePayouts() {
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="text-center py-8 text-[11px] text-muted-foreground">
+                  <TableCell
+                    colSpan={10}
+                    className="text-center py-8 text-[11px] text-muted-foreground"
+                  >
                     No payouts match your search.
                   </TableCell>
                 </TableRow>
@@ -230,127 +418,176 @@ export function InteractivePayouts() {
                   const isSelected = selectedIds.has(p.id);
                   return (
                     <>
-                    <TableRow
-                      key={p.id}
-                      className={cn(
-                        "border-t border-card-border",
-                        isSelected && "bg-primary/5",
-                        isPaid && "opacity-80 bg-muted/20",
-                      )}
-                    >
-                      <TableCell>
-                        {p.status === "pending" && (
-                          <Checkbox
-                            checked={isSelected}
-                            onCheckedChange={() => toggleSelect(p.id)}
-                          />
+                      <TableRow
+                        key={p.id}
+                        className={cn(
+                          "border-t border-card-border",
+                          isSelected && "bg-primary/5",
+                          isPaid && "opacity-80 bg-muted/20",
                         )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-[10px] font-semibold">
-                            {p.rep.split(" ").map((n) => n[0]).join("").slice(0, 2)}
-                          </div>
-                          <div>
-                            <span className="text-[12px] font-medium text-foreground">{p.rep}</span>
-                            <p className="text-[10px] text-muted-foreground">{p.plan}</p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-[11px] text-muted-foreground">{p.period}</TableCell>
-                      <TableCell className="text-right text-[12px] tabular-nums">
-                        {fmtCurrency(p.commissionAmount)}
-                      </TableCell>
-                      <TableCell className={cn(
-                        "text-right text-[12px] tabular-nums",
-                        p.adjustments < 0 ? "text-red-600" : p.adjustments > 0 ? "text-green-600" : "text-muted-foreground",
-                      )}>
-                        {p.adjustments !== 0 ? (p.adjustments > 0 ? "+" : "") + fmtCurrency(p.adjustments) : ":"}
-                      </TableCell>
-                      <TableCell className="text-right text-[12px] font-semibold tabular-nums">
-                        {fmtCurrency(p.finalAmount)}
-                      </TableCell>
-                      <TableCell>
-                        <span className={cn(
-                          "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold",
-                          cfg.class,
-                        )}>
-                          {cfg.label}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-[11px] text-muted-foreground">
-                        {p.scheduledPaymentDate || ":"}
-                      </TableCell>
-                      <TableCell className="w-7">
-                        {p.notes ? (
-                          <button
-                            onClick={() => setExpandedId(isExpanded ? null : p.id)}
-                            className="text-muted-foreground hover:text-foreground"
-                          >
-                            {isExpanded ? <ChevronDown className="size-3.5" /> : <ChevronRight className="size-3.5" />}
-                          </button>
-                        ) : null}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="size-7" disabled={isPaid}>
-                              {isPaid ? <XCircle className="size-3.5 text-muted-foreground" /> : <MoreHorizontal className="size-3.5" />}
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-44">
-                            {p.status === "pending" && (
-                              <DropdownMenuItem onClick={() => updatePayout(p.id, { status: "approved", scheduledPaymentDate: "Jul 5, 2024" })}>
-                                <CheckCircle2 className="mr-2 size-3.5 text-blue-500" />
-                                Approve
-                              </DropdownMenuItem>
-                            )}
-                            {p.status === "approved" && (
-                              <DropdownMenuItem onClick={() => updatePayout(p.id, { status: "paid" })}>
-                                <DollarSign className="mr-2 size-3.5 text-green-500" />
-                                Mark as Paid
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem onClick={() => {
-                              const adj = prompt("Adjustment amount (+ bonus / − clawback):");
-                              if (adj && !isNaN(+adj)) {
-                                const delta = +adj;
-                                updatePayout(p.id, {
-                                  adjustments: p.adjustments + delta,
-                                  finalAmount: p.finalAmount + delta,
-                                });
-                              }
-                            }}>
-                              <Plus className="mr-2 size-3.5" />
-                              Add Adjustment
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            {p.status !== "on_hold" && p.status !== "paid" && (
-                              <DropdownMenuItem onClick={() => updatePayout(p.id, { status: "on_hold" })} className="text-muted-foreground">
-                                <Ban className="mr-2 size-3.5" />
-                                Put on Hold
-                              </DropdownMenuItem>
-                            )}
-                            {p.status === "on_hold" && (
-                              <DropdownMenuItem onClick={() => updatePayout(p.id, { status: "pending" })}>
-                                <Clock className="mr-2 size-3.5" />
-                                Resume (→ Pending)
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                    {isExpanded && p.notes && (
-                      <TableRow key={`${p.id}-notes`} className="hover:bg-transparent">
-                        <TableCell colSpan={10} className="p-0 border-t-0 overflow-hidden">
-                          <div className="px-6 py-3 bg-muted/20 border-t">
-                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Notes</p>
-                            <p className="text-[12px] text-muted-foreground">{p.notes}</p>
+                      >
+                        <TableCell>
+                          {p.status === "pending" && (
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={() => toggleSelect(p.id)}
+                            />
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-[10px] font-semibold">
+                              {p.rep
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")
+                                .slice(0, 2)}
+                            </div>
+                            <div>
+                              <span className="text-[12px] font-medium text-foreground">
+                                {p.rep}
+                              </span>
+                              <p className="text-[10px] text-muted-foreground">{p.plan}</p>
+                            </div>
                           </div>
                         </TableCell>
+                        <TableCell className="text-[11px] text-muted-foreground">
+                          {p.period}
+                        </TableCell>
+                        <TableCell className="text-right text-[12px] tabular-nums">
+                          {fmtCurrency(p.commissionAmount)}
+                        </TableCell>
+                        <TableCell
+                          className={cn(
+                            "text-right text-[12px] tabular-nums",
+                            p.adjustments < 0
+                              ? "text-red-600"
+                              : p.adjustments > 0
+                                ? "text-green-600"
+                                : "text-muted-foreground",
+                          )}
+                        >
+                          {p.adjustments !== 0
+                            ? (p.adjustments > 0 ? "+" : "") + fmtCurrency(p.adjustments)
+                            : ":"}
+                        </TableCell>
+                        <TableCell className="text-right text-[12px] font-semibold tabular-nums">
+                          {fmtCurrency(p.finalAmount)}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={cn(
+                              "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+                              cfg.class,
+                            )}
+                          >
+                            {cfg.label}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-[11px] text-muted-foreground">
+                          {p.scheduledPaymentDate || ":"}
+                        </TableCell>
+                        <TableCell className="w-7">
+                          {p.notes ? (
+                            <button
+                              onClick={() => setExpandedId(isExpanded ? null : p.id)}
+                              className="text-muted-foreground hover:text-foreground"
+                            >
+                              {isExpanded ? (
+                                <ChevronDown className="size-3.5" />
+                              ) : (
+                                <ChevronRight className="size-3.5" />
+                              )}
+                            </button>
+                          ) : null}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-7"
+                                disabled={isPaid}
+                              >
+                                {isPaid ? (
+                                  <XCircle className="size-3.5 text-muted-foreground" />
+                                ) : (
+                                  <MoreHorizontal className="size-3.5" />
+                                )}
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-44">
+                              {p.status === "pending" && (
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    updatePayout(p.id, {
+                                      status: "approved",
+                                      scheduledPaymentDate: "Jul 5, 2024",
+                                    })
+                                  }
+                                >
+                                  <CheckCircle2 className="mr-2 size-3.5 text-blue-500" />
+                                  Approve
+                                </DropdownMenuItem>
+                              )}
+                              {p.status === "approved" && (
+                                <DropdownMenuItem
+                                  onClick={() => updatePayout(p.id, { status: "paid" })}
+                                >
+                                  <DollarSign className="mr-2 size-3.5 text-green-500" />
+                                  Mark as Paid
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  const adj = prompt("Adjustment amount (+ bonus / − clawback):");
+                                  if (adj && !isNaN(+adj)) {
+                                    const delta = +adj;
+                                    updatePayout(p.id, {
+                                      adjustments: p.adjustments + delta,
+                                      finalAmount: p.finalAmount + delta,
+                                    });
+                                  }
+                                }}
+                              >
+                                <Plus className="mr-2 size-3.5" />
+                                Add Adjustment
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              {p.status !== "on_hold" && p.status !== "paid" && (
+                                <DropdownMenuItem
+                                  onClick={() => updatePayout(p.id, { status: "on_hold" })}
+                                  className="text-muted-foreground"
+                                >
+                                  <Ban className="mr-2 size-3.5" />
+                                  Put on Hold
+                                </DropdownMenuItem>
+                              )}
+                              {p.status === "on_hold" && (
+                                <DropdownMenuItem
+                                  onClick={() => updatePayout(p.id, { status: "pending" })}
+                                >
+                                  <Clock className="mr-2 size-3.5" />
+                                  Resume (→ Pending)
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
                       </TableRow>
-                    )}
+                      {isExpanded && p.notes && (
+                        <TableRow key={`${p.id}-notes`} className="hover:bg-transparent">
+                          <TableCell colSpan={10} className="p-0 border-t-0 overflow-hidden">
+                            <div className="px-6 py-3 bg-muted/20 border-t">
+                              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                                Notes
+                              </p>
+                              <p className="text-[12px] text-muted-foreground">{p.notes}</p>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </>
                   );
                 })
@@ -359,7 +596,10 @@ export function InteractivePayouts() {
           </Table>
         </TabsContent>
 
-        <TabsContent value="disputes" className="mt-0 overflow-auto custom-scrollbar flex-1 min-h-0">
+        <TabsContent
+          value="disputes"
+          className="mt-0 overflow-auto custom-scrollbar flex-1 min-h-0"
+        >
           {openDisputes.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center gap-2">
               <CheckCircle2 className="size-8 text-emerald-500" />
@@ -379,11 +619,21 @@ export function InteractivePayouts() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-7" />
-                    <TableHead className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">ID</TableHead>
-                    <TableHead className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Rep</TableHead>
-                    <TableHead className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Deal</TableHead>
-                    <TableHead className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Status</TableHead>
-                    <TableHead className="text-right text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Action</TableHead>
+                    <TableHead className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                      ID
+                    </TableHead>
+                    <TableHead className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                      Rep
+                    </TableHead>
+                    <TableHead className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                      Deal
+                    </TableHead>
+                    <TableHead className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                      Status
+                    </TableHead>
+                    <TableHead className="text-right text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                      Action
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -399,22 +649,34 @@ export function InteractivePayouts() {
                               onClick={() => setExpandedDisputeId(isExpanded ? null : d.id)}
                               className="text-muted-foreground hover:text-foreground"
                             >
-                              {isExpanded ? <ChevronDown className="size-3.5" /> : <ChevronRight className="size-3.5" />}
+                              {isExpanded ? (
+                                <ChevronDown className="size-3.5" />
+                              ) : (
+                                <ChevronRight className="size-3.5" />
+                              )}
                             </button>
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1.5">
                               <FileText className="size-3 text-muted-foreground" />
-                              <span className="text-[11px] font-semibold text-foreground">{d.id}</span>
+                              <span className="text-[11px] font-semibold text-foreground">
+                                {d.id}
+                              </span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-[11px] font-medium text-foreground">{d.rep}</TableCell>
-                          <TableCell className="text-[11px] text-muted-foreground">{d.deal}</TableCell>
+                          <TableCell className="text-[11px] font-medium text-foreground">
+                            {d.rep}
+                          </TableCell>
+                          <TableCell className="text-[11px] text-muted-foreground">
+                            {d.deal}
+                          </TableCell>
                           <TableCell>
-                            <span className={cn(
-                              "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold",
-                              cfg.class,
-                            )}>
+                            <span
+                              className={cn(
+                                "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+                                cfg.class,
+                              )}
+                            >
                               <Icon className="size-2.5" />
                               {cfg.label}
                             </span>
@@ -438,7 +700,10 @@ export function InteractivePayouts() {
                                   Resolve
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => dismissDispute(d.id)} className="text-destructive">
+                                <DropdownMenuItem
+                                  onClick={() => dismissDispute(d.id)}
+                                  className="text-destructive"
+                                >
                                   <X className="mr-2 size-3.5" />
                                   Dismiss
                                 </DropdownMenuItem>
@@ -452,10 +717,14 @@ export function InteractivePayouts() {
                               <div className="px-6 py-3 bg-muted/20 border-t">
                                 <div className="space-y-2">
                                   <div>
-                                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">Reason</p>
+                                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">
+                                      Reason
+                                    </p>
                                     <p className="text-[11px] whitespace-pre-wrap">{d.reason}</p>
                                   </div>
-                                  <p className="text-[10px] text-muted-foreground">Submitted {d.created}</p>
+                                  <p className="text-[10px] text-muted-foreground">
+                                    Submitted {d.created}
+                                  </p>
                                 </div>
                               </div>
                             </TableCell>
@@ -475,7 +744,11 @@ export function InteractivePayouts() {
                 onClick={() => setShowResolved(!showResolved)}
                 className="flex items-center gap-1.5 w-full px-4 py-2.5 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
-                {showResolved ? <ChevronDown className="size-3.5" /> : <ChevronRight className="size-3.5" />}
+                {showResolved ? (
+                  <ChevronDown className="size-3.5" />
+                ) : (
+                  <ChevronRight className="size-3.5" />
+                )}
                 {resolvedDisputes.length} resolved dispute{resolvedDisputes.length > 1 ? "s" : ""}
               </button>
               {showResolved && (
@@ -490,21 +763,31 @@ export function InteractivePayouts() {
                             <TableCell className="pl-8">
                               <div className="flex items-center gap-1.5">
                                 <FileText className="size-3 text-muted-foreground" />
-                                <span className="text-[11px] font-semibold text-foreground">{d.id}</span>
+                                <span className="text-[11px] font-semibold text-foreground">
+                                  {d.id}
+                                </span>
                               </div>
                             </TableCell>
-                            <TableCell className="text-[11px] font-medium text-foreground">{d.rep}</TableCell>
-                            <TableCell className="text-[11px] text-muted-foreground">{d.deal}</TableCell>
+                            <TableCell className="text-[11px] font-medium text-foreground">
+                              {d.rep}
+                            </TableCell>
+                            <TableCell className="text-[11px] text-muted-foreground">
+                              {d.deal}
+                            </TableCell>
                             <TableCell>
-                              <span className={cn(
-                                "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold",
-                                cfg.class,
-                              )}>
+                              <span
+                                className={cn(
+                                  "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+                                  cfg.class,
+                                )}
+                              >
                                 <Icon className="size-2.5" />
                                 {cfg.label}
                               </span>
                             </TableCell>
-                            <TableCell className="text-[10px] text-muted-foreground">{d.resolvedAt}</TableCell>
+                            <TableCell className="text-[10px] text-muted-foreground">
+                              {d.resolvedAt}
+                            </TableCell>
                           </TableRow>
                         );
                       })}

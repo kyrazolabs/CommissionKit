@@ -19,13 +19,5 @@ export function WorkspaceAvatar({ name, size = 64, className }: WorkspaceAvatarP
     return `https://api.dicebear.com/9.x/${STYLE}/svg?${params}`;
   }, [name, size]);
 
-  return (
-    <img
-      src={src}
-      alt={name}
-      width={size}
-      height={size}
-      className={className}
-    />
-  );
+  return <img src={src} alt={name} width={size} height={size} className={className} />;
 }

@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, expect, test } from "bun:test";
 
 // Replicate the pure function from rbac.ts for unit testing
 function hasPermission(permissions: Set<string>, resource: string, action: string): boolean {

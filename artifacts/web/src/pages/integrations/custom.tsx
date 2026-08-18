@@ -1,28 +1,28 @@
-import { Navbar } from "@/pages/landing/Navbar";
-import { Footer } from "@/pages/landing/Footer";
-import { usePageMeta } from "@/hooks/use-page-meta";
-import { Button } from "@/components/ui/button";
+import {
+  ArrowLeftRight,
+  ArrowRight,
+  Cable,
+  Calculator,
+  FileText,
+  Filter,
+  Layers,
+  Plug,
+  RefreshCw,
+  Settings,
+  Shield,
+  Zap,
+} from "lucide-react";
 import {
   Accordion,
+  AccordionContent,
   AccordionItem,
   AccordionTrigger,
-  AccordionContent,
 } from "@/components/ui/accordion";
-import {
-  Cable,
-  ArrowRight,
-  Plug,
-  FileText,
-  Shield,
-  Layers,
-  ArrowLeftRight,
-  Calculator,
-  Zap,
-  Filter,
-  Settings,
-  RefreshCw,
-} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { usePageMeta } from "@/hooks/use-page-meta";
 import { Analytics } from "@/lib/analytics";
+import { Footer } from "@/pages/landing/Footer";
+import { Navbar } from "@/pages/landing/Navbar";
 
 const FEATURES = [
   {
@@ -143,10 +143,14 @@ export function CustomIntegrationPage() {
               No-Code Commission Integration
             </p>
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
-              CommissionKit's custom connector connects to any ERP or CRM that exposes a REST API. Configure authentication, map fields with JSONPath, set up pagination — all without writing a line of code.
+              CommissionKit's custom connector connects to any ERP or CRM that exposes a REST API.
+              Configure authentication, map fields with JSONPath, set up pagination — all without
+              writing a line of code.
             </p>
             <p className="text-sm mx-auto text-muted-foreground max-w-xl mb-4">
-              Unlike commission tools locked to specific CRMs, the Custom REST connector works with any system that has an API — internal tools, legacy ERPs, or niche CRMs that other platforms ignore.
+              Unlike commission tools locked to specific CRMs, the Custom REST connector works with
+              any system that has an API — internal tools, legacy ERPs, or niche CRMs that other
+              platforms ignore.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild className="font-semibold shadow-sm">
@@ -156,9 +160,7 @@ export function CustomIntegrationPage() {
                 </a>
               </Button>
               <Button variant="outline" asChild className="font-semibold">
-                <a href="#how-it-works">
-                  See How It Works
-                </a>
+                <a href="#how-it-works">See How It Works</a>
               </Button>
             </div>
 
@@ -176,11 +178,7 @@ export function CustomIntegrationPage() {
                   <span className="text-[10px] font-medium text-primary">Sync</span>
                 </div>
                 <div className="flex flex-col items-center gap-2">
-                  <img
-                    src="/brand/logo-symbol.svg"
-                    alt="CommissionKit"
-                    className="w-12 h-12"
-                  />
+                  <img src="/brand/logo-symbol.svg" alt="CommissionKit" className="w-12 h-12" />
                   <span className="text-xs font-medium text-muted-foreground">CommissionKit</span>
                 </div>
               </div>
@@ -196,7 +194,8 @@ export function CustomIntegrationPage() {
                 Your ERP or CRM Does Not Have a Pre-Built Connector
               </h2>
               <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-                Generic integrations break on real data. Building a custom integration costs thousands and requires ongoing maintenance. There is a better way.
+                Generic integrations break on real data. Building a custom integration costs
+                thousands and requires ongoing maintenance. There is a better way.
               </p>
             </div>
             <div className="grid gap-6 md:grid-cols-3">
@@ -229,9 +228,7 @@ export function CustomIntegrationPage() {
                     <h3 className="text-[15px] font-semibold text-foreground mb-2 tracking-tight">
                       {item.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {item.desc}
-                    </p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
                   </div>
                 );
               })}
@@ -264,9 +261,7 @@ export function CustomIntegrationPage() {
                     <h3 className="text-[15px] font-semibold text-foreground mb-2 tracking-tight">
                       {feature.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {feature.desc}
-                    </p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
                   </div>
                 );
               })}
@@ -289,10 +284,7 @@ export function CustomIntegrationPage() {
               {STEPS.map((step) => {
                 const Icon = step.Icon;
                 return (
-                  <div
-                    key={step.num}
-                    className="p-8 lg:p-10 bg-card"
-                  >
+                  <div key={step.num} className="p-8 lg:p-10 bg-card">
                     <div className="text-[11px] font-bold tracking-widest text-primary mb-6 opacity-80">
                       STEP {step.num}
                     </div>
@@ -302,9 +294,7 @@ export function CustomIntegrationPage() {
                     <h3 className="text-lg font-semibold text-foreground mb-3 leading-snug tracking-tight">
                       {step.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {step.desc}
-                    </p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
                   </div>
                 );
               })}
@@ -353,22 +343,20 @@ export function CustomIntegrationPage() {
                   <p className="text-3xl font-bold text-primary tracking-tight tabular-nums">
                     {item.stat}
                   </p>
-                  <p className="text-sm font-medium text-foreground mt-1">
-                    {item.label}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {item.note}
-                  </p>
+                  <p className="text-sm font-medium text-foreground mt-1">{item.label}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{item.note}</p>
                 </div>
               ))}
             </div>
             <p className="text-center text-sm text-muted-foreground">
               A typical 20-rep team can save{" "}
-              <span className="font-semibold text-foreground">$1,500–$3,000/month</span>{" "}
-              in finance team labor. That can pay for the tool twice over.
+              <span className="font-semibold text-foreground">$1,500–$3,000/month</span> in finance
+              team labor. That can pay for the tool twice over.
             </p>
             <p className="text-xs text-muted-foreground mt-4">
-              Savings are estimated based on typical finance ops labor costs and time studies from spreadsheet-based commission processes. Actual results vary by team size and process complexity.
+              Savings are estimated based on typical finance ops labor costs and time studies from
+              spreadsheet-based commission processes. Actual results vary by team size and process
+              complexity.
             </p>
           </div>
         </section>
@@ -378,7 +366,10 @@ export function CustomIntegrationPage() {
           <div className="max-w-5xl mx-auto">
             <div className="bg-primary/5 border border-primary/10 rounded-lg p-4 text-sm">
               <p className="text-muted-foreground">
-                <span className="font-medium text-foreground">Works with any REST API.</span> The connector supports Bearer tokens, API keys, and Basic Auth. JSONPath mappings let you pull from any response structure. Pagination handles offset, cursor, and page-based APIs. $div compute fields convert microservices to dollars automatically.
+                <span className="font-medium text-foreground">Works with any REST API.</span> The
+                connector supports Bearer tokens, API keys, and Basic Auth. JSONPath mappings let
+                you pull from any response structure. Pagination handles offset, cursor, and
+                page-based APIs. $div compute fields convert microservices to dollars automatically.
               </p>
             </div>
           </div>
@@ -411,7 +402,10 @@ export function CustomIntegrationPage() {
         <section className="py-12 px-4">
           <div className="max-w-3xl mx-auto text-center">
             <p className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">CommissionKit</span> is built by a small, self-funded team focused exclusively on commission management. No venture capital, no growth-at-all-costs pressure. We build what customers need and we answer support messages ourselves.
+              <span className="font-medium text-foreground">CommissionKit</span> is built by a
+              small, self-funded team focused exclusively on commission management. No venture
+              capital, no growth-at-all-costs pressure. We build what customers need and we answer
+              support messages ourselves.
             </p>
           </div>
         </section>

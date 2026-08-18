@@ -1,4 +1,4 @@
-import type { Request, Response, NextFunction, RequestHandler } from "express";
+import type { NextFunction, Request, RequestHandler, Response } from "express";
 import { auditContext } from "../lib/audit-context";
 import { auth } from "../lib/auth";
 

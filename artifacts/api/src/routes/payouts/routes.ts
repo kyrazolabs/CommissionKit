@@ -1,21 +1,18 @@
-import { Router } from "express";
-import { Types } from "mongoose";
 import {
+  createPayoutSchema,
+  Notification,
   Payout,
   Rep,
   Workspace,
   WorkspaceSubscription,
-  Notification,
-  createPayoutSchema,
 } from "@workspace/db";
-import {
-  requirePermission,
-  type AuthenticatedRequest,
-} from "../../middleware/auth";
-import { logger } from "../../lib/logger";
-import { createNotification } from "../../lib/notify";
 import { payoutUpdateTemplate } from "@workspace/email-templates";
 import { format } from "date-fns";
+import { Router } from "express";
+import { Types } from "mongoose";
+import { logger } from "../../lib/logger";
+import { createNotification } from "../../lib/notify";
+import { type AuthenticatedRequest, requirePermission } from "../../middleware/auth";
 
 const router = Router();
 
@@ -28,14 +25,18 @@ async function getPlan(workspaceId: string): Promise<PlanName> {
   const sub = await WorkspaceSubscription.findOne({
     workspaceId: new Types.ObjectId(workspaceId),
   });
-  const isActive = sub?.isLifetime || (sub?.status && ["active", "trialing", "past_due", "paused"].includes(sub.status));
+  const isActive =
+    sub?.isLifetime ||
+    (sub?.status && ["active", "trialing", "past_due", "paused"].includes(sub.status));
   return (isActive ? (sub?.plan ?? "free") : "free") as PlanName;
 }
 
 async function requireGrowthPlan(workspaceId: string, res: any): Promise<boolean> {
   const plan = await getPlan(workspaceId);
   if (!GROWTH_PLANS.has(plan)) {
-    res.status(403).json({ error: "This feature requires a Growth plan or higher.", upgradeRequired: true });
+    res
+      .status(403)
+      .json({ error: "This feature requires a Growth plan or higher.", upgradeRequired: true });
     return false;
   }
   return true;
@@ -78,9 +79,10 @@ async function sendPayoutNotification(
     const period = `${format(payout.periodStart, "MMM d")}–${format(payout.periodEnd, "MMM d, yyyy")}`;
 
     const title = status === "approved" ? "Payout Approved" : "Commission Paid";
-    const message = status === "approved" 
-      ? `Your payout of ${payout.finalAmount.toFixed(2)} ${payout.currency} has been approved.`
-      : `Your commission of ${payout.finalAmount.toFixed(2)} ${payout.currency} was paid.`;
+    const message =
+      status === "approved"
+        ? `Your payout of ${payout.finalAmount.toFixed(2)} ${payout.currency} has been approved.`
+        : `Your commission of ${payout.finalAmount.toFixed(2)} ${payout.currency} was paid.`;
 
     const emailHtml = payoutUpdateTemplate({
       repName: rep.name,
@@ -116,25 +118,40 @@ router.get(
   ...requirePermission("payouts", "read"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
-    const hasEditPermission = req.permissions?.has("payouts:edit") || req.permissions?.has("payouts:*") || req.permissions?.has("*");
+    const hasEditPermission =
+      req.permissions?.has("payouts:edit") ||
+      req.permissions?.has("payouts:*") ||
+      req.permissions?.has("*");
     const query: any = { workspaceId: new Types.ObjectId(workspaceId) };
 
     if (!hasEditPermission) {
-      const rep = await Rep.findOne({ workspaceId: new Types.ObjectId(workspaceId), email: req.userEmail });
-      if (!rep) { res.json({ data: [], pagination: { page: 1, limit: 50, total: 0, totalPages: 0 } }); return; }
+      const rep = await Rep.findOne({
+        workspaceId: new Types.ObjectId(workspaceId),
+        email: req.userEmail,
+      });
+      if (!rep) {
+        res.json({ data: [], pagination: { page: 1, limit: 50, total: 0, totalPages: 0 } });
+        return;
+      }
       query.repId = rep._id;
     }
 
     if (req.query.status) query.status = req.query.status;
-    if (req.query.repId && hasEditPermission) query.repId = new Types.ObjectId(String(req.query.repId));
-    if (req.query.periodStart) query.periodStart = { $gte: new Date(String(req.query.periodStart)) };
+    if (req.query.repId && hasEditPermission)
+      query.repId = new Types.ObjectId(String(req.query.repId));
+    if (req.query.periodStart)
+      query.periodStart = { $gte: new Date(String(req.query.periodStart)) };
     if (req.query.periodEnd) query.periodEnd = { $lte: new Date(String(req.query.periodEnd)) };
 
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(500, Math.max(1, Number(req.query.limit) || 50));
     const [total, data] = await Promise.all([
       Payout.countDocuments(query),
-      Payout.find(query).populate("repId").sort({ periodStart: -1 }).skip((page - 1) * limit).limit(limit),
+      Payout.find(query)
+        .populate("repId")
+        .sort({ periodStart: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
     ]);
 
     let formatted = data.filter((p) => p.repId != null).map(formatPayout);
@@ -168,25 +185,37 @@ router.get(
     const payouts = await Payout.find(query).populate("repId").sort({ periodStart: -1 });
 
     const rows = [
-      ["Rep Name","Period Start","Period End","Commission","Adjustments","Final Amount","Currency","Status","Payment Date"].join(","),
-      ...payouts.filter(p => p.repId != null).map((p) => {
-        const repName = (p.repId as any)?.name ?? "Unknown";
-        return [
-          `"${repName}"`,
-          p.periodStart.toISOString().slice(0, 10),
-          p.periodEnd.toISOString().slice(0, 10),
-          p.commissionAmount.toFixed(2),
-          p.adjustments.toFixed(2),
-          p.finalAmount.toFixed(2),
-          p.currency,
-          p.status,
-          p.actualPaymentDate?.toISOString().slice(0, 10) ?? "",
-        ].join(",");
-      }),
+      [
+        "Rep Name",
+        "Period Start",
+        "Period End",
+        "Commission",
+        "Adjustments",
+        "Final Amount",
+        "Currency",
+        "Status",
+        "Payment Date",
+      ].join(","),
+      ...payouts
+        .filter((p) => p.repId != null)
+        .map((p) => {
+          const repName = (p.repId as any)?.name ?? "Unknown";
+          return [
+            `"${repName}"`,
+            p.periodStart.toISOString().slice(0, 10),
+            p.periodEnd.toISOString().slice(0, 10),
+            p.commissionAmount.toFixed(2),
+            p.adjustments.toFixed(2),
+            p.finalAmount.toFixed(2),
+            p.currency,
+            p.status,
+            p.actualPaymentDate?.toISOString().slice(0, 10) ?? "",
+          ].join(",");
+        }),
     ];
 
     res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", "attachment; filename=\"payouts.csv\"");
+    res.setHeader("Content-Disposition", 'attachment; filename="payouts.csv"');
     res.send(rows.join("\n"));
   },
 );
@@ -201,12 +230,27 @@ router.post(
 
     const { ids } = req.body as { ids?: string[] };
     if (!Array.isArray(ids) || ids.length === 0) {
-      res.status(400).json({ error: "ids array is required" }); return;
+      res.status(400).json({ error: "ids array is required" });
+      return;
     }
 
     const result = await Payout.updateMany(
-      { _id: { $in: ids.map(id => new Types.ObjectId(id)) }, workspaceId: new Types.ObjectId(workspaceId), status: "pending" },
-      { status: "approved", $push: { statusHistory: { status: "approved", changedAt: new Date(), changedBy: req.userId, note: "Bulk approved" } } },
+      {
+        _id: { $in: ids.map((id) => new Types.ObjectId(id)) },
+        workspaceId: new Types.ObjectId(workspaceId),
+        status: "pending",
+      },
+      {
+        status: "approved",
+        $push: {
+          statusHistory: {
+            status: "approved",
+            changedAt: new Date(),
+            changedBy: req.userId,
+            note: "Bulk approved",
+          },
+        },
+      },
     );
 
     res.json({ approved: result.modifiedCount });
@@ -226,8 +270,14 @@ router.post(
     for (const item of items) {
       try {
         const body = createPayoutSchema.parse(item);
-        const rep = await Rep.findOne({ _id: new Types.ObjectId(body.repId), workspaceId: new Types.ObjectId(workspaceId) });
-        if (!rep) { errors.push(`Rep ${body.repId} not found`); continue; }
+        const rep = await Rep.findOne({
+          _id: new Types.ObjectId(body.repId),
+          workspaceId: new Types.ObjectId(workspaceId),
+        });
+        if (!rep) {
+          errors.push(`Rep ${body.repId} not found`);
+          continue;
+        }
 
         const ws = await Workspace.findById(workspaceId);
         const currency = body.currency ?? (ws as any)?.currency ?? "USD";
@@ -243,7 +293,9 @@ router.post(
           finalAmount,
           currency,
           paymentMethod: body.paymentMethod,
-          scheduledPaymentDate: body.scheduledPaymentDate ? new Date(body.scheduledPaymentDate) : undefined,
+          scheduledPaymentDate: body.scheduledPaymentDate
+            ? new Date(body.scheduledPaymentDate)
+            : undefined,
           notes: body.notes,
           status: "pending",
           statusHistory: [{ status: "pending", changedAt: new Date(), changedBy: req.userId }],
@@ -265,15 +317,28 @@ router.get(
   ...requirePermission("payouts", "read"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
-    const hasEditPermission = req.permissions?.has("payouts:edit") || req.permissions?.has("payouts:*") || req.permissions?.has("*");
+    const hasEditPermission =
+      req.permissions?.has("payouts:edit") ||
+      req.permissions?.has("payouts:*") ||
+      req.permissions?.has("*");
 
-    const payout = await Payout.findOne({ _id: new Types.ObjectId(req.params.id as string), workspaceId: new Types.ObjectId(workspaceId) }).populate("repId");
-    if (!payout) { res.status(404).json({ error: "Payout not found" }); return; }
+    const payout = await Payout.findOne({
+      _id: new Types.ObjectId(req.params.id as string),
+      workspaceId: new Types.ObjectId(workspaceId),
+    }).populate("repId");
+    if (!payout) {
+      res.status(404).json({ error: "Payout not found" });
+      return;
+    }
 
     if (!hasEditPermission) {
-      const rep = await Rep.findOne({ workspaceId: new Types.ObjectId(workspaceId), email: req.userEmail });
+      const rep = await Rep.findOne({
+        workspaceId: new Types.ObjectId(workspaceId),
+        email: req.userEmail,
+      });
       if (!rep || payout.repId.toString() !== rep._id.toString()) {
-        res.status(403).json({ error: "Access denied" }); return;
+        res.status(403).json({ error: "Access denied" });
+        return;
       }
     }
 
@@ -287,25 +352,43 @@ router.patch(
   ...requirePermission("payouts", "edit"),
   async (req: AuthenticatedRequest, res): Promise<void> => {
     const workspaceId = req.workspaceId!;
-    const { status, notes, scheduledPaymentDate, actualPaymentDate, paymentMethod } = req.body as any;
+    const { status, notes, scheduledPaymentDate, actualPaymentDate, paymentMethod } =
+      req.body as any;
 
     const validStatuses = ["pending", "approved", "paid", "disputed", "on_hold"];
     if (!status || !validStatuses.includes(status)) {
-      res.status(400).json({ error: `status must be one of: ${validStatuses.join(", ")}` }); return;
+      res.status(400).json({ error: `status must be one of: ${validStatuses.join(", ")}` });
+      return;
     }
 
     // RBAC: Check for specific permissions based on status
-    if (status === "paid" && !req.permissions?.has("payouts:mark_paid") && !req.permissions?.has("payouts:*") && !req.permissions?.has("*")) {
+    if (
+      status === "paid" &&
+      !req.permissions?.has("payouts:mark_paid") &&
+      !req.permissions?.has("payouts:*") &&
+      !req.permissions?.has("*")
+    ) {
       res.status(403).json({ error: "Insufficient permissions to mark payout as paid" });
       return;
     }
-    if (status === "approved" && !req.permissions?.has("payouts:approve") && !req.permissions?.has("payouts:*") && !req.permissions?.has("*")) {
+    if (
+      status === "approved" &&
+      !req.permissions?.has("payouts:approve") &&
+      !req.permissions?.has("payouts:*") &&
+      !req.permissions?.has("*")
+    ) {
       res.status(403).json({ error: "Insufficient permissions to approve payouts" });
       return;
     }
 
-    const payout = await Payout.findOne({ _id: new Types.ObjectId(req.params.id as string), workspaceId: new Types.ObjectId(workspaceId) }).populate("repId");
-    if (!payout) { res.status(404).json({ error: "Payout not found" }); return; }
+    const payout = await Payout.findOne({
+      _id: new Types.ObjectId(req.params.id as string),
+      workspaceId: new Types.ObjectId(workspaceId),
+    }).populate("repId");
+    if (!payout) {
+      res.status(404).json({ error: "Payout not found" });
+      return;
+    }
 
     if (payout.status === "paid") {
       res.status(400).json({ error: "Payout is already marked as paid and cannot be modified." });
@@ -314,7 +397,9 @@ router.patch(
 
     const update: any = {
       status,
-      $push: { statusHistory: { status, changedAt: new Date(), changedBy: req.userId, note: notes } },
+      $push: {
+        statusHistory: { status, changedAt: new Date(), changedBy: req.userId, note: notes },
+      },
     };
     if (notes) update.notes = notes;
     if (paymentMethod) update.paymentMethod = paymentMethod;
@@ -342,11 +427,18 @@ router.patch(
     const { amount, note } = req.body as { amount?: number; note?: string };
 
     if (typeof amount !== "number" || !Number.isFinite(amount)) {
-      res.status(400).json({ error: "amount (number) is required" }); return;
+      res.status(400).json({ error: "amount (number) is required" });
+      return;
     }
 
-    const payout = await Payout.findOne({ _id: new Types.ObjectId(req.params.id as string), workspaceId: new Types.ObjectId(workspaceId) });
-    if (!payout) { res.status(404).json({ error: "Payout not found" }); return; }
+    const payout = await Payout.findOne({
+      _id: new Types.ObjectId(req.params.id as string),
+      workspaceId: new Types.ObjectId(workspaceId),
+    });
+    if (!payout) {
+      res.status(404).json({ error: "Payout not found" });
+      return;
+    }
 
     if (payout.status === "paid") {
       res.status(400).json({ error: "Payout is already marked as paid and cannot be adjusted." });
@@ -361,7 +453,14 @@ router.patch(
       {
         adjustments: newAdjustments,
         finalAmount: newFinal,
-        $push: { statusHistory: { status: payout.status, changedAt: new Date(), changedBy: req.userId, note: note ?? `Adjustment ${amount >= 0 ? "+" : ""}${amount.toFixed(2)}` } },
+        $push: {
+          statusHistory: {
+            status: payout.status,
+            changedAt: new Date(),
+            changedBy: req.userId,
+            note: note ?? `Adjustment ${amount >= 0 ? "+" : ""}${amount.toFixed(2)}`,
+          },
+        },
       },
       { new: true },
     ).populate("repId");

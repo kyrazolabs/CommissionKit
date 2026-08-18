@@ -1,14 +1,12 @@
-import { auth } from "../src/lib/auth.js";
 import mongoose from "mongoose";
+import { auth } from "../src/lib/auth.js";
 import "dotenv/config";
 
 async function run() {
   await mongoose.connect(process.env.MONGO_URL!);
   const db = mongoose.connection.db;
 
-  const rep = await db
-    ?.collection("reps")
-    .findOne({ portalUsername: "abdullah" });
+  const rep = await db?.collection("reps").findOne({ portalUsername: "abdullah" });
   if (!rep) {
     console.log("Rep not found");
     process.exit(1);

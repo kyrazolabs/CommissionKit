@@ -1,5 +1,5 @@
-import { describe, test, expect } from "bun:test";
-import { insertCommissionRunSchema, insertCommissionResultSchema } from "./commissionRuns";
+import { describe, expect, test } from "bun:test";
+import { insertCommissionResultSchema, insertCommissionRunSchema } from "./commissionRuns";
 
 describe("insertCommissionRunSchema", () => {
   const validRun = {
@@ -51,15 +51,11 @@ describe("insertCommissionRunSchema", () => {
   });
 
   test("rejects missing workspaceId", () => {
-    expect(() =>
-      insertCommissionRunSchema.parse({ period: "2024-03" }),
-    ).toThrow();
+    expect(() => insertCommissionRunSchema.parse({ period: "2024-03" })).toThrow();
   });
 
   test("rejects missing period", () => {
-    expect(() =>
-      insertCommissionRunSchema.parse({ workspaceId: "ws1" }),
-    ).toThrow();
+    expect(() => insertCommissionRunSchema.parse({ workspaceId: "ws1" })).toThrow();
   });
 
   test("rejects non-numeric totalCommission", () => {

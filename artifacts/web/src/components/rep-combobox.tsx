@@ -1,7 +1,6 @@
-import { useState, useCallback, useRef } from "react";
-import { useTranslation } from "react-i18next";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useCallback, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Command,
   CommandEmpty,
@@ -10,11 +9,8 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 export interface RepOption {
   id: string;
@@ -52,22 +48,22 @@ export function RepCombobox({
   const [open, setOpen] = useState(false);
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  const selected = includeAll && value === "all"
-    ? null
-    : reps.find((r) => String(r.id) === value);
+  const selected = includeAll && value === "all" ? null : reps.find((r) => String(r.id) === value);
 
-  const displayName = includeAll && value === "all"
-    ? (allLabel ?? t("common.allReps"))
-    : selected?.name;
+  const displayName =
+    includeAll && value === "all" ? (allLabel ?? t("common.allReps")) : selected?.name;
 
-  const handleSearch = useCallback((query: string) => {
-    if (onSearch) {
-      clearTimeout(searchTimeout.current);
-      searchTimeout.current = setTimeout(() => {
-        onSearch(query);
-      }, 300);
-    }
-  }, [onSearch]);
+  const handleSearch = useCallback(
+    (query: string) => {
+      if (onSearch) {
+        clearTimeout(searchTimeout.current);
+        searchTimeout.current = setTimeout(() => {
+          onSearch(query);
+        }, 300);
+      }
+    },
+    [onSearch],
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -82,9 +78,7 @@ export function RepCombobox({
             className,
           )}
         >
-          <span className="truncate">
-            {displayName ?? placeholder ?? t("common.selectRep")}
-          </span>
+          <span className="truncate">{displayName ?? placeholder ?? t("common.selectRep")}</span>
           <ChevronsUpDown className="ml-2 size-3.5 shrink-0 opacity-50" />
         </button>
       </PopoverTrigger>
@@ -114,7 +108,9 @@ export function RepCombobox({
                       className="flex items-center gap-2 cursor-pointer"
                     >
                       <span>{allLabel ?? t("common.allReps")}</span>
-                      {value === "all" && <Check className="ml-auto size-3.5 text-primary shrink-0" />}
+                      {value === "all" && (
+                        <Check className="ml-auto size-3.5 text-primary shrink-0" />
+                      )}
                     </CommandItem>
                   )}
                   {reps.map((r) => (
@@ -128,7 +124,9 @@ export function RepCombobox({
                       className="flex items-center gap-2 cursor-pointer"
                     >
                       <span className="truncate">{r.name}</span>
-                      {value === String(r.id) && <Check className="ml-auto size-3.5 text-primary shrink-0" />}
+                      {value === String(r.id) && (
+                        <Check className="ml-auto size-3.5 text-primary shrink-0" />
+                      )}
                     </CommandItem>
                   ))}
                 </CommandGroup>

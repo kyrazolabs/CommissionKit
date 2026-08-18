@@ -1,4 +1,4 @@
-import { baseTemplate, h1, p, divider, cardSection } from "./base.js";
+import { baseTemplate, cardSection, divider, h1, p } from "./base.js";
 
 function escapeHtml(str: string): string {
   return str

@@ -1,22 +1,46 @@
-import { describe, test, expect, beforeEach, afterEach } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { CustomConnector } from "../connector";
-import { mockFetchSingle, mockFetchSequence, SAMPLE_OPPORTUNITIES, FLAT_DEALS, originalFetch } from "./setup";
+import {
+  FLAT_DEALS,
+  mockFetchSequence,
+  mockFetchSingle,
+  originalFetch,
+  SAMPLE_OPPORTUNITIES,
+} from "./setup";
 
 describe("CustomConnector — stage filters", () => {
   let connector: CustomConnector;
-  beforeEach(() => { connector = new CustomConnector(); });
-  afterEach(() => { globalThis.fetch = originalFetch; });
+  beforeEach(() => {
+    connector = new CustomConnector();
+  });
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
 
   const baseDeals = {
-    baseUrl: "https://api.example.com", auth: { type: "bearer" as const, token: "t" },
+    baseUrl: "https://api.example.com",
+    auth: { type: "bearer" as const, token: "t" },
     responsePath: "data.opportunities.edges",
-    entities: { deals: { enabled: true, endpoint: "/graphql",
-      fields: { externalId: "node.id", name: "node.name", stage: "node.stage" } } },
+    entities: {
+      deals: {
+        enabled: true,
+        endpoint: "/graphql",
+        fields: { externalId: "node.id", name: "node.name", stage: "node.stage" },
+      },
+    },
   };
 
   test("filters to single stage", async () => {
     mockFetchSequence({ body: SAMPLE_OPPORTUNITIES });
-    const cfg = { ...baseDeals, entities: { deals: { ...baseDeals.entities.deals, stageFilter: { field: "stage", include: ["closed_won"] } } } };
+    const cfg = {
+      ...baseDeals,
+      entities: {
+        deals: {
+          ...baseDeals.entities.deals,
+          stageFilter: { field: "stage", include: ["closed_won"] },
+        },
+      },
+    };
     const deals = await connector.fetchDeals("ws", cfg);
     expect(deals).toHaveLength(1);
     expect(deals[0].externalId).toBe("deal-1");
@@ -24,21 +48,42 @@ describe("CustomConnector — stage filters", () => {
 
   test("filters to multiple stages", async () => {
     mockFetchSequence({ body: SAMPLE_OPPORTUNITIES });
-    const cfg = { ...baseDeals, entities: { deals: { ...baseDeals.entities.deals, stageFilter: { field: "stage", include: ["closed_won", "closed_lost"] } } } };
+    const cfg = {
+      ...baseDeals,
+      entities: {
+        deals: {
+          ...baseDeals.entities.deals,
+          stageFilter: { field: "stage", include: ["closed_won", "closed_lost"] },
+        },
+      },
+    };
     const deals = await connector.fetchDeals("ws", cfg);
     expect(deals).toHaveLength(2);
   });
 
   test("filtering everything yields empty result", async () => {
     mockFetchSequence({ body: SAMPLE_OPPORTUNITIES });
-    const cfg = { ...baseDeals, entities: { deals: { ...baseDeals.entities.deals, stageFilter: { field: "stage", include: ["banana"] } } } };
+    const cfg = {
+      ...baseDeals,
+      entities: {
+        deals: {
+          ...baseDeals.entities.deals,
+          stageFilter: { field: "stage", include: ["banana"] },
+        },
+      },
+    };
     const deals = await connector.fetchDeals("ws", cfg);
     expect(deals).toHaveLength(0);
   });
 
   test("filtering with empty include array yields empty result", async () => {
     mockFetchSequence({ body: SAMPLE_OPPORTUNITIES });
-    const cfg = { ...baseDeals, entities: { deals: { ...baseDeals.entities.deals, stageFilter: { field: "stage", include: [] } } } };
+    const cfg = {
+      ...baseDeals,
+      entities: {
+        deals: { ...baseDeals.entities.deals, stageFilter: { field: "stage", include: [] } },
+      },
+    };
     const deals = await connector.fetchDeals("ws", cfg);
     expect(deals).toHaveLength(0);
   });
@@ -46,34 +91,55 @@ describe("CustomConnector — stage filters", () => {
 
 describe("CustomConnector — query filters", () => {
   let connector: CustomConnector;
-  beforeEach(() => { connector = new CustomConnector(); });
-  afterEach(() => { globalThis.fetch = originalFetch; });
+  beforeEach(() => {
+    connector = new CustomConnector();
+  });
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
 
   const baseReps = {
-    baseUrl: "https://api.example.com", auth: { type: "bearer" as const, token: "t" },
-    entities: { reps: { enabled: true, endpoint: "/users", fields: { externalId: "id", name: "name", email: "id" } } },
+    baseUrl: "https://api.example.com",
+    auth: { type: "bearer" as const, token: "t" },
+    entities: {
+      reps: {
+        enabled: true,
+        endpoint: "/users",
+        fields: { externalId: "id", name: "name", email: "id" },
+      },
+    },
   };
 
   test("single filter added as query param", async () => {
     let url = "";
-    globalThis.fetch = (async (u: string | URL | Request) => {
-      url = String(u); return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json" } });
-    });
+    globalThis.fetch = async (u: string | URL | Request) => {
+      url = String(u);
+      return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json" } });
+    };
     await connector.fetchReps("ws", {
-      ...baseReps, entities: { reps: { ...baseReps.entities.reps, filters: [{ key: "dept", value: "sales" }] } },
+      ...baseReps,
+      entities: { reps: { ...baseReps.entities.reps, filters: [{ key: "dept", value: "sales" }] } },
     });
     expect(url).toContain("dept=sales");
   });
 
   test("multiple filters", async () => {
     let url = "";
-    globalThis.fetch = (async (u: string | URL | Request) => {
-      url = String(u); return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json" } });
-    });
+    globalThis.fetch = async (u: string | URL | Request) => {
+      url = String(u);
+      return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json" } });
+    };
     await connector.fetchReps("ws", {
-      ...baseReps, entities: { reps: { ...baseReps.entities.reps, filters: [
-        { key: "dept", value: "sales" }, { key: "active", value: "true" },
-      ] } },
+      ...baseReps,
+      entities: {
+        reps: {
+          ...baseReps.entities.reps,
+          filters: [
+            { key: "dept", value: "sales" },
+            { key: "active", value: "true" },
+          ],
+        },
+      },
     });
     expect(url).toContain("dept=sales");
     expect(url).toContain("active=true");
@@ -81,22 +147,28 @@ describe("CustomConnector — query filters", () => {
 
   test("filter with special characters", async () => {
     let url = "";
-    globalThis.fetch = (async (u: string | URL | Request) => {
-      url = String(u); return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json" } });
-    });
+    globalThis.fetch = async (u: string | URL | Request) => {
+      url = String(u);
+      return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json" } });
+    };
     await connector.fetchReps("ws", {
-      ...baseReps, entities: { reps: { ...baseReps.entities.reps, filters: [{ key: "name", value: "John Doe" }] } },
+      ...baseReps,
+      entities: {
+        reps: { ...baseReps.entities.reps, filters: [{ key: "name", value: "John Doe" }] },
+      },
     });
     expect(url).toContain("name=John+Doe");
   });
 
   test("filter with empty value", async () => {
     let url = "";
-    globalThis.fetch = (async (u: string | URL | Request) => {
-      url = String(u); return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json" } });
-    });
+    globalThis.fetch = async (u: string | URL | Request) => {
+      url = String(u);
+      return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json" } });
+    };
     await connector.fetchReps("ws", {
-      ...baseReps, entities: { reps: { ...baseReps.entities.reps, filters: [{ key: "tag", value: "" }] } },
+      ...baseReps,
+      entities: { reps: { ...baseReps.entities.reps, filters: [{ key: "tag", value: "" }] } },
     });
     expect(url).toContain("tag=");
   });
@@ -104,56 +176,107 @@ describe("CustomConnector — query filters", () => {
 
 describe("CustomConnector — modifiedAfter", () => {
   let connector: CustomConnector;
-  beforeEach(() => { connector = new CustomConnector(); });
-  afterEach(() => { globalThis.fetch = originalFetch; });
+  beforeEach(() => {
+    connector = new CustomConnector();
+  });
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
 
   test("sends modifiedAfter as ISO string in query param", async () => {
     let url = "";
-    globalThis.fetch = (async (u: string | URL | Request) => {
-      url = String(u); return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json" } });
-    });
-    await connector.fetchReps("ws", {
-      baseUrl: "https://api.example.com", auth: { type: "bearer", token: "t" },
-      entities: { reps: { enabled: true, endpoint: "/users", modifiedAfterParam: "updated_since", fields: { externalId: "id", name: "name", email: "id" } } },
-    }, { modifiedAfter: new Date("2024-01-01") });
+    globalThis.fetch = async (u: string | URL | Request) => {
+      url = String(u);
+      return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json" } });
+    };
+    await connector.fetchReps(
+      "ws",
+      {
+        baseUrl: "https://api.example.com",
+        auth: { type: "bearer", token: "t" },
+        entities: {
+          reps: {
+            enabled: true,
+            endpoint: "/users",
+            modifiedAfterParam: "updated_since",
+            fields: { externalId: "id", name: "name", email: "id" },
+          },
+        },
+      },
+      { modifiedAfter: new Date("2024-01-01") },
+    );
     expect(url).toContain("updated_since=");
   });
 
   test("no modifiedAfter param when options is missing", async () => {
     let url = "";
-    globalThis.fetch = (async (u: string | URL | Request) => {
-      url = String(u); return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json" } });
-    });
+    globalThis.fetch = async (u: string | URL | Request) => {
+      url = String(u);
+      return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json" } });
+    };
     await connector.fetchReps("ws", {
-      baseUrl: "https://api.example.com", auth: { type: "bearer", token: "t" },
-      entities: { reps: { enabled: true, endpoint: "/users", modifiedAfterParam: "updated_since", fields: { externalId: "id", name: "name", email: "id" } } },
+      baseUrl: "https://api.example.com",
+      auth: { type: "bearer", token: "t" },
+      entities: {
+        reps: {
+          enabled: true,
+          endpoint: "/users",
+          modifiedAfterParam: "updated_since",
+          fields: { externalId: "id", name: "name", email: "id" },
+        },
+      },
     });
     expect(url).not.toContain("updated_since");
   });
 
   test("no modifiedAfter param when param name is not configured", async () => {
     let url = "";
-    globalThis.fetch = (async (u: string | URL | Request) => {
-      url = String(u); return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json" } });
-    });
-    await connector.fetchReps("ws", {
-      baseUrl: "https://api.example.com", auth: { type: "bearer", token: "t" },
-      entities: { reps: { enabled: true, endpoint: "/users", fields: { externalId: "id", name: "name", email: "id" } } },
-    }, { modifiedAfter: new Date("2024-01-01") });
+    globalThis.fetch = async (u: string | URL | Request) => {
+      url = String(u);
+      return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json" } });
+    };
+    await connector.fetchReps(
+      "ws",
+      {
+        baseUrl: "https://api.example.com",
+        auth: { type: "bearer", token: "t" },
+        entities: {
+          reps: {
+            enabled: true,
+            endpoint: "/users",
+            fields: { externalId: "id", name: "name", email: "id" },
+          },
+        },
+      },
+      { modifiedAfter: new Date("2024-01-01") },
+    );
     expect(url).not.toContain("2024-01-01");
   });
 });
 
 describe("CustomConnector — payment status mapping", () => {
   let connector: CustomConnector;
-  beforeEach(() => { connector = new CustomConnector(); });
-  afterEach(() => { globalThis.fetch = originalFetch; });
+  beforeEach(() => {
+    connector = new CustomConnector();
+  });
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
 
   const baseDeals = {
-    baseUrl: "https://api.example.com", auth: { type: "bearer" as const, token: "t" },
-    entities: { deals: { enabled: true, endpoint: "/deals", fields: {
-      externalId: "id", name: "name", paymentStatus: "paymentState",
-    } } },
+    baseUrl: "https://api.example.com",
+    auth: { type: "bearer" as const, token: "t" },
+    entities: {
+      deals: {
+        enabled: true,
+        endpoint: "/deals",
+        fields: {
+          externalId: "id",
+          name: "name",
+          paymentStatus: "paymentState",
+        },
+      },
+    },
   };
 
   test("default mapping: paid → paid", async () => {
@@ -182,18 +305,24 @@ describe("CustomConnector — payment status mapping", () => {
 
   test("custom mapping overrides default", async () => {
     mockFetchSingle([{ id: "d1", name: "Deal", paymentState: "outstanding" }]);
-    const cfg = { ...baseDeals, entities: { deals: { ...baseDeals.entities.deals,
-      paymentStatusMapping: { on_hold: ["outstanding"] },
-    } } };
+    const cfg = {
+      ...baseDeals,
+      entities: {
+        deals: { ...baseDeals.entities.deals, paymentStatusMapping: { on_hold: ["outstanding"] } },
+      },
+    };
     const deals = await connector.fetchDeals("ws", cfg);
     expect(deals[0].paymentStatus).toBe("on_hold");
   });
 
   test("custom mapping: multiple raw values map to one CKit status", async () => {
     mockFetchSingle([{ id: "d1", name: "Deal", paymentState: "SETTLED" }]);
-    const cfg = { ...baseDeals, entities: { deals: { ...baseDeals.entities.deals,
-      paymentStatusMapping: { paid: ["PAID", "SETTLED"] },
-    } } };
+    const cfg = {
+      ...baseDeals,
+      entities: {
+        deals: { ...baseDeals.entities.deals, paymentStatusMapping: { paid: ["PAID", "SETTLED"] } },
+      },
+    };
     const deals = await connector.fetchDeals("ws", cfg);
     expect(deals[0].paymentStatus).toBe("paid");
   });

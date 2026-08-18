@@ -1,8 +1,8 @@
-import { Footer } from "./landing/Footer";
-import { Navbar } from "./landing/Navbar";
+import { ArrowRight, Briefcase, Clock, MapPin } from "lucide-react";
 import { usePageMeta } from "@/hooks/use-page-meta";
 import { getActiveJobs } from "@/lib/jobs";
-import { MapPin, Clock, ArrowRight, Briefcase } from "lucide-react";
+import { Footer } from "./landing/Footer";
+import { Navbar } from "./landing/Navbar";
 
 export function CareersPage() {
   usePageMeta({
@@ -24,7 +24,8 @@ export function CareersPage() {
               Join the team
             </h1>
             <p className="text-muted-foreground text-lg max-w-2xl">
-              We help sales teams get paid correctly, on time, without the spreadsheet chaos. Our reps get the same deal: real leads, fast payouts, and no cap on what you can earn.
+              We help sales teams get paid correctly, on time, without the spreadsheet chaos. Our
+              reps get the same deal: real leads, fast payouts, and no cap on what you can earn.
             </p>
           </div>
 
@@ -35,52 +36,73 @@ export function CareersPage() {
                 <Clock className="size-5" />
               </div>
               <h3 className="font-semibold text-foreground mb-2">Flexible & Remote</h3>
-              <p className="text-sm text-muted-foreground">Work from anywhere on your own schedule. Results matter more than hours logged.</p>
+              <p className="text-sm text-muted-foreground">
+                Work from anywhere on your own schedule. Results matter more than hours logged.
+              </p>
             </div>
             <div className="p-6 rounded-xl border border-border bg-card">
               <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary mb-4">
                 <Briefcase className="size-5" />
               </div>
               <h3 className="font-semibold text-foreground mb-2">Fair Compensation</h3>
-              <p className="text-sm text-muted-foreground">Competitive commissions and recurring revenue share. The better you perform, the more you earn.</p>
+              <p className="text-sm text-muted-foreground">
+                Competitive commissions and recurring revenue share. The better you perform, the
+                more you earn.
+              </p>
             </div>
             <div className="p-6 rounded-xl border border-border bg-card">
               <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary mb-4">
                 <MapPin className="size-5" />
               </div>
               <h3 className="font-semibold text-foreground mb-2">Global Impact</h3>
-              <p className="text-sm text-muted-foreground">Help sales teams across the GCC, Europe, and beyond eliminate commission chaos.</p>
+              <p className="text-sm text-muted-foreground">
+                Help sales teams across the GCC, Europe, and beyond eliminate commission chaos.
+              </p>
             </div>
           </div>
 
           {/* Why sell CommissionKit */}
           <div className="mb-16 md:mb-20">
-            <h2 className="text-2xl font-bold text-foreground mb-2 tracking-tight">Why sell CommissionKit</h2>
-            <p className="text-muted-foreground mb-6">Four numbers that matter if you're thinking about applying.</p>
+            <h2 className="text-2xl font-bold text-foreground mb-2 tracking-tight">
+              Why sell CommissionKit
+            </h2>
+            <p className="text-muted-foreground mb-6">
+              Four numbers that matter if you're thinking about applying.
+            </p>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <div className="p-5 rounded-xl border border-primary/20 bg-primary/5">
                 <p className="text-2xl font-bold text-primary tabular-nums mb-1">$3K–$8K</p>
-                <p className="text-[13px] text-muted-foreground">Monthly earnings for top performers</p>
+                <p className="text-[13px] text-muted-foreground">
+                  Monthly earnings for top performers
+                </p>
               </div>
               <div className="p-5 rounded-xl border border-border bg-card">
                 <p className="text-2xl font-bold text-foreground tabular-nums mb-1">10+</p>
-                <p className="text-[13px] text-muted-foreground">Qualified leads provided monthly — no cold outreach required</p>
+                <p className="text-[13px] text-muted-foreground">
+                  Qualified leads provided monthly — no cold outreach required
+                </p>
               </div>
               <div className="p-5 rounded-xl border border-border bg-card">
                 <p className="text-2xl font-bold text-foreground tabular-nums mb-1">15 days</p>
-                <p className="text-[13px] text-muted-foreground">Payout after first invoice — no thresholds, no delays</p>
+                <p className="text-[13px] text-muted-foreground">
+                  Payout after first invoice — no thresholds, no delays
+                </p>
               </div>
               <div className="p-5 rounded-xl border border-border bg-card">
                 <p className="text-2xl font-bold text-foreground tabular-nums mb-1">30% + 10%</p>
-                <p className="text-[13px] text-muted-foreground">30% of first invoice + 10% lifetime recurring</p>
+                <p className="text-[13px] text-muted-foreground">
+                  30% of first invoice + 10% lifetime recurring
+                </p>
               </div>
             </div>
           </div>
 
           {/* Open Positions */}
           <div>
-            <h2 className="text-2xl font-bold text-foreground mb-2 tracking-tight">Open positions</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-2 tracking-tight">
+              Open positions
+            </h2>
             <p className="text-muted-foreground mb-8">
               {jobs.length} open {jobs.length === 1 ? "position" : "positions"} right now
             </p>
@@ -89,7 +111,9 @@ export function CareersPage() {
               <div className="text-center py-16 border border-dashed border-border rounded-xl">
                 <Briefcase className="size-10 text-muted-foreground/40 mx-auto mb-4" />
                 <p className="text-muted-foreground font-medium">No open positions at the moment</p>
-                <p className="text-sm text-muted-foreground/70 mt-1">Check back soon or follow us on LinkedIn for updates.</p>
+                <p className="text-sm text-muted-foreground/70 mt-1">
+                  Check back soon or follow us on LinkedIn for updates.
+                </p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -105,7 +129,11 @@ export function CareersPage() {
                           {job.title}
                         </h3>
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                          {job.type === "contract" ? "Contract" : job.type === "full-time" ? "Full-time" : "Part-time"}
+                          {job.type === "contract"
+                            ? "Contract"
+                            : job.type === "full-time"
+                              ? "Full-time"
+                              : "Part-time"}
                         </span>
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
                           <Clock className="size-3" />

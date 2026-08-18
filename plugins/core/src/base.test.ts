@@ -1,16 +1,16 @@
-import { describe, test, expect, beforeAll, mock } from "bun:test";
+import { beforeAll, describe, expect, mock, test } from "bun:test";
 import { BasePlugin } from "./base";
 import type {
   CKitPlugin,
   ConnectionConfig,
   ConnectionTestResult,
   FetchOptions,
+  IngresEvent,
+  JsonSchema,
   NormalizedDeal,
   NormalizedRep,
-  IngresEvent,
-  WebhookRequest,
-  JsonSchema,
   PluginUIMetadata,
+  WebhookRequest,
 } from "./types";
 
 class TestConnector extends BasePlugin {
@@ -24,11 +24,19 @@ class TestConnector extends BasePlugin {
     return { success: true, message: "ok" };
   }
 
-  async fetchReps(_ws: string, _cfg: ConnectionConfig, _opts?: FetchOptions): Promise<NormalizedRep[]> {
+  async fetchReps(
+    _ws: string,
+    _cfg: ConnectionConfig,
+    _opts?: FetchOptions,
+  ): Promise<NormalizedRep[]> {
     return [];
   }
 
-  async fetchDeals(_ws: string, _cfg: ConnectionConfig, _opts?: FetchOptions): Promise<NormalizedDeal[]> {
+  async fetchDeals(
+    _ws: string,
+    _cfg: ConnectionConfig,
+    _opts?: FetchOptions,
+  ): Promise<NormalizedDeal[]> {
     return [];
   }
 

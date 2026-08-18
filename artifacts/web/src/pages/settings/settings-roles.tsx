@@ -1,12 +1,12 @@
-import { useState, useEffect, useCallback, memo, useMemo } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Check, Edit, Plus, Settings, Shield, Trash } from "lucide-react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, Settings, Shield, Trash, Edit, Check } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiFetch } from "../../lib/api";
-import { cn } from "../../lib/utils";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useRole } from "@/hooks/use-role";
 import { useSyncStore } from "@/hooks/use-sync-store";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Badge } from "../../components/ui/badge";
+import { Button } from "../../components/ui/button";
 import {
   Card,
   CardContent,
@@ -14,10 +14,6 @@ import {
   CardHeader,
   CardTitle,
 } from "../../components/ui/card";
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
-import { Textarea } from "../../components/ui/textarea";
 import { Checkbox } from "../../components/ui/checkbox";
 import {
   Dialog,
@@ -27,22 +23,81 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../components/ui/dialog";
-import { Badge } from "../../components/ui/badge";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
+import { Textarea } from "../../components/ui/textarea";
+import { apiFetch } from "../../lib/api";
+import { cn } from "../../lib/utils";
 
 const PERMISSION_RESOURCES = [
-  { id: "deals", name: "Deals", i18nKey: "roles.deals", actions: ["read", "create", "edit", "delete", "export"] },
-  { id: "payouts", name: "Payouts", i18nKey: "roles.payouts", actions: ["read", "create", "edit", "delete", "approve", "mark_paid", "adjust", "export"] },
-  { id: "plans", name: "Commission Plans", i18nKey: "roles.commissionPlans", actions: ["read", "create", "edit", "delete"] },
-  { id: "reps", name: "Sales Reps", i18nKey: "roles.salesReps", actions: ["read", "create", "edit", "delete"] },
+  {
+    id: "deals",
+    name: "Deals",
+    i18nKey: "roles.deals",
+    actions: ["read", "create", "edit", "delete", "export"],
+  },
+  {
+    id: "payouts",
+    name: "Payouts",
+    i18nKey: "roles.payouts",
+    actions: ["read", "create", "edit", "delete", "approve", "mark_paid", "adjust", "export"],
+  },
+  {
+    id: "plans",
+    name: "Commission Plans",
+    i18nKey: "roles.commissionPlans",
+    actions: ["read", "create", "edit", "delete"],
+  },
+  {
+    id: "reps",
+    name: "Sales Reps",
+    i18nKey: "roles.salesReps",
+    actions: ["read", "create", "edit", "delete"],
+  },
   { id: "audit_log", name: "Audit Log", i18nKey: "roles.auditLog", actions: ["read", "export"] },
-  { id: "disputes", name: "Disputes", i18nKey: "roles.disputes2", actions: ["read", "edit", "delete"] },
+  {
+    id: "disputes",
+    name: "Disputes",
+    i18nKey: "roles.disputes2",
+    actions: ["read", "edit", "delete"],
+  },
   { id: "analytics", name: "Reports", i18nKey: "roles.reports2", actions: ["read", "export"] },
-  { id: "calculations", name: "Commission Runs", i18nKey: "roles.commissionRuns", actions: ["read", "create", "edit", "delete", "export"] },
-  { id: "team", name: "Teams", i18nKey: "roles.teams", actions: ["read", "create", "edit", "delete"] },
-  { id: "roles", name: "Roles & Permissions", i18nKey: "roles.rolesPermissions", actions: ["read", "create", "edit", "delete"] },
-  { id: "billing", name: "Billing & Subscription", i18nKey: "roles.billingSubscription", actions: ["read", "edit"] },
-  { id: "workspace", name: "Workspace Settings", i18nKey: "roles.workspaceSettings", actions: ["read", "edit"] },
-  { id: "notifications", name: "In-App Notifications", i18nKey: "roles.inAppNotifications", actions: ["read", "edit"] },
+  {
+    id: "calculations",
+    name: "Commission Runs",
+    i18nKey: "roles.commissionRuns",
+    actions: ["read", "create", "edit", "delete", "export"],
+  },
+  {
+    id: "team",
+    name: "Teams",
+    i18nKey: "roles.teams",
+    actions: ["read", "create", "edit", "delete"],
+  },
+  {
+    id: "roles",
+    name: "Roles & Permissions",
+    i18nKey: "roles.rolesPermissions",
+    actions: ["read", "create", "edit", "delete"],
+  },
+  {
+    id: "billing",
+    name: "Billing & Subscription",
+    i18nKey: "roles.billingSubscription",
+    actions: ["read", "edit"],
+  },
+  {
+    id: "workspace",
+    name: "Workspace Settings",
+    i18nKey: "roles.workspaceSettings",
+    actions: ["read", "edit"],
+  },
+  {
+    id: "notifications",
+    name: "In-App Notifications",
+    i18nKey: "roles.inAppNotifications",
+    actions: ["read", "edit"],
+  },
 ];
 
 export default function SettingsRoles() {
@@ -60,8 +115,7 @@ export default function SettingsRoles() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) =>
-      apiFetch(`/api/roles/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) => apiFetch(`/api/roles/${id}`, { method: "DELETE" }),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ["roles"] });
       const previous = queryClient.getQueryData(["roles"]);
@@ -77,7 +131,7 @@ export default function SettingsRoles() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["roles"] });
-    }
+    },
   });
 
   if (isLoading) {
@@ -89,9 +143,7 @@ export default function SettingsRoles() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight">{t("roles.title")}</h2>
-          <p className="text-muted-foreground mt-2">
-            {t("roles.description")}
-          </p>
+          <p className="text-muted-foreground mt-2">{t("roles.description")}</p>
         </div>
         {hasPermission("roles", "create") && (
           <Button
@@ -173,9 +225,16 @@ export default function SettingsRoles() {
       />
       <ConfirmDialog
         open={!!deleteConfirmRole}
-        onOpenChange={(v) => { if (!v) setDeleteConfirmRole(null); }}
+        onOpenChange={(v) => {
+          if (!v) setDeleteConfirmRole(null);
+        }}
         title={t("roles.deleteRole")}
-        description={<>Users assigned to <strong>{deleteConfirmRole?.name}</strong> will lose these permissions immediately.</>}
+        description={
+          <>
+            Users assigned to <strong>{deleteConfirmRole?.name}</strong> will lose these permissions
+            immediately.
+          </>
+        }
         confirmLabel={t("roles.deleteRole")}
         onConfirm={() => {
           deleteMutation.mutate(deleteConfirmRole.id);
@@ -198,7 +257,7 @@ function RoleDialog({ role, open, onOpenChange }: any) {
   const [error, setError] = useState("");
   const queryClient = useQueryClient();
   const { setSyncError } = useSyncStore();
-  
+
   const mutation = useMutation({
     mutationFn: async (payload: any) => {
       if (role) {
@@ -216,7 +275,7 @@ function RoleDialog({ role, open, onOpenChange }: any) {
     onMutate: async (payload) => {
       await queryClient.cancelQueries({ queryKey: ["roles"] });
       const previous = queryClient.getQueryData(["roles"]);
-      
+
       const optimisticRole = {
         id: role ? role.id : `temp-${Date.now()}`,
         name: payload.name,
@@ -224,11 +283,11 @@ function RoleDialog({ role, open, onOpenChange }: any) {
         permissions: payload.permissions,
         isSystem: role?.isSystem || false,
       };
-      
+
       queryClient.setQueryData(["roles"], (old: any) => {
         if (!Array.isArray(old)) return old;
         if (role) {
-          return old.map((r: any) => r.id === role.id ? optimisticRole : r);
+          return old.map((r: any) => (r.id === role.id ? optimisticRole : r));
         } else {
           return [optimisticRole, ...old];
         }
@@ -243,34 +302,40 @@ function RoleDialog({ role, open, onOpenChange }: any) {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["roles"] });
-    }
+    },
   });
 
-  const togglePermission = useCallback((perm: string) => {
-    if (isOwner) return;
-    setPermissions(prev =>
-      prev.includes(perm) ? prev.filter(p => p !== perm) : [...prev, perm]
-    );
-  }, [isOwner]);
+  const togglePermission = useCallback(
+    (perm: string) => {
+      if (isOwner) return;
+      setPermissions((prev) =>
+        prev.includes(perm) ? prev.filter((p) => p !== perm) : [...prev, perm],
+      );
+    },
+    [isOwner],
+  );
 
-  const toggleResource = useCallback((resource: string) => {
-    if (isOwner) return;
-    const resourceActions = PERMISSION_RESOURCES.find(r => r.id === resource)?.actions || [];
-    const resourcePerms = resourceActions.map(a => `${resource}:${a}`);
+  const toggleResource = useCallback(
+    (resource: string) => {
+      if (isOwner) return;
+      const resourceActions = PERMISSION_RESOURCES.find((r) => r.id === resource)?.actions || [];
+      const resourcePerms = resourceActions.map((a) => `${resource}:${a}`);
 
-    setPermissions(prev => {
-      const allSelected = resourcePerms.every(p => prev.includes(p));
-      if (allSelected) {
-        return prev.filter(p => !p.startsWith(`${resource}:`));
-      } else {
-        const next = [...prev];
-        resourcePerms.forEach(p => {
-          if (!next.includes(p)) next.push(p);
-        });
-        return next;
-      }
-    });
-  }, [isOwner]);
+      setPermissions((prev) => {
+        const allSelected = resourcePerms.every((p) => prev.includes(p));
+        if (allSelected) {
+          return prev.filter((p) => !p.startsWith(`${resource}:`));
+        } else {
+          const next = [...prev];
+          resourcePerms.forEach((p) => {
+            if (!next.includes(p)) next.push(p);
+          });
+          return next;
+        }
+      });
+    },
+    [isOwner],
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -291,7 +356,7 @@ function RoleDialog({ role, open, onOpenChange }: any) {
           setDescription("");
           setPermissions([]);
         }
-      }
+      },
     });
     onOpenChange(false);
   };
@@ -300,38 +365,50 @@ function RoleDialog({ role, open, onOpenChange }: any) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>{role ? (isOwner ? t("roles.viewRole") : t("roles.editRole")) : t("roles.createCustomRole")}</DialogTitle>
+          <DialogTitle>
+            {role
+              ? isOwner
+                ? t("roles.viewRole")
+                : t("roles.editRole")
+              : t("roles.createCustomRole")}
+          </DialogTitle>
           <DialogDescription>
             {isOwner ? t("roles.ownerHasFullAccess") : t("roles.permissionsDescription")}
           </DialogDescription>
         </DialogHeader>
 
         {error && (
-          <div className="bg-destructive/15 text-destructive p-3 rounded-md text-sm">
-            {error}
-          </div>
+          <div className="bg-destructive/15 text-destructive p-3 rounded-md text-sm">{error}</div>
         )}
 
-        <form id="role-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto pr-2 space-y-6 py-4">
+        <form
+          id="role-form"
+          onSubmit={handleSubmit}
+          className="flex-1 overflow-y-auto pr-2 space-y-6 py-4"
+        >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">{t("roles.roleName")}</Label>
               <Input
                 id="name"
                 value={name}
-                onChange={e => setName(e.target.value)}
+                onChange={(e) => setName(e.target.value)}
                 disabled={isSystem || isOwner}
                 required
                 placeholder={t("roles.roleNamePlaceholder")}
               />
-              {isSystem && !isOwner && <p className="text-xs text-muted-foreground">{t("roles.systemRoleNameImmutable")}</p>}
+              {isSystem && !isOwner && (
+                <p className="text-xs text-muted-foreground">
+                  {t("roles.systemRoleNameImmutable")}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">{t("roles.descriptionLabel")}</Label>
               <Input
                 id="description"
                 value={description}
-                onChange={e => setDescription(e.target.value)}
+                onChange={(e) => setDescription(e.target.value)}
                 disabled={isOwner}
                 placeholder={t("roles.descriptionPlaceholder")}
               />
@@ -376,89 +453,107 @@ function RoleDialog({ role, open, onOpenChange }: any) {
 
 const COLUMNS = ["read", "create", "edit", "delete", "approve", "mark_paid", "adjust", "export"];
 
-const PermissionMatrix = memo(({ permissions, onTogglePermission, onToggleResource, isOwner }: any) => {
-  const { t } = useTranslation();
-  const hasGlobalWildcard = permissions.includes("*");
+const PermissionMatrix = memo(
+  ({ permissions, onTogglePermission, onToggleResource, isOwner }: any) => {
+    const { t } = useTranslation();
+    const hasGlobalWildcard = permissions.includes("*");
 
-  return (
-    <div className="rounded-2xl border border-border/60 bg-card/50 backdrop-blur-sm overflow-hidden shadow-sm">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border/60 bg-muted/40 backdrop-blur-md">
-              <th className="p-4 text-left font-semibold text-foreground/90 w-1/3">{t("common.resource")}</th>
-              {COLUMNS.map(col => (
-                <th key={col} className="p-4 text-center font-semibold text-muted-foreground/80 capitalize text-[12px] tracking-tight">
-                  {t(`common.${col}`, col)}
+    return (
+      <div className="rounded-2xl border border-border/60 bg-card/50 backdrop-blur-sm overflow-hidden shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border/60 bg-muted/40 backdrop-blur-md">
+                <th className="p-4 text-left font-semibold text-foreground/90 w-1/3">
+                  {t("common.resource")}
                 </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border/40">
-            {PERMISSION_RESOURCES.map(resource => {
-              const hasResourceWildcard = permissions.includes(`${resource.id}:*`);
-              const isFullAccess = hasGlobalWildcard || hasResourceWildcard;
+                {COLUMNS.map((col) => (
+                  <th
+                    key={col}
+                    className="p-4 text-center font-semibold text-muted-foreground/80 capitalize text-[12px] tracking-tight"
+                  >
+                    {t(`common.${col}`, col)}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/40">
+              {PERMISSION_RESOURCES.map((resource) => {
+                const hasResourceWildcard = permissions.includes(`${resource.id}:*`);
+                const isFullAccess = hasGlobalWildcard || hasResourceWildcard;
 
-              return (
-                <tr key={resource.id} className="hover:bg-primary/5 transition-all duration-200 group">
-                  <td className="p-4">
-                    <div
-                      className="flex items-center gap-3 cursor-pointer select-none"
-                      onClick={() => !isOwner && onToggleResource(resource.id)}
-                    >
-                      <div className={cn(
-                        "size-4.5 rounded-md border flex items-center justify-center transition-all duration-300",
-                        isFullAccess
-                          ? "bg-primary border-primary text-primary-foreground shadow-[0_0_10px_rgba(var(--primary),0.3)]"
-                          : "bg-background border-muted-foreground/30 group-hover:border-primary/60"
-                      )}>
-                        {isFullAccess && <Check className="size-3 stroke-[3.5]" />}
+                return (
+                  <tr
+                    key={resource.id}
+                    className="hover:bg-primary/5 transition-all duration-200 group"
+                  >
+                    <td className="p-4">
+                      <div
+                        className="flex items-center gap-3 cursor-pointer select-none"
+                        onClick={() => !isOwner && onToggleResource(resource.id)}
+                      >
+                        <div
+                          className={cn(
+                            "size-4.5 rounded-md border flex items-center justify-center transition-all duration-300",
+                            isFullAccess
+                              ? "bg-primary border-primary text-primary-foreground shadow-[0_0_10px_rgba(var(--primary),0.3)]"
+                              : "bg-background border-muted-foreground/30 group-hover:border-primary/60",
+                          )}
+                        >
+                          {isFullAccess && <Check className="size-3 stroke-[3.5]" />}
+                        </div>
+                        <span
+                          className={cn(
+                            "font-semibold text-[13.5px] transition-colors",
+                            isFullAccess
+                              ? "text-foreground"
+                              : "text-muted-foreground group-hover:text-foreground",
+                          )}
+                        >
+                          {t(resource.i18nKey, resource.name)}
+                        </span>
                       </div>
-                      <span className={cn(
-                        "font-semibold text-[13.5px] transition-colors",
-                        isFullAccess ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
-                      )}>
-                        {t(resource.i18nKey, resource.name)}
-                      </span>
-                    </div>
-                  </td>
-                  {COLUMNS.map(action => {
-                    const isSupported = resource.actions.includes(action);
-                    const permStr = `${resource.id}:${action}`;
-                    const isChecked = isFullAccess || permissions.includes(permStr);
+                    </td>
+                    {COLUMNS.map((action) => {
+                      const isSupported = resource.actions.includes(action);
+                      const permStr = `${resource.id}:${action}`;
+                      const isChecked = isFullAccess || permissions.includes(permStr);
 
-                    return (
-                      <td key={action} className="p-4 text-center">
-                        {isSupported ? (
-                          <div
-                            className={cn(
-                              "inline-flex size-5.5 items-center justify-center rounded-md border transition-all duration-200 cursor-pointer mx-auto",
-                              isChecked
-                                ? "bg-primary/10 border-primary/40 text-primary shadow-inner"
-                                : "border-muted-foreground/20 hover:border-primary/40 bg-background/50",
-                              (isOwner || hasGlobalWildcard || hasResourceWildcard) && "opacity-40 cursor-not-allowed"
-                            )}
-                            onClick={() => {
-                              if (!isOwner && !hasGlobalWildcard && !hasResourceWildcard) {
-                                onTogglePermission(permStr);
-                              }
-                            }}
-                          >
-                            {isChecked && <Check className="size-4 stroke-[3]" />}
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground/10 font-mono text-[11px] select-none">:</span>
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                      return (
+                        <td key={action} className="p-4 text-center">
+                          {isSupported ? (
+                            <div
+                              className={cn(
+                                "inline-flex size-5.5 items-center justify-center rounded-md border transition-all duration-200 cursor-pointer mx-auto",
+                                isChecked
+                                  ? "bg-primary/10 border-primary/40 text-primary shadow-inner"
+                                  : "border-muted-foreground/20 hover:border-primary/40 bg-background/50",
+                                (isOwner || hasGlobalWildcard || hasResourceWildcard) &&
+                                  "opacity-40 cursor-not-allowed",
+                              )}
+                              onClick={() => {
+                                if (!isOwner && !hasGlobalWildcard && !hasResourceWildcard) {
+                                  onTogglePermission(permStr);
+                                }
+                              }}
+                            >
+                              {isChecked && <Check className="size-4 stroke-[3]" />}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground/10 font-mono text-[11px] select-none">
+                              :
+                            </span>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-  );
-});
-
+    );
+  },
+);

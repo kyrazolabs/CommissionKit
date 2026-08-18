@@ -31,7 +31,11 @@ export function useMDXComponents(components: ComponentMap): ComponentMap {
       <p className="text-base text-muted-foreground leading-relaxed mb-4" {...props} />
     ),
     a: ({ href, ...props }: AnchorProps) => (
-      <a href={href} className="text-primary underline underline-offset-4 hover:text-primary/80" {...props} />
+      <a
+        href={href}
+        className="text-primary underline underline-offset-4 hover:text-primary/80"
+        {...props}
+      />
     ),
     ul: (props: ListProps) => (
       <ul className="list-disc pl-6 mb-4 space-y-1 text-muted-foreground" {...props} />
@@ -39,11 +43,12 @@ export function useMDXComponents(components: ComponentMap): ComponentMap {
     ol: (props: ListProps) => (
       <ol className="list-decimal pl-6 mb-4 space-y-1 text-muted-foreground" {...props} />
     ),
-    li: (props: ListItemProps) => (
-      <li className="text-base leading-relaxed" {...props} />
-    ),
+    li: (props: ListItemProps) => <li className="text-base leading-relaxed" {...props} />,
     blockquote: (props: BlockquoteProps) => (
-      <blockquote className="border-l-4 border-primary/30 pl-4 italic text-muted-foreground my-6" {...props} />
+      <blockquote
+        className="border-l-4 border-primary/30 pl-4 italic text-muted-foreground my-6"
+        {...props}
+      />
     ),
     img: ({ src, alt, ...props }: ImgProps) => (
       // eslint-disable-next-line @next/next/no-img-element
@@ -62,7 +67,10 @@ export function useMDXComponents(components: ComponentMap): ComponentMap {
       </div>
     ),
     th: (props: ThProps) => (
-      <th className="border border-border bg-muted px-4 py-2 text-left font-semibold text-foreground" {...props} />
+      <th
+        className="border border-border bg-muted px-4 py-2 text-left font-semibold text-foreground"
+        {...props}
+      />
     ),
     td: (props: TdProps) => (
       <td className="border border-border px-4 py-2 text-muted-foreground" {...props} />

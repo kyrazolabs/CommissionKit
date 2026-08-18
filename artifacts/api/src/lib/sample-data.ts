@@ -1,14 +1,14 @@
-import mongoose, { Types } from "mongoose";
-import { randomBytes } from "crypto";
 import {
-  Rep,
+  CommissionResult,
+  CommissionRun,
+  Deal,
   Plan,
   PlanTier,
-  Deal,
-  CommissionRun,
-  CommissionResult,
+  Rep,
   Workspace,
 } from "@workspace/db";
+import { randomBytes } from "crypto";
+import mongoose, { Types } from "mongoose";
 import { StandardEngine } from "../workers/engines/standard.engine";
 import { logger } from "./logger";
 
@@ -47,22 +47,67 @@ export const sampleTiers = [
 ];
 
 export const sampleDeals: SampleDealInput[] = [
-  { repName: "Sarah Chen", name: "Acme Corp — Enterprise License", amount: 32000, stage: "closed_won" },
-  { repName: "Sarah Chen", name: "DataSync — Platform Upgrade", amount: 18500, stage: "closed_won" },
-  { repName: "Sarah Chen", name: "CloudNine — New Subscription", amount: 8200, stage: "closed_won" },
-  { repName: "Marcus Johnson", name: "TechFlow — Annual Renewal", amount: 27000, stage: "closed_won" },
-  { repName: "Marcus Johnson", name: "BrightEdge — Expansion Deal", amount: 14800, stage: "closed_won" },
+  {
+    repName: "Sarah Chen",
+    name: "Acme Corp — Enterprise License",
+    amount: 32000,
+    stage: "closed_won",
+  },
+  {
+    repName: "Sarah Chen",
+    name: "DataSync — Platform Upgrade",
+    amount: 18500,
+    stage: "closed_won",
+  },
+  {
+    repName: "Sarah Chen",
+    name: "CloudNine — New Subscription",
+    amount: 8200,
+    stage: "closed_won",
+  },
+  {
+    repName: "Marcus Johnson",
+    name: "TechFlow — Annual Renewal",
+    amount: 27000,
+    stage: "closed_won",
+  },
+  {
+    repName: "Marcus Johnson",
+    name: "BrightEdge — Expansion Deal",
+    amount: 14800,
+    stage: "closed_won",
+  },
   { repName: "Marcus Johnson", name: "NovaStar — Pilot Program", amount: 5500, stage: "pending" },
   { repName: "Priya Patel", name: "Meridian — Full Suite", amount: 41000, stage: "closed_won" },
   { repName: "Priya Patel", name: "Apex Solutions — Add-on", amount: 9750, stage: "closed_won" },
   { repName: "Priya Patel", name: "Vertex Inc — Starter Pack", amount: 3200, stage: "closed_won" },
-  { repName: "James O'Brien", name: "Pinnacle — Enterprise Deal", amount: 38500, stage: "closed_won" },
-  { repName: "James O'Brien", name: "Horizon Labs — Mid-Market", amount: 16200, stage: "closed_won" },
+  {
+    repName: "James O'Brien",
+    name: "Pinnacle — Enterprise Deal",
+    amount: 38500,
+    stage: "closed_won",
+  },
+  {
+    repName: "James O'Brien",
+    name: "Horizon Labs — Mid-Market",
+    amount: 16200,
+    stage: "closed_won",
+  },
   { repName: "James O'Brien", name: "SwiftScale — Growth Plan", amount: 7800, stage: "pending" },
-  { repName: "Aisha Mohammed", name: "Quantum Dynamics — Platform", amount: 29000, stage: "closed_won" },
+  {
+    repName: "Aisha Mohammed",
+    name: "Quantum Dynamics — Platform",
+    amount: 29000,
+    stage: "closed_won",
+  },
   { repName: "Aisha Mohammed", name: "BlueWave — Renewal", amount: 12400, stage: "closed_won" },
   { repName: "Aisha Mohammed", name: "Ember Tech — Starter", amount: 4600, stage: "closed_won" },
-  { repName: "Carlos Rivera", name: "Atlas Group — Enterprise", amount: 45000, stage: "closed_won" },
+  {
+    repName: "Carlos Rivera",
+    name: "Atlas Group — Enterprise",
+    amount: 45000,
+    stage: "closed_won",
+  },
   { repName: "Carlos Rivera", name: "Compass AI — Expansion", amount: 22300, stage: "closed_won" },
   { repName: "Carlos Rivera", name: "Relay Systems — Pilot", amount: 6900, stage: "pending" },
 ];
@@ -332,7 +377,10 @@ export async function seedSampleData(workspaceId: string): Promise<SeedResult> {
     } catch (err) {
       logger.error({ err, workspaceId }, "[SampleData] Seeding failed, rolling back");
       await cleanupSampleData(workspaceId).catch((cleanupErr) => {
-        logger.error({ cleanupErr, workspaceId }, "[SampleData] Cleanup after failed seed also failed");
+        logger.error(
+          { cleanupErr, workspaceId },
+          "[SampleData] Cleanup after failed seed also failed",
+        );
       });
       throw err;
     }
@@ -359,7 +407,10 @@ export async function clearSampleData(workspaceId: string): Promise<ClearResult>
   const removedReps = await Rep.countDocuments({ workspaceId: wsObjectId, isSampleData: true });
   const removedPlans = await Plan.countDocuments({ workspaceId: wsObjectId, isSampleData: true });
   const removedDeals = await Deal.countDocuments({ workspaceId: wsObjectId, isSampleData: true });
-  const removedRuns = await CommissionRun.countDocuments({ workspaceId: wsObjectId, isSampleData: true });
+  const removedRuns = await CommissionRun.countDocuments({
+    workspaceId: wsObjectId,
+    isSampleData: true,
+  });
 
   await cleanupSampleData(workspaceId);
 

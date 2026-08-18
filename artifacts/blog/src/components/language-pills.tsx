@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { Languages } from "lucide-react";
 import type { Translations } from "@/lib/translations";
@@ -39,7 +39,7 @@ export function LanguagePills({ slug, currentLang, availableLanguages, t }: Lang
               href={`/blog/${lang}/${slug}`}
               className={cn(
                 "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm hover:bg-accent transition-colors",
-                isActive && "font-semibold text-primary"
+                isActive && "font-semibold text-primary",
               )}
             >
               <span>{label}</span>

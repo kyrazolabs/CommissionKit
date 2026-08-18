@@ -1,11 +1,13 @@
-import { Sun, Moon, Cloud, LifeBuoy, LoaderCircle, PanelLeftOpen } from "lucide-react";
-import { useTheme } from "@/hooks/use-theme";
-import { useAuth } from "@/hooks/use-auth";
-import { NotificationBell } from "@/components/notification-bell";
-import { LanguageSwitcher } from "@/components/language-switcher";
 import { useIsMutating } from "@tanstack/react-query";
-import { useSyncStore } from "@/hooks/use-sync-store";
+import { Cloud, LifeBuoy, LoaderCircle, Moon, PanelLeftOpen, Sun } from "lucide-react";
+import { useState } from "react";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { NotificationBell } from "@/components/notification-bell";
+import { SupportDialog } from "@/components/support-dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useAuth } from "@/hooks/use-auth";
+import { useSyncStore } from "@/hooks/use-sync-store";
+import { useTheme } from "@/hooks/use-theme";
 import { Analytics } from "@/lib/analytics";
 
 function SyncIndicator() {
@@ -46,9 +48,16 @@ function SyncIndicator() {
   return null;
 }
 
-export function Header({ onToggleMobileSidebar, isMobile }: { onToggleMobileSidebar?: () => void; isMobile?: boolean }) {
+export function Header({
+  onToggleMobileSidebar,
+  isMobile,
+}: {
+  onToggleMobileSidebar?: () => void;
+  isMobile?: boolean;
+}) {
   const { theme, toggle } = useTheme();
   const { user } = useAuth();
+  const [supportOpen, setSupportOpen] = useState(false);
 
   const handleThemeToggle = () => {
     const next = theme === "dark" ? "light" : "dark";
@@ -56,9 +65,7 @@ export function Header({ onToggleMobileSidebar, isMobile }: { onToggleMobileSide
     toggle();
   };
 
-  const initials = user?.email
-    ? user.email.slice(0, 2).toUpperCase()
-    : "??";
+  const initials = user?.email ? user.email.slice(0, 2).toUpperCase() : "??";
   const displayName = user?.email ?? "";
 
   return (
@@ -76,7 +83,9 @@ export function Header({ onToggleMobileSidebar, isMobile }: { onToggleMobileSide
       {/* Logo : width matches sidebar */}
       <a href="/dash" className="flex items-center gap-2">
         <img src="/brand/logo-symbol.svg" alt="CommissionKit Logo" className="h-6" />
-        <span className="text-lg font-bold text-foreground tracking-tight">Commission<span className="text-primary">Kit</span></span>
+        <span className="text-lg font-bold text-foreground tracking-tight">
+          Commission<span className="text-primary">Kit</span>
+        </span>
       </a>
 
       <div className="flex-1" />
@@ -89,13 +98,12 @@ export function Header({ onToggleMobileSidebar, isMobile }: { onToggleMobileSide
         {/* Support */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <a
-              href="mailto:support@commissionkit.co"
+            <button
+              onClick={() => setSupportOpen(true)}
               className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-              title="Contact support"
             >
               <LifeBuoy className="size-4" />
-            </a>
+            </button>
           </TooltipTrigger>
           <TooltipContent side="bottom" align="end">
             Contact support
@@ -108,9 +116,7 @@ export function Header({ onToggleMobileSidebar, isMobile }: { onToggleMobileSide
           className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           title={theme === "dark" ? "Light mode" : "Dark mode"}
         >
-          {theme === "dark"
-            ? <Sun className="size-4" />
-            : <Moon className="size-4" />}
+          {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
         </button>
 
         {/* Language switcher */}
@@ -119,6 +125,8 @@ export function Header({ onToggleMobileSidebar, isMobile }: { onToggleMobileSide
         {/* Live notification bell */}
         <NotificationBell />
       </div>
+
+      <SupportDialog open={supportOpen} onOpenChange={setSupportOpen} />
     </header>
   );
 }

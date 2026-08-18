@@ -22,10 +22,7 @@ function safe(): boolean {
 }
 
 /** Fire a custom Umami event with optional properties. */
-export function trackEvent(
-  name: string,
-  data?: Record<string, string | number | boolean | null>,
-) {
+export function trackEvent(name: string, data?: Record<string, string | number | boolean | null>) {
   if (!safe()) return;
   try {
     window.umami!.track(name, data ?? {});

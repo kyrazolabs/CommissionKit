@@ -1,6 +1,6 @@
-import { describe, test, expect } from "bun:test";
-import { createPaginationState, getPaginationParams, advancePage } from "./pagination";
+import { describe, expect, test } from "bun:test";
 import type { PaginationConfig } from "./config-parser";
+import { advancePage, createPaginationState, getPaginationParams } from "./pagination";
 
 describe("pagination", () => {
   const baseConfig: PaginationConfig = {

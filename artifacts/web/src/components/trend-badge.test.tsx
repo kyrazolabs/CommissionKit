@@ -1,5 +1,5 @@
-import { describe, test, expect, afterEach, mock } from "bun:test";
-import { render, screen, cleanup } from "@testing-library/react";
+import { afterEach, describe, expect, mock, test } from "bun:test";
+import { cleanup, render, screen } from "@testing-library/react";
 import React from "react";
 import { TrendBadge } from "./trend-badge";
 
