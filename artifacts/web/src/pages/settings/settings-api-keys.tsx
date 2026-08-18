@@ -544,14 +544,14 @@ export default function SettingsApiKeys() {
             <p className="text-xs text-muted-foreground">{t("settings.mcp.endpointDescription")}</p>
             <div className="flex items-center gap-2 mt-1">
               <code className="flex-1 rounded-md border border-card-border bg-muted px-3 py-2 text-sm font-mono text-foreground select-all">
-                https://app.commissionkit.co/api/mcp
+                https://commissionkit.co/api/mcp
               </code>
               <Button
                 variant="outline"
                 size="icon"
                 className="shrink-0 size-9"
                 onClick={() => {
-                  navigator.clipboard.writeText("https://app.commissionkit.co/api/mcp");
+                  navigator.clipboard.writeText("https://commissionkit.co/api/mcp");
                   toast.success(t("settings.mcp.configCopied") || "Copied");
                 }}
               >
@@ -572,7 +572,7 @@ export default function SettingsApiKeys() {
                 <code className="text-xs leading-relaxed font-mono text-foreground whitespace-pre">{`{
   "mcpServers": {
     "commissionkit": {
-      "url": "https://app.commissionkit.co/api/mcp",
+      "url": "https://commissionkit.co/api/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_API_KEY"
       }
@@ -586,7 +586,7 @@ export default function SettingsApiKeys() {
                 className="absolute top-3 right-3 h-7 text-xs gap-1.5"
                 onClick={() => {
                   navigator.clipboard.writeText(
-                    `{\n  "mcpServers": {\n    "commissionkit": {\n      "url": "https://app.commissionkit.co/api/mcp",\n      "headers": {\n        "Authorization": "Bearer YOUR_API_KEY"\n      }\n    }\n  }\n}`,
+                    `{\n  "mcpServers": {\n    "commissionkit": {\n      "url": "https://commissionkit.co/api/mcp",\n      "headers": {\n        "Authorization": "Bearer YOUR_API_KEY"\n      }\n    }\n  }\n}`,
                   );
                   toast.success(t("settings.mcp.configCopied") || "Config copied to clipboard");
                 }}
