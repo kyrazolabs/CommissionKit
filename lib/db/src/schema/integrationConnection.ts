@@ -13,7 +13,7 @@ const SyncScheduleSchema = new Schema(
 
 const IntegrationConnectionSchema = new Schema(
   {
-    workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true },
+    workspaceId: { type: Schema.Types.ObjectId, ref: "Workspace", required: true, unique: true },
     connectorName: { type: String, required: true },
     status: {
       type: String,
