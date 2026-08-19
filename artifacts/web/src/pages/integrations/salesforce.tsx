@@ -1,4 +1,4 @@
-import { BadgeCheck, Database, FileText, KeyRound, RefreshCw, Users } from "lucide-react";
+import { BadgeCheck, Cable, Calculator, Database, FileText, KeyRound, RefreshCw, Settings, Users } from "lucide-react";
 import { Analytics } from "@/lib/analytics";
 import { IntegrationPage } from "./integration-page";
 
@@ -66,21 +66,25 @@ export function SalesforceIntegrationPage() {
         steps: [
           {
             title: "Connect",
+            Icon: Cable,
             description:
               "Configure an External Client App with client credentials and API access, then confirm the Salesforce instance URL.",
           },
           {
             title: "Configure",
+            Icon: Settings,
             description:
               "Review users, opportunity stage behavior, payment defaults, and the data included in the workflow.",
           },
           {
             title: "Sync",
+            Icon: RefreshCw,
             description:
               "Run the documented sync process and confirm that the expected reps and opportunities are present.",
           },
           {
             title: "Calculate and review",
+            Icon: Calculator,
             description:
               "Configure the written plan, run calculations, and review results before payout approval.",
           },

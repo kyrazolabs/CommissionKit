@@ -379,11 +379,11 @@ export function CustomIntegrationPage() {
         <section className="py-20 px-4 bg-muted/30">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-10">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
                 Frequently Asked Questions
               </h2>
             </div>
-            <Accordion type="single" collapsible className="w-full">
+            <Accordion type="single" collapsible className="w-full mt-8">
               {FAQ.map((item, i) => (
                 <AccordionItem key={i} value={`item-${i}`}>
                   <AccordionTrigger className="text-left text-sm font-medium text-foreground hover:no-underline">

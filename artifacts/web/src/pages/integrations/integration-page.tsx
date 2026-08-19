@@ -20,6 +20,7 @@ interface IntegrationFeature {
 
 interface IntegrationStep {
   title: string;
+  Icon: any;
   description: string;
 }
 
@@ -191,8 +192,24 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
               </p>
             </div>
             <ol className="grid gap-px overflow-hidden rounded-2xl border border-card-border bg-card md:grid-cols-4">
-              {definition.steps.map((step, index) => (
-                <li key={step.title} className="p-7">
+              {definition.steps.map((step, index) =>  {
+                const Icon = step.Icon;  return (
+                  <div key={index + 1} className="p-8 lg:p-10 bg-card relative overflow-hidden">
+                    <div className="absolute top-4 right-6 text-[72px] font-black text-primary/10 tabular-nums leading-none select-none pointer-events-none">
+                      0{index + 1}
+                    </div>
+                    <div className="flex items-center gap-3 mb-3 relative">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/15 flex items-center justify-center shrink-0">
+                        <Icon className="size-5 text-primary" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-foreground tracking-tight">
+                        {step.title}
+                      </h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed relative">
+                      {step.description}
+                    </p>
+                    {/*<li key={step.title} className="p-7">
                   <span className="text-sm font-bold tabular-nums text-primary">0{index + 1}</span>
                   <h3 className="mt-4 text-lg font-semibold tracking-tight text-foreground">
                     {step.title}
@@ -200,8 +217,10 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
                   <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                     {step.description}
                   </p>
-                </li>
-              ))}
+                </li>*/}
+                  </div>
+                )
+              })}
             </ol>
           </div>
         </section>
@@ -228,7 +247,7 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
                 ))}
               </div>
             </div>
-            <aside className="rounded-xl border border-card-border bg-card p-6">
+            <aside className="flex h-full flex-col rounded-xl border border-card-border bg-card p-6">
               <h3 className="text-lg font-semibold tracking-tight text-foreground">
                 Read the setup documentation
               </h3>
@@ -236,7 +255,7 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
                 The documentation contains the current setup, authentication, mapping, and
                 troubleshooting information for this connector.
               </p>
-              <Button asChild className="mt-6 w-full justify-between">
+              <Button asChild className="mt-auto w-full justify-between">
                 <a href={definition.docsHref} target="_blank" rel="noreferrer">
                   {definition.docsLabel}
                   <ArrowRight className="size-4" />
@@ -254,7 +273,7 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
             <Accordion
               type="single"
               collapsible
-              className="mt-8 rounded-xl border border-card-border bg-card px-5"
+              className="w-full mt-8"
             >
               {definition.faqs.map((faq, index) => (
                 <AccordionItem key={faq.question} value={`faq-${index}`}>

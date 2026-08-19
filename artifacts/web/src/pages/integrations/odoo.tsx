@@ -1,4 +1,4 @@
-import { Database, FileCheck2, FileText, RefreshCw, Users, WalletCards } from "lucide-react";
+import { Cable, Calculator, Database, FileCheck2, FileText, RefreshCw, Settings, Users, WalletCards } from "lucide-react";
 import { Analytics } from "@/lib/analytics";
 import { IntegrationPage } from "./integration-page";
 
@@ -66,21 +66,25 @@ export function OdooIntegrationPage() {
         steps: [
           {
             title: "Connect",
+            Icon: Cable,
             description:
               "Provide the Odoo connection details required by the documented setup flow.",
           },
           {
             title: "Configure",
+            Icon: Settings,
             description:
               "Review source fields, stage behavior, payment defaults, and the users included in the workflow.",
           },
           {
             title: "Sync",
+            Icon: RefreshCw,
             description:
               "Run the documented sync process and confirm that the expected reps and deals are present.",
           },
           {
             title: "Calculate and review",
+            Icon: Calculator,
             description:
               "Configure the written plan, run calculations, and review results before payout approval.",
           },

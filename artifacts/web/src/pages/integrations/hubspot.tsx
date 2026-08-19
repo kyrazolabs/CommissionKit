@@ -1,4 +1,4 @@
-import { BadgeCheck, Database, FileText, KeyRound, RefreshCw, Users } from "lucide-react";
+import { BadgeCheck, Cable, Calculator, Database, FileText, KeyRound, RefreshCw, Settings, Users } from "lucide-react";
 import { Analytics } from "@/lib/analytics";
 import { IntegrationPage } from "./integration-page";
 
@@ -66,21 +66,25 @@ export function HubspotIntegrationPage() {
         steps: [
           {
             title: "Connect",
+            Icon: Cable,
             description:
               "Create a Service Key or Legacy App access token, then confirm the required HubSpot scopes.",
           },
           {
             title: "Configure",
+            Icon: Settings,
             description:
               "Review owners, pipeline-stage behavior, payment defaults, and the data included in the workflow.",
           },
           {
             title: "Sync",
+            Icon: RefreshCw,
             description:
               "Run the documented sync process and confirm that the expected reps and deals are present.",
           },
           {
             title: "Calculate and review",
+            Icon: Calculator,
             description:
               "Configure the written plan, run calculations, and review results before payout approval.",
           },
