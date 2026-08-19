@@ -1,90 +1,108 @@
 import { useEffect } from "react";
+import { canonicalUrl, getRobotsDirective, getSeoRoute, SITE_URL } from "@/lib/seo";
 
 interface PageMeta {
-  title: string;
+  title?: string;
   description?: string;
-  /** Robots directive, defaults to "noindex, nofollow" for authenticated pages */
+  /** Use an explicit directive only when the route is not represented in the shared registry. */
   robots?: string;
-  /** SEO keywords, comma-separated */
+  /** SEO keywords, comma-separated. */
   keywords?: string;
+  /** Canonical path override for a route that is not represented in the shared registry. */
+  canonicalPath?: string;
 }
 
 const APP_NAME = "CommissionKit";
 const DEFAULT_DESCRIPTION =
-  "Automate sales commissions for your team. Track reps, deals, and payouts — all in one place.";
+  "Manage sales commissions with plans, deal tracking, calculation runs, payout workflows, and a rep earnings portal.";
+
+function upsertMeta(selector: string, attribute: "name" | "property", value: string) {
+  let element = document.querySelector<HTMLMetaElement>(selector);
+  if (!element) {
+    element = document.createElement("meta");
+    element.setAttribute(attribute, value);
+    document.head.appendChild(element);
+  }
+  return element;
+}
+
+function upsertCanonical(href: string) {
+  let element = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+  if (!element) {
+    element = document.createElement("link");
+    element.rel = "canonical";
+    document.head.appendChild(element);
+  }
+  element.href = href;
+}
 
 /**
- * Imperatively updates <title>, meta description, and robots tag for
- * client-rendered pages. Use this in every page component.
+ * Keeps client-side metadata aligned with the prerendered page state. Public SEO
+ * routes are defined centrally in `@/lib/seo`; unknown routes remain noindex.
  */
-export function usePageMeta({ title, description, robots, keywords }: PageMeta) {
-  const isStaging = import.meta.env.VITE_STAGING === "true";
-  const defaultRobots = isStaging ? "noindex, nofollow" : "noindex, nofollow";
-  const resolvedRobots = robots ?? defaultRobots;
-  const finalRobots = isStaging ? resolvedRobots.replace(/index/g, "noindex") : resolvedRobots;
+export function usePageMeta({
+  title,
+  description,
+  robots,
+  keywords,
+  canonicalPath,
+}: PageMeta = {}) {
+  const location = typeof window === "undefined" ? "/" : window.location.pathname;
+  const route = getSeoRoute(location);
+  const resolvedTitle = title ?? route.title;
+  const resolvedDescription = description ?? route.description ?? DEFAULT_DESCRIPTION;
+  const resolvedKeywords = keywords ?? route.keywords;
+  const resolvedCanonical = canonicalPath ? `${SITE_URL}${canonicalPath}` : canonicalUrl(location);
+  const resolvedRobots = robots ?? getRobotsDirective(route.status);
 
   useEffect(() => {
-    // Title
     const fullTitle =
-      title === APP_NAME || title.endsWith(` — ${APP_NAME}`) ? title : `${title} — ${APP_NAME}`;
+      resolvedTitle === APP_NAME || resolvedTitle.endsWith(` — ${APP_NAME}`)
+        ? resolvedTitle
+        : `${resolvedTitle} — ${APP_NAME}`;
     document.title = fullTitle;
 
-    // Meta description
-    let descEl = document.querySelector<HTMLMetaElement>('meta[name="description"]');
-    if (!descEl) {
-      descEl = document.createElement("meta");
-      descEl.setAttribute("name", "description");
-      document.head.appendChild(descEl);
-    }
-    descEl.setAttribute("content", description ?? DEFAULT_DESCRIPTION);
+    const descriptionElement = upsertMeta('meta[name="description"]', "name", "description");
+    descriptionElement.setAttribute("content", resolvedDescription);
 
-    // Robots
-    let robotsEl = document.querySelector<HTMLMetaElement>('meta[name="robots"]');
-    if (!robotsEl) {
-      robotsEl = document.createElement("meta");
-      robotsEl.setAttribute("name", "robots");
-      document.head.appendChild(robotsEl);
-    }
-    robotsEl.setAttribute("content", finalRobots);
+    const robotsElement = upsertMeta('meta[name="robots"]', "name", "robots");
+    robotsElement.setAttribute("content", resolvedRobots);
 
-    // OG title
-    let ogTitleEl = document.querySelector<HTMLMetaElement>('meta[property="og:title"]');
-    if (!ogTitleEl) {
-      ogTitleEl = document.createElement("meta");
-      ogTitleEl.setAttribute("property", "og:title");
-      document.head.appendChild(ogTitleEl);
-    }
-    ogTitleEl.setAttribute("content", fullTitle);
+    const ogTitleElement = upsertMeta('meta[property="og:title"]', "property", "og:title");
+    ogTitleElement.setAttribute("content", fullTitle);
 
-    // OG description
-    let ogDescEl = document.querySelector<HTMLMetaElement>('meta[property="og:description"]');
-    if (!ogDescEl) {
-      ogDescEl = document.createElement("meta");
-      ogDescEl.setAttribute("property", "og:description");
-      document.head.appendChild(ogDescEl);
-    }
-    ogDescEl.setAttribute("content", description ?? DEFAULT_DESCRIPTION);
+    const ogDescriptionElement = upsertMeta(
+      'meta[property="og:description"]',
+      "property",
+      "og:description",
+    );
+    ogDescriptionElement.setAttribute("content", resolvedDescription);
 
-    // Keywords
-    if (keywords !== undefined) {
-      let kwEl = document.querySelector<HTMLMetaElement>('meta[name="keywords"]');
-      if (!kwEl) {
-        kwEl = document.createElement("meta");
-        kwEl.setAttribute("name", "keywords");
-        document.head.appendChild(kwEl);
-      }
-      kwEl.setAttribute("content", keywords);
+    const ogUrlElement = upsertMeta('meta[property="og:url"]', "property", "og:url");
+    ogUrlElement.setAttribute("content", resolvedCanonical);
+
+    const twitterTitleElement = upsertMeta('meta[name="twitter:title"]', "name", "twitter:title");
+    twitterTitleElement.setAttribute("content", fullTitle);
+
+    const twitterDescriptionElement = upsertMeta(
+      'meta[name="twitter:description"]',
+      "name",
+      "twitter:description",
+    );
+    twitterDescriptionElement.setAttribute("content", resolvedDescription);
+
+    if (resolvedKeywords) {
+      const keywordsElement = upsertMeta('meta[name="keywords"]', "name", "keywords");
+      keywordsElement.setAttribute("content", resolvedKeywords);
+
+      const twitterKeywordsElement = upsertMeta(
+        'meta[name="twitter:keywords"]',
+        "name",
+        "twitter:keywords",
+      );
+      twitterKeywordsElement.setAttribute("content", resolvedKeywords);
     }
 
-    // Twitter keywords
-    if (keywords !== undefined) {
-      let twKwEl = document.querySelector<HTMLMetaElement>('meta[name="twitter:keywords"]');
-      if (!twKwEl) {
-        twKwEl = document.createElement("meta");
-        twKwEl.setAttribute("name", "twitter:keywords");
-        document.head.appendChild(twKwEl);
-      }
-      twKwEl.setAttribute("content", keywords);
-    }
-  }, [title, description, finalRobots, keywords]);
+    upsertCanonical(resolvedCanonical);
+  }, [resolvedCanonical, resolvedDescription, resolvedKeywords, resolvedRobots, resolvedTitle]);
 }
