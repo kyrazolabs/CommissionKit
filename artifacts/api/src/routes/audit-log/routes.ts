@@ -117,7 +117,7 @@ router.get(
     const safeFilename = month && /^\d{4}-\d{2}$/.test(month) ? `audit-log-${month}` : "audit-log";
 
     if (isPdf) {
-      const { default: jsPDF } = await import("jspdf");
+      const { jsPDF } = await import("jspdf");
       const { default: autoTable } = await import("jspdf-autotable");
 
       const doc = new jsPDF();
