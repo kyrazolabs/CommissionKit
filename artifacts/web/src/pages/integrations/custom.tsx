@@ -6,10 +6,10 @@ import {
   FileText,
   Filter,
   Layers,
-  Plug,
   RefreshCw,
   Settings,
   Shield,
+  Unplug,
   Zap,
 } from "lucide-react";
 import {
@@ -28,17 +28,17 @@ const FEATURES = [
   {
     icon: FileText,
     title: "JSONPath Field Mapping",
-    desc: "Map any API response shape to CommissionKit's standard format using JSONPath. Support for nested objects, arrays, and keys containing dots. No code required.",
+    desc: "Map supported JSON response fields to CommissionKit's standard format using JSONPath, including nested objects, arrays, and keys containing dots.",
   },
   {
     icon: Shield,
-    title: "Four Auth Methods",
-    desc: "Choose API Key (custom header), Bearer Token, HTTP Basic Auth, or OAuth 2.0 Client Credentials with automatic token refresh. Works with virtually any authentication scheme.",
+    title: "Supported Auth Methods",
+    desc: "Configure API Key, Bearer Token, HTTP Basic Auth, or OAuth 2.0 Client Credentials. Confirm that your API supports the selected authentication method.",
   },
   {
     icon: ArrowLeftRight,
     title: "Three Pagination Strategies",
-    desc: "Support for offset, cursor, and page-based pagination. Configurable limit parameters, cursor paths, and page sizes. Handles APIs of any scale.",
+    desc: "Configure offset, cursor, or page-based pagination, including limit parameters, cursor paths, and page sizes.",
   },
   {
     icon: Calculator,
@@ -48,7 +48,7 @@ const FEATURES = [
   {
     icon: Zap,
     title: "Smart Response Detection",
-    desc: "The connector auto-detects paginated response arrays. Checks common wrapper patterns (data, results, items, records) automatically. Most APIs work without any responsePath configuration.",
+    desc: "The connector checks common response wrappers such as data, results, items, and records. Configure a response path when your API uses a different structure.",
   },
   {
     icon: Filter,
@@ -80,14 +80,14 @@ const STEPS = [
     num: "04",
     Icon: Calculator,
     title: "Calculate",
-    desc: "Plans run against synced data. Reps see earnings update in real time. Change mappings as your API evolves.",
+    desc: "Run plans against synced data, then review results before payout approval. Update mappings as your API evolves.",
   },
 ];
 
 const FAQ = [
   {
-    q: "What kind of APIs does this work with?",
-    a: "Any REST API that returns JSON responses. The connector supports GET and POST methods, all major auth types, and three pagination strategies (offset, cursor, page).",
+    q: "Which REST APIs are compatible?",
+    a: "The connector is designed for JSON REST APIs that fit its supported GET or POST methods, authentication options, field mappings, and pagination strategies. Validate your endpoint and response structure during setup.",
   },
   {
     q: "Do I need to know JSONPath?",
@@ -106,12 +106,12 @@ const FAQ = [
     a: "Yes. Configure separate endpoints, field mappings, and sync schedules for each entity type. Enable or disable either entity independently — sync only deals if you manage reps manually.",
   },
   {
-    q: "Is my data secure?",
-    a: "All data is encrypted in transit (TLS 1.3) and at rest. We never store your API credentials — only encrypted tokens that you can revoke at any time.",
+    q: "How is API access configured?",
+    a: "Choose a supported authentication method and use credentials with only the permissions your API workflow requires. Review the current setup and security documentation before connecting a production source.",
   },
   {
-    q: "What happens if the sync fails?",
-    a: "Failed syncs are retried automatically with exponential backoff. You get an email notification if a sync fails three times in a row. No data is lost — the next successful sync picks up where it left off.",
+    q: "What happens if a sync fails?",
+    a: "Review the integration log and connector configuration, correct the issue, and retry the sync. Validate the records returned after a successful sync before using them in calculations.",
   },
 ];
 
@@ -119,7 +119,7 @@ export function CustomIntegrationPage() {
   usePageMeta({
     title: "Custom REST API Integration — CommissionKit",
     description:
-      "Connect any ERP or CRM to CommissionKit via REST API. Configure field mappings with JSONPath, choose your auth method, and sync reps and deals automatically. No code needed. Start your free trial.",
+      "Connect a compatible JSON REST source to CommissionKit. Configure supported authentication, JSONPath field mappings, pagination, and rep or deal synchronization. Start a 14-day free trial.",
     keywords:
       "custom commission integration, REST API commission tracking, connect any CRM to commission software, custom commission software integration, no-code commission connector, JSONPath commission mapping",
     robots: "index, follow",
@@ -137,25 +137,44 @@ export function CustomIntegrationPage() {
               Custom REST API
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-foreground tracking-tight mb-6">
-              Connect Any REST API to CommissionKit
+              Connect a compatible REST API to CommissionKit
             </h1>
             <p className="text-xl md:text-2xl font-semibold text-primary mb-4">
-              No-Code Commission Integration
+              Configurable commission data integration
             </p>
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
-              CommissionKit's custom connector connects to any ERP or CRM that exposes a REST API.
-              Configure authentication, map fields with JSONPath, set up pagination — all without
-              writing a line of code.
+              Use CommissionKit's custom connector to configure authentication, map fields with
+              JSONPath, and set up pagination for a compatible JSON REST API.
             </p>
-            <p className="text-sm mx-auto text-muted-foreground max-w-xl mb-4">
-              Unlike commission tools locked to specific CRMs, the Custom REST connector works with
-              any system that has an API — internal tools, legacy ERPs, or niche CRMs that other
-              platforms ignore.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            {/*<p className="text-sm mx-auto text-muted-foreground max-w-xl mb-4">
+              Use this route when a pre-built connector is not available. Confirm that your API
+              endpoints, authentication method, and response format fit the connector's supported
+              configuration.
+            </p>*/}
+            <div className="mx-auto mt-8 flex w-fit items-center gap-5 px-7 py-5">
+              <div className="flex flex-col items-center gap-2">
+                {/*<div className="size-16 rounded-xl flex items-center justify-center">
+                  <Webhook className="size-16 text-muted-foreground " />
+                </div>*/}
+                <img src="/brand/custom-symbol.svg" alt="API" className="size-16 object-contain " />
+                {/*<span className="text-xs font-medium text-muted-foreground">{definition.name}</span>*/}
+              </div>
+              <div className="relative flex h-15 w-20 items-center justify-center">
+                <Unplug className="size-6 rotate-45 text-primary" aria-hidden="true" />
+
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs font-medium text-muted-foreground whitespace-nowrap">
+                  Data sync
+                </span>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <img src="/brand/logo-symbol.svg" alt="CommissionKit" className="size-16 " />
+                {/*<span className="text-xs font-medium text-muted-foreground">CKit</span>*/}
+              </div>
+            </div>
+            <div className="mt-9 flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild className="font-semibold shadow-sm">
                 <a href="/register" onClick={() => Analytics.integrationCustomTrialClick("hero")}>
-                  Start Free Trial
+                  Start free trial
                   <ArrowRight className="size-4 ml-2" />
                 </a>
               </Button>
@@ -163,57 +182,37 @@ export function CustomIntegrationPage() {
                 <a href="#how-it-works">See How It Works</a>
               </Button>
             </div>
-
-            {/* Connector visual */}
-            <div className="mt-16 flex justify-center">
-              <div className="relative inline-flex items-center gap-6 px-8 py-6 rounded-2xl border border-card-border bg-card">
-                <div className="flex flex-col items-center gap-2">
-                  <div className="size-12 rounded-xl bg-muted flex items-center justify-center">
-                    <Plug className="size-6 text-muted-foreground" />
-                  </div>
-                  <span className="text-xs font-medium text-muted-foreground">Your REST API</span>
-                </div>
-                <div className="flex flex-col items-center gap-1">
-                  <Cable className="size-6 text-primary" />
-                  <span className="text-[10px] font-medium text-primary">Sync</span>
-                </div>
-                <div className="flex flex-col items-center gap-2">
-                  <img src="/brand/logo-symbol.svg" alt="CommissionKit" className="w-12 h-12" />
-                  <span className="text-xs font-medium text-muted-foreground">CommissionKit</span>
-                </div>
-              </div>
-            </div>
           </div>
         </section>
 
         {/* Problem Statement */}
-        <section className="py-20 px-4 bg-muted/30">
+        <section className="border-y border-card-border bg-muted/30  py-20 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-14">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight mb-4">
-                Your ERP or CRM Does Not Have a Pre-Built Connector
+                Need to use a data source without a pre-built connector?
               </h2>
               <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-                Generic integrations break on real data. Building a custom integration costs
-                thousands and requires ongoing maintenance. There is a better way.
+                A configurable REST connection can help when a pre-built connector is unavailable.
+                Review the supported options before choosing an implementation path.
               </p>
             </div>
             <div className="grid gap-6 md:grid-cols-3">
               {[
                 {
                   icon: Zap,
-                  title: "No Native Connector Available",
-                  desc: "Your ERP or CRM does not have a pre-built CommissionKit connector. You are stuck with manual CSV exports and spreadsheet formulas every month.",
+                  title: "No pre-built connector available",
+                  desc: "Use a configurable REST connection when your source is not covered by a CommissionKit connector.",
                 },
                 {
                   icon: Shield,
-                  title: "Custom Integrations Cost Thousands",
-                  desc: "Building a custom integration from scratch means hiring developers, managing API auth, handling pagination edge cases, and maintaining it as your API changes.",
+                  title: "Avoid a one-off build where possible",
+                  desc: "A custom build can require development and ongoing maintenance. The connector provides supported configuration options for eligible APIs.",
                 },
                 {
                   icon: Layers,
-                  title: "One-Size-Fits-All Does Not Fit",
-                  desc: "Your sales data is structured differently from everyone else's. Custom fields, nested objects, micros-format amounts — generic connectors break on your real data.",
+                  title: "Map your data model",
+                  desc: "Configure source fields, nested values, status mappings, and supported value conversions for your workflow.",
                 },
               ].map((item) => {
                 const Icon = item.icon;
@@ -241,10 +240,11 @@ export function CustomIntegrationPage() {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-14">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight mb-4">
-                What the Custom REST Connector Does
+                Supported connector configuration
               </h2>
               <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-                Six capabilities that make any REST API work with CommissionKit.
+                Configure supported authentication, field-mapping, status, and pagination options
+                for your API.
               </p>
             </div>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -270,14 +270,15 @@ export function CustomIntegrationPage() {
         </section>
 
         {/* How It Works */}
-        <section id="how-it-works" className="py-20 px-4 bg-muted/30">
+        <section id="how-it-works" className="border-y border-card-border bg-muted/30 py-20 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-14">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight mb-4">
-                Start in Under 30 Minutes
+                Set up your custom REST connection
               </h2>
               <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-                Four steps from zero to live commission data from any REST API.
+                Configure the connection and mapping, then validate returned records before using
+                them in your commission workflow.
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-px bg-border/60 border border-border/60 rounded-2xl overflow-hidden shadow-sm">
@@ -307,28 +308,29 @@ export function CustomIntegrationPage() {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-14">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight mb-4">
-                Skip the Custom Development Project
+                Compare configuration with a custom build
               </h2>
               <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-                The math on the custom REST connector versus a developer-built integration.
+                The right approach depends on your API, data model, security requirements, and
+                internal operating process.
               </p>
             </div>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
               {[
                 {
-                  stat: "Zero",
-                  label: "custom code required",
-                  note: "Configure and go",
+                  stat: "No code",
+                  label: "for supported configuration",
+                  note: "Configuration is still required",
                 },
                 {
-                  stat: "Any API",
-                  label: "REST endpoint supported",
-                  note: "JSON responses",
+                  stat: "JSON REST",
+                  label: "source format",
+                  note: "Validate endpoint compatibility",
                 },
                 {
                   stat: "4 auth",
                   label: "methods supported",
-                  note: "API Key to OAuth 2.0",
+                  note: "API Key through OAuth 2.0",
                 },
                 {
                   stat: "3 pagination",
@@ -349,14 +351,13 @@ export function CustomIntegrationPage() {
               ))}
             </div>
             <p className="text-center text-sm text-muted-foreground">
-              A typical 20-rep team can save{" "}
-              <span className="font-semibold text-foreground">$1,500–$3,000/month</span> in finance
-              team labor. That can pay for the tool twice over.
+              The custom connector is suited to teams whose API fits these supported configuration
+              options. Validate the connection and source data before using results in your
+              commission workflow.
             </p>
             <p className="text-xs text-muted-foreground mt-4">
-              Savings are estimated based on typical finance ops labor costs and time studies from
-              spreadsheet-based commission processes. Actual results vary by team size and process
-              complexity.
+              Implementation effort varies by API design, mapping requirements, security controls,
+              and the operating process around commission approvals.
             </p>
           </div>
         </section>
@@ -366,24 +367,26 @@ export function CustomIntegrationPage() {
           <div className="max-w-5xl mx-auto">
             <div className="bg-primary/5 border border-primary/10 rounded-lg p-4 text-sm">
               <p className="text-muted-foreground">
-                <span className="font-medium text-foreground">Works with any REST API.</span> The
-                connector supports Bearer tokens, API keys, and Basic Auth. JSONPath mappings let
-                you pull from any response structure. Pagination handles offset, cursor, and
-                page-based APIs. $div compute fields convert microservices to dollars automatically.
+                <span className="font-medium text-foreground">
+                  Works with supported JSON REST API patterns.
+                </span>{" "}
+                Configure Bearer tokens, API keys, Basic Auth, or OAuth 2.0 Client Credentials; map
+                supported response fields with JSONPath; and choose offset, cursor, or page-based
+                pagination. Use $div fields when a mapped numeric value needs division.
               </p>
             </div>
           </div>
         </section>
 
         {/* FAQ */}
-        <section className="py-20 px-4 bg-muted/30">
+        <section className="border-y border-card-border bg-muted/30 py-20 px-4">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-10">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
                 Frequently Asked Questions
               </h2>
             </div>
-            <Accordion type="single" collapsible className="w-full">
+            <Accordion type="single" collapsible className="w-full mt-8">
               {FAQ.map((item, i) => (
                 <AccordionItem key={i} value={`item-${i}`}>
                   <AccordionTrigger className="text-left text-sm font-medium text-foreground hover:no-underline">
@@ -414,19 +417,20 @@ export function CustomIntegrationPage() {
         <section className="py-24 px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight mb-4">
-              Ready to Connect Your API?
+              Ready to configure a custom REST connection?
             </h2>
             <p className="text-base md:text-lg text-muted-foreground mb-8">
-              Configure your custom REST connector in under 30 minutes. Your first 14 days are free.
+              Start a free trial to configure and validate a compatible source before using it in
+              your commission workflow.
             </p>
             <Button asChild className="font-semibold shadow-sm">
               <a href="/register" onClick={() => Analytics.integrationCustomTrialClick("bottom")}>
-                Start Free Trial
+                Start free trial
                 <ArrowRight className="size-4 ml-2" />
               </a>
             </Button>
             <p className="mt-4 text-xs text-muted-foreground">
-              No credit card required. 3 reps, unlimited deals.
+              14-day trial. Configure your connection when you are ready.
             </p>
           </div>
         </section>

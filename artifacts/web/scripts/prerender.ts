@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { prerenderRoutes } from "../src/lib/seo";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -41,11 +42,10 @@ function injectMeta(
     )
     .replace(
       /<link rel="canonical"[^>]*>/,
-      `<!-- Prerender: verified static HTML served for this route -->
-    <link rel="canonical" href="${meta.canonical}">`,
+      `<!-- Prerender: verified static HTML served for this route -->\n    <link rel="canonical" href="${meta.canonical}">`,
     )
     .replace(
-      /<link rel="alternate" hreflang="([^"]+)" href="[^"]*" ?\/?>/g,
+      /<link rel="alternate" hreflang="([^"\s]+)" href="[^"]*" ?\/?>/g,
       `<link rel="alternate" hreflang="$1" href="${meta.canonical}">`,
     )
     .replace(
@@ -53,18 +53,17 @@ function injectMeta(
       `<meta property="og:url" content="${meta.canonical}">`,
     );
 
-  // Keywords: replace existing or inject before </head>
   if (meta.keywords !== undefined) {
-    const kwTag = `<meta name="keywords" content="${meta.keywords}" />`;
-    result = result.replace(/<meta name="keywords"[^>]*\/?>/, kwTag);
-    if (!result.includes(`name="keywords"`)) {
-      result = result.replace("</head>", `  ${kwTag}\n</head>`);
+    const keywordsTag = `<meta name="keywords" content="${meta.keywords}" />`;
+    result = result.replace(/<meta name="keywords"[^>]*\/?>/, keywordsTag);
+    if (!result.includes('name="keywords"')) {
+      result = result.replace("</head>", `  ${keywordsTag}\n</head>`);
     }
 
-    const twKwTag = `<meta name="twitter:keywords" content="${meta.keywords}" />`;
-    result = result.replace(/<meta name="twitter:keywords"[^>]*\/?>/, twKwTag);
-    if (!result.includes(`name="twitter:keywords"`)) {
-      result = result.replace("</head>", `  ${twKwTag}\n</head>`);
+    const twitterKeywordsTag = `<meta name="twitter:keywords" content="${meta.keywords}" />`;
+    result = result.replace(/<meta name="twitter:keywords"[^>]*\/?>/, twitterKeywordsTag);
+    if (!result.includes('name="twitter:keywords"')) {
+      result = result.replace("</head>", `  ${twitterKeywordsTag}\n</head>`);
     }
   }
 
@@ -83,67 +82,32 @@ async function run() {
     throw new Error(`Template index.html not found at: ${templatePath}`);
   }
 
-  // 1. Read the original Vite-built template into memory
   const originalTemplate = fs.readFileSync(templatePath, "utf-8");
-
-  // 2. Save a copy as the SPA fallback (app.html) — must be the ORIGINAL template
   fs.writeFileSync(appPath, originalTemplate, "utf-8");
   console.log("[Prerender] Copied SPA fallback to app.html");
 
-  // 3. Load the compiled SSR entry-server bundle
   if (!fs.existsSync(serverEntryPath)) {
     throw new Error(`Compiled server entry not found at: ${serverEntryPath}`);
   }
   const { render } = await import(serverEntryPath);
 
-  // 4. Pre-render indexable routes — always base off the ORIGINAL in-memory template
-  const routes = [
-    "/",
-    "/home",
-    "/features",
-    "/solutions",
-    "/pricing",
-    "/calculator",
-    "/contact",
-    "/privacy",
-    "/terms",
-    "/security",
-    "/integrations/odoo",
-    "/integrations/hubspot",
-    "/integrations/salesforce",
-    "/integrations/custom",
-    "/portal",
-    "/careers",
-  ];
-
-  for (const route of routes) {
+  for (const route of prerenderRoutes) {
     const { html, meta } = render(route);
-
-    // Start fresh from the original template (never mutate the shared base)
     let output = originalTemplate;
-
-    // Inject route-specific meta tags into <head>
     output = injectMeta(output, meta);
-
-    // Inject SSR body into <div id="root">
     output = output.replace(`<div id="root"></div>`, `<div id="root">${html}</div>`);
 
-    // Write the pre-rendered HTML to the route path
     const outputPath =
       route === "/" ? templatePath : path.join(distDir, route.replace(/^\//, ""), "index.html");
-    const outputDir = path.dirname(outputPath);
-    fs.mkdirSync(outputDir, { recursive: true });
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
     fs.writeFileSync(outputPath, output, "utf-8");
     console.log(`[Prerender] Pre-rendered ${route} → ${outputPath}`);
-    console.log(
-      `[Prerender]   title: ${meta.title}, canonical: ${meta.canonical}, robots: ${meta.robots}`,
-    );
   }
 
-  console.log("[Prerender] Prerender complete.");
+  console.log(`[Prerender] Prerender complete for ${prerenderRoutes.length} routes.`);
 }
 
-run().catch((err) => {
-  console.error("[Prerender] Failed to pre-render:", err);
+run().catch((error) => {
+  console.error("[Prerender] Failed to pre-render:", error);
   process.exit(1);
 });

@@ -12,6 +12,16 @@ interface PageProps {
   searchParams: Promise<{ page?: string }>;
 }
 
+const blogIndexTitles: Record<string, string> = {
+  en: "Sales Commission Management Insights",
+  ar: "رؤى إدارة عمولات المبيعات",
+  de: "Einblicke in die Vertriebsprovisionsverwaltung",
+  es: "Ideas sobre gestión de comisiones de ventas",
+  fr: "Conseils sur la gestion des commissions commerciales",
+  hi: "सेल्स कमीशन प्रबंधन की जानकारी",
+  pt: "Ideias sobre gestão de comissões de vendas",
+};
+
 export const dynamic = "force-static";
 
 export async function generateStaticParams() {
@@ -36,10 +46,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     hi: "hi_IN",
   };
   const locale = localeMap[lang] ?? "en_US";
+  const blogIndexTitle = blogIndexTitles[lang] ?? blogIndexTitles.en;
 
   return {
     metadataBase: new URL(baseUrl),
-    title: dict.blog,
+    title: blogIndexTitle,
     description: dict.blogDescription,
     keywords: [
       "commission management",
@@ -55,7 +66,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       siteName: "CommissionKit",
       locale,
       url: `${baseUrl}/blog/${lang}`,
-      title: dict.blog,
+      title: blogIndexTitle,
       description: dict.blogDescription,
       images: [
         {
@@ -70,7 +81,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       card: "summary_large_image",
       site: "@commissionkit",
       creator: "@commissionkit",
-      title: dict.blog,
+      title: blogIndexTitle,
       description: dict.blogDescription,
       images: [`${baseUrl}/blog/og.png`],
     },

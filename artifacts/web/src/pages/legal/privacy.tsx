@@ -16,7 +16,7 @@ const SECTIONS: LegalSection[] = [
     id: "who-we-are",
     title: "Who We Are",
     paragraphs: [
-      "CommissionKit is a commission management platform operated by KYRAZO LLC, a company registered in the United States of America. Throughout this policy, \"CommissionKit,\" \"we,\" \"us,\" and \"our\" refer to KYRAZO LLC.",
+      'CommissionKit is a commission management platform operated by KYRAZO LLC, a company registered in the United States of America. Throughout this policy, "CommissionKit," "we," "us," and "our" refer to KYRAZO LLC.',
       "KYRAZO LLC acts as the data controller for the personal information collected and processed through the Service. If you have questions about this policy or how we handle your data, contact us at privacy@commissionkit.co.",
     ],
   },
@@ -38,7 +38,9 @@ const SECTIONS: LegalSection[] = [
   {
     id: "how-we-use",
     title: "How We Use Your Information",
-    paragraphs: ["We use the information we collect to operate, maintain, and improve the Service."],
+    paragraphs: [
+      "We use the information we collect to operate, maintain, and improve the Service.",
+    ],
     bullets: [
       "Provide and operate the Service, including running commission calculations and generating payouts.",
       "Sync data from connected integrations such as HubSpot, Salesforce, and Odoo.",
@@ -154,7 +156,8 @@ const SECTIONS: LegalSection[] = [
 export function PrivacyPage() {
   usePageMeta({
     title: "Privacy Policy",
-    description: "CommissionKit (KYRAZO LLC) privacy policy — how we collect, use, and protect your data.",
+    description:
+      "CommissionKit (KYRAZO LLC) privacy policy — how we collect, use, and protect your data.",
     robots: "index, follow",
   });
 

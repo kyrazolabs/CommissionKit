@@ -77,7 +77,7 @@ export function Pricing() {
   const [payYearly, setPayYearly] = useState(false);
 
   return (
-    <section className="py-24 bg-muted/30 border-b border-border/60" id="pricing">
+    <section className="py-24 bg-muted/30 border-y border-border/60" id="pricing">
       <div ref={ref} className="max-w-6xl mx-auto px-6">
         {/* Limited-time launch offer */}
         <div className="mb-8 max-w-5xl mx-auto" style={fadeIn(inView)}>
@@ -197,11 +197,7 @@ export function Pricing() {
                   className={`w-full font-bold ${plan.highlighted ? "shadow-sm" : ""}`}
                   onClick={() => Analytics.landingPricingCTAClick(plan.id)}
                 >
-                  {plan.id === "pro"
-                    ? "Contact Sales"
-                    : plan.highlighted
-                      ? "Start Free Trial"
-                      : "Get Started"}
+                  {plan.id === "pro" ? "Contact sales" : "Start free trial"}
                 </Button>
               </div>
             );

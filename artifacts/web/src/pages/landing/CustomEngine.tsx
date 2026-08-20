@@ -5,7 +5,7 @@ export function CustomEngine() {
   const { ref, inView } = useInView();
 
   return (
-    <section ref={ref} className="py-24 border-b border-border/60">
+    <section ref={ref} className="py-24">
       <div className="max-w-6xl mx-auto px-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12" style={fadeIn(inView)}>
