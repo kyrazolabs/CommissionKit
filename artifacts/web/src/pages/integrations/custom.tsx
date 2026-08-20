@@ -10,6 +10,8 @@ import {
   RefreshCw,
   Settings,
   Shield,
+  Unplug,
+  Webhook,
   Zap,
 } from "lucide-react";
 import {
@@ -146,12 +148,39 @@ export function CustomIntegrationPage() {
               Use CommissionKit's custom connector to configure authentication, map fields with
               JSONPath, and set up pagination for a compatible JSON REST API.
             </p>
-            <p className="text-sm mx-auto text-muted-foreground max-w-xl mb-4">
+            {/*<p className="text-sm mx-auto text-muted-foreground max-w-xl mb-4">
               Use this route when a pre-built connector is not available. Confirm that your API
               endpoints, authentication method, and response format fit the connector's supported
               configuration.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            </p>*/}
+            <div className="mx-auto mt-8 flex w-fit items-center gap-5 px-7 py-5">
+              <div className="flex flex-col items-center gap-2">
+                {/*<div className="size-16 rounded-xl flex items-center justify-center">
+                  <Webhook className="size-16 text-muted-foreground " />
+                </div>*/}
+                <img
+                  src="/brand/custom-symbol.svg"
+                  alt="API"
+                  className="size-16 object-contain "
+                />
+                {/*<span className="text-xs font-medium text-muted-foreground">{definition.name}</span>*/}
+              </div>
+              <div className="relative flex h-15 w-20 items-center justify-center">
+                  <Unplug
+                    className="size-6 rotate-45 text-primary"
+                    aria-hidden="true"
+                  />
+
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs font-medium text-muted-foreground whitespace-nowrap">
+                    Live Sync
+                  </span>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <img src="/brand/logo-symbol.svg" alt="CommissionKit" className="size-16 " />
+                {/*<span className="text-xs font-medium text-muted-foreground">CKit</span>*/}
+              </div>
+            </div>
+            <div className="mt-9 flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild className="font-semibold shadow-sm">
                 <a href="/register" onClick={() => Analytics.integrationCustomTrialClick("hero")}>
                   Start free trial
@@ -162,31 +191,11 @@ export function CustomIntegrationPage() {
                 <a href="#how-it-works">See How It Works</a>
               </Button>
             </div>
-
-            {/* Connector visual */}
-            <div className="mt-16 flex justify-center">
-              <div className="relative inline-flex items-center gap-6 px-8 py-6 rounded-2xl border border-card-border bg-card">
-                <div className="flex flex-col items-center gap-2">
-                  <div className="size-12 rounded-xl bg-muted flex items-center justify-center">
-                    <Plug className="size-6 text-muted-foreground" />
-                  </div>
-                  <span className="text-xs font-medium text-muted-foreground">Your REST API</span>
-                </div>
-                <div className="flex flex-col items-center gap-1">
-                  <Cable className="size-6 text-primary" />
-                  <span className="text-[10px] font-medium text-primary">Sync</span>
-                </div>
-                <div className="flex flex-col items-center gap-2">
-                  <img src="/brand/logo-symbol.svg" alt="CommissionKit" className="w-12 h-12" />
-                  <span className="text-xs font-medium text-muted-foreground">CommissionKit</span>
-                </div>
-              </div>
-            </div>
           </div>
         </section>
 
         {/* Problem Statement */}
-        <section className="py-20 px-4 bg-muted/30">
+        <section className="border-y border-card-border bg-muted/30  py-20 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-14">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight mb-4">
@@ -270,7 +279,7 @@ export function CustomIntegrationPage() {
         </section>
 
         {/* How It Works */}
-        <section id="how-it-works" className="py-20 px-4 bg-muted/30">
+        <section id="how-it-works" className="border-y border-card-border bg-muted/30 py-20 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-14">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight mb-4">
@@ -379,7 +388,7 @@ export function CustomIntegrationPage() {
         </section>
 
         {/* FAQ */}
-        <section className="py-20 px-4 bg-muted/30">
+        <section className="border-y border-card-border bg-muted/30 py-20 px-4">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-10">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">

@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpenCheck, Cable, CheckCircle2, type LucideIcon } from "lucide-react";
+import { ArrowRight, BookOpenCheck, Cable, CheckCircle2, Unplug, type LucideIcon } from "lucide-react";
 import { JsonLd } from "@/components/seo/json-ld";
 import {
   Accordion,
@@ -100,7 +100,7 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
     <>
       <Navbar />
       <main className="pt-16">
-        <section className="border-b border-card-border bg-muted/30 px-4 py-20 md:py-28">
+        <section className="px-4 py-20 md:py-28">
           <div className="mx-auto max-w-5xl text-center">
             <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
               <Cable className="size-3.5" />
@@ -112,19 +112,28 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
             <p className="mx-auto mt-6 max-w-3xl text-xl leading-relaxed text-foreground">
               {definition.answer}
             </p>
-            <div className="mx-auto mt-8 flex w-fit items-center gap-5 rounded-2xl border border-card-border bg-card px-7 py-5">
+            <div className="mx-auto mt-8 flex w-fit items-center gap-5 px-7 py-5">
               <div className="flex flex-col items-center gap-2">
                 <img
                   src={definition.logoPath}
                   alt={definition.name}
-                  className="size-12 object-contain"
+                  className="size-16 object-contain "
                 />
-                <span className="text-xs font-medium text-muted-foreground">{definition.name}</span>
+                {/*<span className="text-xs font-medium text-muted-foreground">{definition.name}</span>*/}
               </div>
-              <Cable className="size-6 text-primary" aria-hidden="true" />
+              <div className="relative flex h-15 w-20 items-center justify-center">
+                  <Unplug
+                    className="size-6 rotate-45 text-primary"
+                    aria-hidden="true"
+                  />
+
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs font-medium text-muted-foreground whitespace-nowrap">
+                    Live Sync
+                  </span>
+              </div>
               <div className="flex flex-col items-center gap-2">
-                <img src="/brand/logo-symbol.svg" alt="CommissionKit" className="size-12" />
-                <span className="text-xs font-medium text-muted-foreground">CommissionKit</span>
+                <img src="/brand/logo-symbol.svg" alt="CommissionKit" className="size-16 " />
+                {/*<span className="text-xs font-medium text-muted-foreground">CKit</span>*/}
               </div>
             </div>
             <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
@@ -144,7 +153,7 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
           </div>
         </section>
 
-        <section className="px-4 py-16 md:py-20">
+        <section className="border-y border-card-border bg-muted/30 px-4 py-16 md:py-20">
           <div className="mx-auto max-w-6xl">
             <div className="mx-auto mb-10 max-w-3xl text-center">
               <h2 className="text-3xl font-bold tracking-tight text-foreground">
@@ -179,7 +188,7 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
           </div>
         </section>
 
-        <section className="border-y border-card-border bg-muted/30 px-4 py-16 md:py-20">
+        <section className="px-4 py-16 md:py-20">
           <div className="mx-auto max-w-6xl">
             <div className="mx-auto mb-10 max-w-3xl text-center">
               <h2 className="text-3xl font-bold tracking-tight text-foreground">
@@ -225,7 +234,7 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
           </div>
         </section>
 
-        <section className="px-4 py-16 md:py-20">
+        <section className="border-y border-card-border bg-muted/30 px-4 py-16 md:py-20">
           <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[minmax(0,1fr)_360px]">
             <div>
               <h2 className="text-3xl font-bold tracking-tight text-foreground">
@@ -264,7 +273,7 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
           </div>
         </section>
 
-        <section className="border-y border-card-border bg-muted/30 px-4 py-16 md:py-20">
+        <section className="px-4 py-16 md:py-20">
           <div className="mx-auto max-w-3xl">
             <h2 className="text-center text-3xl font-bold tracking-tight text-foreground">
               Frequently asked questions
@@ -284,10 +293,9 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
           </div>
         </section>
 
-        <section className="px-4 py-20 md:py-24">
+        <section className="border-t border-card-border bg-muted/30 px-4 py-20 md:py-24">
           <div className="mx-auto max-w-3xl text-center">
-            <CheckCircle2 className="mx-auto size-8 text-primary" />
-            <h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground">
+            <h2 className="mt-4 text-3xl md:text-4xl font-bold tracking-tight text-foreground">
               Bring {definition.name} data into your commission workflow
             </h2>
             <p className="mt-4 text-base leading-relaxed text-muted-foreground">

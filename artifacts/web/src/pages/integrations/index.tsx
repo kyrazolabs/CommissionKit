@@ -1,4 +1,4 @@
-import { ArrowRight, Cable, Code2, Database, Landmark, Workflow } from "lucide-react";
+import { ArrowRight, Cable, Code2, Database, Landmark, Plug, Plug2, Workflow } from "lucide-react";
 import { JsonLd } from "@/components/seo/json-ld";
 import { Button } from "@/components/ui/button";
 import { usePageMeta } from "@/hooks/use-page-meta";
@@ -14,7 +14,7 @@ const integrations = [
       "Sync Odoo users and sales orders into a commission workflow with invoice-based payment status handling.",
     href: "/integrations/odoo",
     docsHref: "https://docs.commissionkit.co/integrations/odoo",
-    icon: Landmark,
+    icon: '/plugins/odoo.webp',
   },
   {
     name: "HubSpot",
@@ -23,7 +23,7 @@ const integrations = [
       "Sync HubSpot owners and deals, then map the pipeline stages used in your commission workflow.",
     href: "/integrations/hubspot",
     docsHref: "https://docs.commissionkit.co/integrations/hubspot",
-    icon: Workflow,
+    icon: '/plugins/hubspot.webp',
   },
   {
     name: "Salesforce",
@@ -32,7 +32,7 @@ const integrations = [
       "Sync Salesforce users and opportunities, then configure the stage behavior and commission-plan workflow.",
     href: "/integrations/salesforce",
     docsHref: "https://docs.commissionkit.co/integrations/salesforce",
-    icon: Database,
+    icon: '/plugins/salesforce.webp',
   },
   {
     name: "Custom REST API",
@@ -41,7 +41,7 @@ const integrations = [
       "Connect a compatible REST source using supported authentication methods and configurable field mappings.",
     href: "/integrations/custom",
     docsHref: "https://docs.commissionkit.co/integrations/custom",
-    icon: Code2,
+    icon: Cable,
   },
 ];
 
@@ -104,24 +104,32 @@ export function IntegrationsHubPage() {
           <div className="mx-auto max-w-6xl">
             <div className="grid gap-6 md:grid-cols-2">
               {integrations.map((integration) => {
-                const Icon = integration.icon;
                 return (
                   <article
                     key={integration.href}
-                    className="rounded-xl border border-card-border bg-card p-7"
+                    className="rounded-xl border border-card-border bg-card p-5"
                   >
-                    <div className="mb-5 flex items-start justify-between gap-4">
-                      <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <Icon className="size-5" />
+                    <div className="mb-2 flex flex-row items-start justify-between gap-4">
+                      <div className="flex flex-row items-center gap-2">
+                        <div className="flex size-11 items-center justify-center rounded-lg text-primary">
+                          {typeof integration.icon === 'string' ? (
+                            <img src={integration.icon} className="size-6 object-contain" />
+                          ):(
+                            (() => {
+                                const Icon = integration.icon
+                                return <Icon className="size-6 object-contain" />
+                            })()
+                          )}
+                        </div>
+                        <h2 className="text-xl font-semibold tracking-tight text-foreground">
+                          {integration.name}
+                        </h2>
                       </div>
                       <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">
                         {integration.type}
                       </span>
                     </div>
-                    <h2 className="text-xl font-semibold tracking-tight text-foreground">
-                      {integration.name}
-                    </h2>
-                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                       {integration.description}
                     </p>
                     <div className="mt-6 flex flex-wrap gap-3">
