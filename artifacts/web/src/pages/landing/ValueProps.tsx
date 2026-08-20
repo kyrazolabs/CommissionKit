@@ -24,7 +24,7 @@ export function ValueProps() {
   const { ref, inView } = useInView();
 
   return (
-    <section className="py-24 border-b border-border/60 bg-background" id="solutions">
+    <section className="py-24 bg-muted/30 border-b border-border/60" id="solutions">
       <div ref={ref} className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-16" style={fadeIn(inView)}>
           <p className="text-[11px] font-bold tracking-widest uppercase text-primary mb-4">

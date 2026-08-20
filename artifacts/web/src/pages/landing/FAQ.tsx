@@ -79,7 +79,7 @@ export function FAQ() {
   const { ref, inView } = useInView();
 
   return (
-    <section className="bg-background py-24 px-6 border-b border-border/60" id="faq">
+    <section className="bg-muted/30 py-24 px-6 border-y border-border/60" id="faq">
       <div ref={ref} className="max-w-3xl mx-auto" style={fadeIn(inView)}>
         <div className="text-center mb-16">
           <p className="text-[11px] font-bold tracking-widest uppercase text-primary mb-4">FAQ</p>

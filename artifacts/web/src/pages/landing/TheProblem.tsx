@@ -61,7 +61,7 @@ export function TheProblem() {
   const right = useInView();
 
   return (
-    <section className="py-24 border-b border-border/60">
+    <section className="py-24">
       <div className="max-w-6xl mx-auto px-6">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <p className="text-[11px] font-bold tracking-widest uppercase text-primary mb-4">

@@ -23,7 +23,7 @@ export function SocialProof() {
   const { ref, inView } = useInView(0.15);
 
   return (
-    <section className="border-y border-card-border bg-card">
+    <section className="border-y border-card-border bg-muted/30">
       <div ref={ref} className="max-w-6xl mx-auto px-6 py-10">
         {/* Trust badge */}
         <div className="flex justify-center mb-8" style={fadeIn(inView)}>
