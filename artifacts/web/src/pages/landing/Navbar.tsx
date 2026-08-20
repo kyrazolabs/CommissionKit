@@ -160,7 +160,7 @@ export function Navbar() {
               </Button>
               <Button className="font-bold shadow-sm" size="sm" asChild>
                 <a href="/register" onClick={() => Analytics.landingCTAClick("navbar_start")}>
-                  Start Now
+                  Start free trial
                 </a>
               </Button>
             </div>

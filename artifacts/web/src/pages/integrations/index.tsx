@@ -93,9 +93,9 @@ export function IntegrationsHubPage() {
               CommissionKit integrations
             </h1>
             <p className="mx-auto mt-6 max-w-3xl text-lg leading-relaxed text-muted-foreground">
-              Connect documented CRM and ERP sources to bring rep and deal data into a reviewable
-              commission workflow. Each integration page pairs product context with the exact setup
-              documentation.
+              Connect supported CRM and ERP sources to bring rep and deal data into your commission
+              workflow. Each integration page explains the workflow and links to the current setup
+              guide.
             </p>
           </div>
         </section>
@@ -127,7 +127,7 @@ export function IntegrationsHubPage() {
                     <div className="mt-6 flex flex-wrap gap-3">
                       <Button asChild size="sm">
                         <a href={integration.href}>
-                          Explore integration
+                          View integration
                           <ArrowRight className="size-4" />
                         </a>
                       </Button>
@@ -150,7 +150,7 @@ export function IntegrationsHubPage() {
               Need a different data source?
             </h2>
             <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-              Review the Custom REST API integration for the supported connection and mapping
+              Review the Custom REST API integration to see the supported connection and mapping
               approach, or contact CommissionKit to discuss your workflow.
             </p>
             <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">

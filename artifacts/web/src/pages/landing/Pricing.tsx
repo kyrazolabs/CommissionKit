@@ -197,11 +197,7 @@ export function Pricing() {
                   className={`w-full font-bold ${plan.highlighted ? "shadow-sm" : ""}`}
                   onClick={() => Analytics.landingPricingCTAClick(plan.id)}
                 >
-                  {plan.id === "pro"
-                    ? "Contact Sales"
-                    : plan.highlighted
-                      ? "Start Free Trial"
-                      : "Get Started"}
+                  {plan.id === "pro" ? "Contact sales" : "Start free trial"}
                 </Button>
               </div>
             );

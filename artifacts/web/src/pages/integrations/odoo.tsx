@@ -1,4 +1,14 @@
-import { Cable, Calculator, Database, FileCheck2, FileText, RefreshCw, Settings, Users, WalletCards } from "lucide-react";
+import {
+  Cable,
+  Calculator,
+  Database,
+  FileCheck2,
+  FileText,
+  RefreshCw,
+  Settings,
+  Users,
+  WalletCards,
+} from "lucide-react";
 import { Analytics } from "@/lib/analytics";
 import { IntegrationPage } from "./integration-page";
 
@@ -11,7 +21,7 @@ export function OdooIntegrationPage() {
         productType: "ERP",
         logoPath: "/plugins/odoo.webp",
         answer:
-          "CommissionKit connects to Odoo so teams can use documented Odoo users, sales orders, and invoice-payment information in a commission workflow. Configure the source-data and plan rules before using calculation results for payout decisions.",
+          "Bring Odoo users, sales orders, and invoice-payment information into a CommissionKit workflow. Configure the records and plan rules your team uses, then calculate and review commissions before payout.",
         implementationNote:
           "The Odoo connector documentation describes Odoo Community and Enterprise support for version 15 and above. It syncs users as reps and sales orders as deals. Payment status is derived from invoice payment information rather than the sales order's invoice-status field, so teams should review their Odoo data and mapping configuration before calculating commissions.",
         docsHref: "https://docs.commissionkit.co/integrations/odoo",

@@ -1,4 +1,14 @@
-import { BadgeCheck, Cable, Calculator, Database, FileText, KeyRound, RefreshCw, Settings, Users } from "lucide-react";
+import {
+  BadgeCheck,
+  Cable,
+  Calculator,
+  Database,
+  FileText,
+  KeyRound,
+  RefreshCw,
+  Settings,
+  Users,
+} from "lucide-react";
 import { Analytics } from "@/lib/analytics";
 import { IntegrationPage } from "./integration-page";
 
@@ -11,9 +21,9 @@ export function SalesforceIntegrationPage() {
         productType: "CRM",
         logoPath: "/plugins/salesforce.webp",
         answer:
-          "CommissionKit connects to Salesforce so teams can use documented users, opportunities, pipeline-stage, and payment-default information in a commission workflow. Configure the plan and source-data rules before using calculation results for payout decisions.",
+          "Bring Salesforce users, opportunities, pipeline stages, and configured payment defaults into a CommissionKit workflow. Configure the source data and plan rules your team uses, then calculate and review commissions before payout.",
         implementationNote:
-          "CommissionKit's Salesforce connector documentation describes OAuth 2.0 client-credentials authentication through an External Client App. It syncs users as reps and opportunities as deals, supports pipeline-stage discovery and mapping, and documents configurable payment defaults because Salesforce does not directly track payments. Use the setup guide to confirm the current authentication and field configuration for your environment.",
+          "CommissionKit's Salesforce connector supports OAuth 2.0 Authorization Code authentication with PKCE, plus a documented manual client-credentials fallback through an External Client App. It syncs users as reps and opportunities as deals, supports pipeline-stage discovery and mapping, and documents configurable payment defaults because Salesforce does not directly track payments. Use the setup guide to confirm the current authentication and field configuration for your environment.",
         docsHref: "https://docs.commissionkit.co/integrations/salesforce",
         docsLabel: "Read the Salesforce setup guide",
         articleLinks: [
@@ -51,9 +61,9 @@ export function SalesforceIntegrationPage() {
             icon: Database,
           },
           {
-            title: "OAuth 2.0 client credentials",
+            title: "OAuth 2.0 connection",
             description:
-              "The connector documentation describes an External Client App using client credentials and API access.",
+              "Connect with OAuth 2.0 Authorization Code and PKCE, or use the documented External Client App client-credentials fallback when appropriate.",
             icon: KeyRound,
           },
           {
@@ -68,7 +78,7 @@ export function SalesforceIntegrationPage() {
             title: "Connect",
             Icon: Cable,
             description:
-              "Configure an External Client App with client credentials and API access, then confirm the Salesforce instance URL.",
+              "Connect with OAuth 2.0 or configure the documented External Client App client-credentials fallback, then confirm the Salesforce instance URL.",
           },
           {
             title: "Configure",
@@ -93,7 +103,7 @@ export function SalesforceIntegrationPage() {
           {
             question: "How does Salesforce authentication work?",
             answer:
-              "CommissionKit documents OAuth 2.0 client-credentials authentication through an External Client App. Confirm the current setup steps, scopes, and instance URL in the linked guide.",
+              "CommissionKit supports OAuth 2.0 Authorization Code authentication with PKCE and documents a manual External Client App client-credentials fallback. Confirm the current setup steps, scopes, and instance URL in the linked guide.",
           },
           {
             question: "Which Salesforce records are used in the workflow?",
@@ -118,7 +128,7 @@ export function SalesforceIntegrationPage() {
           {
             question: "Where can I find implementation instructions?",
             answer:
-              "Use the linked Salesforce setup guide for current External Client App authentication, stage mapping, payment-default, and troubleshooting instructions.",
+              "Use the linked Salesforce setup guide for current OAuth, client-credentials fallback, stage-mapping, payment-default, and troubleshooting instructions.",
           },
         ],
         onTrialClick: (placement) =>

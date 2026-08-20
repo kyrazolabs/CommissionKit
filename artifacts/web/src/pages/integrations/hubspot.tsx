@@ -1,4 +1,14 @@
-import { BadgeCheck, Cable, Calculator, Database, FileText, KeyRound, RefreshCw, Settings, Users } from "lucide-react";
+import {
+  BadgeCheck,
+  Cable,
+  Calculator,
+  Database,
+  FileText,
+  KeyRound,
+  RefreshCw,
+  Settings,
+  Users,
+} from "lucide-react";
 import { Analytics } from "@/lib/analytics";
 import { IntegrationPage } from "./integration-page";
 
@@ -11,7 +21,7 @@ export function HubspotIntegrationPage() {
         productType: "CRM",
         logoPath: "/plugins/hubspot.webp",
         answer:
-          "CommissionKit connects to HubSpot so teams can use documented owner, deal, pipeline-stage, and payment-default information in a commission workflow. Configure the plan and source-data rules before using calculation results for payout decisions.",
+          "Bring HubSpot owners, deals, pipeline stages, and configured payment defaults into a CommissionKit workflow. Configure the source data and plan rules your team uses, then calculate and review commissions before payout.",
         implementationNote:
           "The HubSpot connector documentation describes owners as reps and deals as commission workflow records, with pipeline-stage discovery and mapping. HubSpot is a CRM and does not directly track payments, so CommissionKit documents a configurable default payment status for closed-won deals. The connector uses token-based authentication with a Service Key or Legacy App access token; use the setup guide to confirm the currently required scopes and configuration.",
         docsHref: "https://docs.commissionkit.co/integrations/hubspot",

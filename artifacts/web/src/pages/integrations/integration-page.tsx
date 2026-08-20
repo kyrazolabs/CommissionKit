@@ -107,7 +107,7 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
               {definition.name} {definition.productType} integration
             </div>
             <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-              {definition.name} commission tracking with CommissionKit
+              Use {definition.name} data in your commission workflow
             </h1>
             <p className="mx-auto mt-6 max-w-3xl text-xl leading-relaxed text-foreground">
               {definition.answer}
@@ -148,12 +148,11 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
           <div className="mx-auto max-w-6xl">
             <div className="mx-auto mb-10 max-w-3xl text-center">
               <h2 className="text-3xl font-bold tracking-tight text-foreground">
-                What this integration supports
+                What you can configure
               </h2>
               <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-                The capabilities below are based on CommissionKit's current connector and setup
-                documentation. Confirm the mappings in your environment before using a workflow for
-                payment decisions.
+                Use the setup guide to confirm the connector configuration, then validate the data
+                included in your own commission workflow.
               </p>
             </div>
             <div className="grid gap-6 md:grid-cols-3">
@@ -184,16 +183,17 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
           <div className="mx-auto max-w-6xl">
             <div className="mx-auto mb-10 max-w-3xl text-center">
               <h2 className="text-3xl font-bold tracking-tight text-foreground">
-                A reviewable setup path
+                How the setup works
               </h2>
               <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-                Use the detailed setup guide for the connector-specific configuration. This page
-                describes the workflow at a high level.
+                Follow the connector-specific setup guide for the exact authentication, mapping, and
+                sync configuration.
               </p>
             </div>
             <ol className="grid gap-px overflow-hidden rounded-2xl border border-card-border bg-card md:grid-cols-4">
-              {definition.steps.map((step, index) =>  {
-                const Icon = step.Icon;  return (
+              {definition.steps.map((step, index) => {
+                const Icon = step.Icon;
+                return (
                   <div key={index + 1} className="p-8 lg:p-10 bg-card relative overflow-hidden">
                     <div className="absolute top-4 right-6 text-[72px] font-black text-primary/10 tabular-nums leading-none select-none pointer-events-none">
                       0{index + 1}
@@ -219,7 +219,7 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
                   </p>
                 </li>*/}
                   </div>
-                )
+                );
               })}
             </ol>
           </div>
@@ -229,15 +229,14 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
           <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[minmax(0,1fr)_360px]">
             <div>
               <h2 className="text-3xl font-bold tracking-tight text-foreground">
-                Implementation considerations
+                How {definition.name} data is used
               </h2>
               <p className="mt-5 text-base leading-relaxed text-muted-foreground">
                 {definition.implementationNote}
               </p>
               <p className="mt-5 text-base leading-relaxed text-muted-foreground">
-                CommissionKit's calculation and payout workflow should be configured against a
-                reviewed plan. Validate source data, mappings, eligibility, approval steps, and any
-                change or exception process before relying on results.
+                Before relying on results for payout decisions, validate the source data, mappings,
+                plan rules, approval steps, and exception process for your environment.
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
                 {definition.articleLinks.map((article) => (
@@ -249,11 +248,11 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
             </div>
             <aside className="flex h-full flex-col rounded-xl border border-card-border bg-card p-6">
               <h3 className="text-lg font-semibold tracking-tight text-foreground">
-                Read the setup documentation
+                Open the setup guide
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                The documentation contains the current setup, authentication, mapping, and
-                troubleshooting information for this connector.
+                See the current authentication, mapping, and troubleshooting steps for this
+                connector.
               </p>
               <Button asChild className="mt-auto w-full justify-between">
                 <a href={definition.docsHref} target="_blank" rel="noreferrer">
@@ -270,11 +269,7 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
             <h2 className="text-center text-3xl font-bold tracking-tight text-foreground">
               Frequently asked questions
             </h2>
-            <Accordion
-              type="single"
-              collapsible
-              className="w-full mt-8"
-            >
+            <Accordion type="single" collapsible className="w-full mt-8">
               {definition.faqs.map((faq, index) => (
                 <AccordionItem key={faq.question} value={`faq-${index}`}>
                   <AccordionTrigger className="text-left text-sm font-semibold text-foreground hover:no-underline">
@@ -293,11 +288,11 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
           <div className="mx-auto max-w-3xl text-center">
             <CheckCircle2 className="mx-auto size-8 text-primary" />
             <h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground">
-              Review your commission workflow with the right source data
+              Bring {definition.name} data into your commission workflow
             </h2>
             <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-              Start a trial to configure your plan and data workflow, or read the connector guide
-              before connecting an account.
+              Start a free trial to configure your plan and workflow, or use the setup guide to
+              prepare your connection.
             </p>
             <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
               <Button asChild>
@@ -307,7 +302,7 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
                 </a>
               </Button>
               <Button asChild variant="outline">
-                <a href="/integrations">Explore integrations</a>
+                <a href="/integrations"> View all integrations</a>
               </Button>
             </div>
           </div>

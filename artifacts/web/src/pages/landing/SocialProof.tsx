@@ -28,7 +28,9 @@ export function SocialProof() {
         {/* Trust badge */}
         <div className="flex justify-center mb-8" style={fadeIn(inView)}>
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/60 dark:bg-white/5 backdrop-blur-sm border border-border/60 text-xs font-medium text-foreground">
-            <span className="text-primary font-semibold">No demo. No sales call. No waiting.</span>
+            <span className="text-primary font-semibold">
+              Start on your own. Get a demo if helpful.
+            </span>
           </div>
         </div>
 
@@ -70,7 +72,7 @@ export function SocialProof() {
         </div>
 
         <p className="mt-6 text-xs text-muted-foreground text-center">
-          Set up in 30 minutes. Cancel anytime. No procurement required.
+          Start with a 14-day trial. Configure at your pace. Cancel anytime.
         </p>
       </div>
     </section>
