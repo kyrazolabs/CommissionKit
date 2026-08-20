@@ -2,7 +2,6 @@ import {
   ArrowRight,
   BookOpenCheck,
   Cable,
-  CheckCircle2,
   type LucideIcon,
   Unplug,
 } from "lucide-react";
@@ -132,7 +131,7 @@ export function IntegrationPage({ definition }: { definition: IntegrationPageDef
                 <Unplug className="size-6 rotate-45 text-primary" aria-hidden="true" />
 
                 <span className="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs font-medium text-muted-foreground whitespace-nowrap">
-                  Live Sync
+                  Data sync
                 </span>
               </div>
               <div className="flex flex-col items-center gap-2">

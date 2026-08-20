@@ -1,4 +1,4 @@
-import { ArrowRight, Cable, Code2, Database, Landmark, Plug, Plug2, Workflow } from "lucide-react";
+import { ArrowRight, Cable } from "lucide-react";
 import { JsonLd } from "@/components/seo/json-ld";
 import { Button } from "@/components/ui/button";
 import { usePageMeta } from "@/hooks/use-page-meta";
