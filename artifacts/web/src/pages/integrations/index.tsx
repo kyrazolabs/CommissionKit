@@ -113,7 +113,7 @@ export function IntegrationsHubPage() {
                       <div className="flex flex-row items-center gap-2">
                         <div className="flex size-11 items-center justify-center rounded-lg text-primary">
                           {typeof integration.icon === "string" ? (
-                            <img src={integration.icon} className="size-6 object-contain" />
+                            <img src={integration.icon} alt={integration.name} className="size-6 object-contain" />
                           ) : (
                             (() => {
                               const Icon = integration.icon;
