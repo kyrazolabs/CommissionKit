@@ -1,6 +1,6 @@
+import path from "node:path";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import path from "path";
 import { Deal } from "../lib/db/src/schema/deals";
 
 dotenv.config({ path: path.resolve(process.cwd(), "artifacts/api/.env") });

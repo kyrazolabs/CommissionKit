@@ -14,7 +14,7 @@ const integrations = [
       "Sync Odoo users and sales orders into a commission workflow with invoice-based payment status handling.",
     href: "/integrations/odoo",
     docsHref: "https://docs.commissionkit.co/integrations/odoo",
-    icon: '/plugins/odoo.webp',
+    icon: "/plugins/odoo.webp",
   },
   {
     name: "HubSpot",
@@ -23,7 +23,7 @@ const integrations = [
       "Sync HubSpot owners and deals, then map the pipeline stages used in your commission workflow.",
     href: "/integrations/hubspot",
     docsHref: "https://docs.commissionkit.co/integrations/hubspot",
-    icon: '/plugins/hubspot.webp',
+    icon: "/plugins/hubspot.webp",
   },
   {
     name: "Salesforce",
@@ -32,7 +32,7 @@ const integrations = [
       "Sync Salesforce users and opportunities, then configure the stage behavior and commission-plan workflow.",
     href: "/integrations/salesforce",
     docsHref: "https://docs.commissionkit.co/integrations/salesforce",
-    icon: '/plugins/salesforce.webp',
+    icon: "/plugins/salesforce.webp",
   },
   {
     name: "Custom REST API",
@@ -112,12 +112,12 @@ export function IntegrationsHubPage() {
                     <div className="mb-2 flex flex-row items-start justify-between gap-4">
                       <div className="flex flex-row items-center gap-2">
                         <div className="flex size-11 items-center justify-center rounded-lg text-primary">
-                          {typeof integration.icon === 'string' ? (
+                          {typeof integration.icon === "string" ? (
                             <img src={integration.icon} className="size-6 object-contain" />
-                          ):(
+                          ) : (
                             (() => {
-                                const Icon = integration.icon
-                                return <Icon className="size-6 object-contain" />
+                              const Icon = integration.icon;
+                              return <Icon className="size-6 object-contain" />;
                             })()
                           )}
                         </div>

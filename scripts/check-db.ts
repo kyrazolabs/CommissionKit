@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import "dotenv/config";
+import path from "node:path";
 import dotenv from "dotenv";
-import path from "path";
 
 dotenv.config({ path: path.join(process.cwd(), "artifacts/api/.env") });
 

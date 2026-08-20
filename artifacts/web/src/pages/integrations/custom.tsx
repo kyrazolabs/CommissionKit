@@ -158,22 +158,15 @@ export function CustomIntegrationPage() {
                 {/*<div className="size-16 rounded-xl flex items-center justify-center">
                   <Webhook className="size-16 text-muted-foreground " />
                 </div>*/}
-                <img
-                  src="/brand/custom-symbol.svg"
-                  alt="API"
-                  className="size-16 object-contain "
-                />
+                <img src="/brand/custom-symbol.svg" alt="API" className="size-16 object-contain " />
                 {/*<span className="text-xs font-medium text-muted-foreground">{definition.name}</span>*/}
               </div>
               <div className="relative flex h-15 w-20 items-center justify-center">
-                  <Unplug
-                    className="size-6 rotate-45 text-primary"
-                    aria-hidden="true"
-                  />
+                <Unplug className="size-6 rotate-45 text-primary" aria-hidden="true" />
 
-                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs font-medium text-muted-foreground whitespace-nowrap">
-                    Live Sync
-                  </span>
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs font-medium text-muted-foreground whitespace-nowrap">
+                  Live Sync
+                </span>
               </div>
               <div className="flex flex-col items-center gap-2">
                 <img src="/brand/logo-symbol.svg" alt="CommissionKit" className="size-16 " />
