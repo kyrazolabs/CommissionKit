@@ -160,7 +160,7 @@ export function Navbar() {
               </Button>
               <Button className="font-bold shadow-sm" size="sm" asChild>
                 <a href="/register" onClick={() => Analytics.landingCTAClick("navbar_start")}>
-                  Start Now
+                  Start free trial
                 </a>
               </Button>
             </div>
@@ -227,6 +227,14 @@ export function Navbar() {
                       </span>
                     </div>
                     <div className="space-y-1">
+                      <a
+                        href="/integrations"
+                        className="mb-2 flex items-center gap-2 px-3 py-2 text-sm font-semibold text-primary hover:underline"
+                        onClick={() => setProductOpen(false)}
+                      >
+                        View all integrations
+                        <ArrowRight className="size-3.5" />
+                      </a>
                       {INTEGRATIONS.map((item) => (
                         <a
                           key={item.href}
@@ -377,6 +385,13 @@ export function Navbar() {
                 Integrations
               </span>
               <div className="flex flex-col gap-3 mt-3">
+                <a
+                  href="/integrations"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-sm font-semibold text-primary hover:text-primary/80"
+                >
+                  All integrations
+                </a>
                 <a
                   href="/integrations/odoo"
                   onClick={() => setMobileMenuOpen(false)}

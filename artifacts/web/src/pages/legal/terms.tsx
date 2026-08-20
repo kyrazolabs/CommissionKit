@@ -15,7 +15,7 @@ const SECTIONS: LegalSection[] = [
     id: "agreement-and-acceptance",
     title: "Agreement and Acceptance",
     paragraphs: [
-      "These Terms of Service (\"Terms\") are a binding agreement between you and KYRAZO LLC (\"CommissionKit,\" \"we,\" \"us,\" or \"our\"). By accessing or using the Service, you agree to be bound by these Terms. If you are using the Service on behalf of an organization, you represent that you have authority to bind that organization to these Terms.",
+      'These Terms of Service ("Terms") are a binding agreement between you and KYRAZO LLC ("CommissionKit," "we," "us," or "our"). By accessing or using the Service, you agree to be bound by these Terms. If you are using the Service on behalf of an organization, you represent that you have authority to bind that organization to these Terms.',
     ],
   },
   {
@@ -23,11 +23,11 @@ const SECTIONS: LegalSection[] = [
     title: "Definitions",
     paragraphs: ["The following terms have the meanings set out below:"],
     bullets: [
-      "\"Service\" means the CommissionKit commission management platform and all related features, including commission plans, deals, runs, payouts, disputes, the rep portal, and integrations.",
-      "\"Customer\" means the individual or organization that subscribes to the Service.",
-      "\"Customer Data\" means the data you and your users submit to the Service, including commission, rep, deal, and payout records.",
-      "\"User\" means an individual authorized to access the Service under a Customer's account.",
-      "\"Order\" means the subscription plan and any add-ons you purchase.",
+      '"Service" means the CommissionKit commission management platform and all related features, including commission plans, deals, runs, payouts, disputes, the rep portal, and integrations.',
+      '"Customer" means the individual or organization that subscribes to the Service.',
+      '"Customer Data" means the data you and your users submit to the Service, including commission, rep, deal, and payout records.',
+      '"User" means an individual authorized to access the Service under a Customer\'s account.',
+      '"Order" means the subscription plan and any add-ons you purchase.',
     ],
   },
   {
@@ -118,7 +118,7 @@ const SECTIONS: LegalSection[] = [
     id: "disclaimers-and-warranties",
     title: "Disclaimers and Warranties",
     paragraphs: [
-      "The Service is provided on an \"as is\" and \"as available\" basis. To the maximum extent permitted by law, we disclaim all implied warranties, including warranties of merchantability, fitness for a particular purpose, and non-infringement. We do not guarantee that the Service will be uninterrupted or error-free.",
+      'The Service is provided on an "as is" and "as available" basis. To the maximum extent permitted by law, we disclaim all implied warranties, including warranties of merchantability, fitness for a particular purpose, and non-infringement. We do not guarantee that the Service will be uninterrupted or error-free.',
     ],
   },
   {
@@ -168,7 +168,8 @@ const SECTIONS: LegalSection[] = [
 export function TermsPage() {
   usePageMeta({
     title: "Terms of Service",
-    description: "CommissionKit (KYRAZO LLC) terms of service for the commission management platform.",
+    description:
+      "CommissionKit (KYRAZO LLC) terms of service for the commission management platform.",
     robots: "index, follow",
   });
 

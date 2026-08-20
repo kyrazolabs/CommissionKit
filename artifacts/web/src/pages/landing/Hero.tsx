@@ -66,13 +66,13 @@ export function Hero() {
           <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white/60 dark:bg-white/5 backdrop-blur-sm border border-border/60 text-xs font-medium text-foreground mb-6">
             <span className="text-muted-foreground">Self-serve commission platform</span>
             <span className="h-3 w-px bg-border" />
-            <span className="text-primary font-semibold">No demo required</span>
+            <span className="text-primary font-semibold">Demo available if helpful</span>
           </div>
         </AnimatedBlock>
 
         <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-[-0.07em] text-foreground leading-[0.95] font-display">
           <AnimatedWords
-            text="Start running commissions 30 minutes from now."
+            text="Run commissions without spreadsheet chaos."
             inView={inView}
             delay={0.15}
           />
@@ -80,8 +80,8 @@ export function Hero() {
 
         <AnimatedBlock inView={inView} delay={1.1} y={20}>
           <p className="text-base md:text-lg text-muted-foreground mt-6 mb-8 leading-relaxed max-w-xl mx-auto">
-            One click processes every rep, deal, and plan. Try it during your lunch break. No credit
-            card, no consultants, no waiting.
+            Bring your reps, deals, and commission plans into one workflow. Configure your plan, run
+            calculations, and review payouts with your team.
           </p>
         </AnimatedBlock>
 
@@ -89,10 +89,10 @@ export function Hero() {
         <AnimatedBlock inView={inView} delay={1.7} y={20}>
           <div className="inline-block rounded-xl bg-white/50 dark:bg-white/5 backdrop-blur-sm border border-border/60 px-6 py-4">
             <p className="text-base md:text-lg font-semibold text-foreground tracking-tight">
-              Spreadsheets. Broken formulas. Angry reps. Replace all of it.
+              Spreadsheets. Broken formulas. End-of-month panic. Replace the manual work.
             </p>
             <p className="text-xs text-muted-foreground mt-1.5">
-              No more manual spreadsheets, shadow accounting, or end-of-month panic.
+              Give your team a clearer process for calculations, reviews, and payouts.
             </p>
           </div>
         </AnimatedBlock>
@@ -119,7 +119,7 @@ export function Hero() {
               size="md"
               className="w-full h-9 sm:w-auto font-bold shadow-lg shrink-0 group"
             >
-              Start Now — Free
+              Start free trial
               <ArrowRight className="ml-1.5 transition-transform group-hover:translate-x-0.5" />
             </Button>
           </form>
@@ -128,10 +128,10 @@ export function Hero() {
         <AnimatedBlock inView={inView} delay={1.5} y={12}>
           <p className="mt-5 text-xs text-muted-foreground/70 flex items-center justify-center gap-3 flex-wrap">
             <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck className="size-3.5 text-primary" /> No credit card required
+              <ShieldCheck className="size-3.5 text-primary" /> 14-day free trial
             </span>
             <span className="hidden sm:inline text-border">·</span>
-            <span>Set up in under 30 minutes</span>
+            <span>Configure at your pace</span>
             <span className="hidden sm:inline text-border">·</span>
             <span>Cancel anytime</span>
           </p>

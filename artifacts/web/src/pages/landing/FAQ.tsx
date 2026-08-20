@@ -5,7 +5,7 @@ import { fadeIn, useInView } from "./hooks";
 const FAQS = [
   {
     q: "How long does setup take?",
-    a: "Most teams are fully set up in under 30 minutes. Import your reps, create your first commission plan, upload your deals, and run. No onboarding call required.",
+    a: "Setup time depends on your data, commission-plan complexity, and review process. Start by adding reps, creating a plan, and importing or connecting your deal data. A demo is available if you would like guidance.",
   },
   {
     q: "How does the 14-day trial work?",
@@ -33,11 +33,11 @@ const FAQS = [
   },
   {
     q: "What CRMs do you integrate with?",
-    a: "We have native connectors for Odoo, Salesforce, and HubSpot. We also have a custom REST API connector that can pull from any system with an API. If your CRM isn't listed, email us and we'll tell you honestly if we can connect to it.",
+    a: "CommissionKit has connectors for Odoo, Salesforce, and HubSpot. A custom REST API connector is available for compatible JSON REST sources. If your CRM is not listed, contact us to discuss whether its API fits the supported connection and mapping options.",
   },
   {
     q: "How is this different from Xactly or CaptivateIQ?",
-    a: "Those platforms are built for enterprises with dedicated compensation analysts and 6-month implementation cycles. We're built for teams that need to be up and running today. No consultants, no upfront contracts, no enterprise sales process. Just sign up, import your data, and run.",
+    a: "CommissionKit is designed for teams that want to configure commission plans, calculate results, manage payouts, and connect supported source data in one workflow. Compare the product fit, configuration needs, and review process against your team's requirements before choosing a platform.",
   },
   {
     q: "Why not just keep using Excel?",
@@ -79,7 +79,7 @@ export function FAQ() {
   const { ref, inView } = useInView();
 
   return (
-    <section className="bg-background py-24 px-6 border-b border-border/60" id="faq">
+    <section className="bg-muted/30 py-24 px-6 border-y border-border/60" id="faq">
       <div ref={ref} className="max-w-3xl mx-auto" style={fadeIn(inView)}>
         <div className="text-center mb-16">
           <p className="text-[11px] font-bold tracking-widest uppercase text-primary mb-4">FAQ</p>

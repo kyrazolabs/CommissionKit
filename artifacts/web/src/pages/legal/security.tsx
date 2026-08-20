@@ -168,7 +168,9 @@ export function SecurityPage() {
                         <span className="text-sm font-medium text-foreground">
                           {subprocessor.name}
                         </span>
-                        <span className="text-sm text-muted-foreground">{subprocessor.purpose}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {subprocessor.purpose}
+                        </span>
                       </li>
                     ))}
                   </ul>

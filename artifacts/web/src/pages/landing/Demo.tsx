@@ -8,7 +8,7 @@ export function Demo() {
   const openCalendly = useCalendly();
 
   return (
-    <section className="py-24 border-b border-border/60" id="demo">
+    <section className="py-24" id="demo">
       <div className="max-w-6xl mx-auto px-6">
         <div ref={ref} className="max-w-2xl mx-auto text-center" style={fadeIn(inView)}>
           <p className="text-[11px] font-bold tracking-widest uppercase text-primary mb-4">
