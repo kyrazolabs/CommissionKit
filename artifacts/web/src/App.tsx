@@ -19,6 +19,7 @@ import { usePageTrack } from "@/hooks/use-page-track";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { useWorkspace, WorkspaceProvider } from "@/hooks/use-workspace";
 import { Analytics } from "@/lib/analytics";
+import { canonicalUrl } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 import AuditLogPage from "@/pages/audit-log/audit-log";
 import { AuthPage } from "@/pages/auth/auth";
@@ -42,6 +43,7 @@ import { AissolReportsPage } from "@/pages/enterprise/aissol/reports";
 import { EnterpriseRunDetailsPage } from "@/pages/enterprise/aissol/run-details";
 import { EnterpriseRunsPage } from "@/pages/enterprise/aissol/runs";
 import { FeaturesPage } from "@/pages/features";
+import { IntegrationsHubPage } from "@/pages/integrations";
 import { CustomIntegrationPage } from "@/pages/integrations/custom";
 import { HubspotIntegrationPage } from "@/pages/integrations/hubspot";
 import { IntegrationsPage } from "@/pages/integrations/integrations";
@@ -59,6 +61,19 @@ import { RepPortal } from "@/pages/portal/rep-portal";
 import { PricingPage } from "@/pages/pricing";
 import { RepPortalLanding } from "@/pages/rep-portal-landing";
 import { ReportsPage } from "@/pages/reports/reports";
+import {
+  CalculatorsHubPage,
+  CommissionAccountingPage,
+  CommissionSoftwareBuyerGuidePage,
+  GlobalSalesCommissionsPage,
+  GlossaryHubPage,
+  OteGlossaryPage,
+  SalesCommissionPlanTemplatePage,
+  SalesCommissionStructuresPage,
+  SalesforceCommissionAnswerPage,
+  TemplatesHubPage,
+  TieredCommissionCalculatorPage,
+} from "@/pages/resources/preview-pages";
 import { BillingPage } from "@/pages/settings/billing";
 import { SettingsPage } from "@/pages/settings/settings";
 import { SolutionsPage } from "@/pages/solutions";
@@ -376,10 +391,9 @@ function ProtectedRouter() {
  */
 function CanonicalTag() {
   const [location] = useLocation();
-  const canonicalPath = (location === "/home" ? "/" : location).replace(/\/$/, "");
   return (
     <Helmet>
-      <link rel="canonical" href={`https://commissionkit.co${canonicalPath}`} />
+      <link rel="canonical" href={canonicalUrl(location)} />
     </Helmet>
   );
 }
@@ -428,6 +442,35 @@ function App() {
                 )}
               />
               <Route path="/calculator" component={CommissionCalculator} />
+              <Route
+                path="/calculators/tiered-commission"
+                component={TieredCommissionCalculatorPage}
+              />
+              <Route path="/calculators" component={CalculatorsHubPage} />
+              <Route
+                path="/templates/sales-commission-plan"
+                component={SalesCommissionPlanTemplatePage}
+              />
+              <Route path="/templates" component={TemplatesHubPage} />
+              <Route
+                path="/guides/sales-commission-structures"
+                component={SalesCommissionStructuresPage}
+              />
+              <Route
+                path="/guides/does-salesforce-calculate-commissions"
+                component={SalesforceCommissionAnswerPage}
+              />
+              <Route
+                path="/guides/best-commission-management-software"
+                component={CommissionSoftwareBuyerGuidePage}
+              />
+              <Route path="/glossary/ote" component={OteGlossaryPage} />
+              <Route path="/glossary" component={GlossaryHubPage} />
+              <Route path="/finance/commissions-accounting" component={CommissionAccountingPage} />
+              <Route
+                path="/solutions/global-sales-commissions"
+                component={GlobalSalesCommissionsPage}
+              />
               <Route path="/privacy" component={PrivacyPage} />
               <Route path="/terms" component={TermsPage} />
               <Route path="/security" component={SecurityPage} />
@@ -435,6 +478,7 @@ function App() {
               <Route path="/features" component={FeaturesPage} />
               <Route path="/solutions" component={SolutionsPage} />
               <Route path="/pricing" component={PricingPage} />
+              <Route path="/integrations" component={IntegrationsHubPage} />
               <Route path="/integrations/odoo" component={OdooIntegrationPage} />
               <Route path="/integrations/hubspot" component={HubspotIntegrationPage} />
               <Route path="/integrations/salesforce" component={SalesforceIntegrationPage} />

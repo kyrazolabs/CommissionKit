@@ -12,9 +12,19 @@
 ## Product Pages
 - [Home](https://commissionkit.co/): Landing page with product overview, features, and pricing.
 - [Features](https://commissionkit.co/features): Full platform capabilities — commission engine, rep management, deal management, payouts, and platform features.
-- [Pricing](https://commissionkit.co/pricing): Plan comparison with monthly/yearly billing. Starter, Growth, Professional, and Business tiers.
-- [Solutions](https://commissionkit.co/solutions): Use cases by team type — finance, sales ops, startups, enterprises, and agencies.
-- [Commission Calculator](https://commissionkit.co/calculator): Interactive tool to estimate commission splits for flat, tiered, and accelerator plans.
+- [Pricing](https://commissionkit.co/pricing): Current plan comparison with monthly and yearly billing options.
+- [Solutions](https://commissionkit.co/solutions): Use cases by team type, including finance and sales operations.
+- [Commission Calculator](https://commissionkit.co/calculator): Interactive tool to illustrate flat, tiered, and accelerator commission structures.
+
+## Integrations
+- [Integrations](https://commissionkit.co/integrations): Overview of published Odoo, HubSpot, Salesforce, and Custom REST API integrations.
+- [Odoo Integration](https://commissionkit.co/integrations/odoo): Odoo commission-tracking workflow and setup-guide link.
+- [HubSpot Integration](https://commissionkit.co/integrations/hubspot): HubSpot commission-tracking workflow and setup-guide link.
+- [Salesforce Integration](https://commissionkit.co/integrations/salesforce): Salesforce commission-tracking workflow and setup-guide link.
+- [Custom REST API Integration](https://commissionkit.co/integrations/custom): Supported API connection and field-mapping approach.
+
+## Content publication policy
+- The calculator, template, glossary, buyer-guide, finance, and plan-design routes marked as editorial previews are intentionally excluded from this inventory and the marketing sitemap until they receive product, editorial, and specialist approval.
 
 ## Company
 - [Contact](https://commissionkit.co/contact): Get in touch for sales, support, or general inquiries.

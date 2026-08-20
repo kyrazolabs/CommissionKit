@@ -326,3 +326,5 @@ This tracker captures the current state of the codebase as of the latest explora
 ## Where to Go Next
 - Back to entry point: `AGENTS.md`
 - Related business context: `os/STATUS.md`
+
+- **CTA and content credibility pass (2026-08-20)**: Updated public integration, Custom REST API, and landing-page copy to replace unverified timing, ROI, universality, and authentication claims with source-aligned language. Standardized self-serve CTAs on “Start free trial,” clarified Salesforce OAuth Authorization Code + PKCE and the documented client-credentials fallback, and retained the existing page layouts and SEO route architecture. Pricing and founding-member commercial claims were intentionally left unchanged pending product and legal confirmation.
