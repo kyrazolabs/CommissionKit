@@ -13,6 +13,8 @@ export interface CalcEngineInput {
 export interface CalcEngineResult {
   repId: string;
   dealId: string;
+  /** Deal name snapshot at calculation time — survives deal deletion */
+  dealName?: string;
   rateApplied: number;
   commissionAmount: number;
   currency: string;

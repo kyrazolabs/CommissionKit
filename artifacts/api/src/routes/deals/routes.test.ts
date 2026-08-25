@@ -87,6 +87,8 @@ let Rep: any;
 let Plan: any;
 let Workspace: any;
 let WorkspaceMember: any;
+let CommissionRun: any;
+let CommissionResult: any;
 let workspaceId: string;
 let testRepId: any;
 
@@ -126,6 +128,8 @@ beforeAll(async () => {
   Plan = db.Plan;
   Workspace = db.Workspace;
   WorkspaceMember = db.WorkspaceMember;
+  CommissionRun = db.CommissionRun;
+  CommissionResult = db.CommissionResult;
 
   app = (await import("../../app")).default;
 });
@@ -443,6 +447,55 @@ describe("DELETE /api/deals/:id", () => {
     expect(res.status).toBe(204);
 
     expect(await Deal.findById(deal._id)).toBeNull();
+  });
+
+  test("cascades deletion to commission results referencing the deal", async () => {
+    const deal = await Deal.create({
+      workspaceId,
+      repId: testRepId,
+      name: "Cascade Deal",
+      amount: 5000,
+      closeDate: "2024-03-01",
+      period: "2024-03",
+      stage: "closed_won",
+    });
+    const run = await CommissionRun.create({ workspaceId, period: "2024-03" });
+    await CommissionResult.create({
+      runId: run._id,
+      repId: testRepId,
+      dealId: deal._id,
+      dealName: "Cascade Deal",
+      rateApplied: 0.1,
+      commissionAmount: 500,
+      currency: "USD",
+      calculationNote: "Flat rate 10.00%",
+    });
+    // A result for a different deal must survive
+    const otherDeal = await Deal.create({
+      workspaceId,
+      repId: testRepId,
+      name: "Keep Deal",
+      amount: 1000,
+      closeDate: "2024-03-02",
+      period: "2024-03",
+      stage: "closed_won",
+    });
+    await CommissionResult.create({
+      runId: run._id,
+      repId: testRepId,
+      dealId: otherDeal._id,
+      dealName: "Keep Deal",
+      rateApplied: 0.1,
+      commissionAmount: 100,
+      currency: "USD",
+      calculationNote: "Flat rate 10.00%",
+    });
+
+    const res = await request(app).delete(`/api/deals/${deal._id}`).set(authHeader());
+    expect(res.status).toBe(204);
+
+    expect(await CommissionResult.countDocuments({ dealId: deal._id })).toBe(0);
+    expect(await CommissionResult.countDocuments({ dealId: otherDeal._id })).toBe(1);
   });
 });
 
