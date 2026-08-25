@@ -6,6 +6,7 @@ import {
   Check,
   ChevronsUpDown,
   Crown,
+  KeyRound,
   Loader2,
   Moon,
   Save,
@@ -31,6 +32,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
 import { useRole } from "@/hooks/use-role";
+import { useSettingsDialog } from "@/hooks/use-settings-dialog";
 import { useTheme } from "@/hooks/use-theme";
 import { useToast } from "@/hooks/use-toast";
 import { useWorkspace } from "@/hooks/use-workspace";
@@ -55,7 +57,6 @@ const ROLE_STYLES = {
   member: "text-muted-foreground bg-muted border-border",
 } as const;
 
-import { usePageMeta } from "@/hooks/use-page-meta";
 import { CURRENCIES } from "@/lib/currencies";
 
 const MONTHS = [
@@ -153,16 +154,12 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
 
 export function SettingsPage() {
   const { t, i18n } = useTranslation();
-  usePageMeta({
-    title: t("settings.title"),
-    description: t("settings.description"),
-    robots: "noindex, nofollow",
-  });
   const { theme, toggle } = useTheme();
   const { role, hasPermission, isLoading: roleLoading } = useRole();
   const { activeWorkspace } = useWorkspace();
   const { user } = useAuth();
   const { toast } = useToast();
+  const closeSettings = useSettingsDialog((s) => s.close);
   const [wsState, setWsState] = useState({
     currency: "USD",
     fiscalYear: "January",
@@ -419,47 +416,72 @@ export function SettingsPage() {
   };
 
   return (
-    <div className="space-y-7 max-w-3xl">
-      <div>
-        <p className="text-[12px] font-semibold text-primary mb-1">{t("settings.configuration")}</p>
-        <h1 className="text-[28px] font-semibold tracking-tight text-foreground leading-tight">
-          {t("settings.title")}
-        </h1>
-        <p className="text-[14px] text-muted-foreground mt-1">{t("settings.description")}</p>
-      </div>
-
-      <Tabs defaultValue="account" className="w-full">
-        <TabsList className="mb-6 bg-muted/50 w-full sm:w-auto overflow-x-auto justify-start gap-1 flex">
-          <TabsTrigger value="account" className="min-w-fit px-4">
+    <div className="h-full">
+      <Tabs
+        defaultValue="account"
+        orientation="vertical"
+        className="flex h-full w-full flex-col sm:flex-row"
+      >
+        <TabsList className="h-auto w-full shrink-0 justify-start gap-1 overflow-x-auto rounded-none border-b border-card-border bg-transparent p-3 sm:h-full sm:w-56 sm:flex-col sm:items-stretch sm:overflow-y-auto sm:overflow-x-hidden sm:border-b-0 sm:border-r sm:bg-muted/40">
+          <TabsTrigger
+            value="account"
+            className="min-w-fit shrink-0 justify-start gap-2 px-3 py-2 data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground data-[state=active]:shadow-none sm:w-full"
+          >
+            <Users className="size-4 shrink-0" />
             {t("settings.tabs.account")}
           </TabsTrigger>
-          <TabsTrigger value="appearance" className="min-w-fit px-4">
+          <TabsTrigger
+            value="appearance"
+            className="min-w-fit shrink-0 justify-start gap-2 px-3 py-2 data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground data-[state=active]:shadow-none sm:w-full"
+          >
+            <Sun className="size-4 shrink-0" />
             {t("settings.tabs.appearance")}
           </TabsTrigger>
           {hasPermission("workspace", "edit") && (
-            <TabsTrigger value="workspace" className="min-w-fit px-4">
+            <TabsTrigger
+              value="workspace"
+              className="min-w-fit shrink-0 justify-start gap-2 px-3 py-2 data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground data-[state=active]:shadow-none sm:w-full"
+            >
+              <Building2 className="size-4 shrink-0" />
               {t("settings.tabs.workspace")}
             </TabsTrigger>
           )}
-          <TabsTrigger value="notifications" className="min-w-fit px-4">
+          <TabsTrigger
+            value="notifications"
+            className="min-w-fit shrink-0 justify-start gap-2 px-3 py-2 data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground data-[state=active]:shadow-none sm:w-full"
+          >
+            <Bell className="size-4 shrink-0" />
             {t("settings.tabs.notifications")}
           </TabsTrigger>
-          <TabsTrigger value="security" className="min-w-fit px-4">
+          <TabsTrigger
+            value="security"
+            className="min-w-fit shrink-0 justify-start gap-2 px-3 py-2 data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground data-[state=active]:shadow-none sm:w-full"
+          >
+            <Shield className="size-4 shrink-0" />
             {t("settings.tabs.security")}
           </TabsTrigger>
           {hasPermission("roles", "read") && (
-            <TabsTrigger value="roles" className="min-w-fit px-4">
+            <TabsTrigger
+              value="roles"
+              className="min-w-fit shrink-0 justify-start gap-2 px-3 py-2 data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground data-[state=active]:shadow-none sm:w-full"
+            >
+              <Crown className="size-4 shrink-0" />
               {t("settings.tabs.roles")}
             </TabsTrigger>
           )}
           {hasPermission("workspace", "edit") && (
-            <TabsTrigger value="api-keys" className="min-w-fit px-4">
+            <TabsTrigger
+              value="api-keys"
+              className="min-w-fit shrink-0 justify-start gap-2 px-3 py-2 data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground data-[state=active]:shadow-none sm:w-full"
+            >
+              <KeyRound className="size-4 shrink-0" />
               {t("settings.tabs.apiKeys")}
             </TabsTrigger>
           )}
         </TabsList>
+        <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6">
 
-        <TabsContent value="account" className="outline-none">
+        <TabsContent value="account" className="mt-0 outline-none">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -598,7 +620,7 @@ export function SettingsPage() {
                     </p>
                   </div>
                   <Button variant="outline" asChild className="gap-1.5">
-                    <Link href="/dash/team">
+                    <Link href="/dash/team" onClick={() => closeSettings()}>
                       {t("settings.account.manage")} <ArrowRight className="size-3.5" />
                     </Link>
                   </Button>
@@ -696,7 +718,7 @@ export function SettingsPage() {
           </motion.div>
         </TabsContent>
 
-        <TabsContent value="appearance" className="outline-none">
+        <TabsContent value="appearance" className="mt-0 outline-none">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -742,7 +764,7 @@ export function SettingsPage() {
         </TabsContent>
 
         {hasPermission("workspace", "edit") && (
-          <TabsContent value="workspace" className="outline-none">
+          <TabsContent value="workspace" className="mt-0 outline-none">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -828,7 +850,7 @@ export function SettingsPage() {
           </TabsContent>
         )}
 
-        <TabsContent value="notifications" className="outline-none">
+        <TabsContent value="notifications" className="mt-0 outline-none">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -905,7 +927,7 @@ export function SettingsPage() {
           </motion.div>
         </TabsContent>
 
-        <TabsContent value="security" className="outline-none">
+        <TabsContent value="security" className="mt-0 outline-none">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -938,7 +960,7 @@ export function SettingsPage() {
         </TabsContent>
 
         {isAdmin && (
-          <TabsContent value="roles" className="outline-none mt-0">
+          <TabsContent value="roles" className="mt-0 outline-none">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -950,7 +972,7 @@ export function SettingsPage() {
           </TabsContent>
         )}
         {isAdmin && (
-          <TabsContent value="api-keys" className="outline-none mt-0">
+          <TabsContent value="api-keys" className="mt-0 outline-none">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -961,6 +983,7 @@ export function SettingsPage() {
             </motion.div>
           </TabsContent>
         )}
+        </div>
       </Tabs>
     </div>
   );

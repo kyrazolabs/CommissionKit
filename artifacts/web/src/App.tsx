@@ -7,6 +7,7 @@ import { Route, Switch, useLocation, useParams, Router as WouterRouter } from "w
 import { CurrencyCombobox } from "@/components/currency-combobox";
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
+import { SettingsDialog } from "@/components/settings/settings-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -60,7 +61,6 @@ import { PricingPage } from "@/pages/pricing";
 import { RepPortalLanding } from "@/pages/rep-portal-landing";
 import { ReportsPage } from "@/pages/reports/reports";
 import { BillingPage } from "@/pages/settings/billing";
-import { SettingsPage } from "@/pages/settings/settings";
 import { SolutionsPage } from "@/pages/solutions";
 import { AcceptInvite } from "@/pages/team/accept-invite";
 import { RepsPage } from "@/pages/team/reps";
@@ -76,6 +76,14 @@ const queryClient = new QueryClient({
   },
 });
 
+function SettingsRedirect() {
+  const [, navigate] = useLocation();
+  useEffect(() => {
+    navigate("/dash", { replace: true });
+  }, [navigate]);
+  return null;
+}
+
 function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const isMobile = useIsMobile();
@@ -89,6 +97,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-sidebar">
       <Header onToggleMobileSidebar={() => setMobileSidebarOpen(true)} isMobile={isMobile} />
+      <SettingsDialog />
       <div className="flex flex-1 overflow-hidden">
         {isMobile ? (
           <>
@@ -358,7 +367,7 @@ function ProtectedRouter() {
         <Route path="/dash/reports" component={ReportsPage} />
         <Route path="/dash/reps/:id" component={EnterpriseRepPortalGuard} />
         <Route path="/dash/team" component={TeamPage} />
-        <Route path="/dash/settings" component={SettingsPage} />
+        <Route path="/dash/settings" component={SettingsRedirect} />
         <Route path="/dash/billing" component={BillingPage} />
         <Route path="/dash/payouts" component={PayoutsPage} />
         <Route path="/dash/disputes" component={DisputesPage} />
