@@ -1,4 +1,4 @@
-import { CheckCircle, ChevronDown, ChevronUp, Circle, Minus, Play, X, Zap } from "lucide-react";
+import { CheckCircle, ChevronDown, ChevronUp, Circle, Minus, Play, Zap } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -162,21 +162,11 @@ export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
     }
   }, [loadSampleData, dismiss]);
 
-  // X icon button: opens the confirmation dialog. The actual dismiss happens
-  // in handleConfirmClose after the user confirms.
-  const handleOpenCloseConfirm = useCallback(() => {
+  // Footer "Skip Onboarding" button: opens the confirmation dialog. The actual
+  // dismiss happens in handleConfirmClose after the user confirms.
+  const handleSkipOnboarding = useCallback(() => {
     setShowCloseConfirm(true);
   }, []);
-
-  // Footer "Skip Onboarding" button: direct dismiss (no confirmation). The
-  // button label makes the action's permanent effect explicit, so we don't
-  // gate it behind a dialog like the X icon does.
-  const handleSkipOnboarding = useCallback(async () => {
-    setIsExiting(true);
-    setTimeout(async () => {
-      await dismiss();
-    }, 200);
-  }, [dismiss]);
 
   // Dialog confirm button: dismisses after the user confirms in the dialog.
   const handleConfirmClose = useCallback(async () => {
@@ -290,15 +280,6 @@ export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
                 aria-label="Minimize checklist"
               >
                 <Minus className="size-3.5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleOpenCloseConfirm}
-                className="size-7 rounded-md"
-                aria-label="Close checklist"
-              >
-                <X className="size-3.5" />
               </Button>
             </div>
           )}

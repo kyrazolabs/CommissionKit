@@ -295,9 +295,21 @@ describe("SetupChecklist Component", () => {
       expect(screen.getByText("Get Started")).toBeTruthy();
     });
 
+    // Click the footer button (now opens the confirmation dialog).
     const skipButton = await waitFor(() => screen.getByText("Skip Onboarding"));
     await act(async () => {
       fireEvent.click(skipButton!);
+    });
+
+    // Confirm in the dialog.
+    const confirmCloseBtn = await waitFor(() => {
+      const dialog = screen.getByRole("alertdialog");
+      const btn = dialog.querySelector("button:nth-of-type(2)");
+      if (!btn) throw new Error("Confirm button not found in dialog");
+      return btn;
+    });
+    await act(async () => {
+      fireEvent.click(confirmCloseBtn as HTMLElement);
       await new Promise((r) => setTimeout(r, 400));
     });
 
@@ -413,18 +425,31 @@ describe("SetupChecklist Component", () => {
       expect(screen.getByText("Get Started")).toBeTruthy();
     });
 
+    // Click the footer button (opens confirmation dialog).
     const skipButton = await waitFor(() => screen.getByText("Skip Onboarding"));
     await act(async () => {
       fireEvent.click(skipButton!);
     });
 
+    // Confirm in the dialog.
+    const confirmCloseBtn = await waitFor(() => {
+      const dialog = screen.getByRole("alertdialog");
+      const btn = dialog.querySelector("button:nth-of-type(2)");
+      if (!btn) throw new Error("Confirm button not found in dialog");
+      return btn;
+    });
+    await act(async () => {
+      fireEvent.click(confirmCloseBtn as HTMLElement);
+    });
+
     // During exit animation: should still be present in DOM
     expect(screen.queryByRole("region", { name: /setup checklist/i })).toBeTruthy();
 
-    // After the 200ms exit animation + the 200ms setTimeout in handleDismiss
-    // the API call goes out and updates mockActiveWorkspace. Force a rerender
-    // to pick up the new state (in production this happens via workspace
-    // query refetch, which the mock QueryClient doesn't simulate).
+    // After the 200ms exit animation + the 200ms setTimeout in
+    // handleConfirmClose, the API call goes out and updates
+    // mockActiveWorkspace. Force a rerender to pick up the new state (in
+    // production this happens via workspace query refetch, which the mock
+    // QueryClient doesn't simulate).
     await act(async () => {
       await new Promise((r) => setTimeout(r, 600));
       rerender(React.createElement(SetupChecklist));
@@ -475,17 +500,18 @@ describe("SetupChecklist Component", () => {
 
   // ── Close confirmation dialog tests ───────────────────────────────────────
 
-  test("clicking X icon opens the close confirmation dialog", async () => {
+  test("footer button opens the close confirmation dialog", async () => {
     const { SetupChecklist } = await import("@/components/setup-checklist");
     render(React.createElement(SetupChecklist));
 
-    // Wait for the X (close) button to appear
-    const closeBtn = await waitFor(() =>
-      screen.getByRole("button", { name: /close checklist/i }),
+    // Footer button (the only dismiss path now)
+    const skipBtn = await waitFor(() =>
+      screen.getByRole("button", { name: /skip onboarding/i }),
     );
+    expect(skipBtn.textContent?.trim()).toBe("Skip Onboarding");
 
     await act(async () => {
-      fireEvent.click(closeBtn);
+      fireEvent.click(skipBtn);
     });
 
     // Dialog should be open (mocked as <h2>{title}</h2>)
@@ -503,11 +529,11 @@ describe("SetupChecklist Component", () => {
     const { SetupChecklist } = await import("@/components/setup-checklist");
     render(React.createElement(SetupChecklist));
 
-    const closeBtn = await waitFor(() =>
-      screen.getByRole("button", { name: /close checklist/i }),
+    const skipBtn = await waitFor(() =>
+      screen.getByRole("button", { name: /skip onboarding/i }),
     );
     await act(async () => {
-      fireEvent.click(closeBtn);
+      fireEvent.click(skipBtn);
     });
 
     const keepOpenBtn = await waitFor(() =>
@@ -541,16 +567,15 @@ describe("SetupChecklist Component", () => {
     const { SetupChecklist } = await import("@/components/setup-checklist");
     render(React.createElement(SetupChecklist));
 
-    const closeBtn = await waitFor(() =>
-      screen.getByRole("button", { name: /close checklist/i }),
+    const skipBtn = await waitFor(() =>
+      screen.getByRole("button", { name: /skip onboarding/i }),
     );
     await act(async () => {
-      fireEvent.click(closeBtn);
+      fireEvent.click(skipBtn);
     });
 
-    // Find the confirm button INSIDE the dialog — the X icon and the dialog
-    // confirm button share the label "Close checklist", so scope to the
-    // alertdialog to disambiguate.
+    // Find the confirm button INSIDE the dialog — the dialog confirm button
+    // is the 2nd button in the mocked alertdialog (cancel first, then confirm).
     const confirmCloseBtn = await waitFor(() => {
       const dialog = screen.getByRole("alertdialog");
       const btn = dialog.querySelector("button:nth-of-type(2)");
@@ -562,38 +587,6 @@ describe("SetupChecklist Component", () => {
       await new Promise((r) => setTimeout(r, 300));
     });
 
-    await waitFor(() => {
-      expect(mockApiFetch).toHaveBeenCalledWith(
-        "/api/workspaces/ws1/onboarding",
-        expect.objectContaining({
-          method: "PATCH",
-          body: JSON.stringify({ action: "dismiss" }),
-        }),
-      );
-    });
-  });
-
-  test("footer button shows Skip Onboarding and dismisses without dialog", async () => {
-    const { SetupChecklist } = await import("@/components/setup-checklist");
-    render(React.createElement(SetupChecklist));
-
-    // Footer button (still a direct dismiss)
-    const skipBtn = await waitFor(() =>
-      screen.getByRole("button", { name: /skip onboarding/i }),
-    );
-    expect(skipBtn.textContent?.trim()).toBe("Skip Onboarding");
-
-    await act(async () => {
-      fireEvent.click(skipBtn);
-      await new Promise((r) => setTimeout(r, 300));
-    });
-
-    // No confirmation dialog should appear
-    expect(
-      screen.queryByRole("alertdialog", { name: /close setup checklist\?/i }),
-    ).toBeNull();
-
-    // PATCH should have fired
     await waitFor(() => {
       expect(mockApiFetch).toHaveBeenCalledWith(
         "/api/workspaces/ws1/onboarding",
