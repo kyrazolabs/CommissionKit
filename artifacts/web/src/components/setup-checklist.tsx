@@ -429,7 +429,7 @@ export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
         open={showCloseConfirm}
         onOpenChange={setShowCloseConfirm}
         title="Close setup checklist?"
-        description="You'll need to reopen it from Settings if you want to come back."
+        description="You won't see this setup checklist again for this workspace."
         confirmLabel="Close checklist"
         cancelLabel="Keep open"
         variant="default"

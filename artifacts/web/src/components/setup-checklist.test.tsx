@@ -521,7 +521,7 @@ describe("SetupChecklist Component", () => {
       ).toBeTruthy();
     });
     expect(
-      screen.getByText(/you'll need to reopen it from settings/i),
+      screen.getByText(/you won't see this setup checklist again/i),
     ).toBeTruthy();
   });
 
