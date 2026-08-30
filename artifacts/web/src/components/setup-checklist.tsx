@@ -412,9 +412,10 @@ export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
                   variant="ghost"
                   size="sm"
                   onClick={handleDismiss}
+                  aria-label="Skip onboarding"
                   className="text-xs text-muted-foreground font-medium"
                 >
-                  {allComplete ? "Dismiss" : "Skip for now"}
+                  {allComplete ? "Dismiss" : "Skip Onboarding"}
                 </Button>
               </div>
             </>
