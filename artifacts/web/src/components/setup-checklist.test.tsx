@@ -38,21 +38,46 @@ let mockOnboarding = {
   checklistDismissed: false,
   checklistCompletedAt: null as Date | null,
 };
+let mockActiveWorkspace: { id: string; name: string; onboarding: typeof mockOnboarding } | null = {
+  id: "ws1",
+  name: "Test Workspace",
+  onboarding: mockOnboarding,
+};
 
 mock.module("@/hooks/use-workspace", () => ({
   useWorkspace: () => ({
-    activeWorkspace: {
-      id: "ws1",
-      name: "Test Workspace",
-      onboarding: mockOnboarding,
-    },
+    activeWorkspace: mockActiveWorkspace,
     workspaces: [],
     loading: false,
+    refreshWorkspaces: () => Promise.resolve(),
   }),
 }));
 
 // Mock apiFetch
-const mockApiFetch = mock(() => Promise.resolve({}));
+const apiFetchImpl = (...args: unknown[]) => {
+  const url = args[0] as string;
+  const opts = (args[1] ?? {}) as { method?: string; body?: string };
+  if (url.includes("/onboarding") && opts.method === "PATCH") {
+    const body = JSON.parse(opts.body ?? "{}") as {
+      action?: "dismiss" | "complete" | "show";
+    };
+    if (body.action === "dismiss") {
+      mockOnboarding = { ...mockOnboarding, checklistDismissed: true };
+    } else if (body.action === "complete") {
+      mockOnboarding = { ...mockOnboarding, checklistCompletedAt: new Date() };
+    } else if (body.action === "show") {
+      mockOnboarding = {
+        checklistDismissed: false,
+        checklistCompletedAt: null,
+      };
+    }
+    if (mockActiveWorkspace) {
+      mockActiveWorkspace = { ...mockActiveWorkspace, onboarding: mockOnboarding };
+    }
+  }
+  return Promise.resolve({});
+};
+const mockApiFetch = mock(apiFetchImpl);
 mock.module("@/lib/api", () => ({
   apiFetch: mockApiFetch,
 }));
@@ -90,6 +115,40 @@ mock.module("@/components/ui/tooltip", () => ({
   TooltipContent: ({ children, ...props }: any) => <div {...props}>{children}</div>,
 }));
 
+// Mock ConfirmDialog — Radix AlertDialog portals + focus-scope throw
+// "Failed to execute 'dispatchEvent' on 'EventTarget'" during React 19's
+// commitPassiveMountOnFiber phase in happy-dom. We mock the primitive to
+// render a simple confirmation panel with accessible buttons.
+mock.module("@/components/ui/confirm-dialog", () => ({
+  ConfirmDialog: ({
+    open,
+    title,
+    description,
+    confirmLabel,
+    cancelLabel,
+    onConfirm,
+    onOpenChange,
+  }: {
+    open: boolean;
+    title?: string;
+    description?: React.ReactNode;
+    confirmLabel?: string;
+    cancelLabel?: string;
+    onConfirm: () => void;
+    onOpenChange: (open: boolean) => void;
+  }) => {
+    if (!open) return null;
+    return (
+      <div role="alertdialog" aria-label={title}>
+        <h2>{title}</h2>
+        {description && <p>{description}</p>}
+        <button onClick={() => onOpenChange(false)}>{cancelLabel}</button>
+        <button onClick={onConfirm}>{confirmLabel}</button>
+      </div>
+    );
+  },
+}));
+
 // Mock localStorage for minimize state
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
@@ -118,8 +177,13 @@ describe("SetupChecklist Component", () => {
       checklistDismissed: false,
       checklistCompletedAt: null,
     };
+    mockActiveWorkspace = {
+      id: "ws1",
+      name: "Test Workspace",
+      onboarding: mockOnboarding,
+    };
     mockApiFetch.mockReset();
-    mockApiFetch.mockResolvedValue({});
+    mockApiFetch.mockImplementation(apiFetchImpl);
     queryClientMock.invalidateQueries.mockReset();
     queryClientMock.invalidateQueries.mockResolvedValue(undefined);
     localStorageMock.clear();
@@ -156,7 +220,6 @@ describe("SetupChecklist Component", () => {
       expect(screen.getByText("Create a Commission Plan")).toBeTruthy();
       expect(screen.getByText("Import Deals")).toBeTruthy();
     });
-    // Descriptions should not be present (compact mode)
     expect(screen.queryByText("Add team members who earn commissions.")).toBeNull();
   });
 
@@ -169,12 +232,12 @@ describe("SetupChecklist Component", () => {
     });
   });
 
-  test("renders Skip for now button", async () => {
+  test("renders Skip Onboarding button", async () => {
     const { SetupChecklist } = await import("@/components/setup-checklist");
     render(React.createElement(SetupChecklist));
 
     await waitFor(() => {
-      expect(screen.getByText("Skip for now")).toBeTruthy();
+      expect(screen.getByText("Skip Onboarding")).toBeTruthy();
     });
   });
 
@@ -198,9 +261,7 @@ describe("SetupChecklist Component", () => {
     await act(() => userEvent.click(minimizeBtn));
 
     await waitFor(() => {
-      // Pill should show "0/3"
       expect(screen.getByText("0/3")).toBeTruthy();
-      // Load Sample Data should be in the pill
       expect(screen.getByLabelText(/load sample data/i)).toBeTruthy();
     });
   });
@@ -209,13 +270,11 @@ describe("SetupChecklist Component", () => {
     const { SetupChecklist } = await import("@/components/setup-checklist");
     render(React.createElement(SetupChecklist));
 
-    // First minimize
     const minimizeBtn = await waitFor(() =>
       screen.getByRole("button", { name: /minimize checklist/i }),
     );
     await act(() => userEvent.click(minimizeBtn));
 
-    // Click the pill to expand
     const pill = await waitFor(() =>
       screen.getByRole("button", { name: /setup checklist.*click to expand/i }),
     );
@@ -227,21 +286,18 @@ describe("SetupChecklist Component", () => {
   });
 
   test("calls PATCH /api/workspace/:id/onboarding on dismiss", async () => {
-    // Clear localStorage to ensure expanded state
     localStorageMock.clear();
 
     const { SetupChecklist } = await import("@/components/setup-checklist");
     render(React.createElement(SetupChecklist));
 
-    // Verify expanded card is showing
     await waitFor(() => {
       expect(screen.getByText("Get Started")).toBeTruthy();
     });
 
-    const skipButton = await waitFor(() => screen.getByText("Skip for now"));
+    const skipButton = await waitFor(() => screen.getByText("Skip Onboarding"));
     await act(async () => {
-      await userEvent.click(skipButton!);
-      // Wait for the 200ms exit animation + API call
+      fireEvent.click(skipButton!);
       await new Promise((r) => setTimeout(r, 400));
     });
 
@@ -252,48 +308,6 @@ describe("SetupChecklist Component", () => {
         body: JSON.stringify({ action: "dismiss" }),
       }),
     );
-  });
-
-  test("does not render card when checklistCompletedAt is set", async () => {
-    mockOnboarding = {
-      checklistDismissed: false,
-      checklistCompletedAt: new Date(),
-    };
-
-    const { SetupChecklist } = await import("@/components/setup-checklist");
-    render(React.createElement(SetupChecklist));
-
-    await waitFor(() => {
-      expect(screen.queryByText("Get Started")).toBeNull();
-    });
-  });
-
-  test("shows Setup Guide button when dismissed", async () => {
-    mockOnboarding = {
-      checklistDismissed: true,
-      checklistCompletedAt: null,
-    };
-
-    const { SetupChecklist } = await import("@/components/setup-checklist");
-    render(React.createElement(SetupChecklist));
-
-    await waitFor(() => {
-      expect(screen.getByText("Setup Guide")).toBeTruthy();
-    });
-  });
-
-  test("does not show Setup Guide button when completed", async () => {
-    mockOnboarding = {
-      checklistDismissed: true,
-      checklistCompletedAt: new Date(),
-    };
-
-    const { SetupChecklist } = await import("@/components/setup-checklist");
-    render(React.createElement(SetupChecklist));
-
-    await waitFor(() => {
-      expect(screen.queryByText("Setup Guide")).toBeNull();
-    });
   });
 
   test("Load Sample Data gets ring highlight when 0/3 complete", async () => {
@@ -321,24 +335,273 @@ describe("SetupChecklist Component", () => {
   });
 
   test("minimize state resets when workspace changes", async () => {
-    // Clear localStorage to ensure starting fresh
     localStorageMock.clear();
 
     const { SetupChecklist } = await import("@/components/setup-checklist");
 
-    // Set minimize state for ws1
     localStorageMock.setItem("ck_checklist_minimized_ws1", "true");
 
-    // Render - should be collapsed due to localStorage
     render(React.createElement(SetupChecklist));
 
     await waitFor(() => {
-      // Pill should appear because localStorage has minimized=true for ws1
+      expect(screen.getByText("0/3")).toBeTruthy();
+    });
+  });
+
+  // ── Visibility gating tests ────────────────────────────────────────────────
+
+  test("does not render when checklistCompletedAt is set", async () => {
+    mockOnboarding = {
+      checklistDismissed: false,
+      checklistCompletedAt: new Date(),
+    };
+    mockActiveWorkspace = {
+      id: "ws1",
+      name: "Test Workspace",
+      onboarding: mockOnboarding,
+    };
+
+    const { SetupChecklist } = await import("@/components/setup-checklist");
+    render(React.createElement(SetupChecklist));
+
+    await waitFor(() => {
+      expect(screen.queryByText("Get Started")).toBeNull();
+      expect(screen.queryByText("Setup Complete")).toBeNull();
+      expect(screen.queryByRole("region", { name: /setup checklist/i })).toBeNull();
+    });
+  });
+
+  test("does not render when checklistDismissed is set", async () => {
+    mockOnboarding = {
+      checklistDismissed: true,
+      checklistCompletedAt: null,
+    };
+    mockActiveWorkspace = {
+      id: "ws1",
+      name: "Test Workspace",
+      onboarding: mockOnboarding,
+    };
+
+    const { SetupChecklist } = await import("@/components/setup-checklist");
+    render(React.createElement(SetupChecklist));
+
+    await waitFor(() => {
+      expect(screen.queryByText("Get Started")).toBeNull();
+      expect(screen.queryByRole("region", { name: /setup checklist/i })).toBeNull();
+    });
+  });
+
+  test("does not render when workspaceId is undefined", async () => {
+    mockActiveWorkspace = null;
+
+    const { SetupChecklist } = await import("@/components/setup-checklist");
+    render(React.createElement(SetupChecklist));
+
+    await waitFor(() => {
+      expect(screen.queryByText("Get Started")).toBeNull();
+      expect(screen.queryByRole("region", { name: /setup checklist/i })).toBeNull();
+    });
+  });
+
+  test("plays exit animation then unmounts when user dismisses", async () => {
+    localStorageMock.clear();
+
+    const { SetupChecklist } = await import("@/components/setup-checklist");
+    const { rerender } = render(React.createElement(SetupChecklist));
+
+    await waitFor(() => {
+      expect(screen.getByText("Get Started")).toBeTruthy();
+    });
+
+    const skipButton = await waitFor(() => screen.getByText("Skip Onboarding"));
+    await act(async () => {
+      fireEvent.click(skipButton!);
+    });
+
+    // During exit animation: should still be present in DOM
+    expect(screen.queryByRole("region", { name: /setup checklist/i })).toBeTruthy();
+
+    // After the 200ms exit animation + the 200ms setTimeout in handleDismiss
+    // the API call goes out and updates mockActiveWorkspace. Force a rerender
+    // to pick up the new state (in production this happens via workspace
+    // query refetch, which the mock QueryClient doesn't simulate).
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 600));
+      rerender(React.createElement(SetupChecklist));
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByRole("region", { name: /setup checklist/i })).toBeNull();
+    });
+  });
+
+  test("clears stale localStorage minimize entry when unmounted", async () => {
+    mockOnboarding = {
+      checklistDismissed: false,
+      checklistCompletedAt: null,
+    };
+    mockActiveWorkspace = {
+      id: "ws1",
+      name: "Test Workspace",
+      onboarding: mockOnboarding,
+    };
+
+    localStorageMock.setItem("ck_checklist_minimized_ws1", "true");
+
+    const { SetupChecklist } = await import("@/components/setup-checklist");
+    const { rerender } = render(React.createElement(SetupChecklist));
+
+    await waitFor(() => {
       expect(screen.getByText("0/3")).toBeTruthy();
     });
 
-    // The localStorage-driven init is tested: when localStorage has the key,
-    // the component renders in collapsed state. The workspace-change reset
-    // (useEffect dependency on workspaceId) is internal React behavior.
+    // Now flip the workspace to dismissed → component unmounts → cleanup runs
+    mockOnboarding = {
+      checklistDismissed: true,
+      checklistCompletedAt: null,
+    };
+    mockActiveWorkspace = {
+      id: "ws1",
+      name: "Test Workspace",
+      onboarding: mockOnboarding,
+    };
+
+    rerender(React.createElement(SetupChecklist));
+
+    await waitFor(() => {
+      expect(localStorageMock.getItem("ck_checklist_minimized_ws1")).toBeNull();
+    });
+  });
+
+  // ── Close confirmation dialog tests ───────────────────────────────────────
+
+  test("clicking X icon opens the close confirmation dialog", async () => {
+    const { SetupChecklist } = await import("@/components/setup-checklist");
+    render(React.createElement(SetupChecklist));
+
+    // Wait for the X (close) button to appear
+    const closeBtn = await waitFor(() =>
+      screen.getByRole("button", { name: /close checklist/i }),
+    );
+
+    await act(async () => {
+      fireEvent.click(closeBtn);
+    });
+
+    // Dialog should be open (mocked as <h2>{title}</h2>)
+    await waitFor(() => {
+      expect(
+        screen.getByRole("alertdialog", { name: /close setup checklist\?/i }),
+      ).toBeTruthy();
+    });
+    expect(
+      screen.getByText(/you'll need to reopen it from settings/i),
+    ).toBeTruthy();
+  });
+
+  test("Keep open cancels the close confirmation and does not call PATCH", async () => {
+    const { SetupChecklist } = await import("@/components/setup-checklist");
+    render(React.createElement(SetupChecklist));
+
+    const closeBtn = await waitFor(() =>
+      screen.getByRole("button", { name: /close checklist/i }),
+    );
+    await act(async () => {
+      fireEvent.click(closeBtn);
+    });
+
+    const keepOpenBtn = await waitFor(() =>
+      screen.getByRole("button", { name: /keep open/i }),
+    );
+    await act(async () => {
+      fireEvent.click(keepOpenBtn);
+    });
+
+    // Dialog should close
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("alertdialog", { name: /close setup checklist\?/i }),
+      ).toBeNull();
+    });
+
+    // PATCH should not have been called for onboarding
+    const onboardingCalls = mockApiFetch.mock.calls.filter(
+      (call) =>
+        typeof call[0] === "string" &&
+        (call[0] as string).includes("/onboarding") &&
+        ((call[1] as { method?: string })?.method ?? "GET") === "PATCH",
+    );
+    expect(onboardingCalls).toHaveLength(0);
+
+    // Card should still be visible
+    expect(screen.getByText("Get Started")).toBeTruthy();
+  });
+
+  test("Close checklist in dialog calls PATCH with dismiss action", async () => {
+    const { SetupChecklist } = await import("@/components/setup-checklist");
+    render(React.createElement(SetupChecklist));
+
+    const closeBtn = await waitFor(() =>
+      screen.getByRole("button", { name: /close checklist/i }),
+    );
+    await act(async () => {
+      fireEvent.click(closeBtn);
+    });
+
+    // Find the confirm button INSIDE the dialog — the X icon and the dialog
+    // confirm button share the label "Close checklist", so scope to the
+    // alertdialog to disambiguate.
+    const confirmCloseBtn = await waitFor(() => {
+      const dialog = screen.getByRole("alertdialog");
+      const btn = dialog.querySelector("button:nth-of-type(2)");
+      if (!btn) throw new Error("Confirm button not found in dialog");
+      return btn;
+    });
+    await act(async () => {
+      fireEvent.click(confirmCloseBtn as HTMLElement);
+      await new Promise((r) => setTimeout(r, 300));
+    });
+
+    await waitFor(() => {
+      expect(mockApiFetch).toHaveBeenCalledWith(
+        "/api/workspaces/ws1/onboarding",
+        expect.objectContaining({
+          method: "PATCH",
+          body: JSON.stringify({ action: "dismiss" }),
+        }),
+      );
+    });
+  });
+
+  test("footer button shows Skip Onboarding and dismisses without dialog", async () => {
+    const { SetupChecklist } = await import("@/components/setup-checklist");
+    render(React.createElement(SetupChecklist));
+
+    // Footer button (still a direct dismiss)
+    const skipBtn = await waitFor(() =>
+      screen.getByRole("button", { name: /skip onboarding/i }),
+    );
+    expect(skipBtn.textContent?.trim()).toBe("Skip Onboarding");
+
+    await act(async () => {
+      fireEvent.click(skipBtn);
+      await new Promise((r) => setTimeout(r, 300));
+    });
+
+    // No confirmation dialog should appear
+    expect(
+      screen.queryByRole("alertdialog", { name: /close setup checklist\?/i }),
+    ).toBeNull();
+
+    // PATCH should have fired
+    await waitFor(() => {
+      expect(mockApiFetch).toHaveBeenCalledWith(
+        "/api/workspaces/ws1/onboarding",
+        expect.objectContaining({
+          method: "PATCH",
+          body: JSON.stringify({ action: "dismiss" }),
+        }),
+      );
+    });
   });
 });
