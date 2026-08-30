@@ -8,6 +8,7 @@ import { CurrencyCombobox } from "@/components/currency-combobox";
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
+import { SetupChecklist } from "@/components/setup-checklist";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -98,6 +99,9 @@ function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen flex-col overflow-hidden bg-sidebar">
       <Header onToggleMobileSidebar={() => setMobileSidebarOpen(true)} isMobile={isMobile} />
       <SettingsDialog />
+      {/* App-level onboarding overlay — covers every /dash/* route, not just /dash.
+          The hook returns isVisible=false for non-standard engines (AISSOL). */}
+      <SetupChecklist />
       <div className="flex flex-1 overflow-hidden">
         {isMobile ? (
           <>

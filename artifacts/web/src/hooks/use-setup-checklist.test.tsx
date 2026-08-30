@@ -59,12 +59,24 @@ mock.module("@/hooks/use-auth", () => ({
   }),
 }));
 
-// Mock workspace
+// Mock workspace — stateful so tests can change the active workspace per test.
+let mockActiveWorkspaceForTest: {
+  id: string;
+  name: string;
+  commissionEngine?: string;
+  onboarding?: { checklistDismissed: boolean; checklistCompletedAt: string | null };
+} = {
+  id: "ws1",
+  name: "Test Workspace",
+  commissionEngine: "standard",
+};
+const mockRefreshWorkspaces = mock(() => Promise.resolve());
 mock.module("@/hooks/use-workspace", () => ({
   useWorkspace: () => ({
-    activeWorkspace: { id: "ws1", name: "Test Workspace" },
+    activeWorkspace: mockActiveWorkspaceForTest,
     workspaces: [],
     loading: false,
+    refreshWorkspaces: (...args: unknown[]) => mockRefreshWorkspaces(...args),
   }),
 }));
 
@@ -81,12 +93,20 @@ describe("useSetupChecklist", () => {
     mockApiFetch.mockResolvedValue({ seeded: true });
     queryClientMock.invalidateQueries.mockReset();
     queryClientMock.invalidateQueries.mockResolvedValue(undefined);
+    mockRefreshWorkspaces.mockReset();
+    mockRefreshWorkspaces.mockResolvedValue(undefined);
     mockUseListReps.mockReset();
     mockUseListReps.mockReturnValue({ data: [], isLoading: false });
     mockUseListPlans.mockReset();
     mockUseListPlans.mockReturnValue({ data: [], isLoading: false });
     mockUseListDeals.mockReset();
     mockUseListDeals.mockReturnValue({ data: [], isLoading: false });
+    // Reset workspace to default for each test.
+    mockActiveWorkspaceForTest = {
+      id: "ws1",
+      name: "Test Workspace",
+      commissionEngine: "standard",
+    };
   });
 
   afterEach(() => {
@@ -112,7 +132,7 @@ describe("useSetupChecklist", () => {
     expect(captured.allComplete).toBe(false);
   });
 
-  test("dismiss calls API PATCH with dismiss action", async () => {
+  test("dismiss calls API PATCH with dismiss action and refreshes workspace", async () => {
     const { useSetupChecklist } = await import("@/hooks/use-setup-checklist");
     let hookRef: any = null;
 
@@ -132,9 +152,15 @@ describe("useSetupChecklist", () => {
       method: "PATCH",
       body: JSON.stringify({ action: "dismiss" }),
     });
+    // refreshWorkspaces is the real cache invalidation — useWorkspace doesn't
+    // use React Query, so invalidating the non-existent "workspaces" key was a
+    // no-op that left the UI out of sync.
+    expect(mockRefreshWorkspaces).toHaveBeenCalledTimes(1);
+    const invalidations = queryClientMock.invalidateQueries.mock.calls.map((c) => c[0]?.queryKey);
+    expect(invalidations).not.toContain("workspaces");
   });
 
-  test("complete calls API PATCH with complete action", async () => {
+  test("complete calls API PATCH with complete action and refreshes workspace", async () => {
     const { useSetupChecklist } = await import("@/hooks/use-setup-checklist");
     let hookRef: any = null;
 
@@ -154,6 +180,9 @@ describe("useSetupChecklist", () => {
       method: "PATCH",
       body: JSON.stringify({ action: "complete" }),
     });
+    expect(mockRefreshWorkspaces).toHaveBeenCalledTimes(1);
+    const invalidations = queryClientMock.invalidateQueries.mock.calls.map((c) => c[0]?.queryKey);
+    expect(invalidations).not.toContain("workspaces");
   });
 
   test("loadSampleData calls API and invalidates queries", async () => {
@@ -184,6 +213,9 @@ describe("useSetupChecklist", () => {
 
     expect(hookRef.isSeeding).toBe(false);
     expect(queryClientMock.invalidateQueries).toHaveBeenCalled();
+    // The sample-data route also stamps onboarding.checklistCompletedAt, so
+    // the hook should refetch the workspace to pick that up.
+    expect(mockRefreshWorkspaces).toHaveBeenCalledTimes(1);
   });
 
   test("detects all steps complete from paginated reps/deals and array plans", async () => {
@@ -213,5 +245,62 @@ describe("useSetupChecklist", () => {
     expect(captured.steps.deals).toBe(true);
     expect(captured.completedCount).toBe(3);
     expect(captured.allComplete).toBe(true);
+  });
+
+  test("isVisible is false for non-standard (AISSOL) engines regardless of data", async () => {
+    // Even if all 3 data sources are populated, an AISSOL workspace must not
+    // show the standard-engine checklist (its steps are project/invoice based).
+    mockUseListReps.mockReturnValue({
+      data: { data: [{ id: "r1" }], pagination: { total: 1 } },
+      isLoading: false,
+    });
+    mockUseListDeals.mockReturnValue({
+      data: { data: [{ id: "d1" }], pagination: { total: 1 } },
+      isLoading: false,
+    });
+    mockUseListPlans.mockReturnValue({ data: [{ id: "p1" }], isLoading: false });
+    mockActiveWorkspaceForTest = {
+      id: "ws1",
+      name: "AISSOL Workspace",
+      commissionEngine: "aissol",
+    };
+
+    const { useSetupChecklist } = await import("@/hooks/use-setup-checklist");
+    let captured: any = null;
+
+    function TestComp() {
+      const hook = useSetupChecklist();
+      captured = hook;
+      return null;
+    }
+
+    render(React.createElement(TestComp));
+
+    expect(captured.completedCount).toBe(3);
+    expect(captured.allComplete).toBe(true);
+    expect(captured.isVisible).toBe(false);
+  });
+
+  test("show calls API PATCH with show action and refreshes workspace", async () => {
+    const { useSetupChecklist } = await import("@/hooks/use-setup-checklist");
+    let hookRef: any = null;
+
+    function TestComp() {
+      const hook = useSetupChecklist();
+      hookRef = hook;
+      return null;
+    }
+
+    render(React.createElement(TestComp));
+
+    await act(async () => {
+      await hookRef.show();
+    });
+
+    expect(mockApiFetch).toHaveBeenCalledWith("/api/workspaces/ws1/onboarding", {
+      method: "PATCH",
+      body: JSON.stringify({ action: "show" }),
+    });
+    expect(mockRefreshWorkspaces).toHaveBeenCalledTimes(1);
   });
 });
