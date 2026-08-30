@@ -164,12 +164,21 @@ export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
 
   // X icon button: opens the confirmation dialog. The actual dismiss happens
   // in handleConfirmClose after the user confirms.
-  const handleDismiss = useCallback(() => {
+  const handleOpenCloseConfirm = useCallback(() => {
     setShowCloseConfirm(true);
   }, []);
 
-  // Footer "Skip Onboarding" button: also opens the same dialog (same handler),
-  // but the dialog copy makes the action's permanent effect explicit.
+  // Footer "Skip Onboarding" button: direct dismiss (no confirmation). The
+  // button label makes the action's permanent effect explicit, so we don't
+  // gate it behind a dialog like the X icon does.
+  const handleSkipOnboarding = useCallback(async () => {
+    setIsExiting(true);
+    setTimeout(async () => {
+      await dismiss();
+    }, 200);
+  }, [dismiss]);
+
+  // Dialog confirm button: dismisses after the user confirms in the dialog.
   const handleConfirmClose = useCallback(async () => {
     setShowCloseConfirm(false);
     setIsExiting(true);
@@ -285,7 +294,7 @@ export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={handleDismiss}
+                onClick={handleOpenCloseConfirm}
                 className="size-7 rounded-md"
                 aria-label="Close checklist"
               >
@@ -411,7 +420,7 @@ export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleDismiss}
+                  onClick={handleSkipOnboarding}
                   aria-label="Skip onboarding"
                   className="text-xs text-muted-foreground font-medium"
                 >
