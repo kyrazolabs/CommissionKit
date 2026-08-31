@@ -1,5 +1,5 @@
-import { CheckCircle, ChevronDown, ChevronUp, Circle, Minus, Play, X, Zap } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { CheckCircle, ChevronDown, ChevronUp, Circle, Minus, Play, Zap } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -86,7 +86,7 @@ export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const prevCountRef = useRef(completedCount);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
 
   // ── Effects ──────────────────────────────────────────────────────────────
 
@@ -108,23 +108,40 @@ export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
     localStorage.setItem(`ck_checklist_minimized_${workspaceId}`, String(isCollapsed));
   }, [isCollapsed, workspaceId]);
 
-  // All-complete animation
+  // All-complete: stamp the DB once and trigger exit animation. Fires any time
+  // the data shows 3/3 but the DB hasn't been stamped yet — covers both the
+  // 0→3 transition AND the case where the user lands on the dashboard with 3/3
+  // already done (e.g. after running their first calculation in another tab).
   useEffect(() => {
-    if (completedCount === 3 && prevCountRef.current < 3 && !isCompleted) {
-      complete().then(() => {
-        const timer = setTimeout(() => {
-          setIsExiting(true);
-        }, 500);
-        return () => clearTimeout(timer);
-      });
+    if (allComplete && !isCompleted) {
+      complete();
+      const timer = setTimeout(() => setIsExiting(true), 500);
+      return () => clearTimeout(timer);
     }
-    prevCountRef.current = completedCount;
-  }, [completedCount, isCompleted, complete]);
+    return undefined;
+  }, [allComplete, isCompleted, complete]);
+
+  // Reset exit state when hook re-reports visible state (e.g., user calls show())
+  useEffect(() => {
+    if (!isDismissed && !isCompleted) {
+      setIsExiting(false);
+    }
+  }, [isDismissed, isCompleted]);
 
   // ── Derived state ─────────────────────────────────────────────────────────
-  const shouldRender = true; // Always show on dashboard
-  const showSetupGuideButton = false; // Never show just a button — always render the card
+  // Defense in depth: if the DB-sync ever regresses again, hide the card the
+  // moment the data confirms all 3 steps are done. The hook's `isVisible`
+  // already accounts for this, but the component should not depend solely on
+  // a downstream consumer of the hook return value.
+  const shouldRender = !!workspaceId && !isCompleted && !isDismissed && !allComplete;
   const progressPercent = (completedCount / 3) * 100;
+
+  // Clean up stale localStorage minimize state when hidden
+  useEffect(() => {
+    if (!shouldRender && workspaceId) {
+      localStorage.removeItem(`ck_checklist_minimized_${workspaceId}`);
+    }
+  }, [shouldRender, workspaceId]);
 
   // ── Handlers ─────────────────────────────────────────────────────────────
   const handleLoadSampleData = useCallback(() => {
@@ -145,7 +162,15 @@ export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
     }
   }, [loadSampleData, dismiss]);
 
-  const handleDismiss = useCallback(async () => {
+  // Footer "Skip Onboarding" button: opens the confirmation dialog. The actual
+  // dismiss happens in handleConfirmClose after the user confirms.
+  const handleSkipOnboarding = useCallback(() => {
+    setShowCloseConfirm(true);
+  }, []);
+
+  // Dialog confirm button: dismisses after the user confirms in the dialog.
+  const handleConfirmClose = useCallback(async () => {
+    setShowCloseConfirm(false);
     setIsExiting(true);
     setTimeout(async () => {
       await dismiss();
@@ -158,11 +183,13 @@ export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
   // ═══════════════════════════════════════════════════════════════════════════
   // Render — single element, collapsed/expanded transition on border-radius
   // ═══════════════════════════════════════════════════════════════════════════
+  if (!shouldRender) return null;
+
   return (
     <>
       <div
         className={cn(
-          "fixed bottom-0 right-0 sm:-bottom-1 sm:right-6 z-50 w-full sm:max-w-[420px] border border-card-border bg-card shadow-lg overflow-hidden",
+          "fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-50 w-full sm:max-w-105 border border-card-border bg-card shadow-lg overflow-hidden",
           "transition-all duration-300 rounded-t-xl sm:rounded-xl",
           isExiting && "animate-[ckExit_200ms_ease-in_forwards]",
         )}
@@ -253,15 +280,6 @@ export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
                 aria-label="Minimize checklist"
               >
                 <Minus className="size-3.5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleDismiss}
-                className="size-7 rounded-md"
-                aria-label="Close checklist"
-              >
-                <X className="size-3.5" />
               </Button>
             </div>
           )}
@@ -383,10 +401,11 @@ export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleDismiss}
+                  onClick={handleSkipOnboarding}
+                  aria-label="Skip onboarding"
                   className="text-xs text-muted-foreground font-medium"
                 >
-                  {allComplete ? "Dismiss" : "Skip for now"}
+                  {allComplete ? "Dismiss" : "Skip Onboarding"}
                 </Button>
               </div>
             </>
@@ -404,6 +423,17 @@ export function SetupChecklist({ onShowGuide }: SetupChecklistProps) {
         variant="default"
         onConfirm={handleConfirmLoad}
         loading={isSeeding}
+      />
+
+      <ConfirmDialog
+        open={showCloseConfirm}
+        onOpenChange={setShowCloseConfirm}
+        title="Close setup checklist?"
+        description="You won't see this setup checklist again for this workspace."
+        confirmLabel="Close checklist"
+        cancelLabel="Keep open"
+        variant="default"
+        onConfirm={handleConfirmClose}
       />
 
       <style>{`

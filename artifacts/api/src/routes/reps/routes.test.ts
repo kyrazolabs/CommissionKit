@@ -82,6 +82,9 @@ let Rep: any;
 let Plan: any;
 let Workspace: any;
 let WorkspaceMember: any;
+let Deal: any;
+let CommissionRun: any;
+let CommissionResult: any;
 let workspaceId: string;
 
 beforeAll(async () => {
@@ -120,6 +123,9 @@ beforeAll(async () => {
   Plan = db.Plan;
   Workspace = db.Workspace;
   WorkspaceMember = db.WorkspaceMember;
+  Deal = db.Deal;
+  CommissionRun = db.CommissionRun;
+  CommissionResult = db.CommissionResult;
 
   const ws = await Workspace.create({
     slug: "test-ws",
@@ -337,5 +343,79 @@ describe("POST /api/reps/:id/send-portal-link", () => {
     const res = await request(app).post(`/api/reps/${fakeId}/send-portal-link`).set(authHeader());
 
     expect(res.status).toBe(404);
+  });
+});
+
+describe("GET /api/reps/:id/export", () => {
+  test("renders snapshotted dealName when the deal has been deleted (CSV)", async () => {
+    const rep = await Rep.create({ workspaceId, name: "Export Rep", email: "export@test.com" });
+    const deal = await Deal.create({
+      workspaceId,
+      repId: rep._id,
+      name: "Deleted Deal",
+      amount: 5000,
+      closeDate: "2024-03-01",
+      period: "2024-03",
+      stage: "closed_won",
+    });
+    const run = await CommissionRun.create({ workspaceId, period: "2024-03" });
+    await CommissionResult.create({
+      runId: run._id,
+      repId: rep._id,
+      dealId: deal._id,
+      dealName: "Deleted Deal",
+      rateApplied: 0.1,
+      commissionAmount: 500,
+      currency: "USD",
+      calculationNote: "Flat rate 10.00%",
+    });
+
+    // Simulate the legacy orphaned-result state: deal deleted, result left behind
+    await Deal.deleteOne({ _id: deal._id });
+
+    const res = await request(app)
+      .get(`/api/reps/${rep._id}/export?month=2024-03&format=csv`)
+      .set(authHeader());
+
+    expect(res.status).toBe(200);
+    expect(res.headers["content-type"]).toContain("text/csv");
+    expect(res.text).toContain("Deleted Deal");
+    expect(res.text).not.toContain("Unknown");
+  });
+
+  test("falls back to populated deal name when no snapshot exists (CSV)", async () => {
+    const rep = await Rep.create({ workspaceId, name: "Legacy Rep", email: "legacy@test.com" });
+    const deal = await Deal.create({
+      workspaceId,
+      repId: rep._id,
+      name: "Live Deal",
+      amount: 2000,
+      closeDate: "2024-03-05",
+      period: "2024-03",
+      stage: "closed_won",
+    });
+    const run = await CommissionRun.create({ workspaceId, period: "2024-03" });
+    await CommissionResult.create({
+      runId: run._id,
+      repId: rep._id,
+      dealId: deal._id,
+      rateApplied: 0.05,
+      commissionAmount: 100,
+      currency: "USD",
+      calculationNote: "Flat rate 5.00%",
+    });
+
+    const res = await request(app)
+      .get(`/api/reps/${rep._id}/export?month=2024-03&format=csv`)
+      .set(authHeader());
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain("Live Deal");
+  });
+
+  test("returns 400 for missing month parameter", async () => {
+    const rep = await Rep.create({ workspaceId, name: "Bad Req", email: "badreq@test.com" });
+    const res = await request(app).get(`/api/reps/${rep._id}/export?format=csv`).set(authHeader());
+    expect(res.status).toBe(400);
   });
 });

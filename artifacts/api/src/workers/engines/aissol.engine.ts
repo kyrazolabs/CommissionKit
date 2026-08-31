@@ -157,6 +157,7 @@ export class AissolEngine implements CalcEngine {
         resultRows.push({
           repId: project.repId.toString(),
           dealId: invoice._id.toString(),
+          dealName: invoice.invoiceNumber,
           rateApplied: rate,
           commissionAmount,
           currency: invoice.currency || "SAR",

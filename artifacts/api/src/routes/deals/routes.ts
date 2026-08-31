@@ -5,7 +5,7 @@ import {
   ListDealsQueryParams,
   UpdateDealBody,
 } from "@workspace/api-zod";
-import { Deal, Plan, Rep, WorkspaceMember } from "@workspace/db";
+import { CommissionResult, Deal, Plan, Rep, WorkspaceMember } from "@workspace/db";
 import { clawbackAlertTemplate } from "@workspace/email-templates";
 import { sendMediumPriorityEmail } from "@workspace/queue";
 import { Router } from "express";
@@ -183,6 +183,8 @@ router.delete(
       _id: new Types.ObjectId(id),
       workspaceId: new Types.ObjectId(workspaceId),
     });
+    // Cascade: remove commission results referencing the deleted deal
+    await CommissionResult.deleteMany({ dealId: new Types.ObjectId(id) });
     res.status(204).send();
   },
 );

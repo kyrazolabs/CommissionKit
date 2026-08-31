@@ -198,6 +198,7 @@ export class StandardEngine implements CalcEngine {
       resultRows.push({
         repId: rep._id.toString(),
         dealId: deal._id.toString(),
+        dealName: deal.name,
         rateApplied: rate,
         commissionAmount: commissionInOriginalCurrency,
         currency: deal.currency || "USD",

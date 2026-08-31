@@ -43,9 +43,14 @@ function countItems(data: unknown): number {
 }
 
 export function useSetupChecklist(): UseSetupChecklistReturn {
-  const { activeWorkspace } = useWorkspace();
+  const { activeWorkspace, refreshWorkspaces } = useWorkspace();
   const queryClient = useQueryClient();
   const workspaceId = activeWorkspace?.id;
+  // The checklist is only relevant for the standard commission engine. AISSOL
+  // (and any future enterprise engines) have their own project/invoice flows
+  // that don't map to "Add Reps / Create Plan / Import Deals".
+  const isStandardEngine =
+    !activeWorkspace?.commissionEngine || activeWorkspace.commissionEngine === "standard";
 
   // Query data for step completion
   const { data: repsData } = useListReps();
@@ -72,10 +77,17 @@ export function useSetupChecklist(): UseSetupChecklistReturn {
   const isDismissed = checklistDismissed;
   const isCompleted = checklistCompletedAt !== null;
 
-  // isVisible = NOT completed, NOT dismissed, NOT all complete
-  const isVisible = !isCompleted && !isDismissed && !allComplete;
+  // isVisible: standard engine AND not finished AND not dismissed AND not all data done
+  const isVisible = isStandardEngine && !isCompleted && !isDismissed && !allComplete;
 
   const [isSeeding, setIsSeeding] = useState(false);
+
+  // After any onboarding state mutation, refetch the active workspace so the
+  // in-memory `activeWorkspace.onboarding` reflects the DB. `useWorkspace` does
+  // not use React Query, so `invalidateQueries(["workspaces"])` was a no-op.
+  const syncWorkspace = useCallback(async () => {
+    await refreshWorkspaces();
+  }, [refreshWorkspaces]);
 
   const dismiss = useCallback(async () => {
     if (!workspaceId) return;
@@ -83,8 +95,8 @@ export function useSetupChecklist(): UseSetupChecklistReturn {
       method: "PATCH",
       body: JSON.stringify({ action: "dismiss" }),
     });
-    await queryClient.invalidateQueries({ queryKey: ["workspaces"] });
-  }, [workspaceId, queryClient]);
+    await syncWorkspace();
+  }, [workspaceId, syncWorkspace]);
 
   const complete = useCallback(async () => {
     if (!workspaceId) return;
@@ -92,8 +104,8 @@ export function useSetupChecklist(): UseSetupChecklistReturn {
       method: "PATCH",
       body: JSON.stringify({ action: "complete" }),
     });
-    await queryClient.invalidateQueries({ queryKey: ["workspaces"] });
-  }, [workspaceId, queryClient]);
+    await syncWorkspace();
+  }, [workspaceId, syncWorkspace]);
 
   const show = useCallback(async () => {
     if (!workspaceId) return;
@@ -101,8 +113,8 @@ export function useSetupChecklist(): UseSetupChecklistReturn {
       method: "PATCH",
       body: JSON.stringify({ action: "show" }),
     });
-    await queryClient.invalidateQueries({ queryKey: ["workspaces"] });
-  }, [workspaceId, queryClient]);
+    await syncWorkspace();
+  }, [workspaceId, syncWorkspace]);
 
   const loadSampleData = useCallback(async () => {
     setIsSeeding(true);
@@ -114,10 +126,13 @@ export function useSetupChecklist(): UseSetupChecklistReturn {
       await queryClient.invalidateQueries({ queryKey: ["/api/deals"] });
       await queryClient.invalidateQueries({ queryKey: ["/api/runs"] });
       await queryClient.invalidateQueries({ queryKey: ["/api/dashboard/summary"] });
+      // The sample-data route also stamps onboarding.checklistCompletedAt
+      // server-side, so refetch the workspace to pick it up.
+      await syncWorkspace();
     } finally {
       setIsSeeding(false);
     }
-  }, [queryClient]);
+  }, [queryClient, syncWorkspace]);
 
   return {
     isVisible,

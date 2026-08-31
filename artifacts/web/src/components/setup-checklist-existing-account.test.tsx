@@ -60,9 +60,10 @@ mock.module("@/hooks/use-auth", () => ({
 // Mock workspace
 mock.module("@/hooks/use-workspace", () => ({
   useWorkspace: () => ({
-    activeWorkspace: { id: "ws1", name: "Test Workspace" },
+    activeWorkspace: { id: "ws1", name: "Test Workspace", commissionEngine: "standard" },
     workspaces: [],
     loading: false,
+    refreshWorkspaces: () => Promise.resolve(),
   }),
 }));
 
