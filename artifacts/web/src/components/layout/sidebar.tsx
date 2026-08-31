@@ -41,6 +41,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { WorkspaceAvatar } from "@/components/workspace-avatar";
 import { useAuth } from "@/hooks/use-auth";
 import { useRole } from "@/hooks/use-role";
+import { useSettingsDialog } from "@/hooks/use-settings-dialog";
 import { useWorkspace, type Workspace } from "@/hooks/use-workspace";
 import { Analytics } from "@/lib/analytics";
 import { apiFetch } from "@/lib/api";
@@ -258,6 +259,7 @@ export function Sidebar({
   const { user, signOut } = useAuth();
   const { activeWorkspace, engineNavItems, loading: wsLoading } = useWorkspace();
   const { can, hasPermission } = useRole();
+  const settingsOpen = useSettingsDialog((s) => s.isOpen);
 
   const [collapsed, setCollapsed] = useState(() => {
     try {
@@ -372,7 +374,12 @@ export function Sidebar({
           icon: "Plug",
           permission: { resource: "workspace", action: "read" },
         },
-        { name: t("layout.settings"), href: "/dash/settings", icon: "Settings" },
+        {
+          name: t("layout.settings"),
+          href: "/dash/settings",
+          icon: "Settings",
+          action: "openSettings" as const,
+        },
       ],
     },
   ];
@@ -427,34 +434,57 @@ export function Sidebar({
               {group.items.map((item: any) => {
                 const IconComponent =
                   typeof item.icon === "string" ? ICON_MAP[item.icon] : item.icon;
-                const isActive =
-                  location === item.href ||
-                  (item.href !== "/dash" && location.startsWith(item.href));
+                const isSettingsAction = item.action === "openSettings";
+                const isActive = isSettingsAction
+                  ? settingsOpen
+                  : location === item.href ||
+                    (item.href !== "/dash" && location.startsWith(item.href));
 
-                const linkContent = (
+                const itemClassName = cn(
+                  "flex items-center gap-2.5 rounded-lg text-sm transition-colors click truncate",
+                  effectiveCollapsed ? "justify-center size-9 mx-1 p-0" : "px-2.5 py-1.75",
+                  isActive
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold border border-transparent"
+                    : "text-sidebar-foreground font-normal border border-transparent hover:bg-muted hover:text-foreground",
+                );
+
+                const iconEl = IconComponent ? (
+                  <IconComponent
+                    className={cn(
+                      effectiveCollapsed ? "size-4" : "h-3.75 w-3.75",
+                      "shrink-0",
+                      isActive
+                        ? "text-sidebar-primary"
+                        : "text-sidebar-muted-foreground opacity-70",
+                    )}
+                  />
+                ) : null;
+
+                const handleSettingsClick = () => {
+                  Analytics.navClick(group.label, "settings", item.name);
+                  useSettingsDialog.getState().open();
+                  onCloseMobile?.();
+                };
+
+                const linkContent = isSettingsAction ? (
+                  <Link
+                    key={item.name}
+                    href=""
+                    type="button"
+                    className={itemClassName}
+                    onClick={handleSettingsClick}
+                  >
+                    {iconEl}
+                    {!effectiveCollapsed && item.name}
+                  </Link>
+                ) : (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={cn(
-                      "flex items-center gap-2.5 rounded-lg text-sm transition-colors click truncate",
-                      effectiveCollapsed ? "justify-center size-9 mx-1 p-0" : "px-2.5 py-1.75",
-                      isActive
-                        ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold border border-transparent"
-                        : "text-sidebar-foreground font-normal border border-transparent hover:bg-muted hover:text-foreground",
-                    )}
+                    className={itemClassName}
                     onClick={() => Analytics.navClick(group.label, item.href, item.name)}
                   >
-                    {IconComponent && (
-                      <IconComponent
-                        className={cn(
-                          effectiveCollapsed ? "size-4" : "h-3.75 w-3.75",
-                          "shrink-0",
-                          isActive
-                            ? "text-sidebar-primary"
-                            : "text-sidebar-muted-foreground opacity-70",
-                        )}
-                      />
-                    )}
+                    {iconEl}
                     {!effectiveCollapsed && item.name}
                   </Link>
                 );
@@ -558,14 +588,12 @@ export function Sidebar({
                 </div>
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link
-                  href="/dash/settings"
-                  className="w-full cursor-pointer flex items-center gap-2.5 rounded-lg py-2"
-                >
-                  <Settings className="size-3.75 opacity-70" />
-                  {t("sidebar.accountSettings")}
-                </Link>
+              <DropdownMenuItem
+                className="w-full cursor-pointer flex items-center gap-2.5 rounded-lg py-2"
+                onClick={() => useSettingsDialog.getState().open()}
+              >
+                <Settings className="size-3.75 opacity-70" />
+                {t("sidebar.accountSettings")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem

@@ -73,6 +73,7 @@ export const calcWorker = new Worker<CommissionCalcPayload>(
             runId: run._id,
             repId: new Types.ObjectId(r.repId),
             dealId: new Types.ObjectId(r.dealId),
+            dealName: r.dealName,
             rateApplied: r.rateApplied,
             commissionAmount: r.commissionAmount,
             currency: r.currency,

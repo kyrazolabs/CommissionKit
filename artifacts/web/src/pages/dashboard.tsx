@@ -25,7 +25,6 @@ import { HelpTooltip } from "@/components/help-tooltip";
 import { RepAvatar } from "@/components/rep-avatar";
 import { RevenueTrendChart } from "@/components/revenue-trend-chart";
 import { RunCalculationDialog } from "@/components/run-calculation-dialog";
-import { SetupChecklist } from "@/components/setup-checklist";
 import { SortableTableHead } from "@/components/sortable-table-head";
 import { StatCard } from "@/components/stat-card";
 import { Badge } from "@/components/ui/badge";
@@ -116,9 +115,6 @@ export function Dashboard() {
           })}
         </p>
       </div>
-
-      {/* Setup checklist for new workspaces */}
-      <SetupChecklist />
 
       {/* Feedback prompt */}
       {feedbackBanner}

@@ -25,6 +25,8 @@ const CommissionResultSchema = new Schema({
   runId: { type: Schema.Types.ObjectId, ref: "CommissionRun", required: true },
   repId: { type: Schema.Types.ObjectId, ref: "Rep", required: true },
   dealId: { type: Schema.Types.ObjectId, ref: "Deal", required: true },
+  /** Deal name snapshot at calculation time — survives deal deletion */
+  dealName: { type: String },
   rateApplied: { type: Number, required: true },
   commissionAmount: { type: Number, required: true },
   /** Original deal currency (e.g. "EUR"). Same as currency field for backwards compat. */
@@ -68,6 +70,8 @@ export type CommissionResult = mongoose.Document & {
   runId: Types.ObjectId;
   repId: Types.ObjectId;
   dealId: Types.ObjectId;
+  /** Deal name snapshot at calculation time — survives deal deletion */
+  dealName?: string;
   rateApplied: number;
   commissionAmount: number;
   currency: string;
@@ -99,6 +103,7 @@ export const insertCommissionResultSchema = z.object({
   runId: z.string(),
   repId: z.string(),
   dealId: z.string(),
+  dealName: z.string().optional(),
   rateApplied: z.number(),
   commissionAmount: z.number(),
   currency: z.string().default("USD"),

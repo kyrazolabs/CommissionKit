@@ -560,7 +560,7 @@ router.get(
         const deal = r.dealId as any;
         lines.push(
           [
-            escapeCsv(deal?.name ?? "Unknown"),
+            escapeCsv((r as any).dealName || deal?.name || "Unknown"),
             deal?.amount ?? 0,
             (r as any).currency || deal?.currency || "USD",
             `${((r.rateApplied ?? 0) * 100).toFixed(2)}%`,
@@ -632,7 +632,7 @@ router.get(
     const dealRows = results.map((r) => {
       const deal = r.dealId as any;
       return [
-        deal?.name ?? "Unknown",
+        (r as any).dealName || deal?.name || "Unknown",
         deal?.amount?.toString() ?? "0",
         (r as any).currency || deal?.currency || "USD",
         `${((r.rateApplied ?? 0) * 100).toFixed(2)}%`,
