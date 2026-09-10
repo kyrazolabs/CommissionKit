@@ -415,6 +415,11 @@ function ProductCard({ product, onEdit }: { product: Product; onEdit: (product: 
             {formatCurrency(product.unitPrice, product.currency)}
           </p>
         )}
+        {product.unitCost != null && (
+          <p className="text-xs text-muted-foreground tabular-nums">
+            {t("products.unitCost")}: {formatCurrency(product.unitCost, product.currency)}
+          </p>
+        )}
       </CardContent>
       {(hasPermission("products", "edit") || hasPermission("products", "delete")) && (
         <CardFooter className="border-t bg-muted/20 pt-4 flex justify-between">
@@ -471,6 +476,9 @@ function ProductFormPanel({
   const [unitPrice, setUnitPrice] = useState(
     initialData?.unitPrice != null ? String(initialData.unitPrice) : "",
   );
+  const [unitCost, setUnitCost] = useState(
+    initialData?.unitCost != null ? String(initialData.unitCost) : "",
+  );
   const [currency, setCurrency] = useState(
     initialData?.currency || activeWorkspace?.currency || "USD",
   );
@@ -526,6 +534,7 @@ function ProductFormPanel({
     setDescription(initialData?.description || "");
     setSku(initialData?.sku || "");
     setUnitPrice(initialData?.unitPrice != null ? String(initialData.unitPrice) : "");
+    setUnitCost(initialData?.unitCost != null ? String(initialData.unitCost) : "");
     setCurrency(initialData?.currency || activeWorkspace?.currency || "USD");
     setStatus(initialData?.status || "active");
     setAttributes(stringifyAttrs(initialData?.attributes));
@@ -546,12 +555,14 @@ function ProductFormPanel({
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const parsedPrice = unitPrice.trim() === "" ? null : Number(unitPrice);
+    const parsedCost = unitCost.trim() === "" ? null : Number(unitCost);
     const payload = {
       name: name.trim(),
       kind,
       description: description.trim() || null,
       sku: sku.trim() || null,
       unitPrice: parsedPrice != null && !Number.isNaN(parsedPrice) ? parsedPrice : null,
+      unitCost: parsedCost != null && !Number.isNaN(parsedCost) ? parsedCost : null,
       currency,
       status,
       attributes: parseAttrs(kind, attributes),
@@ -686,6 +697,17 @@ function ProductFormPanel({
                 <Label>{t("products.currency")}</Label>
                 <CurrencyCombobox value={currency} onChange={setCurrency} />
               </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="product-unit-cost">{t("products.unitCost")}</Label>
+                <NumberInput
+                  id="product-unit-cost"
+                  value={unitCost}
+                  onChange={(e) => setUnitCost(e.target.value)}
+                />
+              </div>
+              <div />
             </div>
             <KindAttributeFields kind={kind} values={attributes} onChange={setAttributes} />
       </div>

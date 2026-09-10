@@ -19,6 +19,7 @@
   "sku": "SKU",
   "skuPlaceholder": "Optional code",
   "unitPrice": "Unit price",
+  "unitCost": "Unit cost",
   "currency": "Currency",
   "status": "Status",
   "statusActive": "Active",

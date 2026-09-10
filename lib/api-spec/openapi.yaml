@@ -776,6 +776,9 @@ components:
         unitPrice:
           type: number
           nullable: true
+        unitCost:
+          type: number
+          nullable: true
         currency:
           type: string
         status:
@@ -787,7 +790,7 @@ components:
           type: boolean
         createdAt:
           type: string
-      required: [id, name, kind, description, sku, unitPrice, currency, status, attributes, hasImage, createdAt]
+      required: [id, name, kind, description, sku, unitPrice, unitCost, currency, status, attributes, hasImage, createdAt]
 
     ProductList:
       type: object
@@ -826,6 +829,9 @@ components:
         unitPrice:
           type: number
           nullable: true
+        unitCost:
+          type: number
+          nullable: true
         currency:
           type: string
         status:
@@ -849,6 +855,9 @@ components:
           type: string
           nullable: true
         unitPrice:
+          type: number
+          nullable: true
+        unitCost:
           type: number
           nullable: true
         currency:

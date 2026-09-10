@@ -28,6 +28,7 @@ export interface ProductWriteInput {
   description?: string | null;
   sku?: string | null;
   unitPrice?: number | null;
+  unitCost?: number | null;
   currency?: string;
   status?: string;
   attributes?: Record<string, unknown> | null;
@@ -40,6 +41,7 @@ export interface FormattedProduct {
   description: string | null;
   sku: string | null;
   unitPrice: number | null;
+  unitCost: number | null;
   currency: string;
   status: string;
   attributes: Record<string, unknown>;
@@ -54,6 +56,7 @@ interface ProductDoc {
   description?: string | null;
   sku?: string | null;
   unitPrice?: number | null;
+  unitCost?: number | null;
   currency: string;
   status: string;
   attributes?: Record<string, unknown> | null;
@@ -69,6 +72,7 @@ function formatProduct(doc: ProductDoc): FormattedProduct {
     description: doc.description ?? null,
     sku: doc.sku ?? null,
     unitPrice: doc.unitPrice ?? null,
+    unitCost: doc.unitCost ?? null,
     currency: doc.currency,
     status: doc.status,
     attributes: doc.attributes ?? {},
@@ -164,6 +168,7 @@ export class ProductService {
         description: body.description ?? undefined,
         sku: normalizeSku(body.sku),
         unitPrice: body.unitPrice ?? undefined,
+        unitCost: body.unitCost ?? undefined,
         currency: body.currency ?? "USD",
         status: body.status ?? "active",
         attributes,
@@ -185,6 +190,7 @@ export class ProductService {
       kind: body.kind,
       description: body.description ?? undefined,
       unitPrice: body.unitPrice ?? undefined,
+      unitCost: body.unitCost ?? undefined,
       currency: body.currency ?? "USD",
       status: body.status ?? "active",
       attributes,

@@ -1039,6 +1039,7 @@
     "sku": "SKU",
     "skuPlaceholder": "Código opcional",
     "unitPrice": "Precio unitario",
+    "unitCost": "Costo unitario",
     "currency": "Moneda",
     "status": "Estado",
     "statusActive": "Activo",

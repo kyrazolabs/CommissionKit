@@ -115,6 +115,7 @@ export interface Product {
   description: string | null;
   sku: string | null;
   unitPrice: number | null;
+  unitCost: number | null;
   currency: string;
   status: ProductStatus;
   attributes: ProductAttributes;
@@ -142,6 +143,7 @@ export interface CreateProductBody {
   description?: string | null;
   sku?: string | null;
   unitPrice?: number | null;
+  unitCost?: number | null;
   currency?: string;
   status?: ProductStatus;
   attributes?: CreateProductBodyAttributes;
@@ -155,6 +157,7 @@ export interface UpdateProductBody {
   description?: string | null;
   sku?: string | null;
   unitPrice?: number | null;
+  unitCost?: number | null;
   currency?: string;
   status?: ProductStatus;
   attributes?: UpdateProductBodyAttributes;

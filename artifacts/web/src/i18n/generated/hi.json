@@ -1028,6 +1028,7 @@
     "sku": "SKU",
     "skuPlaceholder": "वैकल्पिक कोड",
     "unitPrice": "इकाई मूल्य",
+    "unitCost": "इकाई लागत",
     "currency": "मुद्रा",
     "status": "स्थिति",
     "statusActive": "सक्रिय",

@@ -23,12 +23,14 @@ describe("insertProductSchema", () => {
       description: "Monthly retainer",
       sku: "SVC-001",
       unitPrice: 2500,
+      unitCost: 1500,
       currency: "EUR",
       status: "archived",
     });
     expect(result.description).toBe("Monthly retainer");
     expect(result.sku).toBe("SVC-001");
     expect(result.unitPrice).toBe(2500);
+    expect(result.unitCost).toBe(1500);
     expect(result.currency).toBe("EUR");
     expect(result.status).toBe("archived");
   });
@@ -70,5 +72,14 @@ describe("insertProductSchema", () => {
   test("accepts zero unitPrice", () => {
     const result = insertProductSchema.parse({ ...validProduct, unitPrice: 0 });
     expect(result.unitPrice).toBe(0);
+  });
+
+  test("rejects non-numeric unitCost", () => {
+    expect(() => insertProductSchema.parse({ ...validProduct, unitCost: "cheap" })).toThrow();
+  });
+
+  test("accepts zero unitCost", () => {
+    const result = insertProductSchema.parse({ ...validProduct, unitCost: 0 });
+    expect(result.unitCost).toBe(0);
   });
 });

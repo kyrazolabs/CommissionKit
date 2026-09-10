@@ -28,6 +28,7 @@ const ProductSchema = new Schema(
     description: { type: String },
     sku: { type: String },
     unitPrice: { type: Number },
+    unitCost: { type: Number },
     currency: { type: String, required: true, default: "USD" },
     status: { type: String, required: true, enum: PRODUCT_STATUSES, default: "active" },
     attributes: { type: Schema.Types.Mixed, default: {} },
@@ -59,6 +60,7 @@ export type Product = mongoose.Document & {
   description?: string;
   sku?: string;
   unitPrice?: number;
+  unitCost?: number;
   currency: string;
   status: ProductStatus;
   attributes?: Record<string, unknown>;
@@ -74,6 +76,7 @@ export const insertProductSchema = z.object({
   description: z.string().optional(),
   sku: z.string().optional(),
   unitPrice: z.number().optional(),
+  unitCost: z.number().optional(),
   currency: z.string().default("USD"),
   status: z.enum(PRODUCT_STATUSES).default("active"),
   attributes: z.record(z.string(), z.unknown()).optional(),

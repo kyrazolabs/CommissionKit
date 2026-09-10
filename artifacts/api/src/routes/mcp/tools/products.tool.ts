@@ -80,6 +80,7 @@ class ProductTools {
         description: z.string().optional(),
         sku: z.string().optional(),
         unitPrice: z.number().optional(),
+        unitCost: z.number().optional(),
         currency: z.string().optional(),
       },
       async (input) => {
@@ -108,6 +109,7 @@ class ProductTools {
         description: z.string().optional(),
         sku: z.string().optional(),
         unitPrice: z.number().optional(),
+        unitCost: z.number().optional(),
         currency: z.string().optional(),
       },
       async ({ id, ...data }) => {
