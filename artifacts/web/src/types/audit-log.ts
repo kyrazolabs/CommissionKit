@@ -55,6 +55,7 @@ export const AUDIT_ACTIONS = [
 export const AUDIT_RESOURCE_TYPES = [
   "plan",
   "deal",
+  "product",
   "rep",
   "run",
   "payout",

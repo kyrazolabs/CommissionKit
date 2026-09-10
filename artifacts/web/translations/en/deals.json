@@ -96,5 +96,8 @@
   "colPaymentStatus": "Payment Status",
   "colPayment": "Payment",
   "colNotes": "Notes",
-  "colDescription": "Description"
+  "colDescription": "Description",
+  "lineItems": "Products",
+  "lineItemsTotal": "Line total",
+  "lineItemsHint": "Optional. Amount is calculated from products when you add them."
 }

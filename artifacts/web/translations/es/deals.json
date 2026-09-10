@@ -96,5 +96,8 @@
   "colPaymentStatus": "Estado de Pago",
   "colPayment": "Pago",
   "colNotes": "Notas",
-  "colDescription": "Descripción"
+  "colDescription": "Descripción",
+  "lineItems": "Productos",
+  "lineItemsTotal": "Total de líneas",
+  "lineItemsHint": "Opcional. El monto se calcula a partir de los productos."
 }

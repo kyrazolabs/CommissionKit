@@ -30,6 +30,7 @@ import { CareersPage } from "@/pages/careers";
 import { CareersJobPage } from "@/pages/careers-job";
 import { DealsPage } from "@/pages/commission/deals";
 import { PlansPage } from "@/pages/commission/plans";
+import { ProductsPage } from "@/pages/commission/products";
 import { RunDetailsPage } from "@/pages/commission/run-details";
 import { RunsPage } from "@/pages/commission/runs";
 import { CommissionCalculator } from "@/pages/commission-calculator";
@@ -89,6 +90,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const isMobile = useIsMobile();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const fillCanvas = location === "/dash/products";
 
   // Close mobile sidebar on route change
   useEffect(() => {
@@ -131,10 +133,22 @@ function Layout({ children }: { children: React.ReactNode }) {
           style={{ background: "hsl(var(--sidebar))" }}
         >
           <div className="bg-card rounded-2xl border border-card-border flex-1 flex flex-col overflow-hidden shadow-xs">
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
-              <main className="mx-auto px-6 py-6 lg:px-10 lg:py-8 max-w-6xl min-h-full">
+            <div
+              className={cn(
+                "flex-1 min-h-0",
+                fillCanvas ? "overflow-hidden" : "overflow-y-auto custom-scrollbar",
+              )}
+            >
+              <main
+                className={
+                  fillCanvas
+                    ? "h-full min-h-0"
+                    : "mx-auto px-6 py-6 lg:px-10 lg:py-8 max-w-6xl min-h-full"
+                }
+              >
                 <motion.div
                   key={location}
+                  className={fillCanvas ? "h-full min-h-0" : undefined}
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, ease: [0.34, 1.56, 0.64, 1] }}
@@ -365,6 +379,7 @@ function ProtectedRouter() {
         <Route path="/dash" component={Dashboard} />
         <Route path="/dash/reps" component={RepsPage} />
         <Route path="/dash/plans" component={EnterprisePlansGuard} />
+        <Route path="/dash/products" component={ProductsPage} />
         <Route path="/dash/deals" component={EnterpriseDealsGuard} />
         <Route path="/dash/runs" component={EnterpriseRunsListGuard} />
         <Route path="/dash/runs/:id" component={EnterpriseRunsGuard} />

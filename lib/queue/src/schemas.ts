@@ -132,6 +132,7 @@ const AUDIT_ACTIONS = [
 const AUDIT_RESOURCE_TYPES = [
   "plan",
   "deal",
+  "product",
   "rep",
   "run",
   "payout",

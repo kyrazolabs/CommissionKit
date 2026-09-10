@@ -146,7 +146,9 @@
       "writeReps": "Write reps",
       "writeRepsDesc": "Create and manage sales representatives",
       "writeRuns": "Write runs",
-      "writeRunsDesc": "Create commission calculation runs"
+      "writeRunsDesc": "Create commission calculation runs",
+      "writeProducts": "Write products",
+      "writeProductsDesc": "Create and manage catalog products"
     }
   },
   "mcp": {

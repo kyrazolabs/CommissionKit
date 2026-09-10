@@ -146,7 +146,9 @@
       "writeReps": "Escribir representantes",
       "writeRepsDesc": "Crear y gestionar representantes de ventas",
       "writeRuns": "Escribir ejecuciones",
-      "writeRunsDesc": "Crear ejecuciones de cálculo de comisiones"
+      "writeRunsDesc": "Crear ejecuciones de cálculo de comisiones",
+      "writeProducts": "Escribir productos",
+      "writeProductsDesc": "Crear y gestionar productos del catálogo"
     }
   },
   "mcp": {

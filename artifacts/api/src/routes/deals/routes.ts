@@ -11,7 +11,9 @@ import { sendMediumPriorityEmail } from "@workspace/queue";
 import { Router } from "express";
 import { Types } from "mongoose";
 import { logAudit } from "../../lib/audit";
+import { formatLineItems, snapshotLineItems, sumLineItems } from "../../lib/deal-line-items";
 import { logger } from "../../lib/logger";
+import { ProductHttpError } from "../products/service";
 import { createNotification } from "../../lib/notify";
 import { type AuthenticatedRequest, requirePermission } from "../../middleware/auth";
 
@@ -30,6 +32,7 @@ function formatDeal(deal: any, repName: string) {
     paymentStatus: deal.paymentStatus ?? "unpaid",
     currency: deal.currency ?? "USD",
     notes: deal.notes ?? null,
+    lineItems: formatLineItems(deal.lineItems),
     clawbackApplied: (deal as any).clawbackApplied ?? false,
     clawbackAmount: (deal as any).clawbackAmount ?? 0,
     createdAt: deal.createdAt.toISOString(),
@@ -100,17 +103,32 @@ router.post(
       res.status(400).json({ error: closeDateError });
       return;
     }
+    let lineItems: Awaited<ReturnType<typeof snapshotLineItems>> = [];
+    let amount = body.amount;
+    try {
+      if (body.lineItems && body.lineItems.length > 0) {
+        lineItems = await snapshotLineItems(workspaceId, body.lineItems);
+        amount = sumLineItems(lineItems);
+      }
+    } catch (err) {
+      if (err instanceof ProductHttpError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      throw err;
+    }
     const deal = await Deal.create({
       workspaceId: new Types.ObjectId(workspaceId),
       repId: new Types.ObjectId(body.repId),
       name: body.name,
-      amount: body.amount,
+      amount,
       closeDate: body.closeDate,
       period: body.period,
       stage: body.stage,
       paymentStatus: body.paymentStatus ?? "unpaid",
       currency: body.currency ?? "USD",
       notes: body.notes ?? null,
+      lineItems,
     });
 
     const rep = await Rep.findById(body.repId);
@@ -210,16 +228,32 @@ router.put(
       return;
     }
 
+    let lineItems: Awaited<ReturnType<typeof snapshotLineItems>> | undefined;
+    let amount = body.amount;
+    try {
+      if (body.lineItems !== undefined) {
+        lineItems = await snapshotLineItems(workspaceId, body.lineItems);
+        if (lineItems.length > 0) amount = sumLineItems(lineItems);
+      }
+    } catch (err) {
+      if (err instanceof ProductHttpError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      throw err;
+    }
+
     const update: any = {
       repId: new Types.ObjectId(body.repId),
       name: body.name,
-      amount: body.amount,
+      amount,
       closeDate: body.closeDate,
       period: body.period,
       stage: body.stage,
       currency: body.currency,
       notes: body.notes ?? null,
     };
+    if (lineItems !== undefined) update.lineItems = lineItems;
     if (body.paymentStatus !== undefined) update.paymentStatus = body.paymentStatus;
 
     // Paid deals: auto-set stage to closed_won, lock from further edits

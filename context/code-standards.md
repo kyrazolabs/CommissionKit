@@ -46,6 +46,7 @@
 ### Route Structure
 
 - Each domain has a folder: `src/routes/<domain>/routes.ts`.
+- Products uses an OOP layer in that folder: `routes.ts` (thin wiring), `controller.ts`, singleton `service.ts`.
 - Routes are mounted in `src/routes/index.ts`.
 - Use `requireAuth`, `requireWorkspaceMember`, or `requirePermission` middleware arrays spread into route definitions.
 

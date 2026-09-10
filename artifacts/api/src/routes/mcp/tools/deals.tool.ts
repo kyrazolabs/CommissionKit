@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Deal, Rep } from "@workspace/db";
+import { snapshotLineItems, sumLineItems } from "../../../lib/deal-line-items";
 import { Types } from "mongoose";
 import { z } from "zod/v4";
 import type { WorkspaceContext } from "../context";
@@ -159,8 +160,28 @@ class DealTools {
           .describe("Payment status"),
         notes: z.string().optional().describe("Optional notes"),
         closeDate: z.string().optional().describe("Close date in YYYY-MM-DD format"),
+        lineItems: z
+          .array(
+            z.object({
+              productId: z.string(),
+              quantity: z.number().positive(),
+            }),
+          )
+          .optional()
+          .describe("Optional catalog line items. Amount is computed from these when present."),
       },
-      async ({ repId, name, amount, currency, period, stage, paymentStatus, notes, closeDate }) => {
+      async ({
+        repId,
+        name,
+        amount,
+        currency,
+        period,
+        stage,
+        paymentStatus,
+        notes,
+        closeDate,
+        lineItems,
+      }) => {
         requirePermission(ctx, "write:deals", "create_deal");
 
         const rep = await Rep.findOne({ _id: repId, workspaceId: wsObjectId });
@@ -171,17 +192,25 @@ class DealTools {
             ],
           };
 
+        let snapshotted = [] as Awaited<ReturnType<typeof snapshotLineItems>>;
+        let dealAmount = amount;
+        if (lineItems && lineItems.length > 0) {
+          snapshotted = await snapshotLineItems(ctx.workspaceId, lineItems);
+          dealAmount = sumLineItems(snapshotted);
+        }
+
         const deal = await Deal.create({
           workspaceId: wsObjectId,
           repId: new Types.ObjectId(repId),
           name,
-          amount,
+          amount: dealAmount,
           currency,
           period: period || currentPeriod(),
           stage,
           paymentStatus,
           notes: notes ?? null,
           closeDate: closeDate ?? undefined,
+          lineItems: snapshotted,
         });
 
         return {

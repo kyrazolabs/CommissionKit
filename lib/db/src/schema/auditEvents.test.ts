@@ -7,6 +7,7 @@ describe("AuditEvent schema", () => {
     expect(AUDIT_ACTIONS).toContain("create");
     expect(AUDIT_ACTIONS).toContain("update");
     expect(AUDIT_RESOURCE_TYPES).toContain("deal");
+    expect(AUDIT_RESOURCE_TYPES).toContain("product");
     expect(AUDIT_RESOURCE_TYPES).toContain("workspace");
   });
 

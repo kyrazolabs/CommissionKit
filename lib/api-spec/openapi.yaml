@@ -14,6 +14,8 @@ tags:
     description: Sales rep management
   - name: plans
     description: Commission plan management
+  - name: products
+    description: Product catalog management
   - name: deals
     description: Deal management and CSV import
   - name: runs
@@ -209,6 +211,114 @@ paths:
       operationId: deletePlan
       tags: [plans]
       summary: Delete a plan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Products ──────────────────────────────────────────────────────────────
+  /products:
+    get:
+      operationId: listProducts
+      tags: [products]
+      summary: List products
+      parameters:
+        - name: search
+          in: query
+          description: "Search by name, SKU, or description"
+          schema:
+            type: string
+        - name: kind
+          in: query
+          schema:
+            $ref: "#/components/schemas/ProductKind"
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/ProductStatus"
+        - name: page
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paginated list of products
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductList"
+    post:
+      operationId: createProduct
+      tags: [products]
+      summary: Create a product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProductBody"
+      responses:
+        "201":
+          description: Created product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+
+  /products/{id}:
+    get:
+      operationId: getProduct
+      tags: [products]
+      summary: Get a product by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+    put:
+      operationId: updateProduct
+      tags: [products]
+      summary: Update a product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProductBody"
+      responses:
+        "200":
+          description: Updated product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+    delete:
+      operationId: deleteProduct
+      tags: [products]
+      summary: Delete a product
       parameters:
         - name: id
           in: path
@@ -639,6 +749,147 @@ components:
             $ref: "#/components/schemas/CreatePlanTier"
       required: [name, type]
 
+    # ── Product ──────────────────────────────────────────────────────────────
+    ProductKind:
+      type: string
+      enum: [service, property, vehicle, job, insurance, physical_good, subscription, other]
+
+    ProductStatus:
+      type: string
+      enum: [active, archived]
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        kind:
+          $ref: "#/components/schemas/ProductKind"
+        description:
+          type: string
+          nullable: true
+        sku:
+          type: string
+          nullable: true
+        unitPrice:
+          type: number
+          nullable: true
+        currency:
+          type: string
+        status:
+          $ref: "#/components/schemas/ProductStatus"
+        attributes:
+          type: object
+          additionalProperties: true
+        hasImage:
+          type: boolean
+        createdAt:
+          type: string
+      required: [id, name, kind, description, sku, unitPrice, currency, status, attributes, hasImage, createdAt]
+
+    ProductList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            totalPages:
+              type: integer
+          required: [page, limit, total, totalPages]
+      required: [data, pagination]
+
+    CreateProductBody:
+      type: object
+      properties:
+        name:
+          type: string
+        kind:
+          $ref: "#/components/schemas/ProductKind"
+        description:
+          type: string
+          nullable: true
+        sku:
+          type: string
+          nullable: true
+        unitPrice:
+          type: number
+          nullable: true
+        currency:
+          type: string
+        status:
+          $ref: "#/components/schemas/ProductStatus"
+        attributes:
+          type: object
+          additionalProperties: true
+      required: [name, kind]
+
+    UpdateProductBody:
+      type: object
+      properties:
+        name:
+          type: string
+        kind:
+          $ref: "#/components/schemas/ProductKind"
+        description:
+          type: string
+          nullable: true
+        sku:
+          type: string
+          nullable: true
+        unitPrice:
+          type: number
+          nullable: true
+        currency:
+          type: string
+        status:
+          $ref: "#/components/schemas/ProductStatus"
+        attributes:
+          type: object
+          additionalProperties: true
+      required: [name, kind]
+
+    DealLineItem:
+      type: object
+      properties:
+        productId:
+          type: string
+        name:
+          type: string
+        sku:
+          type: string
+          nullable: true
+        kind:
+          type: string
+          nullable: true
+        quantity:
+          type: number
+        unitPrice:
+          type: number
+        amount:
+          type: number
+      required: [productId, name, quantity, unitPrice, amount]
+
+    CreateDealLineItem:
+      type: object
+      properties:
+        productId:
+          type: string
+        quantity:
+          type: number
+      required: [productId, quantity]
+
     # ── Deal ─────────────────────────────────────────────────────────────────
     DealPaymentStatus:
       type: string
@@ -672,6 +923,10 @@ components:
         notes:
           type: string
           nullable: true
+        lineItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/DealLineItem"
         createdAt:
           type: string
       required: [id, repId, repName, name, amount, closeDate, period, stage, currency, paymentStatus, notes, createdAt]
@@ -700,6 +955,10 @@ components:
         notes:
           type: string
           nullable: true
+        lineItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreateDealLineItem"
       required: [repId, name, amount, period, stage, currency]
 
     UpdateDealBody:
@@ -725,6 +984,10 @@ components:
         notes:
           type: string
           nullable: true
+        lineItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreateDealLineItem"
       required: [repId, name, amount, period, stage, currency]
 
     ImportDealsBody:

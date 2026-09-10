@@ -24,10 +24,26 @@ const DealSchema = new Schema(
     syncHash: { type: String },
     lastSyncedAt: { type: Date },
     metadata: { type: Schema.Types.Mixed },
+    lineItems: {
+      type: [
+        {
+          productId: { type: Schema.Types.ObjectId, ref: "Product" },
+          name: { type: String, required: true },
+          sku: { type: String },
+          kind: { type: String },
+          quantity: { type: Number, required: true },
+          unitPrice: { type: Number, required: true },
+          amount: { type: Number, required: true },
+        },
+      ],
+      default: [],
+    },
     isSampleData: { type: Boolean, default: false },
   },
   { timestamps: { createdAt: true, updatedAt: false } },
 );
+
+DealSchema.index({ workspaceId: 1, "lineItems.productId": 1 });
 
 DealSchema.index(
   { workspaceId: 1, sourceSystem: 1, externalId: 1 },
@@ -60,8 +76,19 @@ export type Deal = mongoose.Document & {
   syncHash?: string;
   lastSyncedAt?: Date;
   metadata?: Record<string, unknown>;
+  lineItems?: DealLineItem[];
   isSampleData?: boolean;
   createdAt: Date;
+};
+
+export type DealLineItem = {
+  productId?: Types.ObjectId;
+  name: string;
+  sku?: string;
+  kind?: string;
+  quantity: number;
+  unitPrice: number;
+  amount: number;
 };
 
 export { DealPaymentStatus };

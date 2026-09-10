@@ -11,6 +11,7 @@ export const DEFAULT_ADMIN_PERMISSIONS = [
   "deals:*",
   "reps:*",
   "plans:*",
+  "products:*",
   "payouts:*",
   "reports:*",
   "disputes:*",
@@ -21,7 +22,12 @@ export const DEFAULT_ADMIN_PERMISSIONS = [
   "billing:*",
 ];
 
-export const DEFAULT_MEMBER_PERMISSIONS = ["deals:read", "reports:read", "reps:read"];
+export const DEFAULT_MEMBER_PERMISSIONS = [
+  "deals:read",
+  "reports:read",
+  "reps:read",
+  "products:read",
+];
 
 /**
  * Seeds the system roles for a given workspace if they do not exist.
@@ -58,6 +64,9 @@ export async function seedWorkspaceRoles(workspaceId: string | Types.ObjectId) {
     },
     { upsert: true, new: true },
   );
+
+  await Role.updateOne({ _id: adminRole._id }, { $addToSet: { permissions: "products:*" } });
+  await Role.updateOne({ _id: memberRole._id }, { $addToSet: { permissions: "products:read" } });
 
   // 2. Migrate legacy members who don't have roleIds set yet
   // We match users where `roleIds` does not exist or is empty

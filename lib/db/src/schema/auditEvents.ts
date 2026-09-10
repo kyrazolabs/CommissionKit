@@ -36,6 +36,7 @@ export type AuditAction = (typeof AUDIT_ACTIONS)[number];
 export const AUDIT_RESOURCE_TYPES = [
   "plan",
   "deal",
+  "product",
   "rep",
   "run",
   "payout",

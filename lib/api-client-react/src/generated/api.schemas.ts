@@ -84,6 +84,97 @@ export interface CreatePlanBody {
   tiers?: CreatePlanTier[];
 }
 
+export type ProductKind = typeof ProductKind[keyof typeof ProductKind];
+
+
+export const ProductKind = {
+  service: 'service',
+  property: 'property',
+  vehicle: 'vehicle',
+  job: 'job',
+  insurance: 'insurance',
+  physical_good: 'physical_good',
+  subscription: 'subscription',
+  other: 'other',
+} as const;
+
+export type ProductStatus = typeof ProductStatus[keyof typeof ProductStatus];
+
+
+export const ProductStatus = {
+  active: 'active',
+  archived: 'archived',
+} as const;
+
+export type ProductAttributes = { [key: string]: unknown };
+
+export interface Product {
+  id: string;
+  name: string;
+  kind: ProductKind;
+  description: string | null;
+  sku: string | null;
+  unitPrice: number | null;
+  currency: string;
+  status: ProductStatus;
+  attributes: ProductAttributes;
+  hasImage: boolean;
+  createdAt: string;
+}
+
+export type ProductListPagination = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
+
+export interface ProductList {
+  data: Product[];
+  pagination: ProductListPagination;
+}
+
+export type CreateProductBodyAttributes = { [key: string]: unknown };
+
+export interface CreateProductBody {
+  name: string;
+  kind: ProductKind;
+  description?: string | null;
+  sku?: string | null;
+  unitPrice?: number | null;
+  currency?: string;
+  status?: ProductStatus;
+  attributes?: CreateProductBodyAttributes;
+}
+
+export type UpdateProductBodyAttributes = { [key: string]: unknown };
+
+export interface UpdateProductBody {
+  name: string;
+  kind: ProductKind;
+  description?: string | null;
+  sku?: string | null;
+  unitPrice?: number | null;
+  currency?: string;
+  status?: ProductStatus;
+  attributes?: UpdateProductBodyAttributes;
+}
+
+export interface DealLineItem {
+  productId: string;
+  name: string;
+  sku?: string | null;
+  kind?: string | null;
+  quantity: number;
+  unitPrice: number;
+  amount: number;
+}
+
+export interface CreateDealLineItem {
+  productId: string;
+  quantity: number;
+}
+
 export type DealPaymentStatus = typeof DealPaymentStatus[keyof typeof DealPaymentStatus];
 
 
@@ -116,6 +207,7 @@ export interface Deal {
   currency: string;
   paymentStatus: DealPaymentStatus;
   notes: string | null;
+  lineItems?: DealLineItem[];
   createdAt: string;
 }
 
@@ -138,6 +230,7 @@ export interface CreateDealBody {
   currency: string;
   paymentStatus?: DealPaymentStatus;
   notes?: string | null;
+  lineItems?: CreateDealLineItem[];
 }
 
 export type UpdateDealBodyStage = typeof UpdateDealBodyStage[keyof typeof UpdateDealBodyStage];
@@ -159,6 +252,7 @@ export interface UpdateDealBody {
   currency: string;
   paymentStatus?: DealPaymentStatus;
   notes?: string | null;
+  lineItems?: CreateDealLineItem[];
 }
 
 export interface ImportDealsBody {
@@ -394,6 +488,17 @@ export type ListRepsParams = {
  * Search by rep name or email
  */
 search?: string;
+};
+
+export type ListProductsParams = {
+/**
+ * Search by name, SKU, or description
+ */
+search?: string;
+kind?: ProductKind;
+status?: ProductStatus;
+page?: string;
+limit?: string;
 };
 
 export type ListDealsParams = {

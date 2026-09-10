@@ -11,6 +11,7 @@ export * from "./leads";
 export * from "./notifications";
 export * from "./payouts";
 export * from "./plans";
+export * from "./products";
 export * from "./reps";
 export * from "./roles";
 export * from "./subscriptions";

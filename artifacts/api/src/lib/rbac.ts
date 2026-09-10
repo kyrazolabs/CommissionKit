@@ -44,6 +44,7 @@ export async function getUserPermissions(
         "deals:*",
         "reps:*",
         "plans:*",
+        "products:*",
         "payouts:*",
         "reports:*",
         "analytics:*",
@@ -59,7 +60,7 @@ export async function getUserPermissions(
       adminPerms.forEach((p) => permissions.add(p));
     } else {
       // member
-      ["deals:read", "reports:read", "analytics:read", "reps:read"].forEach((p) =>
+      ["deals:read", "reports:read", "analytics:read", "reps:read", "products:read"].forEach((p) =>
         permissions.add(p),
       );
     }

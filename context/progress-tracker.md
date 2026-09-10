@@ -33,6 +33,7 @@ This tracker captures the current state of the codebase as of the latest explora
 | Workspace routes | ✅ Done | CRUD + members + features. |
 | Rep routes | ✅ Done | CRUD + bulk import + portal codes. |
 | Plan routes | ✅ Done | CRUD with tiers. |
+| Product routes | ✅ Done | Catalog CRUD, attributes, S3 images (`Bun.Image` resize), deal line items. See `context/products.md`. |
 | Deal routes | ✅ Done | CRUD + bulk CSV import/export. |
 | Run routes | ✅ Done | Commission run creation + enqueue. |
 | Dashboard routes | ✅ Done | Dashboard stats. |
@@ -75,6 +76,7 @@ This tracker captures the current state of the codebase as of the latest explora
 | Sidebar + Header | ✅ Done | Layout components. |
 | Dashboard page | ✅ Done | Main dashboard. |
 | Plans / Deals / Runs pages | ✅ Done | Commission management. |
+| Products page | ✅ Done | Card grid catalog with logo-symbol placeholder. |
 | Reps / Team pages | ✅ Done | Team management. |
 | Payouts / Disputes pages | ✅ Done | Payout lifecycle. |
 | Reports page | ✅ Done | Analytics. |
@@ -167,6 +169,8 @@ This tracker captures the current state of the codebase as of the latest explora
 
 ## 10. Recent Changes
 
+- **Product catalog leftovers**: Kind-specific attributes, S3 images resized with `Bun.Image`, deal line items with snapshots, MCP product tools, `write:products` API keys, sample-data products. See `context/products.md`.
+- **Product catalog (v1)**: Workspace-scoped products with `kind` enum, OOP service/controller/singleton API, card-grid UI with logo-symbol placeholder.
 - **OS migration to AFFiNE**: All company documentation (identity, strategy, revenue, product, operations, people, customer, tools, governance) migrated from `os/` numbered folders to AFFiNE at `https://affine.commissionkit.co`. Numbered folders deleted from repo.
 - **os/agents/ restructured**: Team folder structure created with nexus/gtm/marketing/development/product/ directories, each with `workflows/` and `scripts/` subdirectories. Team READMEs and workflow templates created.
 - **Documentation updated**: AGENTS.md, os/README.md, os/STATUS.md all updated to point to AFFiNE as canonical business OS source.

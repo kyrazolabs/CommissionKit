@@ -4,6 +4,7 @@ import {
   Deal,
   Plan,
   PlanTier,
+  Product,
   Rep,
   Workspace,
 } from "@workspace/db";
@@ -135,6 +136,7 @@ export interface SeedResult {
   counts: {
     reps: number;
     plans: number;
+    products: number;
     deals: number;
     runs: number;
     results: number;
@@ -146,6 +148,7 @@ export interface ClearResult {
   removed: {
     reps: number;
     plans: number;
+    products: number;
     deals: number;
     runs: number;
   };
@@ -176,6 +179,7 @@ async function cleanupSampleData(workspaceId: string): Promise<void> {
   }
 
   await Deal.deleteMany({ workspaceId: wsObjectId, isSampleData: true });
+  await Product.deleteMany({ workspaceId: wsObjectId, isSampleData: true });
 
   if (planIds.length > 0) {
     await PlanTier.deleteMany({ planId: { $in: planIds } });
@@ -226,6 +230,7 @@ async function performSeeding(
 
   const createdPlanIds: Types.ObjectId[] = [];
   const createdDealIds: Types.ObjectId[] = [];
+  const createdProductIds: Types.ObjectId[] = [];
 
   const [plan] = await Plan.create(
     [
@@ -269,11 +274,73 @@ async function performSeeding(
     repNameToId.set(r.name, rep._id);
   }
 
+  const sampleProducts = [
+    {
+      name: "Enterprise License",
+      kind: "subscription",
+      unitPrice: 12000,
+      attributes: { interval: "yearly", seats: 25 },
+    },
+    {
+      name: "Onboarding Sprint",
+      kind: "service",
+      unitPrice: 4500,
+      attributes: { durationHours: 40, billingCycle: "one_time" },
+    },
+    {
+      name: "Downtown Listing",
+      kind: "property",
+      unitPrice: 850000,
+      attributes: { bedrooms: 3, bathrooms: 2, listingType: "sale" },
+    },
+    {
+      name: "Family Policy",
+      kind: "insurance",
+      unitPrice: 2200,
+      attributes: { policyType: "term life", coverageAmount: 500000 },
+    },
+  ];
+
+  const productDocs = [];
+  for (const p of sampleProducts) {
+    const [product] = await Product.create(
+      [
+        {
+          workspaceId: wsObjectId,
+          name: p.name,
+          kind: p.kind,
+          unitPrice: p.unitPrice,
+          currency: wsCurrency,
+          attributes: p.attributes,
+          isSampleData: true,
+        },
+      ],
+      { session },
+    );
+    createdProductIds.push(product._id);
+    productDocs.push(product);
+  }
+
   for (const d of sampleDeals) {
     const repId = repNameToId.get(d.repName);
     if (!repId) {
       throw new SampleDataError(`Unknown rep name in sample deals: ${d.repName}`);
     }
+
+    const catalogProduct = productDocs[createdDealIds.length % productDocs.length];
+    const lineItems = catalogProduct
+      ? [
+          {
+            productId: catalogProduct._id,
+            name: catalogProduct.name,
+            sku: catalogProduct.sku,
+            kind: catalogProduct.kind,
+            quantity: 1,
+            unitPrice: d.amount,
+            amount: d.amount,
+          },
+        ]
+      : [];
 
     const [deal] = await Deal.create(
       [
@@ -287,6 +354,7 @@ async function performSeeding(
           stage: d.stage,
           currency: wsCurrency,
           paymentStatus: d.stage === "pending" ? "unpaid" : "paid",
+          lineItems,
           isSampleData: true,
         },
       ],
@@ -358,6 +426,7 @@ async function performSeeding(
     counts: {
       reps: sampleReps.length,
       plans: createdPlanIds.length,
+      products: createdProductIds.length,
       deals: createdDealIds.length,
       runs: 1,
       results: output.results.length,
@@ -407,6 +476,10 @@ export async function clearSampleData(workspaceId: string): Promise<ClearResult>
 
   const removedReps = await Rep.countDocuments({ workspaceId: wsObjectId, isSampleData: true });
   const removedPlans = await Plan.countDocuments({ workspaceId: wsObjectId, isSampleData: true });
+  const removedProducts = await Product.countDocuments({
+    workspaceId: wsObjectId,
+    isSampleData: true,
+  });
   const removedDeals = await Deal.countDocuments({ workspaceId: wsObjectId, isSampleData: true });
   const removedRuns = await CommissionRun.countDocuments({
     workspaceId: wsObjectId,
@@ -420,6 +493,7 @@ export async function clearSampleData(workspaceId: string): Promise<ClearResult>
     removed: {
       reps: removedReps,
       plans: removedPlans,
+      products: removedProducts,
       deals: removedDeals,
       runs: removedRuns,
     },

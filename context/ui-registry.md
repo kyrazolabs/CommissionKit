@@ -194,6 +194,7 @@ Located in `artifacts/web/src/pages/`.
 | Page | File | Route |
 |------|------|-------|
 | Plans | `commission/plans.tsx` | `/dash/plans` |
+| Products | `commission/products.tsx` | `/dash/products` |
 | Deals | `commission/deals.tsx` | `/dash/deals` |
 | Runs | `commission/runs.tsx` | `/dash/runs` |
 | Run Details | `commission/run-details.tsx` | `/dash/runs/:id` |

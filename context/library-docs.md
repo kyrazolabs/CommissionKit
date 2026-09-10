@@ -28,6 +28,7 @@ Main barrel: `lib/db/src/schema/index.ts`
 | `Rep` | `schema/reps.ts` | Sales reps |
 | `Plan` | `schema/plans.ts` | Commission plans |
 | `PlanTier` | `schema/plans.ts` | Tiered plan tiers |
+| `Product` | `schema/products.ts` | Product catalog |
 | `Deal` | `schema/deals.ts` | Sales deals |
 | `CommissionRun` | `schema/commissionRuns.ts` | Calculation runs |
 | `CommissionResult` | `schema/commissionRuns.ts` | Per-deal calc results |

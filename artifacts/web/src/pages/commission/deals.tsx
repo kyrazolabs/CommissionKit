@@ -28,6 +28,12 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import * as XLSX from "xlsx";
 import { CurrencyCombobox } from "@/components/currency-combobox";
+import {
+  DealLineItemsEditor,
+  lineItemsPayload,
+  lineItemsTotal,
+  type DealLineDraft,
+} from "@/components/deal-line-items";
 import { HelpTooltip } from "@/components/help-tooltip";
 import { MarkdownEditor } from "@/components/markdown-editor";
 import { NumberInput } from "@/components/number-input";
@@ -496,6 +502,14 @@ function UpdateDealDialog({
     paymentStatus: deal.paymentStatus || "unpaid",
     notes: deal.notes || "",
   });
+  const [lines, setLines] = useState<DealLineDraft[]>(
+    (deal.lineItems ?? []).map((item: DealLineDraft) => ({
+      productId: item.productId,
+      name: item.name,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+    })),
+  );
   const [showClawbackConfirm, setShowClawbackConfirm] = useState(false);
   const [showPaidConfirm, setShowPaidConfirm] = useState(false);
 
@@ -520,7 +534,15 @@ function UpdateDealDialog({
       setShowPaidConfirm(true);
       return;
     }
-    updateMutation.mutate({ id: deal.id, data: formData });
+    const amount = lines.length > 0 ? lineItemsTotal(lines) : formData.amount;
+    updateMutation.mutate({
+      id: deal.id,
+      data: {
+        ...formData,
+        amount,
+        lineItems: lineItemsPayload(lines),
+      },
+    });
     setOpen(false);
   };
 
@@ -631,7 +653,7 @@ function UpdateDealDialog({
                     <Label htmlFor="edit-amount">Amount</Label>
                     <NumberInput
                       id="edit-amount"
-                      value={formData.amount}
+                      value={lines.length > 0 ? lineItemsTotal(lines) : formData.amount}
                       onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
@@ -639,6 +661,7 @@ function UpdateDealDialog({
                         }))
                       }
                       required
+                      disabled={lines.length > 0}
                     />
                   </div>
                   <div className="space-y-2">
@@ -649,6 +672,11 @@ function UpdateDealDialog({
                     />
                   </div>
                 </div>
+                <DealLineItemsEditor
+                  lines={lines}
+                  onChange={setLines}
+                  currency={formData.currency}
+                />
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="edit-closeDate">{t("deals.closeDate")}</Label>
@@ -1366,6 +1394,7 @@ function CreateDealDialog({
     paymentStatus: "unpaid" as any,
     notes: "",
   });
+  const [lines, setLines] = useState<DealLineDraft[]>([]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1387,8 +1416,9 @@ function CreateDealDialog({
       return;
     }
 
+    const amount = lines.length > 0 ? lineItemsTotal(lines) : formData.amount;
     createMutation.mutate(
-      { data: formData },
+      { data: { ...formData, amount, lineItems: lineItemsPayload(lines) } },
       {
         onSuccess: () => {
           setFormData({
@@ -1445,11 +1475,12 @@ function CreateDealDialog({
               <Label htmlFor="amount">Amount</Label>
               <NumberInput
                 id="amount"
-                value={formData.amount}
+                value={lines.length > 0 ? lineItemsTotal(lines) : formData.amount}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))
                 }
                 required
+                disabled={lines.length > 0}
               />
             </div>
             <div className="space-y-2">
@@ -1460,6 +1491,7 @@ function CreateDealDialog({
               />
             </div>
           </div>
+          <DealLineItemsEditor lines={lines} onChange={setLines} currency={formData.currency} />
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="closeDate">{t("deals.closeDate")}</Label>

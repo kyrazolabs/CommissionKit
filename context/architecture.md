@@ -130,6 +130,7 @@ flowchart LR
 | `/workspaces` | Workspace CRUD, member invites |
 | `/reps` | Rep CRUD, bulk import, portal codes |
 | `/plans` | Commission plan CRUD with tiers |
+| `/products` | Product catalog CRUD (service/controller/singleton) |
 | `/deals` | Deal CRUD, bulk CSV import/export |
 | `/runs` | Commission run creation + enqueue |
 | `/dashboard` | Dashboard stats |
@@ -285,7 +286,7 @@ src/pages/
 ├── landing/            # Marketing landing page sections
 ├── auth/               # Login, register, reset, verified
 ├── dashboard.tsx       # Main dashboard
-├── commission/         # Plans, deals, runs, run-details
+├── commission/         # Plans, products, deals, runs, run-details
 ├── team/               # Team members, reps, accept-invite
 ├── payouts/            # Payouts, disputes
 ├── portal/             # Standard rep portal

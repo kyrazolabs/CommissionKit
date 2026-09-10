@@ -85,6 +85,11 @@ const PERMISSION_OPTIONS = [
     labelKey: "settings.apiKeys.permissions.writeRuns",
     descKey: "settings.apiKeys.permissions.writeRunsDesc",
   },
+  {
+    id: "write:products",
+    labelKey: "settings.apiKeys.permissions.writeProducts",
+    descKey: "settings.apiKeys.permissions.writeProductsDesc",
+  },
 ] as const;
 
 function relativeDate(dateStr: string | null): string {

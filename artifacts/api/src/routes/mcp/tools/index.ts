@@ -4,6 +4,7 @@ import { dashboardTools } from "./dashboard.tool";
 import { dealTools } from "./deals.tool";
 import { disputeTools } from "./disputes.tool";
 import { payoutTools } from "./payouts.tool";
+import { productTools } from "./products.tool";
 import { repTools } from "./reps.tool";
 import { runTools } from "./runs.tool";
 
@@ -14,6 +15,7 @@ export function createMcpServer(ctx: WorkspaceContext): McpServer {
   });
 
   dealTools.register(server, ctx);
+  productTools.register(server, ctx);
   repTools.register(server, ctx);
   runTools.register(server, ctx);
   payoutTools.register(server, ctx);

@@ -54,6 +54,12 @@ const PERMISSION_RESOURCES = [
     i18nKey: "roles.salesReps",
     actions: ["read", "create", "edit", "delete"],
   },
+  {
+    id: "products",
+    name: "Products",
+    i18nKey: "roles.products",
+    actions: ["read", "create", "edit", "delete"],
+  },
   { id: "audit_log", name: "Audit Log", i18nKey: "roles.auditLog", actions: ["read", "export"] },
   {
     id: "disputes",

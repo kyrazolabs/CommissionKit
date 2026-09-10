@@ -209,6 +209,118 @@ export const DeletePlanParams = zod.object({
 
 
 /**
+ * @summary List products
+ */
+export const ListProductsQueryParams = zod.object({
+  "search": zod.coerce.string().optional().describe('Search by name, SKU, or description'),
+  "kind": zod.enum(['service', 'property', 'vehicle', 'job', 'insurance', 'physical_good', 'subscription', 'other']).optional(),
+  "status": zod.enum(['active', 'archived']).optional(),
+  "page": zod.coerce.string().optional(),
+  "limit": zod.coerce.string().optional()
+})
+
+export const ListProductsResponse = zod.object({
+  "data": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "kind": zod.enum(['service', 'property', 'vehicle', 'job', 'insurance', 'physical_good', 'subscription', 'other']),
+  "description": zod.string().nullable(),
+  "sku": zod.string().nullable(),
+  "unitPrice": zod.number().nullable(),
+  "currency": zod.string(),
+  "status": zod.enum(['active', 'archived']),
+  "attributes": zod.record(zod.string(), zod.unknown()),
+  "hasImage": zod.boolean(),
+  "createdAt": zod.string()
+})),
+  "pagination": zod.object({
+  "page": zod.number(),
+  "limit": zod.number(),
+  "total": zod.number(),
+  "totalPages": zod.number()
+})
+})
+
+
+/**
+ * @summary Create a product
+ */
+export const CreateProductBody = zod.object({
+  "name": zod.string(),
+  "kind": zod.enum(['service', 'property', 'vehicle', 'job', 'insurance', 'physical_good', 'subscription', 'other']),
+  "description": zod.string().nullish(),
+  "sku": zod.string().nullish(),
+  "unitPrice": zod.number().nullish(),
+  "currency": zod.string().optional(),
+  "status": zod.enum(['active', 'archived']).optional(),
+  "attributes": zod.record(zod.string(), zod.unknown()).optional()
+})
+
+
+/**
+ * @summary Get a product by ID
+ */
+export const GetProductParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetProductResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "kind": zod.enum(['service', 'property', 'vehicle', 'job', 'insurance', 'physical_good', 'subscription', 'other']),
+  "description": zod.string().nullable(),
+  "sku": zod.string().nullable(),
+  "unitPrice": zod.number().nullable(),
+  "currency": zod.string(),
+  "status": zod.enum(['active', 'archived']),
+  "attributes": zod.record(zod.string(), zod.unknown()),
+  "hasImage": zod.boolean(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Update a product
+ */
+export const UpdateProductParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const UpdateProductBody = zod.object({
+  "name": zod.string(),
+  "kind": zod.enum(['service', 'property', 'vehicle', 'job', 'insurance', 'physical_good', 'subscription', 'other']),
+  "description": zod.string().nullish(),
+  "sku": zod.string().nullish(),
+  "unitPrice": zod.number().nullish(),
+  "currency": zod.string().optional(),
+  "status": zod.enum(['active', 'archived']).optional(),
+  "attributes": zod.record(zod.string(), zod.unknown()).optional()
+})
+
+export const UpdateProductResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "kind": zod.enum(['service', 'property', 'vehicle', 'job', 'insurance', 'physical_good', 'subscription', 'other']),
+  "description": zod.string().nullable(),
+  "sku": zod.string().nullable(),
+  "unitPrice": zod.number().nullable(),
+  "currency": zod.string(),
+  "status": zod.enum(['active', 'archived']),
+  "attributes": zod.record(zod.string(), zod.unknown()),
+  "hasImage": zod.boolean(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Delete a product
+ */
+export const DeleteProductParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+/**
  * @summary List deals
  */
 export const ListDealsQueryParams = zod.object({
@@ -230,6 +342,15 @@ export const ListDealsResponseItem = zod.object({
   "currency": zod.string(),
   "paymentStatus": zod.enum(['unpaid', 'paid', 'partial', 'on_hold']),
   "notes": zod.string().nullable(),
+  "lineItems": zod.array(zod.object({
+  "productId": zod.string(),
+  "name": zod.string(),
+  "sku": zod.string().nullish(),
+  "kind": zod.string().nullish(),
+  "quantity": zod.number(),
+  "unitPrice": zod.number(),
+  "amount": zod.number()
+})).optional(),
   "createdAt": zod.string()
 })
 export const ListDealsResponse = zod.array(ListDealsResponseItem)
@@ -249,7 +370,11 @@ export const CreateDealBody = zod.object({
   "stage": zod.enum(['closed_won', 'closed_lost', 'pending']),
   "currency": zod.string(),
   "paymentStatus": zod.enum(['unpaid', 'paid', 'partial', 'on_hold']).default(createDealBodyPaymentStatusDefault),
-  "notes": zod.string().nullish()
+  "notes": zod.string().nullish(),
+  "lineItems": zod.array(zod.object({
+  "productId": zod.string(),
+  "quantity": zod.number()
+})).optional()
 })
 
 
@@ -269,7 +394,11 @@ export const ImportDealsBody = zod.object({
   "stage": zod.enum(['closed_won', 'closed_lost', 'pending']),
   "currency": zod.string(),
   "paymentStatus": zod.enum(['unpaid', 'paid', 'partial', 'on_hold']).default(importDealsBodyDealsItemPaymentStatusDefault),
-  "notes": zod.string().nullish()
+  "notes": zod.string().nullish(),
+  "lineItems": zod.array(zod.object({
+  "productId": zod.string(),
+  "quantity": zod.number()
+})).optional()
 }))
 })
 
@@ -304,7 +433,11 @@ export const UpdateDealBody = zod.object({
   "stage": zod.enum(['closed_won', 'closed_lost', 'pending']),
   "currency": zod.string(),
   "paymentStatus": zod.enum(['unpaid', 'paid', 'partial', 'on_hold']).optional(),
-  "notes": zod.string().nullish()
+  "notes": zod.string().nullish(),
+  "lineItems": zod.array(zod.object({
+  "productId": zod.string(),
+  "quantity": zod.number()
+})).optional()
 })
 
 export const UpdateDealResponse = zod.object({
@@ -319,6 +452,15 @@ export const UpdateDealResponse = zod.object({
   "currency": zod.string(),
   "paymentStatus": zod.enum(['unpaid', 'paid', 'partial', 'on_hold']),
   "notes": zod.string().nullable(),
+  "lineItems": zod.array(zod.object({
+  "productId": zod.string(),
+  "name": zod.string(),
+  "sku": zod.string().nullish(),
+  "kind": zod.string().nullish(),
+  "quantity": zod.number(),
+  "unitPrice": zod.number(),
+  "amount": zod.number()
+})).optional(),
   "createdAt": zod.string()
 })
 

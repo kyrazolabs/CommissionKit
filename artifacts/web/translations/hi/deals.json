@@ -96,5 +96,8 @@
   "colPaymentStatus": "भुगतान स्थिति",
   "colPayment": "भुगतान",
   "colNotes": "नोट्स",
-  "colDescription": "विवरण"
+  "colDescription": "विवरण",
+  "lineItems": "उत्पाद",
+  "lineItemsTotal": "लाइन कुल",
+  "lineItemsHint": "वैकल्पिक। उत्पाद जोड़ने पर राशि गणना होती है।"
 }

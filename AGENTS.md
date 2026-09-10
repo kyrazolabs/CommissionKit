@@ -78,6 +78,7 @@ graph TD
 | **Library docs** | `context/library-docs.md` |
 | **Build & deploy** | `context/build-plan.md` |
 | **Progress tracker** | `context/progress-tracker.md` |
+| **Product catalog** | `context/products.md` |
 | **Business Operating System** | **AFFiNE** (`https://affine.commissionkit.co`) — company identity, strategy, revenue, product, operations, people, customer, tools, governance |
 | **OS status** | `os/STATUS.md` |
 | **Agent models** | `os/agents/MODEL-ASSIGNMENTS.md` |
